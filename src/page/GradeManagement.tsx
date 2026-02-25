@@ -1,68 +1,42 @@
 import { useState } from 'react';
-import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter, Database } from 'lucide-react';
+import { useStudentGradeData } from '../hooks/useStudentGradeData';
+import { BookmarkletButton } from '../components/BookmarkletButton';
+import { NoDataCard } from '../components/ui/nodataCard';
 
-interface CourseGrade {
+interface Course {
   id: string;
   code: string;
   nameVi: string;
   credits: number;
-  grade: number; // Scale 10
-  semester: string;
-  needsRetake: boolean;
-  status: 'passed' | 'retake' | 'ongoing';
+  projectedGrade: number;
 }
 
-interface SimulatorCourse {
-  id: string;
-  code: string;
-  nameVi: string;
-  credits: number;
-  projectedGrade: number; // Scale 10
-}
-
-const gradeHistory: CourseGrade[] = [
-  { id: '1', code: 'CSC10001', nameVi: 'Nhập môn lập trình', credits: 4, grade: 9.0, semester: 'HK1 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '2', code: 'CSC10002', nameVi: 'Cấu trúc dữ liệu', credits: 4, grade: 8.5, semester: 'HK1 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '3', code: 'CSC10003', nameVi: 'Phương pháp lập trình', credits: 4, grade: 9.2, semester: 'HK2 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '4', code: 'CSC10004', nameVi: 'Cơ sở dữ liệu', credits: 4, grade: 6.0, semester: 'HK2 2024-2025', needsRetake: true, status: 'retake' },
-  { id: '5', code: 'CSC10005', nameVi: 'Hệ điều hành', credits: 4, grade: 8.8, semester: 'HK2 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '6', code: 'CSC10006', nameVi: 'Mạng máy tính', credits: 4, grade: 8.2, semester: 'HK3 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '7', code: 'CSC14005', nameVi: 'Học máy', credits: 4, grade: 9.5, semester: 'HK3 2024-2025', needsRetake: false, status: 'passed' },
-  { id: '8', code: 'CSC14006', nameVi: 'Phát triển ứng dụng di động', credits: 3, grade: 8.0, semester: 'HK3 2024-2025', needsRetake: false, status: 'passed' },
-];
-
-const simulatorCourses: SimulatorCourse[] = [
-  { id: 's1', code: 'CSC14003', nameVi: 'Công nghệ phần mềm', credits: 4, projectedGrade: 8.5 },
-  { id: 's2', code: 'CSC14004', nameVi: 'Phát triển ứng dụng Web', credits: 3, projectedGrade: 9.0 },
-  { id: 's3', code: 'CSC14007', nameVi: 'Điện toán đám mây', credits: 3, projectedGrade: 8.0 },
-  { id: 's4', code: 'CSC14008', nameVi: 'An toàn và bảo mật thông tin', credits: 4, projectedGrade: 8.5 },
-  { id: 's5', code: 'CSC15001', nameVi: 'Trí tuệ nhân tạo', credits: 3, projectedGrade: 9.0 },
-];
-
-export function GradeManagementVi() {
-  const [courses, setCourses] = useState<SimulatorCourse[]>(simulatorCourses);
+export function GradeManagement() {
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedSemester, setSelectedSemester] = useState('all');
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
 
-  // Current GPA (Scale 10)
-  const currentGPA = 8.5;
-  const totalCompletedCredits = gradeHistory.reduce((sum, c) => sum + c.credits, 0);
+  const { gradesHistory, currentGPA, isReady, hasData } = useStudentGradeData();
+
+  // Extract unique semesters for the dropdown filter
+  const uniqueSemesters = Array.from(new Set(gradesHistory.map(g => g.semester))).sort((a, b) => b.localeCompare(a));
 
   // Calculate Projected GPA
   const calculateProjectedGPA = () => {
-    const currentTotalPoints = gradeHistory
-      .filter(c => !c.needsRetake)
+    const currentTotalPoints = gradesHistory
+      .filter(c => c.status === 'passed')
       .reduce((sum, c) => sum + (c.grade * c.credits), 0);
-    const currentCredits = gradeHistory
-      .filter(c => !c.needsRetake)
+    const currentCredits = gradesHistory
+      .filter(c => c.status === 'passed')
       .reduce((sum, c) => sum + c.credits, 0);
-    
+
     const projectedPoints = courses.reduce((sum, c) => sum + (c.projectedGrade * c.credits), 0);
     const projectedCredits = courses.reduce((sum, c) => sum + c.credits, 0);
-    
+
     const totalPoints = currentTotalPoints + projectedPoints;
     const totalCredits = currentCredits + projectedCredits;
-    
+
     return totalCredits > 0 ? totalPoints / totalCredits : 0;
   };
 
@@ -81,17 +55,33 @@ export function GradeManagementVi() {
   const handleGradeChange = (id: string, value: string) => {
     const numValue = parseFloat(value);
     if (numValue >= 0 && numValue <= 10) {
-      setCourses(courses.map(course => 
+      setCourses(courses.map(course =>
         course.id === id ? { ...course, projectedGrade: numValue } : course
       ));
     }
   };
 
-  const filteredHistory = selectedSemester === 'all' 
-    ? gradeHistory 
-    : gradeHistory.filter(c => c.semester === selectedSemester);
+  const filteredHistory = selectedSemester === 'all'
+    ? gradesHistory
+    : gradesHistory.filter(c => c.semester === selectedSemester);
 
-  const retakeCourses = gradeHistory.filter(c => c.needsRetake);
+  const retakeCourses = gradesHistory.filter(c => c.needsRetake && c.status === 'retake');
+
+  if (!isReady) {
+    return (
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return <div>
+      <h1 className="text-gray-900 mb-2">Quản lý điểm</h1>
+      <p className="text-gray-600 mb-8">Xem điểm số, mô phỏng GPA và theo dõi các môn học cần học lại.</p>
+      <NoDataCard />
+    </div>
+  }
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6">
@@ -111,7 +101,7 @@ export function GradeManagementVi() {
             </div>
             <div>
               <p className="text-xs text-gray-600">Điểm hiện tại</p>
-              <p className="text-2xl font-bold text-gray-900">{currentGPA.toFixed(1)}<span className="text-sm text-gray-500">/10.0</span></p>
+              <p className="text-2xl font-bold text-gray-900">{currentGPA.toFixed(2)}<span className="text-sm text-gray-500">/10.0</span></p>
             </div>
           </div>
 
@@ -122,24 +112,21 @@ export function GradeManagementVi() {
             </div>
             <div>
               <p className="text-xs text-gray-600">Điểm dự kiến</p>
-              <p className="text-2xl font-bold text-[#004A98]">{projectedGPA.toFixed(1)}<span className="text-sm text-blue-400">/10.0</span></p>
+              <p className="text-2xl font-bold text-[#004A98]">{projectedGPA.toFixed(2)}<span className="text-sm text-blue-400">/10.0</span></p>
             </div>
           </div>
 
           {/* Classification */}
           <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-              projectedGPA >= 8.0 ? 'bg-green-100' : 'bg-orange-100'
-            }`}>
-              <Award className={`w-5 h-5 ${
-                projectedGPA >= 8.0 ? 'text-green-600' : 'text-orange-600'
-              }`} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${projectedGPA >= 8.0 ? 'bg-green-100' : 'bg-orange-100'
+              }`}>
+              <Award className={`w-5 h-5 ${projectedGPA >= 8.0 ? 'text-green-600' : 'text-orange-600'
+                }`} />
             </div>
             <div>
               <p className="text-xs text-gray-600">Xếp loại mục tiêu</p>
-              <p className={`text-lg font-semibold ${
-                projectedGPA >= 8.0 ? 'text-green-700' : 'text-orange-700'
-              }`}>
+              <p className={`text-lg font-semibold ${projectedGPA >= 8.0 ? 'text-green-700' : 'text-orange-700'
+                }`}>
                 {getClassification(projectedGPA)}
               </p>
             </div>
@@ -214,12 +201,11 @@ export function GradeManagementVi() {
                       />
                     </td>
                     <td className="px-4 py-3 text-sm text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        course.projectedGrade >= 9.0 ? 'bg-green-100 text-green-700' :
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${course.projectedGrade >= 9.0 ? 'bg-green-100 text-green-700' :
                         course.projectedGrade >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                        course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-orange-100 text-orange-700'
-                      }`}>
+                          course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-orange-100 text-orange-700'
+                        }`}>
                         {getClassification(course.projectedGrade)}
                       </span>
                     </td>
@@ -295,9 +281,9 @@ export function GradeManagementVi() {
               className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
             >
               <option value="all">Tất cả học kỳ</option>
-              <option value="HK1 2024-2025">HK1 2024-2025</option>
-              <option value="HK2 2024-2025">HK2 2024-2025</option>
-              <option value="HK3 2024-2025">HK3 2024-2025</option>
+              {uniqueSemesters.map(sem => (
+                <option key={sem} value={sem}>{sem}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -344,13 +330,12 @@ export function GradeManagementVi() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`px-3 py-1.5 rounded-lg font-semibold text-sm ${
-                      course.grade >= 9.0 ? 'bg-green-100 text-green-700' :
+                    <span className={`px-3 py-1.5 rounded-lg font-semibold text-sm ${course.grade >= 9.0 ? 'bg-green-100 text-green-700' :
                       course.grade >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                      course.grade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
-                      course.grade >= 5.0 ? 'bg-orange-100 text-orange-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
+                        course.grade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
+                          course.grade >= 5.0 ? 'bg-orange-100 text-orange-700' :
+                            'bg-red-100 text-red-700'
+                      }`}>
                       {course.grade.toFixed(1)}
                     </span>
                   </td>

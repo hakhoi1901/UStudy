@@ -4,7 +4,6 @@
  */
 
 import { CourseRecommender } from './tkb/Recommender.js';
-import { renderNewUI, updateHeaderInfo, fillStudentProfile, injectClassSelectionModal } from '../../../src/js/render/NewUI.js';
 import { logStatus, logSuccess, logWarning, logAlgo, logData, logError } from './styleLog.js';
 
 

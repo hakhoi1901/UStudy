@@ -4,7 +4,7 @@ import { CourseRecommender } from '../logic/tkb/Recommender';
 import { courses as allCoursesMeta } from '../assets/data/courses';
 import { prerequisites } from '../assets/data/prerequisites';
 import { categories } from '../assets/data/categories';
-import { Course } from '../data/courseData'; // Just for the interface
+import type { Course } from '../data/courseData'; // Just for the interface
 
 export interface CourseGroupState {
     core: Course[];
@@ -42,7 +42,8 @@ export function useCourseData() {
         if (!studentDb || !studentDb.grades || courseDb.length === 0) {
             setHasData(false);
             setIsReady(true);
-            return { core: [], major: [], electives: [] };
+            const emptyGroup = { core: [], major: [], electives: [] };
+            return { recommended: emptyGroup, all: emptyGroup };
         }
 
         setHasData(true);
@@ -59,66 +60,88 @@ export function useCourseData() {
         // Tạm thời comment vì recommend() chỉ trả về các môn có mở lớp. 
         // Nếu UI muốn hiển thị cả môn KHÔNG mở lớp nhưng thiếu điều kiện, cần logic khác.
         // Tạm thời gọi hàm getStudentStatus và tự map để hiện đủ danh sách môn tĩnh.
-        const { passed, studying, failed } = recommender.getStudentStatus();
+        const { failed } = recommender.getStudentStatus();
 
-        recommender.recommend(); // Chạy để sinh recommendationsMap
-        const recMap = recommender.recommendationsMap;
+        // Chạy để sinh recommendationsMap và lấy danh sách môn ĐƯỢC GỢI Ý (ĐÃ MỞ LỚP)
+        const recommendedCourses = recommender.recommend();
+        const recMap = (recommender as any).recommendationsMap;
 
-        // Map `allCoursesMeta` (danh sách tĩnh) sang interface `Course` của UI
-        const mappedCourses: Course[] = allCoursesMeta.map(meta => {
-            // Xác định trạng thái
-            const isFailed = failed.has(meta.course_id);
-            const isStudying = studying.has(meta.course_id);
-            const isPassed = passed.has(meta.course_id);
-            const isOpen = courseDb.some(c => c.id === meta.course_id);
+        // Helper function to map courses
+        const mapCourseList = (sourceList: any[], isAllView: boolean = false): Course[] => {
+            return sourceList.map((sourceCourse: any) => {
+                const cid = sourceCourse.id || sourceCourse.course_id;
+                const meta = allCoursesMeta.find(m => m.course_id === cid);
+                const isFailed = failed.has(cid);
+                const recStatus = recMap.get(cid);
 
-            const recStatus = recMap.get(meta.course_id); // 'RETAKE', 'MANDATORY', etc.
+                const prereqIds = prerequisites
+                    .filter(p => p.course_id === cid)
+                    .map(p => p.prereq_id);
 
-            // Map prerequisite từ format mới
-            const prereqIds = prerequisites
-                .filter(p => p.course_id === meta.course_id)
-                .map(p => p.prereq_id);
+                const needsRetake = isFailed || recStatus === 'RETAKE';
 
-            return {
-                id: meta.course_id,
-                code: meta.course_id,
-                name: meta.course_name_vi || meta.course_id,
-                nameVi: meta.course_name_vi || meta.course_id,
-                credits: parseInt(meta.credits as any) || 0,
-                prerequisites: prereqIds,
-                // UI uses `isAvailable` (Green box) and `needsRetake` (Red box)
-                needsRetake: isFailed || recStatus === 'RETAKE',
-                isAvailable: !!recStatus && recStatus !== 'RETAKE',
-                recommendationStatus: recStatus, // Mở rộng thêm cho UI xử lý chi tiết
-                description: meta.description || '',
-                descriptionVi: meta.description || '',
-                instructor: 'Chưa cập nhật',
-                category: meta.category,
-                isOpen
-            };
-        });
+                // In "All Open Courses" view, everything is available unless it's a retake.
+                // In "Recommended" view, only recommended non-retake courses are available.
+                const isAvailable = isAllView
+                    ? !needsRetake
+                    : !!recStatus && recStatus !== 'RETAKE';
 
-        // Phân loại vào 3 nhóm (cho CourseRecommendations.tsx)
-        const grouped: CourseGroupState = {
-            core: [],
-            major: [],
-            electives: []
+                return {
+                    id: cid,
+                    code: cid,
+                    name: meta?.course_name_vi || sourceCourse.course_name_vi || sourceCourse.name || cid,
+                    nameVi: meta?.course_name_vi || sourceCourse.course_name_vi || sourceCourse.name || cid,
+                    credits: parseInt((meta?.credits || sourceCourse.credits) as any) || 0,
+                    prerequisites: prereqIds,
+                    needsRetake: needsRetake,
+                    isAvailable: isAvailable,
+                    recommendationStatus: recStatus,
+                    description: meta?.description || sourceCourse.description || '',
+                    descriptionVi: meta?.description || sourceCourse.description || '',
+                    instructor: 'Chưa cập nhật',
+                    category: meta?.category || sourceCourse.category || 'OTHER',
+                    isOpen: true
+                };
+            });
         };
 
-        mappedCourses.forEach(c => {
-            if (c.category === 'FOUNDATION') {
-                grouped.core.push(c);
-            } else if (c.category?.startsWith('MAJOR_')) {
-                grouped.major.push(c);
-            } else {
-                grouped.electives.push(c);
-            }
-        });
+        const mappedRecommended = mapCourseList(recommendedCourses, false);
+        // Map ALL open courses (courseDb)
+        const mappedAllOpen = mapCourseList(courseDb, true);
+
+        // Grouping function
+        const groupCourses = (courseList: Course[]): CourseGroupState => {
+            const grouped: CourseGroupState = { core: [], major: [], electives: [] };
+            courseList.forEach(c => {
+                const cat = c.category || 'OTHER';
+                if (cat === 'FOUNDATION' || cat === 'GENERAL_IT') {
+                    grouped.core.push(c);
+                } else if (cat.startsWith('MAJOR_') || cat === 'GRADUATION' || cat.startsWith('SPECIALIZED_')) {
+                    grouped.major.push(c);
+                } else {
+                    grouped.electives.push(c);
+                }
+            });
+            return grouped;
+        };
+
+        const recommendedGrouped = groupCourses(mappedRecommended);
+        const allOpenGrouped = groupCourses(mappedAllOpen);
 
         setIsReady(true);
-        return grouped;
+        return {
+            recommended: recommendedGrouped,
+            all: allOpenGrouped
+        };
 
     }, [stamp]); // Phụ thuộc vào stamp để reload khi có data mới
 
-    return { ...courseData, isReady, hasData };
+    return {
+        core: courseData.recommended?.core || [], // Keep backward compatibility for other components if any
+        major: courseData.recommended?.major || [],
+        electives: courseData.recommended?.electives || [],
+        ...courseData,
+        isReady,
+        hasData
+    };
 }

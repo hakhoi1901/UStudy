@@ -1,16 +1,47 @@
 import { X, CheckCircle2 } from 'lucide-react';
-import { Course } from '../data/courseData';
+import type { Course } from '../data/courseData';
+import { tuition_rates } from '../assets/data/tuition_rates';
+import { courses as allCoursesMeta } from '../assets/data/courses';
 
 interface SelectionBasketViProps {
   selectedCourses: Course[];
   onRemoveCourse: (courseId: string) => void;
 }
 
-const TUITION_PER_CREDIT = 350000; // VND per credit
-
 export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: SelectionBasketViProps) {
   const totalCredits = selectedCourses.reduce((sum, course) => sum + course.credits, 0);
-  const estimatedTuition = 20000000; // Fixed total as requested
+
+  const estimatedTuition = selectedCourses.reduce((sum, course) => {
+    let pricePerCredit = tuition_rates.default_price;
+    const id = course.code.trim().toUpperCase();
+
+    // Find rate based on subject prefix (longest prefix match)
+    const sortedKeys = Object.keys(tuition_rates.rates).sort((a, b) => b.length - a.length);
+    for (const key of sortedKeys) {
+      if (id.startsWith(key)) {
+        pricePerCredit = (tuition_rates.rates as any)[key];
+        break;
+      }
+    }
+
+    // Find billing credits (based on total hours / 15)
+    let billingCredits = course.credits || 0;
+    const meta = allCoursesMeta.find(c => c.course_id === id);
+    if (meta) {
+      const lt = parseInt(meta.theory_hours as any) || 0;
+      const th = parseInt(meta.lab_hours as any) || 0;
+      const bt = parseInt(meta.exercise_hours as any) || 0;
+      const totalHours = lt + th + bt;
+      if (totalHours > 0) {
+        billingCredits = totalHours / 15;
+      }
+    }
+
+    course.price = billingCredits * pricePerCredit;
+
+    return sum + (billingCredits * pricePerCredit);
+  }, 0);
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN').format(amount);
@@ -51,6 +82,7 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
                   {course.code}
                 </p>
                 <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
+                <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price)} đ</p>
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-xs text-gray-500">{course.credits} tín chỉ</span>
                   {course.needsRetake && (
@@ -82,9 +114,8 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className={`h-2.5 rounded-full transition-all ${
-                totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'
-              }`}
+              className={`h-2.5 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'
+                }`}
               style={{ width: `${Math.min((totalCredits / 24) * 100, 100)}%` }}
             ></div>
           </div>
@@ -112,11 +143,10 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
 
         {/* Confirm Button */}
         <button
-          className={`w-full py-3 rounded-lg font-medium transition-all ${
-            selectedCourses.length === 0
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#004A98] text-white hover:bg-[#003A78] shadow-sm hover:shadow-md active:scale-[0.98]'
-          }`}
+          className={`w-full py-3 rounded-lg font-medium transition-all ${selectedCourses.length === 0
+            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            : 'bg-[#004A98] text-white hover:bg-[#003A78] shadow-sm hover:shadow-md active:scale-[0.98]'
+            }`}
           disabled={selectedCourses.length === 0}
         >
           Xác nhận đăng ký

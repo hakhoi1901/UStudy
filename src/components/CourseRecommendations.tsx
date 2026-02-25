@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { CourseRow } from './CourseRow';
 import { SelectionBasketVi } from './SelectionBasketVi';
 import { PrerequisiteFlowchart } from './PrerequisiteFlowchart';
-import { type Course } from '../data/courseData';
+import type { Course } from '../data/courseData';
 import { useCourseData } from '../hooks/useCourseData';
 import { Filter, Search, Database } from 'lucide-react';
+import { BookmarkletButton } from './BookmarkletButton';
 
 export function CourseRecommendations() {
   const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
@@ -49,7 +50,7 @@ export function CourseRecommendations() {
 
   if (!isReady) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
       </div>
     );
@@ -57,13 +58,14 @@ export function CourseRecommendations() {
 
   if (!hasData) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
         <div className="text-center max-w-md p-8 bg-white border border-gray-200 rounded-xl shadow-sm">
           <Database className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Chưa có dữ liệu</h2>
           <p className="text-gray-600 mb-6">
-            Kéo Bookmarklet Tool Cào Dữ Liệu vào Bookmark bar của bạn, và làm theo hướng dẫn tại tab Hướng dẫn cấu hình.
+            Kéo Bookmarklet Tool Cào Dữ Liệu vào Bookmark bar của bạn để bắt đầu.
           </p>
+          <BookmarkletButton />
         </div>
       </div>
     );
@@ -172,6 +174,7 @@ export function CourseRecommendations() {
       {showFlowchart && flowchartCourse && (
         <PrerequisiteFlowchart
           course={flowchartCourse}
+          allCourses={[...core, ...major, ...electives]}
           onClose={() => setShowFlowchart(false)}
         />
       )}

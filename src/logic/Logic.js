@@ -6,7 +6,7 @@
 import { runScheduleSolver } from './tkb/Scheduler.js';
 import { runGroupScheduleSolver } from './tkb/GroupScheduler.js';
 import { GLOBAL_COURSE_DB, getStoredPreferences } from './Utils.js';
-import { renderScheduleResults, groupMembers, courseAssignments, isGroupMode } from '../../../src/js/render/NewUI.js';
+
 
 // --- HÀM 1: XẾP LỊCH CÁ NHÂN (Hoặc Nhóm trong giao diện cũ) ---
 export async function onNutBamXepLich() {

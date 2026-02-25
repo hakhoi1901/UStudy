@@ -1,16 +1,14 @@
 import { type Course } from '../data/courseData';
-import { courses } from '../data/courseData';
 import { X, ArrowRight, CheckCircle } from 'lucide-react';
 
 interface PrerequisiteFlowchartProps {
   course: Course;
+  allCourses: Course[];
   onClose: () => void;
 }
 
-export function PrerequisiteFlowchart({ course, onClose }: PrerequisiteFlowchartProps) {
-  // Get all courses for lookup
-  const allCourses = [...courses.core, ...courses.major, ...courses.electives];
-  
+export function PrerequisiteFlowchart({ course, allCourses, onClose }: PrerequisiteFlowchartProps) {
+
   // Build prerequisite tree recursively
   const buildPrerequisiteTree = (courseId: string, level = 0): any => {
     const c = allCourses.find(course => course.id === courseId);
@@ -32,13 +30,12 @@ export function PrerequisiteFlowchart({ course, onClose }: PrerequisiteFlowchart
     return (
       <div className="flex flex-col items-center">
         <div
-          className={`px-4 py-3 rounded-lg border-2 min-w-[200px] ${
-            isRoot
+          className={`px-4 py-3 rounded-lg border-2 min-w-[200px] ${isRoot
               ? 'bg-[#004A98] text-white border-[#004A98]'
               : node.course.isAvailable
-              ? 'bg-green-50 border-green-300 text-gray-900'
-              : 'bg-gray-100 border-gray-300 text-gray-900'
-          }`}
+                ? 'bg-green-50 border-green-300 text-gray-900'
+                : 'bg-gray-100 border-gray-300 text-gray-900'
+            }`}
         >
           <div className="flex items-center justify-between mb-1">
             <span className={`text-sm ${isRoot ? 'text-white' : 'text-gray-600'}`}>

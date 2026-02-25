@@ -1,31 +1,49 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
+import { TrendingUp, BookOpen, DollarSign, Database } from 'lucide-react';
+import { useStudentGradeData } from '../hooks/useStudentGradeData';
+import { BookmarkletButton } from '../components/BookmarkletButton';
+import { NoDataCard } from '../components/ui/nodataCard';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
+  const { currentGPA, accumulatedCredits, totalCredits, estimatedTuition, isReady, hasData } = useStudentGradeData();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const currentGPA = 8.5;
   const maxGPA = 10.0;
-  const accumulatedCredits = 100;
-  const totalCredits = 140;
-  const estimatedTuition = 20000000;
 
+  // Guard against divide by zero
+  const safeTotalCredits = totalCredits > 0 ? totalCredits : 140;
   const gpaPercentage = (currentGPA / maxGPA) * 100;
-  const creditsPercentage = (accumulatedCredits / totalCredits) * 100;
+  const creditsPercentage = Math.min((accumulatedCredits / safeTotalCredits) * 100, 100);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   if (!isMounted) {
     return null;
+  }
+
+  if (!isReady) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004A98]"></div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (<div>
+      <h1 className="text-gray-900 mb-2">Tổng quan</h1>
+      <p className="text-gray-600 mb-8">Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.</p>
+      <NoDataCard />
+    </div>);
   }
 
   return (
@@ -80,9 +98,9 @@ export function DashboardWidgets() {
             <span className="text-gray-600">Xếp loại</span>
             <span className="text-[#004A98] font-semibold">
               {currentGPA >= 9.0 ? 'Xuất sắc' :
-               currentGPA >= 8.0 ? 'Giỏi' :
-               currentGPA >= 7.0 ? 'Khá' :
-               currentGPA >= 6.5 ? 'Trung bình khá' : 'Trung bình'}
+                currentGPA >= 8.0 ? 'Giỏi' :
+                  currentGPA >= 7.0 ? 'Khá' :
+                    currentGPA >= 6.5 ? 'Trung bình khá' : 'Trung bình'}
             </span>
           </div>
         </div>
@@ -143,7 +161,7 @@ export function DashboardWidgets() {
 
         <div className="mb-4">
           <p className="text-sm text-blue-100 mb-2">Tổng học phí dự kiến</p>
-          <p className="text-3xl font-bold text-white">{formatCurrency(estimatedTuition)}</p>
+          <p className="text-3xl font-bold text-white">{formatCurrency(estimatedTuition || 0)}</p>
         </div>
 
         <div className="pt-4 border-t border-white/20">

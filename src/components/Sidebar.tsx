@@ -34,13 +34,12 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <aside 
-      className={`bg-[#004A98] text-white flex flex-col transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-20' : 'w-64'
-      }`}
+    <aside
+      className={`bg-[#004A98] text-white flex flex-col transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'
+        }`}
       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <div className={`p-6 relative ${isCollapsed ? 'px-4' : ''}`}>
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className={`${isCollapsed ? 'w-10 h-10' : 'w-10 h-10'} bg-white rounded-lg flex items-center justify-center flex-shrink-0`}>
@@ -53,7 +52,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
             </div>
           )}
         </div>
-        
+
         {/* Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -67,7 +66,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
           )}
         </button>
       </div>
-      
+
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {navGroups.map((group) => (
@@ -91,22 +90,20 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                         e.preventDefault();
                         onPageChange(item.page);
                       }}
-                      className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${
-                        isActive
+                      className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${isActive
                           ? 'bg-white/10'
                           : 'hover:bg-white/5'
-                      } ${isCollapsed ? 'justify-center' : ''}`}
+                        } ${isCollapsed ? 'justify-center' : ''}`}
                       title={isCollapsed ? item.label : undefined}
                     >
                       {isActive && (
-                        <div className={`absolute ${isCollapsed ? 'left-0' : 'left-0'} top-1/2 -translate-y-1/2 w-1 ${
-                          isCollapsed ? 'h-10' : 'h-8'
-                        } bg-white rounded-r`}></div>
+                        <div className={`absolute ${isCollapsed ? 'left-0' : 'left-0'} top-1/2 -translate-y-1/2 w-1 ${isCollapsed ? 'h-10' : 'h-8'
+                          } bg-white rounded-r`}></div>
                       )}
                       <item.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? '' : 'mt-0.5'}`} strokeWidth={1.5} />
                       {!isCollapsed && (
                         <div className="flex-1 min-w-0">
-                          <p 
+                          <p
                             className={`truncate ${isActive ? 'text-white' : 'text-blue-100 group-hover:text-white'}`}
                             style={{ fontWeight: isActive ? 500 : 400 }}
                           >

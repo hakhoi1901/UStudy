@@ -4,7 +4,7 @@
  */
 
 
-import { logStatus, logSuccess, logWarning, logAlgo, logData, logError} from '../styleLog.js';
+import { logStatus, logSuccess, logWarning, logAlgo, logData, logError } from '../styleLog.js';
 
 class PrerequisiteGraph {
     constructor(prereqData) {
@@ -36,7 +36,7 @@ class PrerequisiteGraph {
     // Nếu môn A cần B, B cần C -> Trả về C (nếu chưa học C)
     findBlockingPrereq(courseId, passedCourses) {
         if (passedCourses.has(courseId)) return null; // Đã học rồi thì thôi
-        
+
         const reqs = this.hardConstraints[courseId] || [];
         for (const req of reqs) {
             if (!passedCourses.has(req)) {
@@ -45,7 +45,7 @@ class PrerequisiteGraph {
             }
         }
         // Không bị ai chặn -> Chính nó là môn cần học
-        return courseId; 
+        return courseId;
     }
 }
 
@@ -53,14 +53,14 @@ export class CourseRecommender {
     // Constructor giữ nguyên để tương thích với Utils.js
     constructor(studentData, openCourses, prereqs, allCoursesMeta, categories) {
         this.studentData = studentData;
-        this.openCourses = openCourses || []; 
+        this.openCourses = openCourses || [];
         this.prereqs = prereqs || [];
-        this.allCoursesMeta = allCoursesMeta || []; 
-        this.categories = categories || {}; 
+        this.allCoursesMeta = allCoursesMeta || [];
+        this.categories = categories || {};
 
         // Map kết quả: Key = CourseID, Value = status_code (Để tô màu UI)
         this.recommendationsMap = new Map();
-        
+
         // Map tra cứu nhanh metadata (Số tín chỉ, Tên môn...)
         this.coursesMetaMap = new Map();
         this.allCoursesMeta.forEach(c => this.coursesMetaMap.set(c.course_id, c));
@@ -88,7 +88,7 @@ export class CourseRecommender {
 
             const score = parseFloat(scoreRaw);
             if (!isNaN(score)) {
-                if (score >= 10.0) {
+                if (score >= 5.0) {
                     passed.add(cid);
                     passedCreditsMap.set(cid, credits);
                 } else {
@@ -126,7 +126,7 @@ export class CourseRecommender {
     // Kiểm tra nhóm tự chọn (Logic tính tín chỉ chuẩn xác)
     checkGroupRequirement(requiredCredits, courseList, passed, passedCreditsMap, studying, graph) {
         let currentCredits = 0;
-        
+
         // 1. Tính tổng tín chỉ đã đạt trong nhóm này
         courseList.forEach(cid => {
             if (passed.has(cid) || studying.has(cid)) {
@@ -143,7 +143,7 @@ export class CourseRecommender {
                 if (!passed.has(cid) && !studying.has(cid)) {
                     // Tìm môn tiên quyết chặn nó (nếu có)
                     const target = graph.findBlockingPrereq(cid, passed);
-                    
+
                     // Nếu target tìm được chưa học -> Gợi ý target đó
                     if (target && !passed.has(target) && !studying.has(target)) {
                         this.addRec(target, 'ELECTIVE_REQUIRED');
@@ -175,10 +175,10 @@ export class CourseRecommender {
         if (obj.courses && (obj.credits || obj.credits_required)) {
             // Lấy số tín chỉ yêu cầu (ưu tiên field credits_required, fallback sang credits)
             const req = obj.credits_required || obj.credits || 0;
-            
+
             this.checkGroupRequirement(
-                req, 
-                obj.courses, 
+                req,
+                obj.courses,
                 passed, passedCreditsMap, studying, graph
             );
         } else {
@@ -194,11 +194,11 @@ export class CourseRecommender {
     // HÀM CHÍNH (MAIN FUNCTION)
     recommend() {
         logAlgo("Recommender: Đang phân tích...");
-        
+
         // 1. Chuẩn bị dữ liệu
         const { passed, failed, studying, passedCreditsMap } = this.getStudentStatus();
         const graph = new PrerequisiteGraph(this.prereqs);
-        
+
         // Map để check môn có mở lớp không
         const openClassesMap = new Map();
         this.openCourses.forEach(c => openClassesMap.set(c.id, c));
@@ -245,18 +245,18 @@ export class CourseRecommender {
 
         // --- BƯỚC 5: KHỚP VỚI LỚP MỞ & TRẢ VỀ ---
         const finalOutput = [];
-        
+
         // Duyệt qua map gợi ý
         this.recommendationsMap.forEach((statusCode, cid) => {
             // Chỉ trả về nếu môn đó CÓ MỞ LỚP (nằm trong openCourses)
             if (openClassesMap.has(cid)) {
                 const courseData = openClassesMap.get(cid);
-                
+
                 // Clone object để không ảnh hưởng dữ liệu gốc
                 // Thêm thuộc tính status để UI hiển thị màu
                 finalOutput.push({
                     ...courseData,
-                    recommendationStatus: statusCode 
+                    recommendationStatus: statusCode
                 });
             }
         });
