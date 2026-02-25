@@ -1,0 +1,20 @@
+{
+  "default_price": 425000, 
+  "rates": {
+    "BAA": 425000,
+    "MTH": 639000,
+    "PHY": 639000,
+    "CHE": 639000,
+    "BIO": 639000,
+    "GEO": 639000,
+    "ENV": 639000,
+    "CSC": 857000,
+    "ENG": 425000,
+    "ADD": 425000
+  },
+  "notes": {
+    "BAA": "Đại cương & Chính trị",
+    "CSC": "Chuyên ngành CNTT (Giá cao)",
+    "BAA00021": "Thể dục (Đơn giá đặc biệt)"
+  }
+}

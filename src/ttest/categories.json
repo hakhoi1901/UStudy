@@ -1,0 +1,263 @@
+{
+  "GENERAL_EDUCATION": {
+    "total_credits_required": 56,
+    "note": "Không kể Ngoại ngữ, GDTC và GDQPAN",
+    "breakdown": {
+      "GENERAL_POLITICS": {
+        "name": "Lý luận chính trị – Pháp luật",
+        "credits": 14,
+        "mandatory": true,
+        "courses": [
+          "BAA00101",
+          "BAA00102",
+          "BAA00103",
+          "BAA00104",
+          "BAA00003",
+          "BAA00004"
+        ]
+      },
+      "GENERAL_SOCIAL": {
+        "name": "Khoa học xã hội – Kinh tế – Kỹ năng",
+        "credits": 2,
+        "mandatory": false,
+        "note": "Chọn 1 trong 3",
+        "courses": [
+          "BAA00005",
+          "BAA00006",
+          "BAA00007"
+        ]
+      },
+      "GENERAL_MATH_SCIENCE": {
+        "name": "Toán – Khoa học tự nhiên – Môi trường",
+        "total_credits_required": 36, 
+        "breakdown": {
+          "MATH_MANDATORY": {
+            "name": "Toán bắt buộc",
+            "credits_required": 24,
+            "courses": ["MTH00021", "MTH00022", "MTH00035", "MTH00044", "MTH00045"]
+          },
+          "MATH_ELECTIVE": {
+            "name": "Toán tự chọn",
+            "credits_required": 4,
+            "courses": ["MTH00050", "MTH00051", "MTH00052", "MTH00053"]
+          },
+          "SCIENCE": {
+            "name": "Khoa học tự nhiên",
+            "credits_required": 6,
+            "courses": ["CHE00001", "PHY00001", "BIO00081"]
+          },
+          "ENVIRONMENT": {
+            "name": "Môi trường",
+            "credits_required": 2,
+            "courses": ["ENV00001", "ENV00003", "GEO00002"]
+          }
+        }
+      },
+      "GENERAL_ENGLISH": {
+        "name": "Ngoại ngữ (Anh văn)",
+        "credits": 12,
+        "mandatory": false,
+        "note": "Không tính vào điểm TB và TC tích lũy. SV đạt chuẩn ngoại ngữ đầu ra không cần đăng ký",
+        "courses": [
+          "ADD00031",
+          "ADD00032",
+          "ADD00033",
+          "ADD00034"
+        ]
+      },
+      "GENERAL_PE": {
+        "name": "Giáo dục thể chất",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm TB, tính vào TC tích lũy",
+        "courses": [
+          "BAA00021",
+          "BAA00022"
+        ]
+      },
+      "GENERAL_DEFENSE": {
+        "name": "Giáo dục quốc phòng – An ninh",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm TB, tính vào TC tích lũy",
+        "courses": [
+          "BAA00030"
+        ]
+      }
+    }
+  },
+  "FOUNDATION": {
+    "name": "Cơ Sở Ngành",
+    "total_credits_required": 38,
+    "mandatory": true,
+    "courses": [
+      "CSC10012",
+      "CSC10003",
+      "CSC10004",
+      "CSC10014",
+      "CSC10006",
+      "CSC10007",
+      "CSC10008",
+      "CSC10009",
+      "CSC13002",
+      "CSC14003"
+    ]
+  },
+  "MAJOR_NETWORK": {
+    "name": "Chuyên ngành Mạng máy tính",
+    "total_credits_required": 34,
+    "breakdown": {
+      "MANDATORY": {
+        "credits": 16,
+        "min_courses": 4
+      },
+      "ELECTIVE": {
+        "credits": 8,
+        "min_courses": 2
+      },
+      "FREE_ELECTIVE": {
+        "credits": 10
+      }
+    },
+    "courses": [
+      "CSC11002",
+      "CSC11003",
+      "CSC11004",
+      "CSC11006",
+      "CSC11007",
+      "CSC15001",
+      "CSC10107",
+      "CSC11106",
+      "CSC11115",
+      "CSC11116",
+      "CSC11117",
+      "CSC11118",
+      "CSC11120",
+      "CSC15003",
+      "CSC15005",
+      "CSC14112",
+      "CSC14113",
+      "CSC14117",
+      "CSC14007",
+      "CSC15002",
+      "CSC15004",
+      "CSC15006",
+      "CSC15007",
+      "CSC15009",
+      "CSC15011",
+      "CSC15012",
+      "CSC15109",
+      "CSC15010",
+      "CSC15102",
+      "CSC15107",
+      "CSC15108",
+      "CSC16001",
+      "CSC16002",
+      "CSC16003",
+      "CSC16004",
+      "CSC16005",
+      "CSC16101",
+      "CSC16102",
+      "CSC16105",
+      "CSC16106",
+      "CSC16107",
+      "CSC16109",
+      "CSC16113",
+      "CSC16114",
+      "CSC10108",
+      "CSC14119",
+      "CSC17001",
+      "CSC17104",
+      "CSC17102",
+      "CSC17103",
+      "CSC17106",
+      "CSC11111",
+      "CSC11112",
+      "CSC11119",
+      "CSC11114",
+      "CSC12112",
+      "CSC12113",
+      "CSC13119",
+      "CSC13120",
+      "CSC13121",
+      "CSC13122",
+      "CSC12002",
+      "CSC12003",
+      "CSC12004"
+    ]
+  },
+  "MAJOR_IT": {
+    "name": "Chuyên ngành Công nghệ Thông tin",
+    "total_credits_required": 34,
+    "breakdown": {
+      "MANDATORY": {
+        "credits": 16,
+        "min_courses": 4
+      },
+      "ELECTIVE": {
+        "credits": 8,
+        "min_courses": 2
+      },
+      "FREE_ELECTIVE": {
+        "credits": 10
+      }
+    },
+    "courses": [
+      "CSC11114",
+      "CSC12112",
+      "CSC12113",
+      "CSC13119",
+      "CSC13120",
+      "CSC13121",
+      "CSC13122",
+      "CSC17001",
+      "CSC17104",
+      "CSC15107",
+      "CSC15012",
+      "CSC15002",
+      "CSC15010",
+      "CSC12001",
+      "CSC16003",
+      "CSC16106",
+      "CSC16107",
+      "CSC16109"
+    ]
+  },
+  "GRADUATION": {
+    "name": "Tốt nghiệp",
+    "total_credits_required": 10,
+    "options": [
+      {
+        "type": "THESIS",
+        "credits": 10,
+        "courses": [
+          "CSC10251"
+        ]
+      },
+      {
+        "type": "INTERNSHIP",
+        "credits": 10,
+        "courses": [
+          "CSC10252"
+        ]
+      },
+      {
+        "type": "PROJECT",
+        "credits": 10,
+        "courses": [
+          "CSC10204",
+          "CSC11111",
+          "CSC11112",
+          "CSC11119",
+          "CSC10202",
+          "CSC10203",
+          "CSC13123",
+          "CSC13116",
+          "CSC16110",
+          "CSC16111",
+          "CSC16112"
+        ]
+      }
+    ]
+  }
+}

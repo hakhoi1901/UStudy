@@ -1,0 +1,662 @@
+[
+  {
+    "course_id": "CSC00002",
+    "prereq_id": "CSC00001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10002",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10003",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10004",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10006",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10007",
+    "prereq_id": "CSC10005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC10105",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC1002",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11003",
+    "prereq_id": "CSC10007",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11003",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11004",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11005",
+    "prereq_id": "CSC11004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11005",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11103",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11106",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11107",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC11113",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12001",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12002",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12003",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12004",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC 12005",
+    "prereq_id": "CSC12004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12102",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12103",
+    "prereq_id": "CSC12003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12105",
+    "prereq_id": "CSC12003 CSC12004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12106",
+    "prereq_id": "CSC12004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12107",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12108",
+    "prereq_id": "CSC12004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12109",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12109",
+    "prereq_id": "Shadowed box",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC12110",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC12111",
+    "prereq_id": "CSC12002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC13001",
+    "prereq_id": "CSC10003",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13002",
+    "prereq_id": "CSC10002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13002",
+    "prereq_id": "CSC10006",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13003",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13005",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13006",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13007",
+    "prereq_id": "CSC10002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13008",
+    "prereq_id": "CSC10002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13008",
+    "prereq_id": "CSC10006",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13009",
+    "prereq_id": "CSC10002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13009",
+    "prereq_id": "CSC10006",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13010",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13101",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13102",
+    "prereq_id": "CSC10001",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13103",
+    "prereq_id": "CSC13102",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13106",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13107",
+    "prereq_id": "CSC10003",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13108",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13112",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13114",
+    "prereq_id": "CSC13008",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13115",
+    "prereq_id": "CSC13008",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13116",
+    "prereq_id": "CSC13002",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13117",
+    "prereq_id": "CSC13007",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC13118",
+    "prereq_id": "CSC13009",
+    "type": "PREREQUISITE"
+  },
+  {
+    "course_id": "CSC14001",
+    "prereq_id": "MTH00041",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14001",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14002",
+    "prereq_id": "CSC14003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14003",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14004",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14005",
+    "prereq_id": "CSC14003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14006",
+    "prereq_id": "CSC14003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14007",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14007",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14101",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14109",
+    "prereq_id": "CSC14003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14112",
+    "prereq_id": "CSC16005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14113",
+    "prereq_id": "CSC14001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14114",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14114",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14115",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14115",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14116",
+    "prereq_id": "CSC14120",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14117",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14118",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14119",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC14120",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15001",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15001",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15002",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15002",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15003",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15004",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15005",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15006",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15007",
+    "prereq_id": "MTH00040",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15007",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15008",
+    "prereq_id": "CSC15006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15009",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15009",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15010",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15010",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15102",
+    "prereq_id": "CSC10006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15103",
+    "prereq_id": "CSC15007",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15103",
+    "prereq_id": "CSC15004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15103",
+    "prereq_id": "CSC14005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15104",
+    "prereq_id": "CSC10007",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15104",
+    "prereq_id": "CSC10008",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15105",
+    "prereq_id": "CSC15006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15106",
+    "prereq_id": "CSC15005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15106",
+    "prereq_id": "CSC15003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15107",
+    "prereq_id": "MTH00040",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15107",
+    "prereq_id": "CSC15007",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15201",
+    "prereq_id": "CSC15005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15201",
+    "prereq_id": "CSC15003",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC15202",
+    "prereq_id": "CSC15006",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16001",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16002",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16003",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16004",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16005",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16101",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16102",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16102",
+    "prereq_id": "CSC16005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16104",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16105",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16106",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16107",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16109",
+    "prereq_id": "CSC10001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16110",
+    "prereq_id": "CSC16001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16111",
+    "prereq_id": "CSC16004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC16112",
+    "prereq_id": "CSC16005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17001",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17101",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17102",
+    "prereq_id": "CSC14005",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17103",
+    "prereq_id": "CSC14004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17104",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17106",
+    "prereq_id": "CSC10004",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "CSC17107",
+    "prereq_id": "CSC17001",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "MTH00050",
+    "prereq_id": "CSC10002",
+    "type": "PREVIOUS"
+  },
+  {
+    "course_id": "PHY00081",
+    "prereq_id": "Light gray rectangle",
+    "type": "PREREQUISITE"
+  }
+]
