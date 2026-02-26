@@ -1,5 +1,6 @@
 export const categories = {
   "GENERAL_EDUCATION": {
+    "name": "Giáo dục đại cương",
     "total_credits_required": 56,
     "note": "Không kể Ngoại ngữ, GDTC và GDQPAN",
     "breakdown": {

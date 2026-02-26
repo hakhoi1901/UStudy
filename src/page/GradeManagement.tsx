@@ -220,7 +220,7 @@ export function GradeManagement() {
 
                     {/* Mã môn học */}
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {course.code}
+                      {course.id}
                     </td>
 
                     {/* Tên môn học */}

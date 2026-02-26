@@ -3,7 +3,7 @@
 */
 
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Calendar, Info, AlertTriangle, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Calendar, Info, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Book } from 'lucide-react';
 import { CourseRow } from '../components/CourseRow';
 import { SelectionBasketVi } from '../components/SelectionBasketVi';
 import { PrerequisiteFlowchart } from '../components/PrerequisiteFlowchart';
@@ -14,9 +14,12 @@ import { Filter, Search } from 'lucide-react';
 import { weekDays, timePeriods, type ClassSection } from '../data/timetableData';
 import { NoDataCard } from '../components/ui/nodataCard';
 import { STORAGE_KEYS } from '../config/storageKeys';
+import { courses as courses_cntt } from '../assets/data/courses';
+import { CourseRowTrainingProgram } from '../components/CourseRowTrainingProgram';
+import { categories } from '../assets/data/categories';
 
 export function IntegratedStudyRoadmap() {
-  const [activeTab, setActiveTab] = useState<'selection' | 'calendar'>('selection');
+  const [activeTab, setActiveTab] = useState<'selection' | 'calendar' | 'trainingProgram'>('selection');
   const [viewMode, setViewMode] = useState<'recommend' | 'all'>('recommend');
   const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
     try {
@@ -71,17 +74,17 @@ export function IntegratedStudyRoadmap() {
     // Môn bắt buộc
     core: currentSource.core.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.code.toLowerCase().includes(searchTerm.toLowerCase())
+      c.id.toLowerCase().includes(searchTerm.toLowerCase())
     ),
     // Môn chuyên ngành
     major: currentSource.major.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.code.toLowerCase().includes(searchTerm.toLowerCase())
+      c.id.toLowerCase().includes(searchTerm.toLowerCase())
     ),
     // Môn tự chọn
     electives: currentSource.electives.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.code.toLowerCase().includes(searchTerm.toLowerCase())
+      c.id.toLowerCase().includes(searchTerm.toLowerCase())
     ),
   };
 
@@ -132,6 +135,17 @@ export function IntegratedStudyRoadmap() {
         {/* Thanh điều hướng */}
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
+            onClick={() => setActiveTab('trainingProgram')}
+            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'trainingProgram'
+              ? 'border-[#004A98] text-[#004A98]'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+          >
+            <Book className="w-5 h-5" />
+            <span className="font-medium">Chương trình đào tạo</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('selection')}
             className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'selection'
               ? 'border-[#004A98] text-[#004A98]'
@@ -141,6 +155,7 @@ export function IntegratedStudyRoadmap() {
             <ShoppingCart className="w-5 h-5" />
             <span className="font-medium">Chọn môn & Học phí</span>
           </button>
+
           <button
             onClick={() => setActiveTab('calendar')}
             className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'calendar'
@@ -158,7 +173,155 @@ export function IntegratedStudyRoadmap() {
           </button>
         </div>
 
-        {/* Tab 1: Chọn môn học */}
+        {/* Tab 1: */}
+        {activeTab === 'trainingProgram' && (
+          <div>{/* Tìm kiếm và lọc */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên môn học hoặc mã môn..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                />
+              </div>
+              <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <Filter className="w-5 h-5 text-gray-600" />
+                <span className="text-gray-700 text-sm">Lọc</span>
+              </button>
+            </div>
+
+            {/* Thông tin */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-blue-900 font-medium">
+                  Chương trình đào tạo toàn khóa
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Danh sách tổng hợp các môn học thuộc chương trình đào tạo phân theo từng nhóm. Bạn có thể tra cứu thông tin số tín chỉ, số tiết và khối lượng của từng môn học.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {Object.entries(categories).map(([key, category]) => {
+                // Recursive function to render a category and its nested children
+                const renderCategory = (cat: any, depth: number = 0): React.ReactNode => {
+                  let hasMatchingCourses = false;
+
+                  const getCourses = (courseIds: string[]) => {
+                    return courseIds
+                      .map((id) => courses_cntt.find((c) => c.course_id === id))
+                      .filter((c): c is NonNullable<typeof c> => {
+                        if (!c) return false;
+                        if (!searchTerm) return true;
+                        return (
+                          c.course_name_vi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.course_id.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                      });
+                  };
+
+                  let coursesToRender: any[] = [];
+                  if (cat.courses) {
+                    coursesToRender = getCourses(cat.courses);
+                    if (coursesToRender.length > 0) hasMatchingCourses = true;
+                  }
+
+                  let nestedCategories: React.ReactNode[] = [];
+                  if (cat.breakdown) {
+                    nestedCategories = Object.entries(cat.breakdown).map(([subKey, subCat]) => {
+                      const rendered = renderCategory(subCat, depth + 1);
+                      if (rendered) hasMatchingCourses = true;
+                      return <div key={subKey}>{rendered}</div>;
+                    });
+                  }
+
+                  let optionsRendered: React.ReactNode[] = [];
+                  if (cat.options) {
+                    optionsRendered = cat.options.map((opt: any, idx: number) => {
+                      const optCourses = getCourses(opt.courses);
+                      if (optCourses.length > 0) hasMatchingCourses = true;
+                      if (optCourses.length === 0) return null;
+                      return (
+                        <div key={idx} className="mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h5 className="font-medium text-gray-800 text-sm">
+                              Lựa chọn {idx + 1} ({opt.type}): {opt.credits} TC
+                            </h5>
+                          </div>
+                          <div className="space-y-2">
+                            {optCourses.map((c) => (
+                              <CourseRowTrainingProgram key={c.course_id} course={c} />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    });
+                  }
+
+
+                  if (!hasMatchingCourses) return null;
+
+                  return (
+                    <div className={`mb-4 ${depth === 0 ? 'bg-white p-6 rounded-xl border border-gray-200 shadow-sm' : 'pl-4 border-l-2 border-gray-100 mt-4'}`}>
+                      <div className="mb-4">
+                        <div className="flex items-center gap-3">
+                          {depth === 0 ? (
+                            <h3 className="text-lg font-bold text-gray-900">{cat.name || 'Danh mục chưa tên'}</h3>
+                          ) : depth === 1 ? (
+                            <h4 className="text-base font-bold text-gray-800">{cat.name || 'Nhóm học phần'}</h4>
+                          ) : (
+                            <h5 className="text-sm font-semibold text-gray-800">{cat.name || 'Nhóm con'}</h5>
+                          )}
+
+                          {(cat.total_credits_required || cat.credits || cat.credits_required) && (
+                            <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
+                              {cat.total_credits_required || cat.credits || cat.credits_required} Tín chỉ
+                            </span>
+                          )}
+                          {cat.mandatory && (
+                            <span className="px-2 py-0.5 bg-red-50 text-red-600 border border-red-200 text-xs rounded-md font-medium">Bắt buộc</span>
+                          )}
+                        </div>
+                        {cat.note && <p className="text-sm text-gray-500 mt-1 italic">{cat.note}</p>}
+                      </div>
+
+                      {coursesToRender.length > 0 && (
+                        <div className="space-y-2 mb-4">
+                          {coursesToRender.map((c) => (
+                            <CourseRowTrainingProgram key={c.course_id} course={c} />
+                          ))}
+                        </div>
+                      )}
+
+                      {optionsRendered.length > 0 && (
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <p className="text-sm font-medium text-gray-700 mb-3">Tùy chọn hoàn thành:</p>
+                          {optionsRendered}
+                        </div>
+                      )}
+
+                      {nestedCategories.length > 0 && (
+                        <div className="mt-2">
+                          {nestedCategories}
+                        </div>
+                      )}
+                    </div>
+                  );
+                };
+
+                return <div key={key}>{renderCategory(category)}</div>;
+              })}
+            </div>
+
+          </div>
+        )}
+
+        {/* Tab 2: Chọn môn học */}
         {activeTab === 'selection' && (
           <div>
             {/* Tìm kiếm và lọc */}
@@ -287,7 +450,7 @@ export function IntegratedStudyRoadmap() {
           </div>
         )}
 
-        {/* Tab 2: Lịch trực quan */}
+        {/* Tab 3: Lịch trực quan */}
         {activeTab === 'calendar' && (
           <div>
             {selectedCourses.size === 0 ? (

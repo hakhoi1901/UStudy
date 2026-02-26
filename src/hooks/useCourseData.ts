@@ -34,10 +34,10 @@ export function useCourseData() {
 
     // Tính toán Recommender bên trong useMemo để tránh re-render nhiều lần
     const courseData = useMemo(() => {
-        setIsReady(false);
+        setIsReady(false)
 
         // Đọc dữ liệu từ localStorage
-        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null)
         const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
 
         if (!studentDb || !studentDb.grades || courseDb.length === 0) {
