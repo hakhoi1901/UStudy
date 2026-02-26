@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { Bookmark, MousePointerClick } from 'lucide-react';
 import bookmarkletSource from '../logic/Bookmarklet.js?raw';
+import { APP_CONFIG } from '../config/appConfig';
 
 interface Props {
     className?: string;
@@ -14,7 +15,23 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
 
     const bookmarkletHref = useMemo(() => {
         if (!bookmarkletSource) return '#';
-        const encodedCode = encodeURIComponent(bookmarkletSource)
+
+        // Inject the config object dynamically into the bookmarklet
+        let processedSource = bookmarkletSource;
+        const configToInject = {
+            URL_DIEM: "/SinhVien.aspx?pid=211",
+            URL_LICHTHI: "/SinhVien.aspx?pid=180",
+            URL_HOCPHI: "/SinhVien.aspx?pid=331",
+            URL_LOPMO: "/SinhVien.aspx?pid=327",
+            TARGET_YEAR: APP_CONFIG.DEFAULT_TARGET_YEAR,
+            TARGET_SEM: APP_CONFIG.DEFAULT_TARGET_SEM
+        };
+        processedSource = processedSource.replace(
+            `window.__HCMUS_PORTAL_CONFIG__`,
+            JSON.stringify(configToInject)
+        );
+
+        const encodedCode = encodeURIComponent(processedSource)
             .replace(/'/g, '%27')
             .replace(/\(/g, '%28')
             .replace(/\)/g, '%29');

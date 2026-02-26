@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShoppingCart, Calendar, Info, AlertTriangle, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CourseRow } from '../components/CourseRow';
 import { SelectionBasketVi } from '../components/SelectionBasketVi';
@@ -8,18 +8,31 @@ import { useCourseData } from '../hooks/useCourseData';
 import { useScheduleSolver } from '../hooks/useScheduleSolver';
 import { Filter, Search } from 'lucide-react';
 import { weekDays, timePeriods, type ClassSection } from '../data/timetableData';
-import { BookmarkletButton } from '../components/BookmarkletButton';
 import { NoDataCard } from '../components/ui/nodataCard';
+import { STORAGE_KEYS } from '../config/storageKeys';
 
 
 
 export function IntegratedStudyRoadmap() {
   const [activeTab, setActiveTab] = useState<'selection' | 'calendar'>('selection');
   const [viewMode, setViewMode] = useState<'recommend' | 'all'>('recommend');
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
+  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SELECTED_BASKET);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return new Set(parsed);
+      }
+    } catch { }
+    return new Set();
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [showFlowchart, setShowFlowchart] = useState(false);
   const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SELECTED_BASKET, JSON.stringify(Array.from(selectedCourses)));
+  }, [selectedCourses]);
 
   // Lấy data động từ localStorage qua Recommender
   const { recommended, all, isReady, hasData } = useCourseData();

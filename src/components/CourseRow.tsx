@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Info, GitBranch, ChevronDown, ChevronUp } from 'lucide-react';
-import { Course } from '../data/courseData';
+import type { Course } from '../data/courseData';
 
 interface CourseRowProps {
   course: Course;
@@ -15,15 +15,14 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
   return (
     <div className="group">
       <div
-        className={`flex items-center gap-3 px-4 py-2.5 border rounded-lg transition-all ${
-          course.needsRetake
+        className={`flex items-center gap-3 px-4 py-2.5 border rounded-lg transition-all ${course.needsRetake
             ? 'border-red-200 bg-red-50 hover:bg-red-100'
             : isSelected
-            ? 'border-[#004A98] bg-blue-50 shadow-sm'
-            : course.isAvailable
-            ? 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300'
-            : 'border-gray-200 bg-gray-50 opacity-60'
-        }`}
+              ? 'border-[#004A98] bg-blue-50 shadow-sm'
+              : course.isAvailable
+                ? 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300'
+                : 'border-gray-200 bg-gray-50 opacity-60'
+          }`}
       >
         {/* Checkbox */}
         <input

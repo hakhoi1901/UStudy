@@ -2,31 +2,26 @@ import { Bell, LogOut, ChevronDown, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStudentGradeData } from '../hooks/useStudentGradeData';
 import { BookmarkletButton } from './BookmarkletButton';
+import { APP_CONFIG } from '../config/appConfig';
+import { STORAGE_KEYS } from '../config/storageKeys';
 
 export function Header() {
   const [studentName, setStudentName] = useState('');
   const [notificationCount] = useState(3);
-  const [selectedSemester, setSelectedSemester] = useState('Học kỳ 2, 2025-2026');
+  const [selectedSemester, setSelectedSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
 
   const { hasData } = useStudentGradeData();
 
   useEffect(() => {
-    const studentData = localStorage.getItem('student_db_full');
+    const studentData = localStorage.getItem(STORAGE_KEYS.STUDENT_DB);
     if (studentData) {
       const student = JSON.parse(studentData);
-      setStudentName(student.mssv);
+      setStudentName(student.name);
     }
   }, [hasData]);
 
-  const semesters = [
-    'Học kỳ 1, 2025-2026',
-    'Học kỳ 2, 2025-2026',
-    'Học kỳ 3, 2025-2026',
-    'Học kỳ 1, 2024-2025',
-    'Học kỳ 2, 2024-2025',
-    'Học kỳ 3, 2024-2025',
-  ];
+  const semesters = APP_CONFIG.AVAILABLE_SEMESTERS;
 
   const handleLogOut = () => {
     // Clear local storage
@@ -37,7 +32,7 @@ export function Header() {
 
   const handleLogin = () => {
     // Open portal in popup window to allow the bookmarklet access
-    const PORTAL_URL = 'https://new-portal1.hcmus.edu.vn/Login.aspx?ReturnUrl=%2fSinhVien.aspx%3fpid%3d211&pid=211';
+    const PORTAL_URL = APP_CONFIG.PORTAL_LOGIN_URL;
     window.open(PORTAL_URL, '_blank');
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { CourseRecommender } from '../logic/tkb/Recommender';
+import { STORAGE_KEYS } from '../config/storageKeys';
 import { courses as allCoursesMeta } from '../assets/data/courses';
 import { prerequisites } from '../assets/data/prerequisites';
 import { categories } from '../assets/data/categories';
@@ -36,8 +37,8 @@ export function useCourseData() {
         setIsReady(false);
 
         // Đọc dữ liệu từ localStorage
-        const studentDb = readFromStorage<any>('student_db_full', null);
-        const courseDb = readFromStorage<any[]>('course_db_offline', []);
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+        const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
 
         if (!studentDb || !studentDb.grades || courseDb.length === 0) {
             setHasData(false);

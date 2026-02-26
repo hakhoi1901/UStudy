@@ -1,7 +1,6 @@
-
 // Hàm encode mới hỗ trợ 2 Phase
 // Tham số thứ 2 (subjectID) dùng để check xem môn này thuộc phase nào
-export function encodeScheduleToMask(scheduleInput, subjectID = "") {
+export function encodeScheduleToMask(scheduleInput: string | string[], subjectID = "") {
     // Mở rộng mảng mask lên 6 phần tử
     let mask = [0, 0, 0, 0, 0, 0];
     const scheduleArr = Array.isArray(scheduleInput) ? scheduleInput : [scheduleInput];
@@ -14,7 +13,7 @@ export function encodeScheduleToMask(scheduleInput, subjectID = "") {
         if (SPLIT_SEMESTER_CONFIG.PHASE_1.some(id => cleanID.includes(id))) {
             phase = 1;
         }
-        // Check Phase 2 (Nếu lỡ trùng cả 2 list thì ưu tiên phase 2, hoặc bạn có thể sửa logic)
+        // Check Phase 2 (Nếu lỡ trùng cả 2 list thì ưu tiên phase 2)
         else if (SPLIT_SEMESTER_CONFIG.PHASE_2.some(id => cleanID.includes(id))) {
             phase = 2;
         }

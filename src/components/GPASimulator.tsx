@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TrendingUp, Award, Target } from 'lucide-react';
+import { ACADEMIC_RULES } from '../config/academic';
 
 interface CourseGrade {
   id: string;
@@ -12,7 +13,7 @@ interface CourseGrade {
 
 export function GPASimulator() {
   const [courses, setCourses] = useState<CourseGrade[]>([] as CourseGrade[]);
-  const [currentGPA] = useState(3.68);
+  const [currentGPA] = useState(ACADEMIC_RULES.DEFAULT_SIMULATOR_GPA);
 
   const handleGradeChange = (id: string, value: string) => {
     setCourses(courses.map(course =>
@@ -21,18 +22,22 @@ export function GPASimulator() {
   };
 
   const calculateProjectedGPA = () => {
-    const validCourses = courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD'));
+    const validCourses = courses.filter(c =>
+      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+    );
     const totalPoints = validCourses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
     const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
     return totalCredits > 0 ? totalPoints / totalCredits : 0;
   };
 
   const projectedGPA = calculateProjectedGPA();
-  const distinctionTarget = 3.6;
-  const veryGoodTarget = 3.2;
+  const distinctionTarget = ACADEMIC_RULES.GPA_TARGETS.DISTINCTION;
+  const veryGoodTarget = ACADEMIC_RULES.GPA_TARGETS.VERY_GOOD;
 
   const getGradePointsNeeded = (targetGPA: number) => {
-    const validCourses = courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD'));
+    const validCourses = courses.filter(c =>
+      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+    );
     const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
     const neededPoints = targetGPA * totalCredits;
     const currentPoints = validCourses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
@@ -235,7 +240,9 @@ export function GPASimulator() {
                   <strong>Total</strong>
                 </td>
                 <td className="px-6 py-4 text-sm text-center">
-                  <strong>{courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD')).reduce((sum, c) => sum + c.credits, 0)}</strong>
+                  <strong>{courses.filter(c =>
+                    !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+                  ).reduce((sum, c) => sum + c.credits, 0)}</strong>
                 </td>
                 <td colSpan={2} className="px-6 py-4 text-sm text-center text-gray-900">
                   <strong>Projected GPA</strong>

@@ -8,6 +8,8 @@ import { runScheduleSolver } from '../logic/tkb/Scheduler';
 import { Bitset } from '../logic/tkb/Bitset';
 import type { ClassSection } from '../data/timetableData';
 import type { Course } from '../data/courseData';
+import { STORAGE_KEYS } from '../config/storageKeys';
+import { UI_COLORS } from '../config/theme';
 
 // Tải dữ liệu DB tĩnh (fallback khi chưa có course_db_offline)
 import courseDbJson from '../logic/tkb/Course_db.json';
@@ -25,7 +27,7 @@ export interface SolverPreferences {
     noGaps?: boolean;
 }
 
-const PALETTE = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316', '#14B8A6'];
+const PALETTE = UI_COLORS.SCHEDULE_PALETTE;
 
 /**
  * Giải mã Bitset mask [u32, u32, u32, u32] thành danh sách ClassSection.
@@ -115,7 +117,7 @@ export function useScheduleSolver() {
         setTimeout(() => {
             try {
                 // Đọc dữ liệu từ localStorage (từ Bookmarklet), nếu không có thì dùng file tĩnh
-                const courseDb = readFromStorage<any[]>('course_db_offline', [] as any[]);
+                const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
                 const dbData = courseDb && courseDb.length > 0 ? courseDb : (courseDbJson as any[]);
 
                 const userWants = selectedCourses.map(c => c.code);

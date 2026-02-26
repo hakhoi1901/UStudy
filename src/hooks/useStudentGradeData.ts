@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
+import { STORAGE_KEYS } from '../config/storageKeys';
+import { ACADEMIC_RULES } from '../config/academic';
 
 export interface CourseGrade {
     id: string; // The original id from string, e.g. '1'
@@ -31,12 +33,12 @@ export function useStudentGradeData() {
     const gradeData = useMemo(() => {
         setIsReady(false);
 
-        const studentDb = readFromStorage<any>('student_db_full', null);
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
         if (!studentDb || !studentDb.grades) {
             setHasData(false);
             setIsReady(true);
-            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: 140 };
+            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_REQUIRED_CREDITS };
         }
 
         setHasData(true);
@@ -75,9 +77,9 @@ export function useStudentGradeData() {
                     score = parsedScore;
 
                     // IMPORTANT: Physical Education (BAA) and National Defense (ADD) logic
-                    const isExcludedFromGPA = code.startsWith('BAA0002') || code.startsWith('ADD0003') || code.startsWith('BAA0003');
+                    const isExcludedFromGPA = ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => code.startsWith(prefix));
 
-                    if (score >= 5.0) { // Assuming 5.0 is pass mark
+                    if (score >= ACADEMIC_RULES.PASS_GRADE_DECIMAL) { // Assuming 5.0 is pass mark
                         status = 'passed';
 
                         // Accumulate credits if it's not physical education/national defense
@@ -117,7 +119,7 @@ export function useStudentGradeData() {
         });
 
         const currentGPA = totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA) : 0;
-        const totalCredits = 140; // Hardcoded requirement, can be dynamic if found in future config
+        const totalCredits = ACADEMIC_RULES.TOTAL_REQUIRED_CREDITS; // Hardcoded requirement, can be dynamic if found in future config
 
         setIsReady(true);
         return {
