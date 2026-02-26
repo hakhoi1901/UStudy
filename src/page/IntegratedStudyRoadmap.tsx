@@ -1,3 +1,7 @@
+/* intergratedStudyRoadmap.tsx
+** Trang Lộ trình học tập tích hợp
+*/
+
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Calendar, Info, AlertTriangle, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CourseRow } from '../components/CourseRow';
@@ -10,8 +14,6 @@ import { Filter, Search } from 'lucide-react';
 import { weekDays, timePeriods, type ClassSection } from '../data/timetableData';
 import { NoDataCard } from '../components/ui/nodataCard';
 import { STORAGE_KEYS } from '../config/storageKeys';
-
-
 
 export function IntegratedStudyRoadmap() {
   const [activeTab, setActiveTab] = useState<'selection' | 'calendar'>('selection');
@@ -34,18 +36,18 @@ export function IntegratedStudyRoadmap() {
     localStorage.setItem(STORAGE_KEYS.SELECTED_BASKET, JSON.stringify(Array.from(selectedCourses)));
   }, [selectedCourses]);
 
-  // Lấy data động từ localStorage qua Recommender
+  // Lấy data từ localStorage qua Recommender
   const { recommended, all, isReady, hasData } = useCourseData();
 
   // Bộ xếp lịch di truyền
   const { solve, solving, options, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
 
-  // Nguồn dữ liệu tuỳ thuộc vào chế độ xem (khuyên dùng hay tất cả lớp mở)
+  // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
   const currentSource = viewMode === 'recommend' ? recommended : all;
 
-  // Dùng để render rổ rổ rổ rổ
   const allCurrentCourses = [...currentSource.core, ...currentSource.major, ...currentSource.electives];
 
+  // Xử lý chọn môn học
   const handleCourseToggle = (courseId: string) => {
     setSelectedCourses(prev => {
       const newSet = new Set(prev);
@@ -58,20 +60,25 @@ export function IntegratedStudyRoadmap() {
     });
   };
 
+  // Xử lý hiển thị sơ đồ
   const handleShowFlowchart = (course: Course) => {
     setFlowchartCourse(course);
     setShowFlowchart(true);
   };
 
+  // Lọc môn học
   const filteredCourses = {
+    // Môn bắt buộc
     core: currentSource.core.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
     ),
+    // Môn chuyên ngành
     major: currentSource.major.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
     ),
+    // Môn tự chọn
     electives: currentSource.electives.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
@@ -82,7 +89,7 @@ export function IntegratedStudyRoadmap() {
   const confirmedSections: ClassSection[] = currentSections;
 
 
-  // Check conflicts for a section
+  // Kiểm tra xung đột thời gian
   const getConflicts = (section: ClassSection): ClassSection[] => {
     return confirmedSections.filter(confirmed => {
       if (confirmed.id === section.id) return false;
@@ -94,14 +101,16 @@ export function IntegratedStudyRoadmap() {
     });
   };
 
+  // Tải dữ liệu
   if (!isReady) {
     return (
-      <div className="flex h-[calc(100vh-100px)] items-center justify-center"> {/* Changed h-full to h-[calc(100vh-100px)] */}
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
       </div>
     );
   }
 
+  // Không có dữ liệu
   if (!hasData) {
     return <div>
       <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
@@ -110,16 +119,17 @@ export function IntegratedStudyRoadmap() {
     </div>;
   }
 
+  // Giao diện chính
   return (
     <div className="flex h-full gap-6">
-      {/* Main Content */}
+      {/* Nội dung chính */}
       <div className="flex-1 overflow-y-auto">
         <div className="mb-6">
           <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
           <p className="text-gray-600">Chọn môn học và xem lịch trực quan với phát hiện xung đột thời gian.</p>
         </div>
 
-        {/* Dual Tab Navigation */}
+        {/* Thanh điều hướng */}
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('selection')}
@@ -148,10 +158,10 @@ export function IntegratedStudyRoadmap() {
           </button>
         </div>
 
-        {/* Tab 1: Course Selection */}
+        {/* Tab 1: Chọn môn học */}
         {activeTab === 'selection' && (
           <div>
-            {/* Search and Filter */}
+            {/* Tìm kiếm và lọc */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -169,7 +179,7 @@ export function IntegratedStudyRoadmap() {
               </button>
             </div>
 
-            {/* Info Banner */}
+            {/* Thông tin */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
@@ -182,7 +192,7 @@ export function IntegratedStudyRoadmap() {
               </div>
             </div>
 
-            {/* View Mode Toggle */}
+            {/* Chuyển đổi chế độ xem */}
             <div className="mb-6 flex items-center justify-between p-1 bg-gray-100 rounded-lg max-w-sm">
               <button
                 onClick={() => setViewMode('recommend')}
@@ -212,7 +222,7 @@ export function IntegratedStudyRoadmap() {
               </button>
             </div>
 
-            {/* Core IT Subjects */}
+            {/* Môn học cơ sở ngành */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-gray-900 font-semibold">Môn học cơ sở ngành</h3>
@@ -233,7 +243,7 @@ export function IntegratedStudyRoadmap() {
               </div>
             </div>
 
-            {/* Major-Specific Courses */}
+            {/* Môn học chuyên ngành */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-gray-900 font-semibold">Môn học chuyên ngành</h3>
@@ -254,7 +264,7 @@ export function IntegratedStudyRoadmap() {
               </div>
             </div>
 
-            {/* Electives */}
+            {/* Môn học tự chọn */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-gray-900 font-semibold">Môn học tự chọn</h3>
@@ -277,7 +287,7 @@ export function IntegratedStudyRoadmap() {
           </div>
         )}
 
-        {/* Tab 2: Visual Calendar */}
+        {/* Tab 2: Lịch trực quan */}
         {activeTab === 'calendar' && (
           <div>
             {selectedCourses.size === 0 ? (
@@ -296,7 +306,7 @@ export function IntegratedStudyRoadmap() {
               </div>
             ) : (
               <div>
-                {/* Solve Controls */}
+                {/* Điều khiển */}
                 <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between gap-3">
                   <div className="flex-1">
                     <p className="text-sm text-blue-900 font-medium mb-1">
@@ -323,14 +333,14 @@ export function IntegratedStudyRoadmap() {
                   </button>
                 </div>
 
-                {/* Error display */}
+                {/* Hiển thị lỗi */}
                 {solverError && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                     ⚠️ {solverError}
                   </div>
                 )}
 
-                {/* Option Navigator */}
+                {/* Điều hướng phương án */}
                 {options.length > 1 && (
                   <div className="mb-4 flex items-center gap-2">
                     <span className="text-sm text-gray-600 font-medium">Phương án:</span>
@@ -354,11 +364,11 @@ export function IntegratedStudyRoadmap() {
                   </div>
                 )}
 
-                {/* Timetable Grid */}
+                {/* Lịch học */}
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-auto shadow-sm">
                   <div className="min-w-[860px]">
 
-                    {/* ── HEADER ROW ── */}
+                    {/* Hàng tiêu đề */}
                     <div
                       className="grid sticky top-0 z-10"
                       style={{ gridTemplateColumns: '76px repeat(6, 1fr)' }}
@@ -377,13 +387,13 @@ export function IntegratedStudyRoadmap() {
                       ))}
                     </div>
 
-                    {/* ── BODY: background grid + class block overlay ── */}
+                    {/* Lưới nền + lớp học */}
                     <div className="relative">
                       {timePeriods.map((period) => {
                         const isFirstAfternoon = period.period === 6;
                         return (
                           <div key={period.period}>
-                            {/* Lunch separator before period 6 */}
+                            {/* Ngăn cách giờ trưa */}
                             {isFirstAfternoon && (
                               <div
                                 className="grid items-center"
@@ -400,12 +410,12 @@ export function IntegratedStudyRoadmap() {
                               </div>
                             )}
 
-                            {/* Period row */}
+                            {/* Hàng tiết học */}
                             <div
                               className="grid"
                               style={{ gridTemplateColumns: '76px repeat(6, 1fr)', height: '60px' }}
                             >
-                              {/* Period label */}
+                              {/* Nhãn tiết học */}
                               <div className={`flex flex-col items-center justify-center border-b border-r px-1 shrink-0 ${period.label === 'Sáng' ? 'bg-sky-50 border-gray-200' : 'bg-orange-50 border-gray-200'}`}>
                                 <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full mb-0.5 ${period.label === 'Sáng' ? 'bg-sky-100 text-sky-700' : 'bg-orange-100 text-orange-700'}`}>
                                   P{period.period}
@@ -425,27 +435,24 @@ export function IntegratedStudyRoadmap() {
                         );
                       })}
 
-                      {/* ── Class block overlay ── */}
+                      {/* Lớp học */}
                       {currentSections.map((classSection: ClassSection) => {
                         const conflicts = getConflicts(classSection);
                         const hasConflict = conflicts.length > 0;
 
-                        // Pixel offset: add 22px for the lunch break separator if period >= 6
                         const lunchBreakOffset = classSection.startPeriod >= 6 ? 22 : 0;
                         const topPx = (classSection.startPeriod - 1) * 60 + lunchBreakOffset;
                         const heightPeriods = classSection.endPeriod - classSection.startPeriod + 1;
-                        // If block spans across lunch, add 22px extra height
+
                         const spansLunch = classSection.startPeriod < 6 && classSection.endPeriod >= 6;
                         const heightPx = heightPeriods * 60 + (spansLunch ? 22 : 0);
                         const dayColIndex = classSection.day - 2; // T2→0 … T7→5
 
-                        // Card color: use the section's color for filled background
                         const bgColor = hasConflict ? '#FEF2F2' : classSection.color;
                         const borderColor = hasConflict ? '#EF4444' : classSection.color;
                         const textColor = hasConflict ? '#991B1B' : '#ffffff';
                         const subTextColor = hasConflict ? '#B91C1C' : 'rgba(255,255,255,0.85)';
 
-                        // Time string
                         const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
                         const endTime = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
 
@@ -469,7 +476,7 @@ export function IntegratedStudyRoadmap() {
                             }}
                             className="flex flex-col px-2 py-1.5 cursor-default group"
                           >
-                            {/* Conflict badge */}
+                            {/* Badge trùng lịch */}
                             {hasConflict && (
                               <div className="flex items-center gap-1 mb-1 px-1 py-0.5 bg-red-100 rounded-sm">
                                 <AlertTriangle className="w-2.5 h-2.5 text-red-600 shrink-0" />
@@ -477,24 +484,24 @@ export function IntegratedStudyRoadmap() {
                               </div>
                             )}
 
-                            {/* Course code — always visible */}
+                            {/* Mã học phần */}
                             <p className="text-[11px] font-black leading-none truncate" style={{ color: textColor }}>
                               {classSection.courseCode}
                             </p>
 
-                            {/* Course name */}
+                            {/* Tên học phần */}
                             {heightPx >= 80 && (
                               <p className="text-[9px] leading-tight mt-0.5 line-clamp-2" style={{ color: subTextColor }}>
                                 {classSection.courseNameVi}
                               </p>
                             )}
 
-                            {/* Spacer */}
+                            {/* Khoảng trống */}
                             <div className="flex-1" />
 
-                            {/* Footer info */}
+                            {/* Thông tin */}
                             <div className="flex flex-col gap-0.5 mt-1">
-                              {/* Section + Room row */}
+                              {/* Nhóm + Phòng */}
                               <div className="flex items-center gap-1">
                                 <span
                                   className="text-[8px] font-bold px-1 py-0.5 rounded"
@@ -512,10 +519,10 @@ export function IntegratedStudyRoadmap() {
                                 )}
                               </div>
 
-                              {/* Time range */}
+                              {/* Khung giờ */}
                               {heightPx >= 90 && startTime && (
                                 <p className="text-[8px] font-medium" style={{ color: subTextColor }}>
-                                  � {startTime} – {endTime}
+                                  {startTime} – {endTime}
                                 </p>
                               )}
                             </div>
@@ -526,7 +533,7 @@ export function IntegratedStudyRoadmap() {
                   </div>
                 </div>
 
-                {/* Legend */}
+                {/* Chú thích */}
                 <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
                   <div className="flex items-center gap-1.5">
                     <div className="w-3 h-3 rounded-sm bg-[#3B82F6]" />
@@ -551,7 +558,7 @@ export function IntegratedStudyRoadmap() {
         )}
       </div>
 
-      {/* Selection Basket Sidebar */}
+      {/* Sidebar Giỏ hàng */}
       <SelectionBasketVi
         selectedCourses={Array.from(selectedCourses)
           .map(id => allCurrentCourses.find(c => c.id === id)!)
@@ -559,7 +566,7 @@ export function IntegratedStudyRoadmap() {
         onRemoveCourse={handleCourseToggle}
       />
 
-      {/* Prerequisite Flowchart Modal */}
+      {/* Modal Sơ đồ Tiên quyết */}
       {showFlowchart && flowchartCourse && (
         <PrerequisiteFlowchart
           course={flowchartCourse}

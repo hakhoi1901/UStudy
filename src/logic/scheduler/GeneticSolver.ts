@@ -4,21 +4,24 @@ import { Chromosome } from './Chromosome.js';
 import { FitnessEvaluator } from './FitnessValuator.js';
 
 export default class GeneticSolver {
+    targetSubjects: any;
+    valuator: any;
+
     // Bỏ tham số fixedConstraints, chỉ nhận danh sách môn đã lọc
-    constructor(subjects, valuator) {
+    constructor(subjects: any, valuator: any) {
         this.targetSubjects = subjects;
         this.valuator = valuator;
     }
 
     // --- GENETIC CORE ---
-    
-    solve(topK) {
-        let population = [];
+
+    solve(topK: number) {
+        let population: Chromosome[] = [];
 
         // 1. Khởi tạo quần thể
         for (let i = 0; i < CONFIG.POPULATION_SIZE; i++) {
             const ind = this.createIndividual();
-            this.valuator.getFitness(ind, this.targetSubjects); 
+            this.valuator.getFitness(ind, this.targetSubjects);
             population.push(ind);
         }
 
@@ -26,20 +29,20 @@ export default class GeneticSolver {
         for (let gen = 0; gen < CONFIG.GENERATIONS; gen++) {
             population.sort((a, b) => b.fitness - a.fitness);
 
-            const newPop = [];
-            
+            const newPop: Chromosome[] = [];
+
             // Elitism: Giữ lại top 10%
             const eliteCount = Math.floor(CONFIG.POPULATION_SIZE * 0.1) || 1;
-            for(let i=0; i<eliteCount; i++) newPop.push(population[i]);
+            for (let i = 0; i < eliteCount; i++) newPop.push(population[i]);
 
             // Lai ghép & Đột biến
-            while(newPop.length < CONFIG.POPULATION_SIZE) {
+            while (newPop.length < CONFIG.POPULATION_SIZE) {
                 const p1 = this.tournamentSelect(population);
                 const p2 = this.tournamentSelect(population);
-                
+
                 let child = this.crossover(p1, p2);
                 this.mutate(child);
-                
+
                 this.valuator.getFitness(child, this.targetSubjects);
                 newPop.push(child);
             }
@@ -61,21 +64,21 @@ export default class GeneticSolver {
         return ind;
     }
 
-    randomizeGene(subjectIdx) {
+    randomizeGene(subjectIdx: number) {
         // Đơn giản hóa: Chỉ random trong số lượng lớp được truyền vào
         // Vì danh sách lớp đã được lọc ở Scheduler.js rồi
         const classes = this.targetSubjects[subjectIdx].classes;
         if (!classes || classes.length === 0) return -1;
-        
+
         // Nếu chỉ có 1 lớp (đã ghim), nó luôn trả về 0 -> Luôn đúng
         return Math.floor(Math.random() * classes.length);
     }
 
-    crossover(p1, p2) {
+    crossover(p1: Chromosome, p2: Chromosome) {
         const child = new Chromosome(p1.genes.length);
         if (p1.genes.length > 1) {
             const split = Math.floor(Math.random() * (p1.genes.length - 1)) + 1;
-            for(let i=0; i < p1.genes.length; i++) {
+            for (let i = 0; i < p1.genes.length; i++) {
                 child.genes[i] = (i < split) ? p1.genes[i] : p2.genes[i];
             }
         } else {
@@ -84,7 +87,7 @@ export default class GeneticSolver {
         return child;
     }
 
-    mutate(chromo) {
+    mutate(chromo: Chromosome) {
         if (Math.random() < CONFIG.MUTATION_RATE) {
             const idx = Math.floor(Math.random() * chromo.genes.length);
             // Nếu môn đó chỉ có 1 lớp (đã ghim), randomizeGene vẫn trả về 0 -> Không ảnh hưởng
@@ -92,20 +95,20 @@ export default class GeneticSolver {
         }
     }
 
-    tournamentSelect(pop) {
+    tournamentSelect(pop: Chromosome[]) {
         let best = pop[Math.floor(Math.random() * pop.length)];
-        for(let i=0; i < CONFIG.TOURNAMENT_SIZE; i++) {
+        for (let i = 0; i < CONFIG.TOURNAMENT_SIZE; i++) {
             const other = pop[Math.floor(Math.random() * pop.length)];
             if (other.fitness > best.fitness) best = other;
         }
         return best;
     }
 
-    filterUniqueResults(population, topK) {
-        const results = [];
+    filterUniqueResults(population: Chromosome[], topK: number) {
+        const results: Chromosome[] = [];
         const seen = new Set();
-        
-        for(const ind of population) {
+
+        for (const ind of population) {
             if (results.length >= topK) break;
             const key = ind.genes.join(',');
             if (!seen.has(key)) {

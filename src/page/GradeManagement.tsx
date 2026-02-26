@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter, Database } from 'lucide-react';
+import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { useStudentGradeData } from '../hooks/useStudentGradeData';
-import { BookmarkletButton } from '../components/BookmarkletButton';
 import { NoDataCard } from '../components/ui/nodataCard';
+import { GPA_CONFIG } from '../config/GPA';
+import type { Course } from '../data/courseData';
 
-interface Course {
-  id: string;
-  code: string;
-  nameVi: string;
-  credits: number;
-  projectedGrade: number;
-}
+// interface Course {
+//   id: string;
+//   code: string;
+//   nameVi: string;
+//   credits: number;
+//   projectedGrade: number;
+// }
 
 export function GradeManagement() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -42,14 +43,12 @@ export function GradeManagement() {
 
   const projectedGPA = calculateProjectedGPA();
 
-  // Grade classification (Scale 10)
+  // 
   const getClassification = (gpa: number) => {
-    if (gpa >= 9.0) return 'Xuất sắc';
-    if (gpa >= 8.0) return 'Giỏi';
-    if (gpa >= 7.0) return 'Khá';
-    if (gpa >= 6.5) return 'Trung bình khá';
-    if (gpa >= 5.0) return 'Trung bình';
-    return 'Yếu';
+    for (const config of GPA_CONFIG) {
+      if (gpa >= config.value) return config.lable;
+    }
+    return GPA_CONFIG[GPA_CONFIG.length - 1].lable;
   };
 
   const handleGradeChange = (id: string, value: string) => {

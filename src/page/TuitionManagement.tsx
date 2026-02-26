@@ -1,3 +1,7 @@
+/* tuitionManagement.tsx
+** Trang Quản lý học phí
+*/
+
 import { useState } from 'react';
 import { DollarSign, CheckCircle2, Info, Calendar } from 'lucide-react';
 import { PrivacyFooter } from '../components/PrivacyFooter';

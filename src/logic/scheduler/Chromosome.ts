@@ -1,7 +1,17 @@
 import { Bitset } from './Bitset.js';
 
-export class Chromosome {
-    constructor(length) {
+interface IChromosome {
+    genes: number[];
+    fitness: number;
+    combinedMask: Bitset;
+}
+
+export class Chromosome implements IChromosome {
+    genes: number[];
+    fitness: number;
+    combinedMask: Bitset;
+
+    constructor(length: number) {
         // Gen: Mảng chứa index của lớp học cho từng môn
         this.genes = new Array(length).fill(-1);
         this.fitness = 0;

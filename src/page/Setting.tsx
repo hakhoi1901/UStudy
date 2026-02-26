@@ -1,3 +1,7 @@
+/* setting.tsx
+** Trang Cài đặt
+*/
+
 import { PrivacyFooter } from '../components/PrivacyFooter';
 
 export function Setting() {

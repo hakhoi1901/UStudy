@@ -1,26 +1,20 @@
 import CourseDatabase from './CourseDatabase.js';
 import GeneticSolver from './GeneticSolver.js';
 import { FitnessEvaluator } from './FitnessValuator.js';
-
-export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) {
-    // ============================================================
-    // 🔍 DEBUG AREA: BẮT ĐẦU KIỂM TRA DỮ LIỆU ĐẦU VÀO
-    // ============================================================
+export function runScheduleSolver(dbData: any, userWants: any, fixedClasses: any, preferences: any) {
     console.group("DEBUG: Dữ liệu nhận được tại Scheduler.js");
-    
-    console.log("1️Danh sách môn muốn học (User Wants):", userWants);
-    
-    console.log("2️Danh sách lớp đã chọn (Fixed Classes):");
+
+    console.log("Danh sách môn muốn học (User Wants):", userWants);
+
+    console.log("Danh sách lớp đã chọn (Fixed Classes):");
     console.table(fixedClasses); // In dạng bảng cho dễ nhìn
     console.log("   -> Raw object:", fixedClasses); // In raw để check kiểu dữ liệu
 
-    console.log("3️Tùy chọn (Preferences):", preferences);
+    console.log("Tùy chọn (Preferences):", preferences);
     console.groupEnd();
-    // ============================================================
 
     const startTime = performance.now();
-    
-    // --- KHỞI TẠO OBJECT LOG ---
+
     const solverLog = {
         timestamp: new Date().toLocaleTimeString(),
         input: {
@@ -30,11 +24,11 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
         },
         process: {
             totalSubjects: 0,
-            filteredSubjects: []
+            filteredSubjects: [] as any[]
         },
         result: {
             found: 0,
-            bestScore: null,
+            bestScore: null as number | null,
             bestSolutionAnalysis: null, // Phân tích tại sao phương án tốt nhất lại có điểm đó
             executionTime: ""
         }
@@ -42,30 +36,30 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
 
     const db = new CourseDatabase();
     const data = (typeof dbData === 'string') ? JSON.parse(dbData) : dbData;
-    db.loadData(data); 
+    db.loadData(data);
 
-    const selectedCourses = [];
-    
+    const selectedCourses: any[] = [];
+
     // --- LỌC DỮ LIỆU ---
-    userWants.forEach(subjID => {
-        const cleanID = String(subjID).trim(); 
+    userWants.forEach((subjID: any) => {
+        const cleanID = String(subjID).trim();
         const course = db.getCourse(cleanID);
-        
+
         if (course) {
             let allowedClasses = fixedClasses[cleanID];
             let classCountOriginal = course.classes.length;
             let classCountFiltered = classCountOriginal;
 
             if (allowedClasses && Array.isArray(allowedClasses) && allowedClasses.length > 0) {
-                const allowedSet = new Set(allowedClasses.map(id => String(id).trim()));
-                const filteredClasses = course.classes.filter(c => allowedSet.has(String(c.id).trim()));
-                
+                const allowedSet = new Set(allowedClasses.map((id: any) => String(id).trim()));
+                const filteredClasses = course.classes.filter((c: any) => allowedSet.has(String(c.id).trim()));
+
                 if (filteredClasses.length > 0) {
                     classCountFiltered = filteredClasses.length;
                     selectedCourses.push({ ...course, classes: filteredClasses });
                 } else {
                     console.error(`❌ Lỗi: Môn ${cleanID} chọn lớp ${allowedClasses} nhưng không tìm thấy.`);
-                    return []; 
+                    return [];
                 }
             } else {
                 selectedCourses.push(course);
@@ -89,7 +83,7 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
     // --- CHẠY THUẬT TOÁN ---
     const valuator = new FitnessEvaluator(preferences);
     const solver = new GeneticSolver(selectedCourses, valuator);
-    const rawResults = solver.solve(5); 
+    const rawResults = solver.solve(5);
 
     // --- TỔNG HỢP KẾT QUẢ ---
     solverLog.result.found = rawResults.length;
@@ -98,20 +92,20 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
     if (rawResults.length > 0) {
         const bestInd = rawResults[0];
         solverLog.result.bestScore = bestInd.fitness;
-        
+
         // Gọi hàm phân tích (getInsights) để xem chi tiết
         //solverLog.result.bestSolutionAnalysis = valuator.getInsights(bestInd, selectedCourses);
     }
 
     // 🔥🔥🔥 IN LOG RA MÀN HÌNH 🔥🔥🔥
     console.log("%c📊 BÁO CÁO XẾP LỊCH (SOLVER REPORT)", "color: #004A98; font-size: 14px; font-weight: bold;");
-    console.log(solverLog); 
+    console.log(solverLog);
     // Nếu muốn xem dạng bảng cho phần input
     // console.table(solverLog.process.filteredSubjects);
 
     // --- MAPPING VỀ FORMAT UI ---
     const mappedResults = rawResults.map((ind, index) => {
-        const scheduleList = [];
+        const scheduleList: any[] = [];
         ind.genes.forEach((classIdx, courseIdx) => {
             if (classIdx !== -1) {
                 const course = selectedCourses[courseIdx];
@@ -120,13 +114,13 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
 
                 let visualMask = classObj.mask;
                 if (!visualMask && classObj.scheduleMask) {
-                    visualMask = classObj.scheduleMask.parts; 
+                    visualMask = classObj.scheduleMask.parts;
                 }
 
                 scheduleList.push({
                     subjectID: course.id,
                     classID: classObj.id,
-                    mask: visualMask || [0,0,0,0], 
+                    mask: visualMask || [0, 0, 0, 0],
                     schedule: classObj.schedule
                 });
             }
@@ -135,7 +129,7 @@ export function runScheduleSolver(dbData, userWants, fixedClasses, preferences) 
         return {
             option: index + 1,
             fitness: ind.fitness,
-            schedule: scheduleList 
+            schedule: scheduleList
         };
     });
 

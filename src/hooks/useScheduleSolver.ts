@@ -4,15 +4,15 @@
  */
 import { useState, useCallback } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
-import { runScheduleSolver } from '../logic/tkb/Scheduler';
-import { Bitset } from '../logic/tkb/Bitset';
+import { runScheduleSolver } from '../logic/scheduler/Scheduler';
+import { Bitset } from '../logic/scheduler/Bitset';
 import type { ClassSection } from '../data/timetableData';
 import type { Course } from '../data/courseData';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { UI_COLORS } from '../config/theme';
 
 // Tải dữ liệu DB tĩnh (fallback khi chưa có course_db_offline)
-import courseDbJson from '../logic/tkb/Course_db.json';
+import courseDbJson from '../logic/scheduler/Course_db.json';
 
 export interface ScheduleOption {
     option: number;

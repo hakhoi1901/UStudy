@@ -1,3 +1,7 @@
+/* visualSchedule.tsx
+** Trang Thời khóa biểu
+*/
+
 import React, { useState } from 'react';
 import { CheckCircle2, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import {

@@ -1,3 +1,5 @@
+import { SPLIT_SEMESTER_CONFIG } from "../config/splitSemester";
+
 // Hàm encode mới hỗ trợ 2 Phase
 // Tham số thứ 2 (subjectID) dùng để check xem môn này thuộc phase nào
 export function encodeScheduleToMask(scheduleInput: string | string[], subjectID = "") {
@@ -52,8 +54,13 @@ export function encodeScheduleToMask(scheduleInput: string | string[], subjectID
     return { parts: mask };
 }
 
-export function decodeScheduleMask(parts) {
-    let slots = [];
+export interface ScheduleSlot {
+    day: number;
+    period: number;
+}
+
+export function decodeScheduleMask(parts: number[]) {
+    let slots: ScheduleSlot[] = [];
     const PHASE_OFFSET = 70;
 
     // Quét vùng Phase 1 (0-69)

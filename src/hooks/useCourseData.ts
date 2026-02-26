@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
-import { CourseRecommender } from '../logic/tkb/Recommender';
+import { CourseRecommender } from '../logic/scheduler/Recommender';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { courses as allCoursesMeta } from '../assets/data/courses';
 import { prerequisites } from '../assets/data/prerequisites';
