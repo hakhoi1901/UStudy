@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, BookOpen, DollarSign, Database } from 'lucide-react';
+import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 import { useStudentGradeData } from '../hooks/useStudentGradeData';
-import { BookmarkletButton } from '../components/BookmarkletButton';
 import { NoDataCard } from '../components/ui/nodataCard';
+import { GPA_CONFIG, MAX_GPA, TOTAL_CREDITS } from '../config/GPA';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
+  const [gpaStatus, setGpaStatus] = useState('');
   const { currentGPA, accumulatedCredits, totalCredits, estimatedTuition, isReady, hasData } = useStudentGradeData();
+  const [tuitionDueDate, setTuitionDueDate] = useState('15/03/2026');
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const maxGPA = 10.0;
+  // viết thêm hàm lấy hạn đóng học phí
 
-  // Guard against divide by zero
-  const safeTotalCredits = totalCredits > 0 ? totalCredits : 140;
-  const gpaPercentage = (currentGPA / maxGPA) * 100;
+  const safeTotalCredits = TOTAL_CREDITS;
+  const gpaPercentage = (currentGPA / MAX_GPA) * 100;
   const creditsPercentage = Math.min((accumulatedCredits / safeTotalCredits) * 100, 100);
 
+  // format tiền tệ
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -26,10 +28,20 @@ export function DashboardWidgets() {
     }).format(amount || 0);
   };
 
+  useEffect(() => {
+    for (const gpa of GPA_CONFIG) {
+      if (currentGPA >= gpa.value) {
+        setGpaStatus(gpa.lable);
+        break;
+      }
+    }
+  }, [currentGPA]);
+
   if (!isMounted) {
     return null;
   }
 
+  // loading
   if (!isReady) {
     return (
       <div className="flex h-40 items-center justify-center">
@@ -38,6 +50,7 @@ export function DashboardWidgets() {
     );
   }
 
+  // Nếu không có dữ liệu
   if (!hasData) {
     return (<div>
       <h1 className="text-gray-900 mb-2">Tổng quan</h1>
@@ -46,9 +59,10 @@ export function DashboardWidgets() {
     </div>);
   }
 
+  // Giao diện khi có dữ liệu
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* GPA Widget - Circular Progress */}
+      {/* GPA */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-[#004A98] flex items-center justify-center">
@@ -60,10 +74,11 @@ export function DashboardWidgets() {
           </div>
         </div>
 
+        {/* Vòng tròn hiển thị GPA */}
         <div className="flex items-center justify-center mb-4">
           <div className="relative w-40 h-40">
             <svg className="w-full h-full transform -rotate-90">
-              {/* Background circle */}
+              {/* Nền vòng tròn */}
               <circle
                 cx="80"
                 cy="80"
@@ -72,7 +87,7 @@ export function DashboardWidgets() {
                 strokeWidth="12"
                 fill="none"
               />
-              {/* Progress circle */}
+              {/* Vòng tròn tiến độ */}
               <circle
                 cx="80"
                 cy="80"
@@ -88,25 +103,23 @@ export function DashboardWidgets() {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-bold text-[#004A98]">{currentGPA.toFixed(2)}</span>
-              <span className="text-sm text-gray-500">/ {maxGPA.toFixed(2)}</span>
+              <span className="text-sm text-gray-500">/ {MAX_GPA.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
+        {/* Xếp loại GPA */}
         <div className="pt-4 border-t border-gray-100">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Xếp loại</span>
             <span className="text-[#004A98] font-semibold">
-              {currentGPA >= 9.0 ? 'Xuất sắc' :
-                currentGPA >= 8.0 ? 'Giỏi' :
-                  currentGPA >= 7.0 ? 'Khá' :
-                    currentGPA >= 6.5 ? 'Trung bình khá' : 'Trung bình'}
+              {gpaStatus}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Credits Widget - Bar Chart */}
+      {/* Tín chỉ tích lũy */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
@@ -118,11 +131,16 @@ export function DashboardWidgets() {
           </div>
         </div>
 
+        {/* Tiến độ tín chỉ */}
         <div className="mb-4">
+
+          {/* Số tín chỉ đã tích lũy */}
           <div className="flex items-end justify-between mb-2">
             <span className="text-3xl font-bold text-gray-900">{accumulatedCredits}</span>
             <span className="text-sm text-gray-500">/ {totalCredits} tín chỉ</span>
           </div>
+
+          {/* Thanh tiến độ */}
           <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
             <div
               className="bg-green-500 h-4 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2"
@@ -135,11 +153,16 @@ export function DashboardWidgets() {
           </div>
         </div>
 
+        {/* Số tín chỉ đã hoàn thành và còn lại */}
         <div className="space-y-3 pt-4 border-t border-gray-100">
+
+          {/* Số tín chỉ đã tích lũy */}
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Đã hoàn thành</span>
+            <span className="text-gray-600">Đã tích lũy</span>
             <span className="text-green-600 font-semibold">{accumulatedCredits} tín chỉ</span>
           </div>
+
+          {/* Số tín chỉ còn lại */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Còn lại</span>
             <span className="text-orange-600 font-semibold">{totalCredits - accumulatedCredits} tín chỉ</span>
@@ -147,7 +170,7 @@ export function DashboardWidgets() {
         </div>
       </div>
 
-      {/* Tuition Widget - Simple Card */}
+      {/* Học phí học kỳ */}
       <div className="bg-gradient-to-br from-[#004A98] to-[#0066CC] rounded-xl p-6 shadow-lg text-white">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
@@ -159,15 +182,17 @@ export function DashboardWidgets() {
           </div>
         </div>
 
+        {/* Tổng học phí dự kiến */}
         <div className="mb-4">
           <p className="text-sm text-blue-100 mb-2">Tổng học phí dự kiến</p>
           <p className="text-3xl font-bold text-white">{formatCurrency(estimatedTuition || 0)}</p>
         </div>
 
+        {/* Hạn đóng học phí */}
         <div className="pt-4 border-t border-white/20">
           <div className="flex items-center justify-between text-sm">
             <span className="text-blue-100">Hạn đóng học phí</span>
-            <span className="text-white font-semibold">15/03/2026</span>
+            <span className="text-white font-semibold">{tuitionDueDate}</span>
           </div>
         </div>
       </div>

@@ -82,7 +82,7 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
                   {course.code}
                 </p>
                 <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
-                <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price)} đ</p>
+                <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number)} đ</p>
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-xs text-gray-500">{course.credits} tín chỉ</span>
                   {course.needsRetake && (

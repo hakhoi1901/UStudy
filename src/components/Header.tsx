@@ -1,17 +1,19 @@
-import { Bell, LogOut, ChevronDown, LogIn } from 'lucide-react';
+import { LogOut, ChevronDown, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStudentGradeData } from '../hooks/useStudentGradeData';
 import { BookmarkletButton } from './BookmarkletButton';
+import { NotificationMenu } from './NotificationMenu';
+import { useAppNotification } from '../context/NotificationContext';
 import { APP_CONFIG } from '../config/appConfig';
 import { STORAGE_KEYS } from '../config/storageKeys';
 
 export function Header() {
   const [studentName, setStudentName] = useState('');
-  const [notificationCount] = useState(110);
   const [selectedSemester, setSelectedSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
 
   const { hasData } = useStudentGradeData();
+  const { addNotification } = useAppNotification();
 
   useEffect(() => {
     const studentData = localStorage.getItem(STORAGE_KEYS.STUDENT_DB);
@@ -26,8 +28,17 @@ export function Header() {
   const handleLogOut = () => {
     // Clear local storage
     localStorage.clear();
-    alert('Tất cả dữ liệu học tập đã được xóa vĩnh viễn khỏi bộ nhớ cục bộ. Bạn đã đăng xuất thành công.');
-    window.location.reload();
+    addNotification({
+      title: 'Đăng xuất thành công',
+      message: 'Tất cả dữ liệu học tập đã được xóa khỏi trình duyệt.',
+      type: 'info'
+    });
+    // Give state a moment to update before reloading so the user can theoretically see the toast
+    // However, since it reloads immediately, we might not even see it. 
+    // We will keep it here for completeness based on user request.
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleLogin = () => {
@@ -84,15 +95,8 @@ export function Header() {
 
           {/* Right Side - Notifications, User, and Actions */}
           <div className="flex items-center gap-3">
-            {/* Notification Bell */}
-            <button className="relative p-2.5 hover:bg-gray-100 rounded-lg transition-colors group">
-              <Bell className="w-5 h-5 text-gray-600 group-hover:text-gray-900" strokeWidth={2} />
-              {notificationCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs rounded-full flex items-center justify-center px-1" style={{ fontWeight: 600 }}>
-                  {notificationCount}
-                </span>
-              )}
-            </button>
+            {/* Notification Menu */}
+            <NotificationMenu />
 
             {/* Divider */}
             <div className="h-10 w-px bg-gray-200"></div>

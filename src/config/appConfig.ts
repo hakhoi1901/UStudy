@@ -1,9 +1,9 @@
 /**
- * Cấu hình chung cho toàn bộ ứng dụng (Application Configs)
+ * Cấu hình chung cho toàn bộ ứng dụng
  */
 export const APP_CONFIG = {
     // Đường dẫn đăng nhập Portal
-    PORTAL_LOGIN_URL: 'https://new-portal1.hcmus.edu.vn/Login.aspx?ReturnUrl=%2fSinhVien.aspx%3fpid%3d211&pid=211',
+    PORTAL_LOGIN_URL: 'https://new-portal.hcmus.edu.vn/Login.aspx?ReturnUrl=%2fSinhVien.aspx%3fpid%3d211&pid=211',
 
     // Danh sách học kỳ hiển thị trên dropdown
     AVAILABLE_SEMESTERS: [

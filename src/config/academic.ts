@@ -5,7 +5,7 @@ export const ACADEMIC_RULES = {
     // Các mã môn không tính vào Điểm trung bình (GPA) và Tích lũy
     EXCLUDED_COURSE_PREFIXES: ['BAA0002', 'ADD0003', 'BAA0003'],
 
-    // Tổng số tín chỉ yêu cầu tốt nghiệp (mặc định)
+    // Tổng số tín chỉ yêu cầu tốt nghiệp
     TOTAL_REQUIRED_CREDITS: 137,
 
     // Điểm hệ 10 tối thiểu để qua môn

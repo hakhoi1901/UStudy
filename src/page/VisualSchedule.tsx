@@ -2,16 +2,6 @@
 ** Trang Thời khóa biểu
 */
 
-import React, { useState } from 'react';
-import { CheckCircle2, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
-import {
-  registeredCourses,
-  getConfirmedClasses,
-  getConflictingClasses,
-  timePeriods,
-  weekDays,
-  type ClassSection,
-} from '../data/timetableData';
 import { PrivacyFooter } from '../components/PrivacyFooter';
 
 export function VisualSchedule() {

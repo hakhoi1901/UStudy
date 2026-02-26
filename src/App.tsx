@@ -7,10 +7,14 @@ import { TuitionManagement } from './page/TuitionManagement';
 import { VisualSchedule } from './page/VisualSchedule';
 import { useState, useEffect } from 'react';
 import { Setting } from './page/Setting';
+import { NotificationProvider } from './context/NotificationContext';
+import { useAppNotification } from './context/NotificationContext';
 
-export default function App() {
+
+function AppContent() {
   {/* Trang hiện tại */ }
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
+  const { addNotification } = useAppNotification();
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -20,6 +24,12 @@ export default function App() {
         if (payload && payload.student && payload.courses) {
           localStorage.setItem('student_db_full', JSON.stringify(payload.student));
           localStorage.setItem('course_db_offline', JSON.stringify(payload.courses));
+
+          addNotification({
+            title: 'Khởi tạo thành công',
+            message: `Dữ liệu hệ thống cho sinh viên ${payload.student.name} đã sẵn sàng.`,
+            type: 'success'
+          });
         }
       }
     };
@@ -27,7 +37,7 @@ export default function App() {
     // Use capture phase (true) so this saves to localStorage BEFORE child hooks re-render
     window.addEventListener('message', handleMessage, true);
     return () => window.removeEventListener('message', handleMessage, true);
-  }, []);
+  }, [addNotification]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -78,5 +88,13 @@ export default function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <NotificationProvider>
+      <AppContent />
+    </NotificationProvider>
   );
 }
