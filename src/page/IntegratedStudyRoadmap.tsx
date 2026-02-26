@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Calendar, Info, AlertTriangle, CheckCircle2, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { ShoppingCart, Calendar, Info, AlertTriangle, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CourseRow } from '../components/CourseRow';
 import { SelectionBasketVi } from '../components/SelectionBasketVi';
 import { PrerequisiteFlowchart } from '../components/PrerequisiteFlowchart';
@@ -68,16 +68,6 @@ export function IntegratedStudyRoadmap() {
   // Từ kết quả solver -> xác định conflict
   const confirmedSections: ClassSection[] = currentSections;
 
-  // Calculate grid position
-  const getGridPosition = (classSection: ClassSection) => {
-    const dayIndex = classSection.day - 2;
-
-    return {
-      gridColumn: dayIndex + 2,
-      gridRowStart: classSection.startPeriod + 1,
-      gridRowEnd: classSection.endPeriod + 2,
-    };
-  };
 
   // Check conflicts for a section
   const getConflicts = (section: ClassSection): ClassSection[] => {
@@ -351,150 +341,171 @@ export function IntegratedStudyRoadmap() {
                   </div>
                 )}
 
-                {/* Compact Timetable Grid */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-auto">
-                  <div className="min-w-[1000px]">
+                {/* Timetable Grid */}
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-auto shadow-sm">
+                  <div className="min-w-[860px]">
+
+                    {/* ── HEADER ROW ── */}
                     <div
-                      className="grid"
-                      style={{
-                        gridTemplateColumns: '80px repeat(7, 1fr)',
-                        gridTemplateRows: 'auto repeat(12, 48px)',
-                      }}
+                      className="grid sticky top-0 z-10"
+                      style={{ gridTemplateColumns: '76px repeat(6, 1fr)' }}
                     >
-                      {/* Header - Days of Week */}
-                      <div className="bg-[#004A98] border-b border-gray-300"></div>
-                      {weekDays.map((day) => (
+                      <div className="bg-[#004A98] rounded-tl-2xl h-12 flex items-end pb-1 justify-center">
+                        <span className="text-[10px] text-white/60 font-medium">Tiết</span>
+                      </div>
+                      {weekDays.map((day, idx) => (
                         <div
                           key={day.day}
-                          className="bg-[#004A98] text-white p-2 border-b border-l border-gray-300 flex items-center justify-center"
+                          className={`bg-[#004A98] text-white flex flex-col items-center justify-center border-l border-white/10 h-12 ${idx === weekDays.length - 1 ? 'rounded-tr-2xl' : ''}`}
                         >
-                          <div className="text-center">
-                            <p className="text-sm font-semibold">{day.nameVi}</p>
-                          </div>
+                          <span className="text-[10px] text-white/60 font-normal">{day.nameVi}</span>
+                          <span className="text-sm font-bold">{day.short}</span>
                         </div>
                       ))}
+                    </div>
 
-                      {/* Time Rows & Grid Background */}
-                      {timePeriods.map((period) => (
-                        <React.Fragment key={`row-${period.period}`}>
-                          {/* Time Label */}
-                          <div className="bg-gray-50 border-b border-r border-gray-200 p-2 flex flex-col items-center justify-center">
-                            <span className="text-xs font-semibold text-gray-700">P{period.period}</span>
-                            <span className="text-[10px] text-gray-500">{period.time.split(' - ')[0]}</span>
-                          </div>
+                    {/* ── BODY: background grid + class block overlay ── */}
+                    <div className="relative">
+                      {timePeriods.map((period) => {
+                        const isFirstAfternoon = period.period === 6;
+                        return (
+                          <div key={period.period}>
+                            {/* Lunch separator before period 6 */}
+                            {isFirstAfternoon && (
+                              <div
+                                className="grid items-center"
+                                style={{ gridTemplateColumns: '76px 1fr', height: '22px' }}
+                              >
+                                <div className="bg-amber-50 border-b border-t border-amber-200 flex items-center justify-center">
+                                  <span className="text-[8px] text-amber-600 font-semibold">Trưa</span>
+                                </div>
+                                <div className="bg-amber-50/60 border-b border-t border-amber-200 flex items-center px-3">
+                                  <div className="flex-1 border-t border-dashed border-amber-300" />
+                                  <span className="text-[9px] text-amber-500 px-2">Nghỉ trưa 11:50 – 12:40</span>
+                                  <div className="flex-1 border-t border-dashed border-amber-300" />
+                                </div>
+                              </div>
+                            )}
 
-                          {/* Day Cells */}
-                          {weekDays.map((day) => (
+                            {/* Period row */}
                             <div
-                              key={`cell-${day.day}-${period.period}`}
-                              className="border-b border-l border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                            ></div>
-                          ))}
-                        </React.Fragment>
-                      ))}
+                              className="grid"
+                              style={{ gridTemplateColumns: '76px repeat(6, 1fr)', height: '60px' }}
+                            >
+                              {/* Period label */}
+                              <div className={`flex flex-col items-center justify-center border-b border-r px-1 shrink-0 ${period.label === 'Sáng' ? 'bg-sky-50 border-gray-200' : 'bg-orange-50 border-gray-200'}`}>
+                                <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full mb-0.5 ${period.label === 'Sáng' ? 'bg-sky-100 text-sky-700' : 'bg-orange-100 text-orange-700'}`}>
+                                  P{period.period}
+                                </div>
+                                <span className="text-[8px] text-gray-400 leading-none text-center">{period.time.split(' - ')[0]}</span>
+                                <span className="text-[8px] text-gray-300 leading-none">↓</span>
+                                <span className="text-[8px] text-gray-400 leading-none">{period.time.split(' - ')[1]}</span>
+                              </div>
+                              {weekDays.map((day) => (
+                                <div
+                                  key={`${day.day}-${period.period}`}
+                                  className="border-b border-l border-gray-100 hover:bg-gray-50/50 transition-colors"
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
 
-                      {/* Class Blocks */}
+                      {/* ── Class block overlay ── */}
                       {currentSections.map((classSection: ClassSection) => {
-                        const position = getGridPosition(classSection);
                         const conflicts = getConflicts(classSection);
                         const hasConflict = conflicts.length > 0;
+
+                        // Pixel offset: add 22px for the lunch break separator if period >= 6
+                        const lunchBreakOffset = classSection.startPeriod >= 6 ? 22 : 0;
+                        const topPx = (classSection.startPeriod - 1) * 60 + lunchBreakOffset;
+                        const heightPeriods = classSection.endPeriod - classSection.startPeriod + 1;
+                        // If block spans across lunch, add 22px extra height
+                        const spansLunch = classSection.startPeriod < 6 && classSection.endPeriod >= 6;
+                        const heightPx = heightPeriods * 60 + (spansLunch ? 22 : 0);
+                        const dayColIndex = classSection.day - 2; // T2→0 … T7→5
+
+                        // Card color: use the section's color for filled background
+                        const bgColor = hasConflict ? '#FEF2F2' : classSection.color;
+                        const borderColor = hasConflict ? '#EF4444' : classSection.color;
+                        const textColor = hasConflict ? '#991B1B' : '#ffffff';
+                        const subTextColor = hasConflict ? '#B91C1C' : 'rgba(255,255,255,0.85)';
+
+                        // Time string
+                        const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
+                        const endTime = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
 
                         return (
                           <div
                             key={classSection.id}
                             style={{
-                              gridColumn: position.gridColumn,
-                              gridRowStart: position.gridRowStart,
-                              gridRowEnd: position.gridRowEnd,
-                              backgroundColor: hasConflict
-                                ? '#FEE2E2'
-                                : classSection.isConfirmed
-                                  ? classSection.color
-                                  : `${classSection.color}40`,
-                              borderLeft: `4px solid ${hasConflict ? '#DC2626' : classSection.color
-                                }`,
-                              border: classSection.isConfirmed
-                                ? 'none'
-                                : `2px dashed ${classSection.color}`,
+                              position: 'absolute',
+                              top: topPx + 2,
+                              left: `calc(76px + ${dayColIndex} * ((100% - 76px) / 6) + 3px)`,
+                              width: `calc((100% - 76px) / 6 - 6px)`,
+                              height: heightPx - 4,
+                              backgroundColor: bgColor,
+                              border: `1.5px solid ${hasConflict ? '#FCA5A5' : 'rgba(255,255,255,0.25)'}`,
+                              borderLeft: `3px solid ${borderColor}`,
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              boxShadow: hasConflict
+                                ? '0 2px 8px rgba(239,68,68,0.25)'
+                                : '0 2px 8px rgba(0,0,0,0.15)',
                             }}
-                            className={`p-2 m-0.5 rounded overflow-hidden transition-all ${hasConflict ? 'ring-2 ring-red-500' : ''
-                              }`}
+                            className="flex flex-col px-2 py-1.5 cursor-default group"
                           >
-                            <div className="text-xs h-full flex flex-col">
-                              {/* Conflict Warning */}
-                              {hasConflict && (
-                                <div className="flex items-center gap-1 mb-1 text-red-700">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  <span className="font-bold text-[10px]">⚠️ Trùng lịch</span>
-                                </div>
-                              )}
-
-                              {/* Course Info */}
-                              <p
-                                className={`font-semibold leading-tight mb-1 ${hasConflict
-                                  ? 'text-red-900'
-                                  : classSection.isConfirmed
-                                    ? 'text-white'
-                                    : 'text-gray-900'
-                                  }`}
-                              >
-                                {classSection.courseCode}
-                              </p>
-                              <p
-                                className={`text-[10px] leading-tight mb-1 ${hasConflict
-                                  ? 'text-red-800'
-                                  : classSection.isConfirmed
-                                    ? 'text-white/90'
-                                    : 'text-gray-700'
-                                  }`}
-                              >
-                                {classSection.courseNameVi}
-                              </p>
-
-                              {/* Section Number */}
-                              <p
-                                className={`text-[10px] font-medium mb-0.5 ${hasConflict
-                                  ? 'text-red-700'
-                                  : classSection.isConfirmed
-                                    ? 'text-white/80'
-                                    : 'text-gray-600'
-                                  }`}
-                              >
-                                Lớp {classSection.sectionNumber}
-                              </p>
-
-                              {/* Room and Lecturer */}
-                              <div className="mt-auto">
-                                <p
-                                  className={`text-[9px] truncate ${hasConflict
-                                    ? 'text-red-700'
-                                    : classSection.isConfirmed
-                                      ? 'text-white/80'
-                                      : 'text-gray-600'
-                                    }`}
-                                >
-                                  📍 {classSection.room}
-                                </p>
-                                <p
-                                  className={`text-[10px] ${hasConflict
-                                    ? 'text-red-700'
-                                    : classSection.isConfirmed
-                                      ? 'text-white/80'
-                                      : 'text-gray-600'
-                                    }`}
-                                >
-                                  👤 {classSection.lecturer}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Confirmed Badge */}
-                            {classSection.isConfirmed && !hasConflict && (
-                              <div className="mt-1 flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-white" />
-                                <span className="text-[10px] text-white font-medium">Mặc định</span>
+                            {/* Conflict badge */}
+                            {hasConflict && (
+                              <div className="flex items-center gap-1 mb-1 px-1 py-0.5 bg-red-100 rounded-sm">
+                                <AlertTriangle className="w-2.5 h-2.5 text-red-600 shrink-0" />
+                                <span className="text-[8.5px] font-bold text-red-700 uppercase tracking-wide">Trùng lịch</span>
                               </div>
                             )}
+
+                            {/* Course code — always visible */}
+                            <p className="text-[11px] font-black leading-none truncate" style={{ color: textColor }}>
+                              {classSection.courseCode}
+                            </p>
+
+                            {/* Course name */}
+                            {heightPx >= 80 && (
+                              <p className="text-[9px] leading-tight mt-0.5 line-clamp-2" style={{ color: subTextColor }}>
+                                {classSection.courseNameVi}
+                              </p>
+                            )}
+
+                            {/* Spacer */}
+                            <div className="flex-1" />
+
+                            {/* Footer info */}
+                            <div className="flex flex-col gap-0.5 mt-1">
+                              {/* Section + Room row */}
+                              <div className="flex items-center gap-1">
+                                <span
+                                  className="text-[8px] font-bold px-1 py-0.5 rounded"
+                                  style={{
+                                    backgroundColor: hasConflict ? '#FEE2E2' : 'rgba(0,0,0,0.2)',
+                                    color: hasConflict ? '#991B1B' : 'rgba(255,255,255,0.95)',
+                                  }}
+                                >
+                                  {classSection.sectionNumber}
+                                </span>
+                                {classSection.room !== '---' && heightPx >= 70 && (
+                                  <span className="text-[8px] truncate" style={{ color: subTextColor }}>
+                                    📍 {classSection.room}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Time range */}
+                              {heightPx >= 90 && startTime && (
+                                <p className="text-[8px] font-medium" style={{ color: subTextColor }}>
+                                  � {startTime} – {endTime}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -503,18 +514,22 @@ export function IntegratedStudyRoadmap() {
                 </div>
 
                 {/* Legend */}
-                <div className="mt-4 flex items-center justify-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-[#3B82F6] border-2 border-[#3B82F6]"></div>
-                    <span className="text-gray-700">Lớp mặc định</span>
+                <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-[#3B82F6]" />
+                    <span>Lớp đã xếp</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-[#3B82F640] border-2 border-[#3B82F6] border-dashed"></div>
-                    <span className="text-gray-700">Lớp khác</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-red-200 border border-red-400" />
+                    <span>Trùng lịch</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-red-100 border-2 border-red-500"></div>
-                    <span className="text-gray-700">Trùng lịch</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-sky-100 border border-sky-300" />
+                    <span>Buổi sáng</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-orange-100 border border-orange-300" />
+                    <span>Buổi chiều</span>
                   </div>
                 </div>
               </div>
@@ -523,11 +538,11 @@ export function IntegratedStudyRoadmap() {
         )}
       </div>
 
-      {/* Selection Basket Sidebar - Fixed */}
+      {/* Selection Basket Sidebar */}
       <SelectionBasketVi
-        selectedCourses={Array.from(selectedCourses).map(id =>
-          allCurrentCourses.find(c => c.id === id)!
-        ).filter(Boolean)}
+        selectedCourses={Array.from(selectedCourses)
+          .map(id => allCurrentCourses.find(c => c.id === id)!)
+          .filter(Boolean)}
         onRemoveCourse={handleCourseToggle}
       />
 

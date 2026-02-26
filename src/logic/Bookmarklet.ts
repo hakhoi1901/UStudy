@@ -1,6 +1,12 @@
-(async function() {
+declare global {
+    interface Window {
+        toggleGroup: (id: string, show: boolean) => void;
+    }
+}
+
+(async function () {
     console.clear();
-    
+
     // === 1. CẤU HÌNH ===
     const CONFIG = {
         URL_DIEM: "/SinhVien.aspx?pid=211",
@@ -10,7 +16,7 @@
         TARGET_YEAR: "25-26", // Năm học mong muốn
         TARGET_SEM: "1"       // Học kỳ mong muốn
     };
-    
+
     const URLS = {
         DIEM: "/SinhVien.aspx?pid=211",
         LICHTHI: "/SinhVien.aspx?pid=180",
@@ -19,7 +25,7 @@
     };
 
     // UI: Hiển thị trạng thái loading lên màn hình hiện tại
-    const showLoading = (msg) => {
+    const showLoading = (msg: string) => {
         let el = document.getElementById('hcmus-tool-loading');
         if (!el) {
             el = document.createElement('div');
@@ -36,9 +42,21 @@
     };
 
     // Helper: Chuyển text HTML thành DOM ảo để query
-    const parseHTML = (html) => new DOMParser().parseFromString(html, 'text/html');
+    const parseHTML = (html: string): Document => new DOMParser().parseFromString(html, 'text/html');
 
-    function showPrivacyAndConfigModal() {
+    // Khai báo giao diện cho kết quả từ Modal
+    interface UserConfig {
+        getTuition: boolean;
+        getExam: boolean;
+        examYear: string;
+        examSem: string;
+        getClass: boolean;
+        classYear: string;
+        classSem: string;
+    }
+
+
+    function showPrivacyAndConfigModal(): Promise<UserConfig> {
         return new Promise((resolve, reject) => {
             // Xóa modal cũ nếu có
             document.getElementById('hcmus-tool-modal')?.remove();
@@ -46,21 +64,18 @@
             const modal = document.createElement('div');
             modal.id = 'hcmus-tool-modal';
             modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI', sans-serif;";
-            
+
             modal.innerHTML = `
                 <div style="background:#fff;width:550px;max-width:95%;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;animation:slideDown 0.3s ease-out;display:flex;flex-direction:column;max-height:90vh;">
                     
-                    <!-- Header -->
                     <div style="background:#004A98;padding:16px 24px;color:white;flex-shrink:0;">
                         <h3 style="margin:0;font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px;">
                             <span>⚙️</span> Cấu hình lấy dữ liệu
                         </h3>
                     </div>
                     
-                    <!-- Body (Scrollable) -->
                     <div style="padding:24px;overflow-y:auto;flex:1;">
                         
-                        <!-- [THAY ĐỔI]: Cập nhật nội dung Tuyên bố miễn trừ trách nhiệm & Điều khoản -->
                         <div style="margin-bottom: 24px;">
                             <h4 style="margin: 0 0 12px; font-size: 14px; color: #dc2626; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
                                 ⚠️ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM & ĐIỀU KHOẢN SỬ DỤNG
@@ -81,9 +96,6 @@
                                 <p style="margin-bottom: 0; margin-top: 0;">Bằng việc tiếp tục, bạn xác nhận hiểu rõ dữ liệu nằm trên thiết bị của mình, chấp nhận mọi rủi ro tiềm ẩn khi dùng phần mềm thứ ba và đồng ý giải phóng nhóm phát triển khỏi mọi trách nhiệm pháp lý liên quan.</p>
                             </div>
                         </div>
-                        <!-- [KẾT THÚC THAY ĐỔI] -->
-
-                        <!-- Config Options -->
                         <div style="display:flex;flex-direction:column;gap:16px;border-top: 1px solid #eee; padding-top: 20px;">
                             
                             <div style="display:flex;gap:20px;">
@@ -99,7 +111,7 @@
 
                             <div>
                                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                                    <input type="checkbox" id="opt-exam" checked onchange="toggleGroup('grp-exam', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                                    <input type="checkbox" id="opt-exam" checked onchange="window.toggleGroup('grp-exam', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
                                     Lấy Lịch Thi
                                 </label>
                                 <div id="grp-exam" style="display:flex;gap:10px;padding-left:28px;">
@@ -114,7 +126,7 @@
 
                             <div>
                                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                                    <input type="checkbox" id="opt-class" checked onchange="toggleGroup('grp-class', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                                    <input type="checkbox" id="opt-class" checked onchange="window.toggleGroup('grp-class', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
                                     Lấy Danh Sách Lớp Mở
                                 </label>
                                 <div id="grp-class" style="display:flex;gap:10px;padding-left:28px;">
@@ -129,11 +141,9 @@
                         </div>
                     </div>
 
-                    <!-- Footer -->
                     <div style="background:#f8fafc;padding:16px 24px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e2e8f0;flex-shrink:0;">
                         <button id="btn-cancel" style="padding:8px 16px;border:1px solid #cbd5e1;background:white;color:#475569;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;">Hủy</button>
                         
-                        <!-- [THAY ĐỔI]: Sửa text nút bấm để thể hiện sự đồng thuận pháp lý -->
                         <button id="btn-agree" style="padding:8px 20px;border:none;background:#004A98;color:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;box-shadow:0 2px 4px rgba(0,74,152,0.2);transition:all 0.2s;">Tôi đã hiểu & Đồng ý</button>
                     </div>
                 </div>
@@ -147,46 +157,60 @@
             document.body.appendChild(modal);
 
             // Hàm ẩn hiện input
-            window.toggleGroup = (id, show) => {
+            window.toggleGroup = (id: string, show: boolean) => {
                 const el = document.getElementById(id);
-                if(el) {
-                    el.style.opacity = show ? 1 : 0.5;
+                if (el) {
+                    el.style.opacity = show ? '1' : '0.5';
                     el.style.pointerEvents = show ? 'auto' : 'none';
                     // Tự động focus vào input nếu enable
-                    if(show) {
+                    if (show) {
                         const input = el.querySelector('input');
-                        if(input) input.focus();
+                        if (input) input.focus();
                     }
                 }
             };
 
             // Xử lý sự kiện nút bấm
-            document.getElementById('btn-cancel').onclick = () => {
-                modal.remove();
-                reject("User cancelled");
-            };
-
-            document.getElementById('btn-agree').onclick = () => {
-                // Thu thập cấu hình người dùng nhập
-                const config = {
-                    getTuition: document.getElementById('opt-tuition').checked,
-                    getExam: document.getElementById('opt-exam').checked,
-                    examYear: document.getElementById('exam-year').value,
-                    examSem: document.getElementById('exam-sem').value,
-                    getClass: document.getElementById('opt-class').checked,
-                    classYear: document.getElementById('class-year').value,
-                    classSem: document.getElementById('class-sem').value,
+            const btnCancel = document.getElementById('btn-cancel');
+            if (btnCancel) {
+                btnCancel.onclick = () => {
+                    modal.remove();
+                    reject("User cancelled");
                 };
-                modal.remove();
-                resolve(config);
-            };
+            }
+
+            const btnAgree = document.getElementById('btn-agree');
+            if (btnAgree) {
+                btnAgree.onclick = () => {
+                    // Thu thập cấu hình người dùng nhập
+                    const optTuition = document.getElementById('opt-tuition') as HTMLInputElement;
+                    const optExam = document.getElementById('opt-exam') as HTMLInputElement;
+                    const examYear = document.getElementById('exam-year') as HTMLInputElement;
+                    const examSem = document.getElementById('exam-sem') as HTMLSelectElement;
+                    const optClass = document.getElementById('opt-class') as HTMLInputElement;
+                    const classYear = document.getElementById('class-year') as HTMLInputElement;
+                    const classSem = document.getElementById('class-sem') as HTMLSelectElement;
+
+                    const config: UserConfig = {
+                        getTuition: optTuition?.checked || false,
+                        getExam: optExam?.checked || false,
+                        examYear: examYear?.value || "",
+                        examSem: examSem?.value || "",
+                        getClass: optClass?.checked || false,
+                        classYear: classYear?.value || "",
+                        classSem: classSem?.value || "",
+                    };
+                    modal.remove();
+                    resolve(config);
+                };
+            }
         });
     }
 
     // === 2. CÁC HÀM CÀO DỮ LIỆU ===
 
     // Cào Bảng Điểm (Target: Virtual Document)
-    function scrapeGrades(doc) {
+    function scrapeGrades(doc: Document) {
         try {
             let mssv = "Unknown";
             // Lấy MSSV từ document ảo hoặc document thật nếu không thấy
@@ -196,21 +220,22 @@
                 if (match) mssv = match[1].trim();
             }
 
-            const grades = [];
-            doc.querySelectorAll('#tbDiemThiGK tbody tr').forEach(row => {
-                if (row.cells.length < 6) return;
-                const semester = row.cells[0]?.innerText.trim();
-                const rawSubj = row.cells[1]?.innerText.trim();
+            const grades: any[] = [];
+            doc.querySelectorAll('#tbDiemThiGK tbody tr').forEach((row: Element) => {
+                const tr = row as HTMLTableRowElement;
+                if (tr.cells.length < 6) return;
+                const semester = tr.cells[0]?.innerText.trim();
+                const rawSubj = tr.cells[1]?.innerText.trim();
                 let id = "", name = rawSubj;
                 if (rawSubj.includes(" - ")) {
                     const parts = rawSubj.split(" - ");
                     id = parts[0].trim();
                     name = parts.slice(1).join(" - ").trim();
                 }
-                const credits = row.cells[2]?.innerText.trim();
-                const classID = row.cells[3]?.innerText.trim();
-                const rawScore = row.cells[5]?.innerText.trim();
-                let score = !isNaN(parseFloat(rawScore)) ? parseFloat(rawScore) : rawScore;
+                const credits = tr.cells[2]?.innerText.trim();
+                const classID = tr.cells[3]?.innerText.trim();
+                const rawScore = tr.cells[5]?.innerText.trim();
+                let score: number | string = !isNaN(parseFloat(rawScore)) ? parseFloat(rawScore) : rawScore;
 
                 if (id) grades.push({ semester, id, name, credits, class: classID, score });
             });
@@ -219,27 +244,28 @@
     }
 
     // Cào Lịch thi / Học phí (Target: Virtual Document)
-    function scrapeBackgroundData(doc, type) {
+    function scrapeBackgroundData(doc: Document, type: 'EXAM' | 'TUITION') {
         try {
             if (type === 'EXAM') {
                 const result = {
-                    midterm: [], // Giữa kỳ
-                    final: []    // Cuối kỳ
+                    midterm: [] as any[], // Giữa kỳ
+                    final: [] as any[]    // Cuối kỳ
                 };
 
                 // --- XỬ LÝ GIỮA KỲ (GK) ---
                 const tableGK = doc.getElementById('tbLichThiGK');
                 if (tableGK) {
-                    tableGK.querySelectorAll('tbody tr').forEach(row => {
-                        if (row.cells.length > 7) {
+                    tableGK.querySelectorAll('tbody tr').forEach((row: Element) => {
+                        const tr = row as HTMLTableRowElement;
+                        if (tr.cells.length > 7) {
                             result.midterm.push({
-                                id: row.cells[1]?.innerText.trim(),      // Mã MH
-                                name: row.cells[2]?.innerText.trim(),    // Tên MH
-                                group: row.cells[3]?.innerText.trim(),   // Lớp
-                                date: row.cells[4]?.innerText.trim(),    // Ngày
-                                time: row.cells[5]?.innerText.trim(),    // Giờ
-                                room: row.cells[6]?.innerText.trim(),    // Phòng
-                                place: row.cells[7]?.innerText.trim(),   // Địa điểm
+                                id: tr.cells[1]?.innerText.trim(),      // Mã MH
+                                name: tr.cells[2]?.innerText.trim(),    // Tên MH
+                                group: tr.cells[3]?.innerText.trim(),   // Lớp
+                                date: tr.cells[4]?.innerText.trim(),    // Ngày
+                                time: tr.cells[5]?.innerText.trim(),    // Giờ
+                                room: tr.cells[6]?.innerText.trim(),    // Phòng
+                                place: tr.cells[7]?.innerText.trim(),   // Địa điểm
                                 type: 'GK'
                             });
                         }
@@ -249,16 +275,17 @@
                 // --- XỬ LÝ CUỐI KỲ (CK) ---
                 const tableCK = doc.getElementById('tbLichThiCK');
                 if (tableCK) {
-                    tableCK.querySelectorAll('tbody tr').forEach(row => {
-                        if (row.cells.length > 7) {
+                    tableCK.querySelectorAll('tbody tr').forEach((row: Element) => {
+                        const tr = row as HTMLTableRowElement;
+                        if (tr.cells.length > 7) {
                             result.final.push({
-                                id: row.cells[1]?.innerText.trim(),
-                                name: row.cells[2]?.innerText.trim(),
-                                group: row.cells[3]?.innerText.trim(),
-                                date: row.cells[4]?.innerText.trim(),
-                                time: row.cells[5]?.innerText.trim(),
-                                room: row.cells[6]?.innerText.trim(),
-                                place: row.cells[7]?.innerText.trim(),
+                                id: tr.cells[1]?.innerText.trim(),
+                                name: tr.cells[2]?.innerText.trim(),
+                                group: tr.cells[3]?.innerText.trim(),
+                                date: tr.cells[4]?.innerText.trim(),
+                                time: tr.cells[5]?.innerText.trim(),
+                                room: tr.cells[6]?.innerText.trim(),
+                                place: tr.cells[7]?.innerText.trim(),
                                 type: 'CK'
                             });
                         }
@@ -268,38 +295,43 @@
             }
 
             if (type === 'TUITION') {
-                const details = [];
-                doc.querySelectorAll('.dkhp-table tbody tr').forEach(row => {
+                const details: any[] = [];
+                doc.querySelectorAll('.dkhp-table tbody tr').forEach((row: Element) => {
                     const c = row.querySelectorAll('td');
                     if (c.length > 9) {
-                        let rawName = c[2].innerText.trim();
+                        let rawName = (c[2] as HTMLElement).innerText.trim();
                         let codeMatch = rawName.match(/\[(.*?)\]/);
                         let code = codeMatch ? codeMatch[1] : "";
                         let name = rawName.replace(/\[.*?\]/g, '').trim();
-                        if (rawName) details.push({ code, name, credits: c[3].innerText.trim(), fee: c[9].innerText.trim() });
+                        if (rawName) details.push({
+                            code,
+                            name,
+                            credits: (c[3] as HTMLElement).innerText.trim(),
+                            fee: (c[9] as HTMLElement).innerText.trim()
+                        });
                     }
                 });
-                const totalEl = doc.querySelector('th[title="Tổng số phải đóng"]');
+                const totalEl = doc.querySelector('th[title="Tổng số phải đóng"]') as HTMLElement;
                 return { total: totalEl ? totalEl.innerText.trim() : "0", details };
             }
 
-        } catch (e) { 
+        } catch (e) {
             console.error("Lỗi cào dữ liệu background: ", e);
-            return type === 'EXAM' ? { midterm: [], final: [] } : { total: "0", details: [] }; 
+            return type === 'EXAM' ? { midterm: [], final: [] } : { total: "0", details: [] };
         }
         return [];
     }
 
     // --- PHẦN XỬ LÝ LỚP MỞ (NÂNG CAO) ---
 
-    function parseScheduleString(str) {
+    function parseScheduleString(str: string): string[] {
         if (!str) return [];
         const regex = /T(\d|CN)\((\d+(\.\d+)?)-(\d+(\.\d+)?)\)/g;
         const matches = str.match(regex);
         return matches ? matches : [];
     }
 
-    async function fetchPracticalClasses(lmid) {
+    async function fetchPracticalClasses(lmid: string) {
         try {
             const url = `Modules/SVDangKyHocPhan/HandlerSVDKHP.ashx?method=LopThucHanh&lmid=${lmid}&dot=1`;
             const res = await fetch(url);
@@ -309,15 +341,15 @@
     }
 
     // Hàm cào lớp mở (Nhận vào Doc ảo)
-    async function scrapeOpenClassesAsync(doc) {
+    async function scrapeOpenClassesAsync(doc: Document) {
         const table = doc.getElementById('tbPDTKQ');
         if (!table) return [];
-        
-        const rows = Array.from(table.querySelectorAll('tbody tr'));
-        const courseMap = {}; 
+
+        const rows = Array.from(table.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+        const courseMap: Record<string, any> = {};
 
         const total = rows.length;
-        
+
         for (let i = 0; i < rows.length; i++) {
             if (i % 5 === 0) showLoading(`Đang quét lớp thực hành: ${i}/${total}`);
 
@@ -340,21 +372,21 @@
 
             const thCell = cells[8];
             const thLink = thCell.querySelector('a');
-            
+
             if (thLink) {
-                const onclickText = thLink.getAttribute('onclick'); 
+                const onclickText = thLink.getAttribute('onclick') || "";
                 const match = onclickText.match(/showFormDKThucHanh\("(\d+)"/);
-                
+
                 if (match && match[1]) {
                     const lmid = match[1];
                     const thClasses = await fetchPracticalClasses(lmid);
 
                     if (thClasses && thClasses.length > 0) {
-                        thClasses.forEach(th => {
-                            const thClassID = th.Nhom; 
+                        thClasses.forEach((th: any) => {
+                            const thClassID = th.Nhom;
                             const thSchedule = parseScheduleString(th.LichHoc);
                             courseMap[subjID].classes.push({
-                                id: thClassID, 
+                                id: thClassID,
                                 schedule: [...ltSchedule, ...thSchedule]
                             });
                         });
@@ -365,7 +397,7 @@
                     courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
                 }
             } else {
-                const exists = courseMap[subjID].classes.find(c => c.id === ltClassID);
+                const exists = courseMap[subjID].classes.find((c: any) => c.id === ltClassID);
                 if (!exists) {
                     courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
                 } else {
@@ -374,24 +406,24 @@
                     }
                 }
             }
-        } 
+        }
         return Object.values(courseMap);
     }
 
     // --- LOGIC FETCH TRANG VÀ POSTBACK (CORE) ---
 
     // Hàm lấy trang web bất kỳ và trả về DOM ảo
-    async function fetchVirtualPage(url) {
+    async function fetchVirtualPage(url: string): Promise<Document> {
         const res = await fetch(url);
         const text = await res.text();
         return parseHTML(text);
     }
 
     // Hàm giả lập Submit Form để đổi học kỳ
-    async function postToGetSemester(url, originalDoc, elementIds, targetYear, targetSem) {
-        const viewState = originalDoc.getElementById('__VIEWSTATE')?.value;
-        const viewStateGen = originalDoc.getElementById('__VIEWSTATEGENERATOR')?.value;
-        const eventValidation = originalDoc.getElementById('__EVENTVALIDATION')?.value;
+    async function postToGetSemester(url: string, originalDoc: Document, elementIds: Record<string, string>, targetYear: string, targetSem: string): Promise<Document> {
+        const viewState = (originalDoc.getElementById('__VIEWSTATE') as HTMLInputElement)?.value;
+        const viewStateGen = (originalDoc.getElementById('__VIEWSTATEGENERATOR') as HTMLInputElement)?.value;
+        const eventValidation = (originalDoc.getElementById('__EVENTVALIDATION') as HTMLInputElement)?.value;
 
         if (!viewState) throw new Error("Không lấy được ViewState. Session có thể đã hết hạn.");
 
@@ -399,11 +431,11 @@
         formData.append('__EVENTTARGET', '');
         formData.append('__EVENTARGUMENT', '');
         formData.append('__VIEWSTATE', viewState);
-        if(viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
-        if(eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+        if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+        if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
 
-        formData.append(elementIds.year, targetYear); 
-        formData.append(elementIds.sem, targetSem);   
+        formData.append(elementIds.year, targetYear);
+        formData.append(elementIds.sem, targetSem);
         formData.append(elementIds.btn, elementIds.btnValue || "Xem");
 
         const res = await fetch(url, {
@@ -411,34 +443,34 @@
             body: formData,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
-        
+
         const text = await res.text();
         return parseHTML(text);
     }
 
     // Hàm lấy trang điểm "Tất cả các kỳ"
-    async function getFullGradesPage() {
+    async function getFullGradesPage(): Promise<Document> {
         const url = CONFIG.URL_DIEM;
         let doc = await fetchVirtualPage(url);
 
-        const viewState = doc.getElementById('__VIEWSTATE')?.value;
-        const viewStateGen = doc.getElementById('__VIEWSTATEGENERATOR')?.value;
-        const eventValidation = doc.getElementById('__EVENTVALIDATION')?.value;
-        
-        if (!viewState) return doc; 
+        const viewState = (doc.getElementById('__VIEWSTATE') as HTMLInputElement)?.value;
+        const viewStateGen = (doc.getElementById('__VIEWSTATEGENERATOR') as HTMLInputElement)?.value;
+        const eventValidation = (doc.getElementById('__EVENTVALIDATION') as HTMLInputElement)?.value;
+
+        if (!viewState) return doc;
 
         const formData = new URLSearchParams();
         formData.append('__EVENTTARGET', '');
         formData.append('__EVENTARGUMENT', '');
         formData.append('__VIEWSTATE', viewState);
-        if(viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
-        if(eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+        if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+        if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
 
-        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB', '--Tất cả--'); 
-        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi', '0'); 
-        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB', ''); 
-        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi', '0'); 
-        formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXemDiemThi', 'Xem Kết Quả Học Tập'); 
+        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB', '--Tất cả--');
+        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi', '0');
+        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB', '');
+        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi', '0');
+        formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXemDiemThi', 'Xem Kết Quả Học Tập');
 
         const res = await fetch(url, {
             method: 'POST',
@@ -452,16 +484,16 @@
     // === 3. MAIN RUNNER ===
     try {
         const config = await showPrivacyAndConfigModal();
-        
+
         showLoading("Đang khởi tạo & Lấy dữ liệu cơ bản...");
 
-        let gradeData = { mssv: "Unknown", grades: [] };
-        let tuitionData = { total: "0", details: [] };
-        let examData = { midterm: [], final: [] };
-        let courses = [];
+        let gradeData: { mssv: string, grades: any[] } = { mssv: "Unknown", grades: [] };
+        let tuitionData: any = { total: "0", details: [] };
+        let examData: any = { midterm: [], final: [] };
+        let courses: any[] = [];
 
         // 2. Lấy dữ liệu cơ bản (Điểm - Bắt buộc)
-        const docDiemFull = await getFullGradesPage(); 
+        const docDiemFull = await getFullGradesPage();
         gradeData = scrapeGrades(docDiemFull);
 
         showLoading("Đang tải Bảng điểm đầy đủ...");
@@ -475,9 +507,9 @@
         // 3. Xử lý Lịch thi
         if (config.getExam) {
             showLoading(`Đang lấy Lịch thi HK${config.examSem}/${config.examYear}...`);
-            
+
             let docThi = await fetchVirtualPage(URLS.LICHTHI);
-            
+
             const examPageIds = {
                 year: "ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi",
                 sem: "ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi",
@@ -485,25 +517,25 @@
                 btnValue: "Xem Lịch Thi"
             };
 
-            const curExamYear = docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_gvDKHPLichThi_ob_CbocboNamHoc_gvDKHPLichThiTB")?.value 
-                             || docThi.querySelector("input[name$='cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB']")?.value;
-            const curExamSem = docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboHocKy_gvDKHPLichThi_ob_CbocboHocKy_gvDKHPLichThiTB")?.value
-                            || docThi.querySelector("input[name$='cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB']")?.value;
+            const curExamYear = (docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_gvDKHPLichThi_ob_CbocboNamHoc_gvDKHPLichThiTB") as HTMLInputElement)?.value
+                || (docThi.querySelector("input[name$='cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB']") as HTMLInputElement)?.value;
+            const curExamSem = (docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboHocKy_gvDKHPLichThi_ob_CbocboHocKy_gvDKHPLichThiTB") as HTMLInputElement)?.value
+                || (docThi.querySelector("input[name$='cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB']") as HTMLInputElement)?.value;
 
             if (curExamYear !== config.examYear || curExamSem !== config.examSem) {
                 showLoading(`Đang chuyển Lịch thi sang HK${config.examSem}/${config.examYear}...`);
                 docThi = await postToGetSemester(URLS.LICHTHI, docThi, examPageIds, config.examYear, config.examSem);
             }
-            
+
             examData = scrapeBackgroundData(docThi, 'EXAM');
         }
 
         // 4. Xử lý Lớp Mở
         if (config.getClass) {
             showLoading(`Đang truy cập Lớp mở HK${config.classSem}/${config.classYear}...`);
-            
+
             let docLopMo = await fetchVirtualPage(URLS.LOPMO);
-            
+
             const openClassPageIds = {
                 year: "ctl00$ContentPlaceHolder1$ctl00$cboNamHoc",
                 sem: "ctl00$ContentPlaceHolder1$ctl00$cboHocKy",
@@ -511,8 +543,8 @@
                 btnValue: "Xem"
             };
 
-            const curClassYear = docLopMo.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboNamHoc")?.value;
-            const curClassSem = docLopMo.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboHocKy")?.value;
+            const curClassYear = (docLopMo.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboNamHoc") as HTMLInputElement)?.value;
+            const curClassSem = (docLopMo.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboHocKy") as HTMLInputElement)?.value;
 
             if (curClassYear !== config.classYear || curClassSem !== config.classSem) {
                 showLoading(`Đang chuyển Lớp mở sang HK${config.classSem}/${config.classYear}...`);
@@ -546,9 +578,9 @@
 
         if (window.opener) {
             window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, '*');
-            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu tổng hợp gồm:\n- Thông tin SV & Điểm thi\n- ${studentPayload.exams.midterm?.length + studentPayload.exams.final?.length} lịch thi\n- ${courses.length} lớp mở\n\nKiểm tra bên tab Tool nhé!`);
+            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu tổng hợp gồm:\n- Thông tin SV & Điểm thi\n- ${(studentPayload.exams.midterm?.length || 0) + (studentPayload.exams.final?.length || 0)} lịch thi\n- ${courses.length} lớp mở\n\nKiểm tra bên tab Tool nhé!`);
         } else {
-            const blob = new Blob([JSON.stringify(fullDataPacket, null, 2)], {type : 'application/json'});
+            const blob = new Blob([JSON.stringify(fullDataPacket, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -557,13 +589,13 @@
             alert(`✅ Đã xong! File dữ liệu đang được tải xuống.`);
         }
 
-    } catch (e) {
+    } catch (e: any) {
         hideLoading();
         if (e === "User cancelled") {
             console.log("Người dùng đã hủy.");
         } else {
             console.error(e);
-            alert("❌ Lỗi: " + e.message);
+            alert("❌ Lỗi: " + (e.message || String(e)));
         }
     }
 

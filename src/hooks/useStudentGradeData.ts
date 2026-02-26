@@ -73,19 +73,29 @@ export function useStudentGradeData() {
                 const parsedScore = parseFloat(rawScore);
                 if (!isNaN(parsedScore)) {
                     score = parsedScore;
+
+                    // IMPORTANT: Physical Education (BAA) and National Defense (ADD) logic
+                    const isExcludedFromGPA = code.startsWith('BAA0002') || code.startsWith('ADD0003') || code.startsWith('BAA0003');
+
                     if (score >= 5.0) { // Assuming 5.0 is pass mark
                         status = 'passed';
-                        accumulatedCredits += credits;
-                        totalPoints += score * credits;
-                        totalCreditsForGPA += credits;
+
+                        // Accumulate credits if it's not physical education/national defense
+                        if (!isExcludedFromGPA) {
+                            accumulatedCredits += credits;
+                            totalPoints += score * credits;
+                            totalCreditsForGPA += credits;
+                        }
                     } else {
                         status = 'retake';
                         needsRetake = true;
                         // Depending on university policy, failed credits might still accrue to total attempted, 
                         // but normally we only count passed ones for current accumulated.
                         // However failed courses might affect GPA calculations, so we add them
-                        totalPoints += score * credits;
-                        totalCreditsForGPA += credits;
+                        if (!isExcludedFromGPA) {
+                            totalPoints += score * credits;
+                            totalCreditsForGPA += credits;
+                        }
                     }
                 } else {
                     // Letter grades or weird symbols

@@ -10,39 +10,20 @@ interface CourseGrade {
   projectedGrade: number;
 }
 
-const gradeScale = {
-  'A+': 4.0,
-  'A': 4.0,
-  'B+': 3.5,
-  'B': 3.0,
-  'C+': 2.5,
-  'C': 2.0,
-  'D+': 1.5,
-  'D': 1.0,
-  'F': 0.0,
-};
-
-const initialCourses: CourseGrade[] = [
-  { id: '1', code: 'CS301', name: 'Software Engineering', credits: 4, currentGrade: 0, projectedGrade: 3.5 },
-  { id: '2', code: 'CS302', name: 'Web Development', credits: 3, currentGrade: 0, projectedGrade: 4.0 },
-  { id: '3', code: 'CS303', name: 'Machine Learning', credits: 4, currentGrade: 0, projectedGrade: 3.5 },
-  { id: '4', code: 'CS304', name: 'Mobile App Development', credits: 3, currentGrade: 0, projectedGrade: 4.0 },
-  { id: '5', code: 'CS305', name: 'Cloud Computing', credits: 3, currentGrade: 0, projectedGrade: 3.5 },
-];
-
 export function GPASimulator() {
-  const [courses, setCourses] = useState<CourseGrade[]>(initialCourses);
+  const [courses, setCourses] = useState<CourseGrade[]>([] as CourseGrade[]);
   const [currentGPA] = useState(3.68);
 
   const handleGradeChange = (id: string, value: string) => {
-    setCourses(courses.map(course => 
+    setCourses(courses.map(course =>
       course.id === id ? { ...course, projectedGrade: parseFloat(value) || 0 } : course
     ));
   };
 
   const calculateProjectedGPA = () => {
-    const totalPoints = courses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
-    const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+    const validCourses = courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD'));
+    const totalPoints = validCourses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
+    const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
     return totalCredits > 0 ? totalPoints / totalCredits : 0;
   };
 
@@ -51,9 +32,10 @@ export function GPASimulator() {
   const veryGoodTarget = 3.2;
 
   const getGradePointsNeeded = (targetGPA: number) => {
-    const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+    const validCourses = courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD'));
+    const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
     const neededPoints = targetGPA * totalCredits;
-    const currentPoints = courses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
+    const currentPoints = validCourses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
     return neededPoints - currentPoints;
   };
 
@@ -104,18 +86,16 @@ export function GPASimulator() {
         {/* Achievement Status */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-2">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-              projectedGPA >= distinctionTarget ? 'bg-green-100' : 'bg-orange-100'
-            }`}>
-              <Award className={`w-5 h-5 ${
-                projectedGPA >= distinctionTarget ? 'text-green-600' : 'text-orange-600'
-              }`} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${projectedGPA >= distinctionTarget ? 'bg-green-100' : 'bg-orange-100'
+              }`}>
+              <Award className={`w-5 h-5 ${projectedGPA >= distinctionTarget ? 'text-green-600' : 'text-orange-600'
+                }`} />
             </div>
             <div>
               <p className="text-gray-600 text-sm">Achievement</p>
               <p className="text-gray-900">
-                {projectedGPA >= distinctionTarget ? 'Distinction' : 
-                 projectedGPA >= veryGoodTarget ? 'Very Good' : 'Good'}
+                {projectedGPA >= distinctionTarget ? 'Distinction' :
+                  projectedGPA >= veryGoodTarget ? 'Very Good' : 'Good'}
               </p>
             </div>
           </div>
@@ -136,14 +116,13 @@ export function GPASimulator() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
             <div
-              className={`h-3 rounded-full transition-all duration-500 ${
-                projectedGPA >= distinctionTarget ? 'bg-green-500' : 'bg-[#004A98]'
-              }`}
+              className={`h-3 rounded-full transition-all duration-500 ${projectedGPA >= distinctionTarget ? 'bg-green-500' : 'bg-[#004A98]'
+                }`}
               style={{ width: `${Math.min((projectedGPA / distinctionTarget) * 100, 100)}%` }}
             ></div>
           </div>
           <p className="text-sm text-gray-600">
-            {projectedGPA >= distinctionTarget 
+            {projectedGPA >= distinctionTarget
               ? `You're on track! ${(projectedGPA - distinctionTarget).toFixed(2)} points above target`
               : `Need ${Math.abs(getGradePointsNeeded(distinctionTarget)).toFixed(2)} more grade points`
             }
@@ -162,14 +141,13 @@ export function GPASimulator() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
             <div
-              className={`h-3 rounded-full transition-all duration-500 ${
-                projectedGPA >= veryGoodTarget ? 'bg-green-500' : 'bg-[#004A98]'
-              }`}
+              className={`h-3 rounded-full transition-all duration-500 ${projectedGPA >= veryGoodTarget ? 'bg-green-500' : 'bg-[#004A98]'
+                }`}
               style={{ width: `${Math.min((projectedGPA / veryGoodTarget) * 100, 100)}%` }}
             ></div>
           </div>
           <p className="text-sm text-gray-600">
-            {projectedGPA >= veryGoodTarget 
+            {projectedGPA >= veryGoodTarget
               ? `You're on track! ${(projectedGPA - veryGoodTarget).toFixed(2)} points above target`
               : `Need ${Math.abs(getGradePointsNeeded(veryGoodTarget)).toFixed(2)} more grade points`
             }
@@ -183,7 +161,7 @@ export function GPASimulator() {
           <h3 className="text-gray-900">Projected Grades for Next Semester</h3>
           <p className="text-gray-600 text-sm mt-1">Input your expected grades to simulate your GPA</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -237,12 +215,11 @@ export function GPASimulator() {
                     </select>
                   </td>
                   <td className="px-6 py-4 text-sm text-center">
-                    <span className={`px-2.5 py-1 rounded-lg ${
-                      course.projectedGrade >= 4.0 ? 'bg-green-100 text-green-700' :
+                    <span className={`px-2.5 py-1 rounded-lg ${course.projectedGrade >= 4.0 ? 'bg-green-100 text-green-700' :
                       course.projectedGrade >= 3.0 ? 'bg-blue-100 text-blue-700' :
-                      course.projectedGrade >= 2.0 ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
+                        course.projectedGrade >= 2.0 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                      }`}>
                       {gradeToLetter(course.projectedGrade)}
                     </span>
                   </td>
@@ -258,7 +235,7 @@ export function GPASimulator() {
                   <strong>Total</strong>
                 </td>
                 <td className="px-6 py-4 text-sm text-center">
-                  <strong>{courses.reduce((sum, c) => sum + c.credits, 0)}</strong>
+                  <strong>{courses.filter(c => !c.code.startsWith('BAA') && !c.code.startsWith('ADD')).reduce((sum, c) => sum + c.credits, 0)}</strong>
                 </td>
                 <td colSpan={2} className="px-6 py-4 text-sm text-center text-gray-900">
                   <strong>Projected GPA</strong>

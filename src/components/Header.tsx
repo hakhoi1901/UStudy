@@ -17,7 +17,7 @@ export function Header() {
       const student = JSON.parse(studentData);
       setStudentName(student.mssv);
     }
-  }, []);
+  }, [hasData]);
 
   const semesters = [
     'Học kỳ 1, 2025-2026',

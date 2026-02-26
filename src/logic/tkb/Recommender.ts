@@ -3,9 +3,6 @@
  * Logic: Phân tích điểm -> Check Tiên quyết -> Check Nhóm ngành -> Gợi ý
  */
 
-
-import { logStatus, logSuccess, logWarning, logAlgo, logData, logError } from '../styleLog.js';
-
 class PrerequisiteGraph {
     constructor(prereqData) {
         this.hardConstraints = {}; // Tiên quyết cứng (phải học trước)
@@ -193,7 +190,7 @@ export class CourseRecommender {
 
     // HÀM CHÍNH (MAIN FUNCTION)
     recommend() {
-        logAlgo("Recommender: Đang phân tích...");
+        console.log("Recommender: Đang phân tích...");
 
         // 1. Chuẩn bị dữ liệu
         const { passed, failed, studying, passedCreditsMap } = this.getStudentStatus();
@@ -261,7 +258,7 @@ export class CourseRecommender {
             }
         });
 
-        logSuccess('Recommender: Đề xuất ${finalOutput.length} môn học.');
+        console.log(`Recommender: Đề xuất ${finalOutput.length} môn học.`);
         return finalOutput;
     }
 }
