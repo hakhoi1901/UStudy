@@ -32,7 +32,7 @@ export function GradeManagement() {
       .filter(c => c.status === 'passed')
       .reduce((sum, c) => sum + c.credits, 0);
 
-    const projectedPoints = courses.reduce((sum, c) => sum + (c.projectedGrade * c.credits), 0);
+    const projectedPoints = courses.reduce((sum, c) => sum + ((c.projectedGrade ?? 0) * c.credits), 0);
     const projectedCredits = courses.reduce((sum, c) => sum + c.credits, 0);
 
     const totalPoints = currentTotalPoints + projectedPoints;
@@ -194,18 +194,18 @@ export function GradeManagement() {
                         min="0"
                         max="10"
                         step="0.1"
-                        value={course.projectedGrade}
+                        value={course.projectedGrade ?? 0}
                         onChange={(e) => handleGradeChange(course.id, e.target.value)}
                         className="w-20 px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
                       />
                     </td>
                     <td className="px-4 py-3 text-sm text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${course.projectedGrade >= 9.0 ? 'bg-green-100 text-green-700' :
-                        course.projectedGrade >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                          course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${(course.projectedGrade ?? 0) >= 9.0 ? 'bg-green-100 text-green-700' :
+                        (course.projectedGrade ?? 0) >= 8.0 ? 'bg-blue-100 text-blue-700' :
+                          (course.projectedGrade ?? 0) >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
                             'bg-orange-100 text-orange-700'
                         }`}>
-                        {getClassification(course.projectedGrade)}
+                        {getClassification(course.projectedGrade ?? 0)}
                       </span>
                     </td>
                   </tr>

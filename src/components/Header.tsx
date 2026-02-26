@@ -7,7 +7,7 @@ import { STORAGE_KEYS } from '../config/storageKeys';
 
 export function Header() {
   const [studentName, setStudentName] = useState('');
-  const [notificationCount] = useState(3);
+  const [notificationCount] = useState(110);
   const [selectedSemester, setSelectedSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
 
@@ -102,7 +102,7 @@ export function Header() {
                 {/* User Avatar and Info */}
                 <div className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#004A98] to-[#0066CC] flex items-center justify-center shadow-sm">
-                    <span className="text-white text-sm" style={{ fontWeight: 600 }}>TN</span>
+                    <span className="text-white text-sm" style={{ fontWeight: 600 }}>{studentName.split(' ').pop()?.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="text-left">
                     <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName}</p>
