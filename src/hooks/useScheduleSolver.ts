@@ -8,8 +8,7 @@ import { runScheduleSolver } from '../logic/scheduler/Scheduler';
 import { Bitset } from '../logic/scheduler/Bitset';
 import type { ClassSection } from '../types';
 import type { Course } from '../types';
-import { STORAGE_KEYS } from '../config/storageKeys';
-import { UI_COLORS } from '../config/theme';
+import { STORAGE_KEYS, UI_COLORS } from '../config';
 
 // Tải dữ liệu DB tĩnh (fallback khi chưa có course_db_offline)
 import courseDbJson from '../logic/scheduler/Course_db.json';

@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { useAppNotification } from '../../context/NotificationContext';
 import { NoDataCard } from '../../components/ui/nodataCard';
-import { GPA_CONFIG, GPA_WARNING_THRESHOLD } from '../../config/GPA';
+import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
 import type { Course } from '../../types';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { GPAInformation } from './GPAInformation';
@@ -58,16 +57,16 @@ export function GradeManagement() {
   const projectedGPA = calculateProjectedGPA();
 
   useEffect(() => {
-    // Nếu có dữ liệu điểm, và mô phỏng GPA < GPA_WARNING_THRESHOLD
+    // Nếu có dữ liệu điểm, và mô phỏng GPA < ACADEMIC_RULES.GPA_WARNING_THRESHOLD
     // thì quăng 1 notification cảnh báo học vụ
-    if (hasData && projectedGPA < GPA_WARNING_THRESHOLD && projectedGPA > 0 && !hasAlertedRef.current) {
+    if (hasData && projectedGPA < ACADEMIC_RULES.GPA_WARNING_THRESHOLD && projectedGPA > 0 && !hasAlertedRef.current) {
       addNotification({
         title: 'Cảnh báo học vụ',
         message: `Chú ý: GPA dự kiến của bạn đang nằm ở mức ${getClassification(projectedGPA)}.`,
         type: 'warning'
       });
       hasAlertedRef.current = true; // Chỉ báo 1 lần tránh spam
-    } else if (projectedGPA >= GPA_WARNING_THRESHOLD) {
+    } else if (projectedGPA >= ACADEMIC_RULES.GPA_WARNING_THRESHOLD) {
       hasAlertedRef.current = false; // Reset nếu điểm tăng lại
     }
   }, [projectedGPA, hasData, addNotification]);

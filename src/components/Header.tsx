@@ -4,8 +4,7 @@ import { useStudentGradeData } from '../hooks/useStudentGradeData';
 import { BookmarkletButton } from './BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../context/NotificationContext';
-import { APP_CONFIG } from '../config/appConfig';
-import { STORAGE_KEYS } from '../config/storageKeys';
+import { APP_CONFIG, STORAGE_KEYS } from '../config';
 
 export function Header() {
   const [studentName, setStudentName] = useState('');

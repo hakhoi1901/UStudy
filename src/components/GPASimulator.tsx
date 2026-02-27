@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrendingUp, Award, Target } from 'lucide-react';
-import { ACADEMIC_RULES } from '../config/academic';
+import { ACADEMIC_RULES } from '../config';
 
 import { type SimulatorCourseGrade } from '../types';
 

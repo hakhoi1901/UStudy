@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
-import { STORAGE_KEYS } from '../config/storageKeys';
-import { ACADEMIC_RULES } from '../config/academic';
+import { STORAGE_KEYS, ACADEMIC_RULES } from '../config';
 
 import { type StudentCourseGrade } from '../types';
 
@@ -29,7 +28,7 @@ export function useStudentGradeData() {
         if (!studentDb || !studentDb.grades) {
             setHasData(false);
             setIsReady(true);
-            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_REQUIRED_CREDITS };
+            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS };
         }
 
         setHasData(true);
@@ -110,7 +109,7 @@ export function useStudentGradeData() {
         });
 
         const currentGPA = totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA) : 0;
-        const totalCredits = ACADEMIC_RULES.TOTAL_REQUIRED_CREDITS; // Hardcoded requirement, can be dynamic if found in future config
+        const totalCredits = ACADEMIC_RULES.TOTAL_CREDITS; // Hardcoded requirement, can be dynamic if found in future config
 
         setIsReady(true);
         return {

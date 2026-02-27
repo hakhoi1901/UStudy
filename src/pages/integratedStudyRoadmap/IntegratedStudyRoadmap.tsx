@@ -12,7 +12,7 @@ import { useCourseData } from '../../hooks/useCourseData';
 import { useScheduleSolver } from '../../hooks/useScheduleSolver';
 import { type ClassSection } from '../../types';
 import { NoDataCard } from '../../components/ui/nodataCard';
-import { STORAGE_KEYS } from '../../config/storageKeys';
+import { STORAGE_KEYS } from '../../config';
 import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';

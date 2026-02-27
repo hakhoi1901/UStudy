@@ -1,4 +1,4 @@
-import { SPLIT_SEMESTER_CONFIG } from "../config/splitSemester";
+import { SPLIT_SEMESTER_CONFIG } from "../config";
 
 // Hàm encode mới hỗ trợ 2 Phase
 // Tham số thứ 2 (subjectID) dùng để check xem môn này thuộc phase nào
@@ -78,13 +78,13 @@ export function decodeScheduleMask(parts: number[]) {
 
                 // Xác định thông tin từ bit
                 let actualBit = totalBit;
-                let phaseNote = ""; // Để debug hoặc hiển thị
+                // let phaseNote = ""; // Để debug hoặc hiển thị
 
                 if (totalBit >= PHASE_OFFSET) {
                     actualBit = totalBit - PHASE_OFFSET;
-                    phaseNote = " (P2)";
+                    // phaseNote = " (P2)";
                 } else {
-                    phaseNote = " (P1)";
+                    // phaseNote = " (P1)";
                 }
 
                 if (actualBit >= 70) continue; // Bỏ qua rác

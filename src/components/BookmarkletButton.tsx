@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { Bookmark, MousePointerClick } from 'lucide-react';
 import bookmarkletSource from '../logic/Bookmarklet.js?raw';
-import { APP_CONFIG } from '../config/appConfig';
+import { APP_CONFIG } from '../config';
 
 interface Props {
     className?: string;

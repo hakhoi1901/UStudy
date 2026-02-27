@@ -1,9 +1,8 @@
 import { Info, CheckCircle2, Search, Filter } from 'lucide-react';
 import { categories } from '../../assets/data/categories';
-import { STORAGE_KEYS } from '../../config/storageKeys';
+import { STORAGE_KEYS, ACADEMIC_RULES } from '../../config';
 import { courses as courses_cntt } from '../../assets/data/courses';
 import { CourseRowTrainingProgram } from '../../components/CourseRowTrainingProgram';
-import { ACADEMIC_RULES } from '../../config/academic';
 import { useState } from 'react';
 
 export function TrainingProgramView() {

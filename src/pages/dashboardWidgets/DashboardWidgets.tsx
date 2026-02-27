@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { NoDataCard } from '../../components/ui/nodataCard';
-import { GPA_CONFIG, MAX_GPA, TOTAL_CREDITS } from '../../config/GPA';
+import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
@@ -29,8 +29,8 @@ export function DashboardWidgets() {
     }
   }, [hasData]);
 
-  const safeTotalCredits = TOTAL_CREDITS;
-  const gpaPercentage = (currentGPA / MAX_GPA) * 100;
+  const safeTotalCredits = ACADEMIC_RULES.TOTAL_CREDITS;
+  const gpaPercentage = (currentGPA / ACADEMIC_RULES.MAX_GPA) * 100;
   const creditsPercentage = Math.min((accumulatedCredits / safeTotalCredits) * 100, 100);
 
   // format tiền tệ
@@ -115,8 +115,8 @@ export function DashboardWidgets() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-[#004A98]">{currentGPA.toFixed(2)}</span>
-              <span className="text-sm text-gray-500">/ {MAX_GPA.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-[#004A98]">{currentGPA.toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL)}</span>
+              <span className="text-sm text-gray-500">/ {ACADEMIC_RULES.MAX_GPA.toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL)}</span>
             </div>
           </div>
         </div>

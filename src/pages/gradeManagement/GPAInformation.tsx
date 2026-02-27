@@ -1,4 +1,5 @@
 import { TrendingUp, Target, Award } from "lucide-react";
+import { ACADEMIC_RULES } from "../../config";
 
 export function GPAInformation({ currentGPA, projectedGPA, getClassification }: { currentGPA: number, projectedGPA: number, getClassification: (gpa: number) => string }) {
     return (
@@ -11,7 +12,7 @@ export function GPAInformation({ currentGPA, projectedGPA, getClassification }: 
                     </div>
                     <div>
                         <p className="text-xs text-gray-600">Điểm hiện tại</p>
-                        <p className="text-2xl font-bold text-gray-900">{currentGPA.toFixed(2)}<span className="text-sm text-gray-500">/10.0</span></p>
+                        <p className="text-2xl font-bold text-gray-900">{currentGPA.toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL)}<span className="text-sm text-gray-500">/{ACADEMIC_RULES.GPA_POINT_DECIMAL < 3 ? (10.0).toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL) : '10.00'}</span></p>
                     </div>
                 </div>
 
@@ -22,7 +23,7 @@ export function GPAInformation({ currentGPA, projectedGPA, getClassification }: 
                     </div>
                     <div>
                         <p className="text-xs text-gray-600">Điểm dự kiến</p>
-                        <p className="text-2xl font-bold text-[#004A98]">{projectedGPA.toFixed(2)}<span className="text-sm text-blue-400">/10.0</span></p>
+                        <p className="text-2xl font-bold text-[#004A98]">{projectedGPA.toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL)}<span className="text-sm text-blue-400">/{ACADEMIC_RULES.GPA_POINT_DECIMAL < 3 ? (10.0).toFixed(ACADEMIC_RULES.GPA_POINT_DECIMAL) : '10.00'}</span></p>
                     </div>
                 </div>
 
