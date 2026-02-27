@@ -2,21 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { useAppNotification } from '../../context/NotificationContext';
 import { NoDataCard } from '../../components/ui/nodataCard';
-import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
+import { ACADEMIC_RULES } from '../../config';
 import type { Course } from '../../types';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { GPAInformation } from './GPAInformation';
 import { GPASimulation } from './GPASimulation';
 import { RetakeCourses } from './RetakeCourses';
 import { GradeHistory } from './GradeHistory';
-
-// interface Course {
-//   id: string;
-//   code: string;
-//   nameVi: string;
-//   credits: number;
-//   projectedGrade: number;
-// }
+import { GPACalculator } from '../../logic/GPACalculator';
 
 export function GradeManagement() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -30,54 +23,27 @@ export function GradeManagement() {
   // Lấy danh sách học kỳ
   const uniqueSemesters = Array.from(new Set(gradesHistory.map(g => g.semester))).sort((a, b) => b.localeCompare(a));
 
-  // tính GPA dự kiến
-  const calculateProjectedGPA = () => {
-    // Tính tổng điểm hiện tại (điểm * tín chỉ)
-    const currentTotalPoints = gradesHistory
-      .filter(c => c.status === 'passed')
-      .reduce((sum, c) => sum + (c.grade * c.credits), 0);
-    // Tính tổng tín chỉ hiện tại
-    const currentCredits = gradesHistory
-      .filter(c => c.status === 'passed')
-      .reduce((sum, c) => sum + c.credits, 0);
+  // Tính GPA dự kiến bằng Domain Service
+  const projectedGPA = GPACalculator.calculateProjectedGPA(
+    gradesHistory,
+    courses.map(c => ({ credits: c.credits, projectedGrade: c.projectedGrade ?? 0 }))
+  );
 
-    // Tính tổng điểm dự kiến (điểm * tín chỉ)
-    const projectedPoints = courses.reduce((sum, c) => sum + ((c.projectedGrade ?? 0) * c.credits), 0);
-    // Tính tổng tín chỉ dự kiến
-    const projectedCredits = courses.reduce((sum, c) => sum + c.credits, 0);
-
-    // Tính tổng điểm và tổng tín chỉ
-    const totalPoints = currentTotalPoints + projectedPoints;
-    const totalCredits = currentCredits + projectedCredits;
-
-    // Tính GPA dự kiến
-    return totalCredits > 0 ? totalPoints / totalCredits : 0;
-  };
-
-  const projectedGPA = calculateProjectedGPA();
+  // Xếp loại học lực bằng Domain Service
+  const getClassification = GPACalculator.getClassification;
 
   useEffect(() => {
-    // Nếu có dữ liệu điểm, và mô phỏng GPA < ACADEMIC_RULES.GPA_WARNING_THRESHOLD
-    // thì quăng 1 notification cảnh báo học vụ
     if (hasData && projectedGPA < ACADEMIC_RULES.GPA_WARNING_THRESHOLD && projectedGPA > 0 && !hasAlertedRef.current) {
       addNotification({
         title: 'Cảnh báo học vụ',
         message: `Chú ý: GPA dự kiến của bạn đang nằm ở mức ${getClassification(projectedGPA)}.`,
         type: 'warning'
       });
-      hasAlertedRef.current = true; // Chỉ báo 1 lần tránh spam
+      hasAlertedRef.current = true;
     } else if (projectedGPA >= ACADEMIC_RULES.GPA_WARNING_THRESHOLD) {
-      hasAlertedRef.current = false; // Reset nếu điểm tăng lại
+      hasAlertedRef.current = false;
     }
   }, [projectedGPA, hasData, addNotification]);
-
-  // Lấy xếp loại dựa trên GPA
-  const getClassification = (gpa: number) => {
-    for (const config of GPA_CONFIG) {
-      if (gpa >= config.value) return config.lable;
-    }
-    return GPA_CONFIG[GPA_CONFIG.length - 1].lable;
-  };
 
   // Xử lý thay đổi điểm dự kiến
   const handleGradeChange = (id: string, value: string) => {

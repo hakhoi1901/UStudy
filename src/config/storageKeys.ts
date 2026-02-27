@@ -12,5 +12,11 @@ export const STORAGE_KEYS = {
     SELECTED_BASKET: 'selected_courses_basket',
 
     // Thông báo
-    APP_NOTIFICATION: 'app_notification'
+    APP_NOTIFICATION: 'app_notification',
+
+    // Khoa, Ngành, Khóa tuyển và Năm học đã chọn
+    FACULTY_ID: 'selected_faculty_id',
+    MAJOR_ID: 'selected_major_id',
+    COHORT_ID: 'selected_cohort_id',
+    ACADEMIC_YEAR: 'selected_academic_year',
 };

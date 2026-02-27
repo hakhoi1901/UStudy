@@ -1,7 +1,6 @@
 import { X, CheckCircle2 } from 'lucide-react';
 import type { Course } from '../types';
-import { tuition_rates } from '../assets/data/tuition_rates';
-import { courses as allCoursesMeta } from '../assets/data/courses';
+import { useDepartmentData } from '../context/DepartmentContext';
 
 interface SelectionBasketViProps {
   selectedCourses: Course[];
@@ -9,6 +8,7 @@ interface SelectionBasketViProps {
 }
 
 export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: SelectionBasketViProps) {
+  const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
   const totalCredits = selectedCourses.reduce((sum, course) => sum + course.credits, 0);
 
   const estimatedTuition = selectedCourses.reduce((sum, course) => {

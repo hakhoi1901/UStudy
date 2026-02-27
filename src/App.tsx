@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
+import { DepartmentProvider } from './context/DepartmentContext';
 
 
 function AppContent() {
@@ -94,7 +95,9 @@ function AppContent() {
 export default function App() {
   return (
     <NotificationProvider>
-      <AppContent />
+      <DepartmentProvider>
+        <AppContent />
+      </DepartmentProvider>
     </NotificationProvider>
   );
 }

@@ -5,7 +5,7 @@
 import { useState, useCallback } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { runScheduleSolver } from '../logic/scheduler/Scheduler';
-import { Bitset } from '../logic/scheduler/Bitset';
+import { maskToSections } from '../logic/scheduler/ScheduleDecoder';
 import type { ClassSection } from '../types';
 import type { Course } from '../types';
 import { STORAGE_KEYS, UI_COLORS } from '../config';
@@ -27,80 +27,6 @@ export interface SolverPreferences {
 }
 
 const PALETTE = UI_COLORS.SCHEDULE_PALETTE;
-
-/**
- * Giải mã Bitset mask [u32, u32, u32, u32] thành danh sách ClassSection.
- * Encoding: bit = day*10 + (period-1), day: 0=T2...5=T7
- */
-function maskToSections(
-    maskArr: number[],
-    courseCode: string,
-    courseName: string,
-    classId: string,
-    color: string,
-    credits: number
-): ClassSection[] {
-    const sections: ClassSection[] = [];
-    const bs = new Bitset();
-    bs.loadFromData(maskArr);
-
-    for (let d = 0; d < 6; d++) { // T2..T7
-        let runStart = -1;
-        let runEnd = -1;
-
-        for (let p = 0; p < 10; p++) {
-            const bit = d * 10 + p;
-            const active = bs.test(bit);
-
-            if (active) {
-                if (runStart === -1) runStart = p;
-                runEnd = p;
-            } else {
-                // Kết thúc một đoạn liên tục
-                if (runStart !== -1) {
-                    sections.push({
-                        id: `${courseCode}-${classId}-d${d}-p${runStart}`,
-                        courseCode,
-                        courseName,
-                        courseNameVi: courseName,
-                        sectionNumber: classId,
-                        lecturer: 'Chưa cập nhật',
-                        room: '---',
-                        day: d + 2,         // d+2: 0→T2, 1→T3, ...5→T7
-                        startPeriod: runStart + 1,  // 0-indexed → 1-indexed (P1..P10)
-                        endPeriod: runEnd + 1,
-                        color,
-                        isConfirmed: true,
-                        credits,
-                    });
-                    runStart = -1;
-                    runEnd = -1;
-                }
-            }
-        }
-
-        // Flush nếu đoạn chạy tới hết ngày
-        if (runStart !== -1) {
-            sections.push({
-                id: `${courseCode}-${classId}-d${d}-p${runStart}`,
-                courseCode,
-                courseName,
-                courseNameVi: courseName,
-                sectionNumber: classId,
-                lecturer: 'Chưa cập nhật',
-                room: '---',
-                day: d + 2,
-                startPeriod: runStart + 1,
-                endPeriod: runEnd + 1,
-                color,
-                isConfirmed: true,
-                credits,
-            });
-        }
-    }
-
-    return sections;
-}
 
 export function useScheduleSolver() {
     const [solving, setSolving] = useState(false);

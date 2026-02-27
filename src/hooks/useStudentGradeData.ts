@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS, ACADEMIC_RULES } from '../config';
+import { AcademicRulesEngine } from '../logic/AcademicRulesEngine';
 
 import { type StudentCourseGrade } from '../types';
 
@@ -28,7 +29,7 @@ export function useStudentGradeData() {
         if (!studentDb || !studentDb.grades) {
             setHasData(false);
             setIsReady(true);
-            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS };
+            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS, estimatedTuition: 0 };
         }
 
         setHasData(true);
@@ -40,68 +41,25 @@ export function useStudentGradeData() {
 
         studentDb.grades.forEach((g: any, index: number) => {
             const code = String(g.id).trim();
-            const codeMatch = g.name && g.name.match(/\[(.*?)\]/);
-            let nameVi = g.name;
-
-            if (g.name && g.name.includes(" - ")) {
-                const parts = g.name.split(" - ");
-                nameVi = parts.slice(1).join(" - ").trim();
-            } else if (codeMatch) {
-                nameVi = g.name.replace(/\[.*?\]/g, '').trim();
-            }
-
+            const nameVi = AcademicRulesEngine.extractVietnameseCourseName(g.name);
             const credits = parseInt(g.credits) || 0;
-            const rawScore = g.score;
 
-            let score = 0;
-            let status: 'passed' | 'retake' | 'ongoing' = 'ongoing';
-            let needsRetake = false;
+            const score = AcademicRulesEngine.parseRawScore(g.score);
+            const status = AcademicRulesEngine.evaluateCourseStatus(score);
+            const needsRetake = status === 'retake';
 
-            // Handle ongoing or empty scores
-            if (rawScore === "" || rawScore === "(*)" || rawScore == null || rawScore === undefined) {
-                status = 'ongoing';
-                score = 0;
-            } else {
-                const parsedScore = parseFloat(rawScore);
-                if (!isNaN(parsedScore)) {
-                    score = parsedScore;
+            const { pointsForGPA, creditsForGPA, earnedCredits } = AcademicRulesEngine.calculateAccumulationParams(code, credits, score ?? 0, status);
 
-                    // IMPORTANT: Physical Education (BAA) and National Defense (ADD) logic
-                    const isExcludedFromGPA = ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => code.startsWith(prefix.id));
-
-                    if (score >= ACADEMIC_RULES.PASS_GRADE_DECIMAL) { // Assuming 5.0 is pass mark
-                        status = 'passed';
-
-                        // Accumulate credits if it's not physical education/national defense
-                        if (!isExcludedFromGPA) {
-                            accumulatedCredits += credits;
-                            totalPoints += score * credits;
-                            totalCreditsForGPA += credits;
-                        }
-                    } else {
-                        status = 'retake';
-                        needsRetake = true;
-                        // Depending on university policy, failed credits might still accrue to total attempted, 
-                        // but normally we only count passed ones for current accumulated.
-                        // However failed courses might affect GPA calculations, so we add them
-                        if (!isExcludedFromGPA) {
-                            totalPoints += score * credits;
-                            totalCreditsForGPA += credits;
-                        }
-                    }
-                } else {
-                    // Letter grades or weird symbols
-                    status = 'ongoing';
-                    score = 0;
-                }
-            }
+            accumulatedCredits += earnedCredits;
+            totalPoints += pointsForGPA;
+            totalCreditsForGPA += creditsForGPA;
 
             gradesHistory.push({
                 id: index.toString(),
                 code,
                 nameVi,
                 credits,
-                grade: score,
+                grade: score ?? 0,
                 semester: g.semester || 'Không rõ',
                 needsRetake,
                 status,
@@ -124,3 +82,4 @@ export function useStudentGradeData() {
 
     return { ...gradeData, isReady, hasData };
 }
+

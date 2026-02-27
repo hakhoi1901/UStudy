@@ -2,9 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { CourseRecommender } from '../logic/scheduler/Recommender';
 import { STORAGE_KEYS } from '../config';
-import { courses as allCoursesMeta } from '../assets/data/courses';
-import { prerequisites } from '../assets/data/prerequisites';
-import { categories } from '../assets/data/categories';
+import { useDepartmentData } from '../context/DepartmentContext';
 import type { Course } from '../types'; // Just for the interface
 
 export interface CourseGroupState {
@@ -14,6 +12,7 @@ export interface CourseGroupState {
 }
 
 export function useCourseData() {
+    const { data: { courses: allCoursesMeta, prerequisites, categories } } = useDepartmentData();
     const [stamp, setStamp] = useState(Date.now());
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
@@ -135,7 +134,7 @@ export function useCourseData() {
             all: allOpenGrouped
         };
 
-    }, [stamp]); // Phụ thuộc vào stamp để reload khi có data mới
+    }, [stamp, allCoursesMeta, prerequisites, categories]); // Phụ thuộc vào stamp + data từ DepartmentContext
 
     return {
         core: courseData.recommended?.core || [], // Keep backward compatibility for other components if any
