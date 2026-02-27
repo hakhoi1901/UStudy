@@ -114,7 +114,7 @@ export const categories = {
         ]
       },
       "GENERAL_DEFENSE": {
-        "name": "Giáo dục quốc phòng – An ninh",
+        "name": "Giáo dục quốc phòng - An ninh",
         "credits": 4,
         "mandatory": true,
         "note": "Không tính vào điểm TB, tính vào TC tích lũy",

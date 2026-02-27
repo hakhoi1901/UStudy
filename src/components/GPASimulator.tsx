@@ -2,17 +2,10 @@ import { useState } from 'react';
 import { TrendingUp, Award, Target } from 'lucide-react';
 import { ACADEMIC_RULES } from '../config/academic';
 
-interface CourseGrade {
-  id: string;
-  code: string;
-  name: string;
-  credits: number;
-  currentGrade: number;
-  projectedGrade: number;
-}
+import { type SimulatorCourseGrade } from '../types';
 
 export function GPASimulator() {
-  const [courses, setCourses] = useState<CourseGrade[]>([] as CourseGrade[]);
+  const [courses, setCourses] = useState<SimulatorCourseGrade[]>([] as SimulatorCourseGrade[]);
   const [currentGPA] = useState(ACADEMIC_RULES.DEFAULT_SIMULATOR_GPA);
 
   const handleGradeChange = (id: string, value: string) => {
@@ -23,7 +16,7 @@ export function GPASimulator() {
 
   const calculateProjectedGPA = () => {
     const validCourses = courses.filter(c =>
-      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix.id))
     );
     const totalPoints = validCourses.reduce((sum, course) => sum + (course.projectedGrade * course.credits), 0);
     const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
@@ -36,7 +29,7 @@ export function GPASimulator() {
 
   const getGradePointsNeeded = (targetGPA: number) => {
     const validCourses = courses.filter(c =>
-      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+      !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix.id))
     );
     const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
     const neededPoints = targetGPA * totalCredits;
@@ -241,7 +234,7 @@ export function GPASimulator() {
                 </td>
                 <td className="px-6 py-4 text-sm text-center">
                   <strong>{courses.filter(c =>
-                    !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix))
+                    !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix.id))
                   ).reduce((sum, c) => sum + c.credits, 0)}</strong>
                 </td>
                 <td colSpan={2} className="px-6 py-4 text-sm text-center text-gray-900">

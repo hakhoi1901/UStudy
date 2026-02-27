@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, Award, Target, ChevronDown, ChevronUp, Filter } from 'lucide-react';
-import { useStudentGradeData } from '../hooks/useStudentGradeData';
-import { useAppNotification } from '../context/NotificationContext';
-import { NoDataCard } from '../components/ui/nodataCard';
-import { GPA_CONFIG, GPA_WARNING_THRESHOLD } from '../config/GPA';
-import type { Course } from '../data/courseData';
-import { PrivacyFooter } from '../components/PrivacyFooter';
+import { useStudentGradeData } from '../../hooks/useStudentGradeData';
+import { useAppNotification } from '../../context/NotificationContext';
+import { NoDataCard } from '../../components/ui/nodataCard';
+import { GPA_CONFIG, GPA_WARNING_THRESHOLD } from '../../config/GPA';
+import type { Course } from '../../types';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 // interface Course {
 //   id: string;

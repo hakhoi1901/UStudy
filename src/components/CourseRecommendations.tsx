@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CourseRow } from './CourseRow';
 import { SelectionBasketVi } from './SelectionBasketVi';
 import { PrerequisiteFlowchart } from './PrerequisiteFlowchart';
-import type { Course } from '../data/courseData';
+import type { Course } from '../types';
 import { useCourseData } from '../hooks/useCourseData';
 import { Filter, Search, Database } from 'lucide-react';
 import { BookmarkletButton } from './BookmarkletButton';

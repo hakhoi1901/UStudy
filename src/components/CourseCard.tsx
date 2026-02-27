@@ -1,4 +1,4 @@
-import { type Course } from '../data/courseData';
+import { type Course } from '../types';
 import { CheckCircle2, XCircle, AlertCircle, GitBranch, User } from 'lucide-react';
 
 interface CourseCardProps {
@@ -11,13 +11,12 @@ interface CourseCardProps {
 export function CourseCard({ course, isSelected, onToggle, onShowFlowchart }: CourseCardProps) {
   return (
     <div
-      className={`bg-white rounded-lg p-5 shadow-sm border-2 transition-all ${
-        isSelected
+      className={`bg-white rounded-lg p-5 shadow-sm border-2 transition-all ${isSelected
           ? 'border-[#004A98] shadow-md'
           : course.needsRetake
-          ? 'border-red-200 bg-red-50/30'
-          : 'border-gray-100 hover:border-gray-200'
-      }`}
+            ? 'border-red-200 bg-red-50/30'
+            : 'border-gray-100 hover:border-gray-200'
+        }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -39,7 +38,7 @@ export function CourseCard({ course, isSelected, onToggle, onShowFlowchart }: Co
           </div>
           <p className="text-gray-600 text-sm">{course.code} • {course.credits} credits</p>
         </div>
-        
+
         <input
           type="checkbox"
           checked={isSelected}
@@ -61,7 +60,7 @@ export function CourseCard({ course, isSelected, onToggle, onShowFlowchart }: Co
               <span className="text-xs">{course.instructor}</span>
             </div>
           )}
-          
+
           {course.prerequisites.length > 0 && (
             <button
               onClick={() => onShowFlowchart(course)}

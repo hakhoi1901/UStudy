@@ -1,12 +1,12 @@
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { DashboardWidgets } from './page/DashboardWidgets';
-import { IntegratedStudyRoadmap } from './page/IntegratedStudyRoadmap';
-import { GradeManagement } from './page/GradeManagement';
-import { TuitionManagement } from './page/TuitionManagement';
-import { VisualSchedule } from './page/VisualSchedule';
+import { DashboardWidgets } from './pages/dashboardWidgets/DashboardWidgets';
+import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
+import { GradeManagement } from './pages/gradeManagement/GradeManagement';
+import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
+import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
 import { useState, useEffect } from 'react';
-import { Setting } from './page/Setting';
+import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 

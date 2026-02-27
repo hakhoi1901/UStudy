@@ -2,11 +2,11 @@
 ** Trang Quản lý học phí
 */
 
-import { PrivacyFooter } from '../components/PrivacyFooter';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 // interface RegisteredCourse {
 //   id: string;
-//   code: string;
+//   code: string;  
 //   nameVi: string;
 //   credits: number;
 //   tuitionPerCourse: number; 

@@ -5,7 +5,7 @@ import { STORAGE_KEYS } from '../config/storageKeys';
 import { courses as allCoursesMeta } from '../assets/data/courses';
 import { prerequisites } from '../assets/data/prerequisites';
 import { categories } from '../assets/data/categories';
-import type { Course } from '../data/courseData'; // Just for the interface
+import type { Course } from '../types'; // Just for the interface
 
 export interface CourseGroupState {
     core: Course[];

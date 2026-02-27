@@ -3,7 +3,8 @@ import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle } from 'lucide-rea
 
 export function CourseRowTrainingProgram({
   course,
-  status = 'none'
+  status = 'none',
+  rootStatus = 'none'
 }: {
   course: {
     course_id: string;
@@ -16,7 +17,8 @@ export function CourseRowTrainingProgram({
     category: string;
     description: string;
   },
-  status?: 'passed' | 'studying' | 'failed' | 'none'
+  status?: 'passed' | 'studying' | 'failed' | 'none',
+  rootStatus?: 'passed' | 'none'
 }) {
   const [showDescription, setShowDescription] = useState(false);
 
@@ -60,9 +62,15 @@ export function CourseRowTrainingProgram({
         );
       default:
         return (
-          <span className="block w-full text-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">
-            Chưa học
-          </span>
+          rootStatus === 'passed' ? (
+            <span className="flex items-center justify-center gap-1 w-full px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+              Hoàn thành
+            </span>
+          ) : (
+            <span className="block w-full text-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">
+              Chưa học
+            </span>
+          )
         );
     }
   };
@@ -71,7 +79,7 @@ export function CourseRowTrainingProgram({
   return (
     <div className="group">
       <div
-        className={`flex items-center gap-3 px-4 py-2.5 border rounded-lg transition-all cursor-pointer ${getContainerStyle()}`}
+        className={rootStatus === 'passed' ? `bg-blue-50 shadow-sm flex items-center gap-3 px-4 py-2.5 border rounded-lg transition-all cursor-pointer` : `flex items-center gap-3 px-4 py-2.5 border rounded-lg transition-all cursor-pointer ${getContainerStyle()}`}
         onClick={() => setShowDescription(!showDescription)}
       >
         {/* Course Code */}
@@ -86,13 +94,13 @@ export function CourseRowTrainingProgram({
 
         {/* Credits */}
         <div className="w-16 flex-shrink-0 text-center">
-          <span className="px-2 py-1 bg-white/60 border border-gray-200 text-gray-700 text-xs rounded font-medium">
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium">
             {course.credits} TC
           </span>
         </div>
 
         {/* Type Badge */}
-        <div className="w-20 flex-shrink-0">
+        <div className="w-10 flex-shrink-0">
           {course.course_type === 'BB' ? (
             <span className="px-1 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-medium inline-block truncate w-full text-center">
               {course.course_type}

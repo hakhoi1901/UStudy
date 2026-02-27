@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
-import { useStudentGradeData } from '../hooks/useStudentGradeData';
-import { NoDataCard } from '../components/ui/nodataCard';
-import { GPA_CONFIG, MAX_GPA, TOTAL_CREDITS } from '../config/GPA';
+import { useStudentGradeData } from '../../hooks/useStudentGradeData';
+import { NoDataCard } from '../../components/ui/nodataCard';
+import { GPA_CONFIG, MAX_GPA, TOTAL_CREDITS } from '../../config/GPA';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);

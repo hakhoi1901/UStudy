@@ -2,7 +2,7 @@
 ** Trang Thời khóa biểu
 */
 
-import { PrivacyFooter } from '../components/PrivacyFooter';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 export function VisualSchedule() {
   return (

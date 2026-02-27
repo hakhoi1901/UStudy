@@ -2,7 +2,7 @@
 ** Trang Cài đặt
 */
 
-import { PrivacyFooter } from '../components/PrivacyFooter';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 export function Setting() {
     return (

@@ -1,5 +1,5 @@
 import { X, CheckCircle2 } from 'lucide-react';
-import type { Course } from '../data/courseData';
+import type { Course } from '../types';
 import { tuition_rates } from '../assets/data/tuition_rates';
 import { courses as allCoursesMeta } from '../assets/data/courses';
 

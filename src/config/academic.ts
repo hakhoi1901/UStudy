@@ -3,7 +3,11 @@
  */
 export const ACADEMIC_RULES = {
     // Các mã môn không tính vào Điểm trung bình (GPA) và Tích lũy
-    EXCLUDED_COURSE_PREFIXES: ['BAA0002', 'ADD0003', 'BAA0003'],
+    EXCLUDED_COURSE_PREFIXES: [
+        { id: 'BAA0002', name: 'Giáo dục quốc phòng - An ninh' },
+        { id: 'ADD0003', name: 'Giáo dục thể chất' },
+        { id: 'BAA0003', name: 'Ngoại ngữ (Anh văn)' }
+    ],
 
     // Tổng số tín chỉ yêu cầu tốt nghiệp
     TOTAL_REQUIRED_CREDITS: 137,

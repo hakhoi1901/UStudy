@@ -3,16 +3,7 @@ import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { ACADEMIC_RULES } from '../config/academic';
 
-export interface CourseGrade {
-    id: string; // The original id from string, e.g. '1'
-    code: string; // The course code, e.g. 'CSC10001'
-    nameVi: string;
-    credits: number;
-    grade: number; // Decimal scale 10
-    semester: string;
-    needsRetake: boolean;
-    status: 'passed' | 'retake' | 'ongoing';
-}
+import { type StudentCourseGrade } from '../types';
 
 export function useStudentGradeData() {
     const [stamp, setStamp] = useState(Date.now());
@@ -43,7 +34,7 @@ export function useStudentGradeData() {
 
         setHasData(true);
 
-        const gradesHistory: CourseGrade[] = [];
+        const gradesHistory: StudentCourseGrade[] = [];
         let accumulatedCredits = 0;
         let totalPoints = 0;
         let totalCreditsForGPA = 0;
@@ -77,7 +68,7 @@ export function useStudentGradeData() {
                     score = parsedScore;
 
                     // IMPORTANT: Physical Education (BAA) and National Defense (ADD) logic
-                    const isExcludedFromGPA = ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => code.startsWith(prefix));
+                    const isExcludedFromGPA = ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => code.startsWith(prefix.id));
 
                     if (score >= ACADEMIC_RULES.PASS_GRADE_DECIMAL) { // Assuming 5.0 is pass mark
                         status = 'passed';

@@ -6,8 +6,8 @@ import { useState, useCallback } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { runScheduleSolver } from '../logic/scheduler/Scheduler';
 import { Bitset } from '../logic/scheduler/Bitset';
-import type { ClassSection } from '../data/timetableData';
-import type { Course } from '../data/courseData';
+import type { ClassSection } from '../types';
+import type { Course } from '../types';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { UI_COLORS } from '../config/theme';
 
