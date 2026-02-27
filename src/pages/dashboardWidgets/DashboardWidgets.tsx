@@ -14,7 +14,20 @@ export function DashboardWidgets() {
     setIsMounted(true);
   }, []);
 
-  // viết thêm hàm lấy hạn đóng học phí
+  //// viết thêm hàm lấy hạn đóng học phí ////
+  useEffect(() => {
+    // Giả lập gọi API lấy hạn đóng học phí
+    const fetchTuitionDueDate = async () => {
+      // Simulate API call
+      setTimeout(() => {
+        setTuitionDueDate('25/03/2026');
+      }, 500);
+    };
+
+    if (hasData) {
+      fetchTuitionDueDate();
+    }
+  }, [hasData]);
 
   const safeTotalCredits = TOTAL_CREDITS;
   const gpaPercentage = (currentGPA / MAX_GPA) * 100;

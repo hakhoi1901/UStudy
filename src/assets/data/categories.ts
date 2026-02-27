@@ -41,7 +41,7 @@ export const categories = {
               "MATH_MANDATORY": {
                 "name": "Toán bắt buộc",
                 "credits_required": 24,
-                "courses": ["MTH00021", "MTH00022", "MTH00035", "MTH00044", "MTH00045"]
+                "courses": ["MTH00021", "MTH00022", "MTH00035", "MTH00044", "MTH00045", "MTH00050"]
               },
               "MATH_ELECTIVE": {
                 "name": "Toán tự chọn",
