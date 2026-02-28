@@ -1,1 +1,0 @@
-export { courses } from '../k24/courses.ts';

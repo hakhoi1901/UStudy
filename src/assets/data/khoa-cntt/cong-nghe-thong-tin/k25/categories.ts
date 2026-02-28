@@ -1,1 +1,0 @@
-export { categories } from '../k24/categories.ts';

@@ -1,1 +1,0 @@
-export { prerequisites } from '../k24/prerequisites.ts';

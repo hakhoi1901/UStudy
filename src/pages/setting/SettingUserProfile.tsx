@@ -1,0 +1,68 @@
+import { Select } from "../../components/Selection"
+import { useDepartmentData } from "../../context/DepartmentContext";
+
+export function SettingUserProfile() {
+    const {
+        facultyId, majorId, cohortId, academicYear,
+        currentFaculty, currentMajor,
+        faculties, academicYears,
+        setFaculty, setMajor, setCohort, setAcademicYear
+    } = useDepartmentData();
+
+    return (
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
+            <h2 className="text-gray-900 font-semibold mb-4">Chương trình đào tạo</h2>
+            <p className="text-sm text-gray-500 mb-6">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Select
+                    label="Khoa"
+                    value={facultyId}
+                    options={faculties}
+                    onChange={setFaculty}
+                />
+
+                <Select
+                    label="Ngành"
+                    value={majorId}
+                    options={currentFaculty?.majors || []}
+                    onChange={setMajor}
+                />
+
+                <Select
+                    label="Khóa tuyển"
+                    value={cohortId}
+                    options={currentMajor?.cohorts || []}
+                    onChange={setCohort}
+                />
+
+                <Select
+                    label="Năm học"
+                    subLabel="(Học phí)"
+                    value={academicYear}
+                    options={academicYears}
+                    onChange={setAcademicYear}
+                />
+            </div>
+
+            {/* Current selection badges */}
+            <div className="mt-4 flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 text-xs rounded-full bg-[#004A98] text-white font-medium">
+                    {currentFaculty?.name}
+                </span>
+                <span className="text-gray-400">→</span>
+                <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 font-medium">
+                    {currentMajor?.name}
+                </span>
+                <span className="text-gray-400">→</span>
+                <span className="px-3 py-1 text-xs rounded-full bg-green-50 text-green-700 font-medium">
+                    {currentMajor?.cohorts.find(c => c.id === cohortId)?.name}
+                </span>
+                <span className="text-gray-400">|</span>
+                <span className="px-3 py-1 text-xs rounded-full bg-amber-50 text-amber-700 font-medium">
+                    {academicYears.find(y => y.id === academicYear)?.name}
+                </span>
+            </div>
+        </div>
+    );
+}
