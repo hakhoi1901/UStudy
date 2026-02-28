@@ -12,7 +12,7 @@ export interface CourseGroupState {
 }
 
 export function useCourseData() {
-    const { data: { courses: allCoursesMeta, prerequisites, categories } } = useDepartmentData();
+    const { data: { courses: allCoursesMeta, prerequisites, categories, tuitionRates } } = useDepartmentData();
     const [stamp, setStamp] = useState(Date.now());
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
@@ -56,6 +56,8 @@ export function useCourseData() {
             categories
         );
 
+        const tuition_rates = tuitionRates;
+
         // Lấy mảng gốc (được filter + gắn trạng thái từ Recommender)
         // Tạm thời comment vì recommend() chỉ trả về các môn có mở lớp. 
         // Nếu UI muốn hiển thị cả môn KHÔNG mở lớp nhưng thiếu điều kiện, cần logic khác.
@@ -86,12 +88,42 @@ export function useCourseData() {
                     ? !needsRetake
                     : !!recStatus && recStatus !== 'RETAKE';
 
+                const _credits = parseInt((meta?.credits || sourceCourse.credits) as any) || 0;
+
+                const theory_hours = parseInt((meta?.theory_hours || sourceCourse.theory_hours) as any) || 0;
+                const lab_hours = parseInt((meta?.lab_hours || sourceCourse.lab_hours) as any) || 0;
+                const exercise_hours = parseInt((meta?.exercise_hours || sourceCourse.exercise_hours) as any) || 0;
+                const totalHours = theory_hours + lab_hours + exercise_hours;
+
+                let pricePerCredit = tuition_rates?.default_price || 0;
+                const cidUpperCase = cid.trim().toUpperCase();
+
+                if (tuition_rates?.rates) {
+                    const sortedKeys = Object.keys(tuition_rates.rates).sort((a, b) => b.length - a.length);
+                    for (const key of sortedKeys) {
+                        if (cidUpperCase.startsWith(key)) {
+                            pricePerCredit = (tuition_rates.rates as any)[key];
+                            break;
+                        }
+                    }
+                }
+
+                let billingCredits = _credits;
+                if (totalHours > 0) {
+                    billingCredits = totalHours / 15;
+                }
+                const price = billingCredits * pricePerCredit;
+
                 return {
                     id: cid,
                     code: cid,
                     name: meta?.course_name_vi || sourceCourse.course_name_vi || sourceCourse.name || cid,
                     nameVi: meta?.course_name_vi || sourceCourse.course_name_vi || sourceCourse.name || cid,
-                    credits: parseInt((meta?.credits || sourceCourse.credits) as any) || 0,
+                    credits: _credits,
+                    theory_hours,
+                    lab_hours,
+                    exercise_hours,
+                    price,
                     prerequisites: prereqIds,
                     needsRetake: needsRetake,
                     isAvailable: isAvailable,
@@ -134,7 +166,7 @@ export function useCourseData() {
             all: allOpenGrouped
         };
 
-    }, [stamp, allCoursesMeta, prerequisites, categories]); // Phụ thuộc vào stamp + data từ DepartmentContext
+    }, [stamp, allCoursesMeta, prerequisites, categories, tuitionRates]); // Phụ thuộc vào stamp + data từ DepartmentContext
 
     return {
         core: courseData.recommended?.core || [], // Keep backward compatibility for other components if any

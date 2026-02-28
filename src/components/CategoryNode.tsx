@@ -19,6 +19,7 @@ interface CategoryNodeProps {
     category: any;
     depth?: number;
     isCourseExcludedFromGPA: (courseName: string) => boolean;
+    onShowFlowchart: (courseId: string) => void;
 }
 
 interface RenderResult {
@@ -26,7 +27,7 @@ interface RenderResult {
     earnedCredits: number;
 }
 
-export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedFromGPA }: CategoryNodeProps) => {
+export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedFromGPA, onShowFlowchart }: CategoryNodeProps) => {
 
     const renderCategory = (cat: any, currentDepth: number): RenderResult => {
         let hasMatchingCourses = false;
@@ -90,7 +91,7 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
                         </div>
                         <div className="space-y-2">
                             {optCourses.map((c: CourseData) => (
-                                <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} />
+                                <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} onShowFlowchart={onShowFlowchart} />
                             ))}
                         </div>
                     </div>
@@ -136,7 +137,7 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
                 {coursesToRender.length > 0 && (
                     <div className="space-y-2 mb-4">
                         {coursesToRender.map((c: CourseData) => (
-                            <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} rootStatus={isCompleted ? 'passed' : 'none'} />
+                            <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} rootStatus={isCompleted ? 'passed' : 'none'} onShowFlowchart={onShowFlowchart} />
                         ))}
                     </div>
                 )}

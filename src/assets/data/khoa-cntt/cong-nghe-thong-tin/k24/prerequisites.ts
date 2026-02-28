@@ -1,22 +1,12 @@
 export const prerequisites = [
   {
-    "course_id": "CSC00002",
-    "prereq_id": "CSC00001",
-    "type": "PREVIOUS"
-  },
-  {
-    "course_id": "CSC10002",
-    "prereq_id": "CSC10001",
-    "type": "PREVIOUS"
-  },
-  {
     "course_id": "CSC10003",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC10004",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -166,7 +156,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC13002",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREREQUISITE"
   },
   {

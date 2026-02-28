@@ -1,5 +1,6 @@
 import { type Course } from '../types';
 import { X, ArrowRight, CheckCircle } from 'lucide-react';
+import { useDepartmentData } from '../context/DepartmentContext';
 
 interface PrerequisiteFlowchartProps {
   course: Course;
@@ -7,24 +8,56 @@ interface PrerequisiteFlowchartProps {
   onClose: () => void;
 }
 
-export function PrerequisiteFlowchart({ course, allCourses, onClose }: PrerequisiteFlowchartProps) {
+interface TreeNode {
+  id: string;
+  name: string;
+  credits: number;
+  level: number;
+  isAvailable: boolean;
+  prerequisites: TreeNode[];
+}
 
-  // Build prerequisite tree recursively
-  const buildPrerequisiteTree = (courseId: string, level = 0): any => {
-    const c = allCourses.find(course => course.id === courseId);
-    if (!c) return null;
+export function PrerequisiteFlowchart({ course, allCourses, onClose }: PrerequisiteFlowchartProps) {
+  const { data: { courses: allCoursesMeta, prerequisites: prereqData } } = useDepartmentData();
+
+  // Build prerequisite tree using the full prerequisite data from DepartmentContext
+  const buildPrerequisiteTree = (courseId: string, level = 0, visited = new Set<string>()): TreeNode | null => {
+    // Prevent infinite recursion
+    if (visited.has(courseId)) return null;
+    visited.add(courseId);
+
+    // Look up course info: first try allCourses (mapped Course[]), then fall back to raw metadata
+    const mappedCourse = allCourses.find(c => c.id === courseId);
+    const metaCourse = allCoursesMeta.find(m => m.course_id === courseId);
+
+    const name = mappedCourse?.nameVi || metaCourse?.course_name_vi || courseId;
+    const credits = mappedCourse?.credits || metaCourse?.credits || 0;
+    const isAvailable = mappedCourse?.isAvailable ?? false;
+
+    // Find prerequisite IDs from the prerequisites data
+    const prereqIds = prereqData
+      .filter(p => p.course_id === courseId)
+      .map(p => p.prereq_id)
+      .filter(id => typeof id === 'string' && id.trim().length > 0 && !id.includes(' '));
+
+    const childNodes = prereqIds
+      .map(pid => buildPrerequisiteTree(pid, level + 1, new Set(visited)))
+      .filter(Boolean) as TreeNode[];
 
     return {
-      course: c,
+      id: courseId,
+      name,
+      credits,
       level,
-      prerequisites: c.prerequisites.map(preReqId => buildPrerequisiteTree(preReqId, level + 1)).filter(Boolean),
+      isAvailable,
+      prerequisites: childNodes,
     };
   };
 
   const tree = buildPrerequisiteTree(course.id);
 
   // Render tree node
-  const renderNode = (node: any, isRoot = false) => {
+  const renderNode = (node: TreeNode, isRoot = false) => {
     if (!node) return null;
 
     return (
@@ -32,24 +65,24 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
         <div
           className={`px-4 py-3 rounded-lg border-2 min-w-[200px] ${isRoot
             ? 'bg-[#004A98] text-white border-[#004A98]'
-            : node.course.isAvailable
+            : node.isAvailable
               ? 'bg-green-50 border-green-300 text-gray-900'
               : 'bg-gray-100 border-gray-300 text-gray-900'
             }`}
         >
           <div className="flex items-center justify-between mb-1">
             <span className={`text-sm ${isRoot ? 'text-white' : 'text-gray-600'}`}>
-              {node.course.code}
+              {node.id}
             </span>
-            {node.course.isAvailable && !isRoot && (
+            {node.isAvailable && !isRoot && (
               <CheckCircle className="w-4 h-4 text-green-600" />
             )}
           </div>
           <p className={`text-sm ${isRoot ? 'text-white' : 'text-gray-900'}`}>
-            {node.course.name}
+            {node.name}
           </p>
           <p className={`text-xs mt-1 ${isRoot ? 'text-blue-200' : 'text-gray-500'}`}>
-            {node.course.credits} credits
+            {node.credits} tín chỉ
           </p>
         </div>
 
@@ -59,7 +92,7 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
               <ArrowRight className="w-5 h-5 text-gray-400 rotate-90" />
             </div>
             <div className="flex gap-4">
-              {node.prerequisites.map((preReq: any, index: number) => (
+              {node.prerequisites.map((preReq, index) => (
                 <div key={index} className="relative">
                   {renderNode(preReq)}
                 </div>
@@ -77,9 +110,9 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h3 className="text-gray-900 mb-1">Prerequisite Flowchart</h3>
+            <h3 className="text-gray-900 mb-1">Sơ đồ môn tiên quyết</h3>
             <p className="text-gray-600 text-sm">
-              Course dependency tree for {course.code} - {course.name}
+              Chuỗi môn tiên quyết của {course.code} - {course.nameVi}
             </p>
           </div>
           <button
@@ -92,34 +125,34 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
 
         {/* Flowchart Content */}
         <div className="flex-1 overflow-auto p-8">
-          {course.prerequisites.length === 0 ? (
+          {!tree || tree.prerequisites.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h4 className="text-gray-900 mb-2">No Prerequisites Required</h4>
-              <p className="text-gray-600">This course has no prerequisite requirements.</p>
+              <h4 className="text-gray-900 mb-2">Không có môn tiên quyết</h4>
+              <p className="text-gray-600">Môn học này không yêu cầu môn tiên quyết.</p>
             </div>
           ) : (
             <div className="flex justify-center">
-              {renderNode(tree, true)}
+              {tree && renderNode(tree, true)}
             </div>
           )}
         </div>
 
         {/* Legend */}
         <div className="p-6 border-t border-gray-200 bg-gray-50">
-          <p className="text-sm text-gray-600 mb-3">Legend:</p>
+          <p className="text-sm text-gray-600 mb-3">Chú thích:</p>
           <div className="flex gap-6">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-[#004A98]"></div>
-              <span className="text-sm text-gray-700">Current Course</span>
+              <span className="text-sm text-gray-700">Môn đang xem</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-50 border-2 border-green-300"></div>
-              <span className="text-sm text-gray-700">Completed / Available</span>
+              <span className="text-sm text-gray-700">Đã hoàn thành / Sẵn sàng</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-gray-100 border-2 border-gray-300"></div>
-              <span className="text-sm text-gray-700">Not Available</span>
+              <span className="text-sm text-gray-700">Chưa hoàn thành</span>
             </div>
           </div>
         </div>

@@ -4,9 +4,13 @@ import { CategoryNode } from '../../components/CategoryNode';
 import type { CourseData } from '../../components/CategoryNode';
 import { useState, useMemo } from 'react';
 import { useDepartmentData } from '../../context/DepartmentContext';
+import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
+import type { Course } from '../../types';
 
 export function TrainingProgramView() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [showFlowchart, setShowFlowchart] = useState(false);
+    const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
     const { data: { courses: courses_cntt, categories } } = useDepartmentData();
 
     const studentDb = useMemo(() => {
@@ -48,6 +52,27 @@ export function TrainingProgramView() {
     const isCourseExcludedFromGPA = (courseName: string): boolean => {
         return ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => courseName.startsWith(prefix.name));
     }
+
+    const handleShowFlowchart = (courseId: string) => {
+        const fullCourseMeta = courses_cntt.find(c => c.course_id === courseId);
+        if (fullCourseMeta) {
+            const courseMapping: Course = {
+                id: fullCourseMeta.course_id,
+                code: fullCourseMeta.course_id,
+                name: fullCourseMeta.course_name_vi,
+                nameVi: fullCourseMeta.course_name_vi,
+                credits: parseInt((fullCourseMeta.credits) as any) || 0,
+                prerequisites: [],
+                needsRetake: false,
+                isAvailable: true,
+                description: fullCourseMeta.description || '',
+                descriptionVi: fullCourseMeta.description || '',
+                category: fullCourseMeta.category,
+            };
+            setFlowchartCourse(courseMapping);
+            setShowFlowchart(true);
+        }
+    };
 
 
     const preprocessedCategories = useMemo(() => {
@@ -144,10 +169,20 @@ export function TrainingProgramView() {
                         <CategoryNode
                             category={category}
                             isCourseExcludedFromGPA={isCourseExcludedFromGPA}
+                            onShowFlowchart={handleShowFlowchart}
                         />
                     </div>
                 ))}
             </div>
+
+            {/* Prerequisite Flowchart Modal */}
+            {showFlowchart && flowchartCourse && (
+                <PrerequisiteFlowchart
+                    course={flowchartCourse}
+                    allCourses={[]} // Passing empty array since PrerequisiteFlowchart now uses useDepartmentData internally
+                    onClose={() => setShowFlowchart(false)}
+                />
+            )}
         </div>
     );
 }

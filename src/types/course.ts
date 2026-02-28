@@ -13,4 +13,7 @@ export interface Course {
     price?: number;
     category?: string;
     projectedGrade?: number;
+    theory_hours?: number;
+    lab_hours?: number;
+    exercise_hours?: number;
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Info, GitBranch, ChevronUp } from 'lucide-react';
 import type { Course } from '../types';
+import { useDepartmentData } from '../context/DepartmentContext';
 
 interface CourseRowProps {
   course: Course;
@@ -11,6 +12,7 @@ interface CourseRowProps {
 
 export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: CourseRowProps) {
   const [showDescription, setShowDescription] = useState(false);
+  const { data: { courses: allCoursesMeta } } = useDepartmentData();
 
   return (
     <div className="group">
@@ -98,15 +100,33 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
               <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Mô tả môn học</p>
               <p className="text-gray-900">{course.descriptionVi}</p>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Giảng viên</p>
-                <p className="text-gray-900">{course.instructor}</p>
+                <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Học phí</p>
+                <p className="text-gray-900">
+                  {course.price ? new Intl.NumberFormat('vi-VN').format(course.price) + ' đ' : 'Chưa có thông tin'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Thời lượng học</p>
+                <div className="text-gray-900 space-y-0.5">
+                  <p>Lý Thuyết: {course.theory_hours ?? 0} tiết</p>
+                  <p>Thực hành: {course.lab_hours ?? 0} tiết</p>
+                  <p>Bài tập: {course.exercise_hours ?? 0} tiết</p>
+                </div>
               </div>
               {course.prerequisites.length > 0 && (
-                <div>
+                <div className="col-span-2">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Môn tiên quyết</p>
-                  <p className="text-gray-900">{course.prerequisites.join(', ')}</p>
+                  <div className="text-gray-900 space-y-0.5">
+                    {course.prerequisites.map(prereqId => {
+                      const meta = allCoursesMeta.find(m => m.course_id === prereqId);
+                      return (
+                        <p key={prereqId}>{prereqId} - {meta?.course_name_vi || 'Không tìm thấy'}</p>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

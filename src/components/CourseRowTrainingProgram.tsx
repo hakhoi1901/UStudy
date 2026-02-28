@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch } from 'lucide-react';
 
 export function CourseRowTrainingProgram({
   course,
   status = 'none',
-  rootStatus = 'none'
+  rootStatus = 'none',
+  onShowFlowchart
 }: {
   course: {
     course_id: string;
@@ -16,9 +17,10 @@ export function CourseRowTrainingProgram({
     course_type: string;
     category: string;
     description: string;
-  },
-  status?: 'passed' | 'studying' | 'failed' | 'none',
-  rootStatus?: 'passed' | 'none'
+  };
+  status?: 'passed' | 'studying' | 'failed' | 'none';
+  rootStatus?: 'passed' | 'none';
+  onShowFlowchart?: (courseId: string) => void;
 }) {
   const [showDescription, setShowDescription] = useState(false);
 
@@ -133,6 +135,18 @@ export function CourseRowTrainingProgram({
               <ChevronDown className="w-4 h-4 text-gray-600" />
             )}
           </button>
+          {onShowFlowchart && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowFlowchart(course.course_id);
+              }}
+              className="p-1.5 hover:bg-gray-200/60 rounded transition-colors"
+              title="Sơ đồ môn tiên quyết"
+            >
+              <GitBranch className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
         </div>
       </div>
 
