@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { useAppNotification } from '../../context/NotificationContext';
-import { NoDataCard } from '../../components/ui/nodataCard';
+import { NoDataCard } from '../../components/nodataCard';
 import { ACADEMIC_RULES } from '../../config';
 import type { Course } from '../../types';
 import { PrivacyFooter } from '../../components/PrivacyFooter';

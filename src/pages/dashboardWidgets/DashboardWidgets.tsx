@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
-import { NoDataCard } from '../../components/ui/nodataCard';
+import { NoDataCard } from '../../components/nodataCard';
 import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
 
 export function DashboardWidgets() {
@@ -14,7 +14,7 @@ export function DashboardWidgets() {
     setIsMounted(true);
   }, []);
 
-  //// viết thêm hàm lấy hạn đóng học phí ////
+  //// nhớ viết thêm hàm lấy hạn đóng học phí ////
   useEffect(() => {
     // Giả lập gọi API lấy hạn đóng học phí
     const fetchTuitionDueDate = async () => {

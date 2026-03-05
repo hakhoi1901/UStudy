@@ -37,10 +37,11 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
         if (cat.coursesData) {
             coursesToRender = cat.coursesData;
             if (coursesToRender.length > 0) hasMatchingCourses = true;
-            // Calculate credits for this specific leaf node
-            categoryEarnedCredits += coursesToRender
-                .filter(c => c.status === 'passed')
-                .reduce((sum, c) => sum + c.credits, 0);
+            // Use allCoursesData (unfiltered) for credit calculation if available
+            const coursesForCredits = cat.allCoursesData || cat.coursesData;
+            categoryEarnedCredits += coursesForCredits
+                .filter((c: CourseData) => c.status === 'passed')
+                .reduce((sum: number, c: CourseData) => sum + c.credits, 0);
         }
 
         let nestedCategories: React.ReactNode[] = [];
@@ -64,8 +65,9 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
             optionsRendered = cat.options.map((opt: any, idx: number) => {
                 const optCourses = opt.coursesData || [];
                 if (optCourses.length > 0) hasMatchingCourses = true;
-
-                const optionEarnedCredits = optCourses
+                // Use allCoursesData (unfiltered) for credit calculation if available
+                const coursesForCredits = opt.allCoursesData || optCourses;
+                const optionEarnedCredits = coursesForCredits
                     .filter((c: CourseData) => c.status === 'passed')
                     .reduce((sum: number, c: CourseData) => sum + c.credits, 0);
 

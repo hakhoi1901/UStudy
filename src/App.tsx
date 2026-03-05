@@ -25,6 +25,9 @@ function AppContent() {
         if (payload && payload.student && payload.courses) {
           localStorage.setItem('student_db_full', JSON.stringify(payload.student));
           localStorage.setItem('course_db_offline', JSON.stringify(payload.courses));
+          if (payload.meta) {
+            localStorage.setItem('import_meta', JSON.stringify(payload.meta));
+          }
 
           addNotification({
             title: 'Khởi tạo thành công',

@@ -1,17 +1,11 @@
-/* intergratedStudyRoadmap.tsx
-** Trang Lộ trình học tập tích hợp
-*/
-
 import { useState, useEffect } from 'react';
-import { Calendar, Book, ShoppingCart } from 'lucide-react';
-
+import { Calendar, Book, ShoppingCart, GitBranch } from 'lucide-react';
 import { SelectionBasketVi } from '../../components/SelectionBasketVi';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
-import type { Course } from '../../types';
 import { useCourseData } from '../../hooks/useCourseData';
 import { useScheduleSolver } from '../../hooks/useScheduleSolver';
 import { type ClassSection } from '../../types';
-import { NoDataCard } from '../../components/ui/nodataCard';
+import { NoDataCard } from '../../components/nodataCard';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage } from '../../helpers/localStorage/save';
 import { getConflicts } from '../../logic/ScheduleValidator';
@@ -19,9 +13,13 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
+import { PrerequisiteTreeView } from './PrerequisiteTreeView';
+import type { Course } from '../../types';
 
+// Danh sách các tab
 export const tabs = {
   trainingProgram: 'trainingProgram',
+  prerequisiteTree: 'prerequisiteTree',
   selection: 'selection',
   calendar: 'calendar',
 } as const;
@@ -134,6 +132,7 @@ export function IntegratedStudyRoadmap() {
         <NavigationBar
           tabs={[
             { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
+            { id: tabs.prerequisiteTree, label: 'Sơ đồ tiên quyết', icon: GitBranch },
             { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
             { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
           ]}
@@ -144,6 +143,11 @@ export function IntegratedStudyRoadmap() {
         {/* Tab 1: */}
         {activeTab === 'trainingProgram' && (
           <TrainingProgramView />
+        )}
+
+        {/* Tab 2: Sơ đồ tiên quyết */}
+        {activeTab === 'prerequisiteTree' && (
+          <PrerequisiteTreeView />
         )}
 
         {/* Tab 2: Chọn môn học */}

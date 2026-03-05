@@ -22,32 +22,52 @@ export function TrainingProgramView() {
         }
     }, []);
 
+    const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034'];
+
+    const hasBLMExemption = useMemo(() => {
+        if (!studentDb || !studentDb.grades) return false;
+        const hasExemptionByBAA00100 = studentDb.grades.some(
+            (g: any) => String(g.id).trim() === 'BAA00100' && String(g.type).trim() === 'M'
+        );
+        const hasExemptionByScore = studentDb.grades.some(
+            (g: any) => ENGLISH_COURSE_IDS.includes(String(g.id).trim()) && String(g.score).trim().toUpperCase() === 'M'
+        );
+        return hasExemptionByBAA00100 || hasExemptionByScore;
+    }, [studentDb]);
+
     const getCourseStatus = useMemo(() => (courseId: string): 'passed' | 'studying' | 'failed' | 'none' => {
+        // BLM exemption: English courses are auto-passed
+        if (hasBLMExemption && ENGLISH_COURSE_IDS.includes(courseId)) {
+            return 'passed';
+        }
+
         if (!studentDb || !studentDb.grades) return 'none';
         const gradeRecords = studentDb.grades.filter((g: any) => g.id === courseId);
         if (gradeRecords.length === 0) return 'none';
 
-        // Check if any record has a passing score (>= 5.0)
-        const hasPassed = gradeRecords.some((g: any) => {
-            const score = typeof g.score === 'string' ? parseFloat(g.score) : g.score;
-            return typeof score === 'number' && !isNaN(score) && score >= 5.0;
-        });
-        if (hasPassed) return 'passed';
+        // Check for CT (improvement) record — if exists, use only that
+        const ctRecord = gradeRecords.find((g: any) => String(g.type).trim() === 'CT');
+        const recordToCheck = ctRecord || gradeRecords[gradeRecords.length - 1];
+
+        // Check if the effective record has a passing score (>= 5.0)
+        const score = typeof recordToCheck.score === 'string' ? parseFloat(recordToCheck.score) : recordToCheck.score;
+
+        if (typeof score === 'number' && !isNaN(score) && score >= 5.0) {
+            return 'passed';
+        }
 
         // Check if latest record has empty score (currently studying)
-        const latestRecord = gradeRecords[gradeRecords.length - 1];
-        if (latestRecord.score === '' || latestRecord.score === null || latestRecord.score === undefined) {
+        if (recordToCheck.score === '' || recordToCheck.score === null || recordToCheck.score === undefined) {
             return 'studying';
         }
 
         // Has a score but didn't pass
-        const latestScore = typeof latestRecord.score === 'string' ? parseFloat(latestRecord.score) : latestRecord.score;
-        if (typeof latestScore === 'number' && !isNaN(latestScore) && latestScore < 5.0) {
+        if (typeof score === 'number' && !isNaN(score) && score < 5.0) {
             return 'failed';
         }
 
         return 'none';
-    }, [studentDb]);
+    }, [studentDb, hasBLMExemption]);
 
     const isCourseExcludedFromGPA = (courseName: string): boolean => {
         return ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => courseName.startsWith(prefix.name));
@@ -80,7 +100,7 @@ export function TrainingProgramView() {
         const attachCoursesData = (cat: any): any => {
             let processedCat = { ...cat };
 
-            const getCoursesWithStatus = (courseIds: string[]) => {
+            const getAllCoursesWithStatus = (courseIds: string[]) => {
                 return courseIds
                     .map((id) => {
                         const metadata = courses_cntt.find((c) => c.course_id === id);
@@ -90,18 +110,21 @@ export function TrainingProgramView() {
                             status: getCourseStatus(id)
                         } as CourseData;
                     })
-                    .filter((c): c is CourseData => {
-                        if (!c) return false;
-                        if (!searchTerm) return true;
-                        return (
-                            c.course_name_vi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            c.course_id.toLowerCase().includes(searchTerm.toLowerCase())
-                        );
-                    });
+                    .filter((c): c is CourseData => c !== null);
+            };
+
+            const filterBySearch = (courses: CourseData[]) => {
+                if (!searchTerm) return courses;
+                return courses.filter(c =>
+                    c.course_name_vi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    c.course_id.toLowerCase().includes(searchTerm.toLowerCase())
+                );
             };
 
             if (processedCat.courses) {
-                processedCat.coursesData = getCoursesWithStatus(processedCat.courses);
+                const allCourses = getAllCoursesWithStatus(processedCat.courses);
+                processedCat.allCoursesData = allCourses;
+                processedCat.coursesData = filterBySearch(allCourses);
             }
 
             if (processedCat.breakdown) {
@@ -112,10 +135,14 @@ export function TrainingProgramView() {
             }
 
             if (processedCat.options) {
-                processedCat.options = processedCat.options.map((opt: any) => ({
-                    ...opt,
-                    coursesData: getCoursesWithStatus(opt.courses)
-                }));
+                processedCat.options = processedCat.options.map((opt: any) => {
+                    const allCourses = getAllCoursesWithStatus(opt.courses);
+                    return {
+                        ...opt,
+                        allCoursesData: allCourses,
+                        coursesData: filterBySearch(allCourses),
+                    };
+                });
             }
 
             return processedCat;

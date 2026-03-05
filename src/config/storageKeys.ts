@@ -19,4 +19,7 @@ export const STORAGE_KEYS = {
     MAJOR_ID: 'selected_major_id',
     COHORT_ID: 'selected_cohort_id',
     ACADEMIC_YEAR: 'selected_academic_year',
+
+    // Metadata từ Bookmarklet (thời gian cào, năm/học kỳ của từng loại dữ liệu)
+    IMPORT_META: 'import_meta',
 };

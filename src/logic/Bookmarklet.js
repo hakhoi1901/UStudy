@@ -2,20 +2,28 @@
     console.clear();
 
     // === 1. CẤU HÌNH ===
-    const CONFIG = {
+    const CONFIG = window.__HCMUS_PORTAL_CONFIG__ || {
         URL_DIEM: "/SinhVien.aspx?pid=211",
         URL_LICHTHI: "/SinhVien.aspx?pid=180",
         URL_HOCPHI: "/SinhVien.aspx?pid=331",
         URL_LOPMO: "/SinhVien.aspx?pid=327",
-        TARGET_YEAR: "25-26", // Năm học mong muốn
-        TARGET_SEM: "1"       // Học kỳ mong muốn
+        URL_DKHP: "/SinhVien.aspx?pid=212",
+        TARGET_YEAR: "25-26",
+        TARGET_SEM: "1"
     };
+
+    //  Kiểm tra hạn sử dụng 30 ngày
+    if (CONFIG.EXPIRES_AT && Date.now() > CONFIG.EXPIRES_AT) {
+        alert("BẢN CẬP NHẬT MỚI\n\nBookmarklet này đã quá hạn (30 ngày). Để đảm bảo tính chính xác và tương thích, vui lòng quay lại trang HCMUS Portal Tool và kéo lại nút mới nhé!");
+        return; // Dừng toàn bộ code
+    }
 
     const URLS = {
         DIEM: "/SinhVien.aspx?pid=211",
         LICHTHI: "/SinhVien.aspx?pid=180",
         HOCPHI: "/SinhVien.aspx?pid=331",
-        LOPMO: "/SinhVien.aspx?pid=327"
+        LOPMO: "/SinhVien.aspx?pid=327",
+        DKHP: "/SinhVien.aspx?pid=212"
     };
 
     // UI: Hiển thị trạng thái loading lên màn hình hiện tại
@@ -126,6 +134,21 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div>
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
+                                    <input type="checkbox" id="opt-reg" checked onchange="toggleGroup('grp-reg', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                                    Lấy Kết Quả ĐKHP
+                                </label>
+                                <div id="grp-reg" style="display:flex;gap:10px;padding-left:28px;">
+                                    <input type="text" id="reg-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                                    <select id="reg-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
+                                        <option value="1">Học kỳ 1</option>
+                                        <option value="2" selected>Học kỳ 2</option>
+                                        <option value="3">Học kỳ 3</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -176,6 +199,9 @@
                     getClass: document.getElementById('opt-class').checked,
                     classYear: document.getElementById('class-year').value,
                     classSem: document.getElementById('class-sem').value,
+                    getReg: document.getElementById('opt-reg').checked,
+                    regYear: document.getElementById('reg-year').value,
+                    regSem: document.getElementById('reg-sem').value,
                 };
                 modal.remove();
                 resolve(config);
@@ -209,10 +235,11 @@
                 }
                 const credits = row.cells[2]?.innerText.trim();
                 const classID = row.cells[3]?.innerText.trim();
+                const type = row.cells[4]?.innerText.trim();
                 const rawScore = row.cells[5]?.innerText.trim();
                 let score = !isNaN(parseFloat(rawScore)) ? parseFloat(rawScore) : rawScore;
 
-                if (id) grades.push({ semester, id, name, credits, class: classID, score });
+                if (id) grades.push({ semester, id, name, credits, class: classID, type, score });
             });
             return { name, grades };
         } catch (e) { console.error("Grade Error", e); return { name: "Error", grades: [] }; }
@@ -269,18 +296,43 @@
 
             if (type === 'TUITION') {
                 const details = [];
-                doc.querySelectorAll('.dkhp-table tbody tr').forEach(row => {
+                doc.querySelectorAll('.dkhp-table tbody tr').forEach((row) => {
                     const c = row.querySelectorAll('td');
                     if (c.length > 9) {
                         let rawName = c[2].innerText.trim();
                         let codeMatch = rawName.match(/\[(.*?)\]/);
                         let code = codeMatch ? codeMatch[1] : "";
                         let name = rawName.replace(/\[.*?\]/g, '').trim();
-                        if (rawName) details.push({ code, name, credits: c[3].innerText.trim(), fee: c[9].innerText.trim() });
+                        if (rawName) details.push({
+                            code,
+                            name,
+                            credits: c[3].innerText.trim(),
+                            fee: c[9].innerText.trim()
+                        });
                     }
                 });
                 const totalEl = doc.querySelector('th[title="Tổng số phải đóng"]');
-                return { total: totalEl ? totalEl.innerText.trim() : "0", details };
+
+                const nhHkInput = doc.getElementById('ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_ctl00_ContentPlaceHolder1_ctl00_cboNamHoc')
+                    || doc.querySelector('input[name="ctl00$ContentPlaceHolder1$ctl00$cboNamHoc"]');
+
+                let tuitionYear = "";
+                let tuitionSem = "";
+
+                if (nhHkInput && nhHkInput.value) {
+                    const parts = nhHkInput.value.split('/');
+                    if (parts.length === 2) {
+                        tuitionYear = parts[0].trim();
+                        tuitionSem = parts[1].trim();
+                    }
+                }
+
+                return {
+                    total: totalEl ? totalEl.innerText.trim() : "0",
+                    details: details,
+                    year: tuitionYear,
+                    sem: tuitionSem
+                };
             }
 
         } catch (e) {
@@ -288,6 +340,44 @@
             return type === 'EXAM' ? { midterm: [], final: [] } : { total: "0", details: [] };
         }
         return [];
+    }
+
+    // Cào Kết quả ĐKHP (Target: Virtual Document)
+    function scrapeRegisteredCourses(doc) {
+        try {
+            const table = doc.getElementById('tbSVKQ');
+            if (!table) return [];
+
+            const registrations = [];
+            table.querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 7) return;
+
+                const courseId = cells[0]?.textContent.trim();
+                const courseName = cells[1]?.textContent.trim();
+                const classGroup = cells[2]?.textContent.trim();
+                const regType = cells[3]?.textContent.trim();
+                const courseType = cells[4]?.textContent.trim();
+                const schedule = cells[5]?.textContent.trim();
+                const startWeek = cells[6]?.textContent.trim();
+
+                if (courseId && courseId !== "Mã MH") {
+                    registrations.push({
+                        id: courseId,
+                        name: courseName,
+                        classGroup,
+                        regType,
+                        courseType,
+                        schedule,
+                        startWeek
+                    });
+                }
+            });
+            return registrations;
+        } catch (e) {
+            console.error("Registration Error", e);
+            return [];
+        }
     }
 
     // --- PHẦN XỬ LÝ LỚP MỞ ---
@@ -451,6 +541,10 @@
 
     // === 3. MAIN RUNNER ===
     try {
+        if (!window.opener) {
+            alert("Vui lòng mở Portal bằng nút \"Đăng nhập\" để công cụ hoạt động.");
+            return;
+        }
         const config = await showPrivacyAndConfigModal();
 
         showLoading("Đang khởi tạo & Lấy dữ liệu cơ bản...");
@@ -459,6 +553,7 @@
         let tuitionData = { total: "0", details: [] };
         let examData = { midterm: [], final: [] };
         let courses = [];
+        let registrations = [];
 
         // 2. Lấy dữ liệu cơ bản (Điểm - Bắt buộc)
         const docDiemFull = await getFullGradesPage();
@@ -522,6 +617,51 @@
             courses = await scrapeOpenClassesAsync(docLopMo);
         }
 
+        // 5. Xử lý Kết quả ĐKHP
+        if (config.getReg) {
+            showLoading(`Đang lấy Kết quả ĐKHP HK${config.regSem}/${config.regYear}...`);
+
+            let docDKHP = await fetchVirtualPage(URLS.DKHP);
+
+            const curRegYear = docDKHP.querySelector('input[name="ctl00$ContentPlaceHolder1$ctl00$cboNamHoc"]')?.value;
+            const curRegSem = docDKHP.querySelector('input[name="ctl00$ContentPlaceHolder1$ctl00$cboHocKy"]')?.value;
+
+            if (curRegYear !== config.regYear || curRegSem !== config.regSem) {
+                showLoading(`Đang chuyển ĐKHP sang HK${config.regSem}/${config.regYear}...`);
+
+                // FIX 3: Custom Postback dành riêng cho form ĐKHP (phải kèm thuộc tính TB của Obout)
+                const viewState = docDKHP.getElementById('__VIEWSTATE')?.value;
+                const viewStateGen = docDKHP.getElementById('__VIEWSTATEGENERATOR')?.value;
+                const eventValidation = docDKHP.getElementById('__EVENTVALIDATION')?.value;
+
+                const formData = new URLSearchParams();
+                formData.append('__EVENTTARGET', '');
+                formData.append('__EVENTARGUMENT', '');
+                formData.append('__VIEWSTATE', viewState);
+                if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+                if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+
+                // Ép thêm parameter TB để đánh lừa Obout ComboBox
+                formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc$ob_CbocboNamHocTB', config.regYear);
+                formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc', config.regYear);
+
+                formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy$ob_CbocboHocKyTB', config.regSem);
+                formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy', config.regSem);
+
+                formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXem', 'Xem');
+
+                const res = await fetch(URLS.DKHP, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+
+                docDKHP = parseHTML(await res.text());
+            }
+
+            registrations = scrapeRegisteredCourses(docDKHP);
+        }
+
         hideLoading();
 
         if (config.getClass && (!courses || courses.length === 0)) {
@@ -534,20 +674,34 @@
             grades: gradeData.grades,
             exams: examData,
             tuition: tuitionData,
+            registrations: registrations,
             program: []
+        };
+
+        const metaData = {
+            scrapedAt: new Date().toISOString(),
+            params: {
+                tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
+                exam: config.getExam ? { year: config.examYear, sem: config.examSem } : null,
+                class: config.getClass ? { year: config.classYear, sem: config.classSem } : null,
+                registration: config.getReg ? { year: config.regYear, sem: config.regSem } : null,
+            }
         };
 
         const fullDataPacket = {
             student: studentPayload,
-            courses: courses
+            courses: courses,
+            meta: metaData
         };
 
         console.log("🔥 FULL DATA PACKET:", fullDataPacket);
 
         if (window.opener) {
             window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, '*');
-            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu tổng hợp gồm:\n- Thông tin SV & Điểm thi\n- ${studentPayload.exams.midterm?.length + studentPayload.exams.final?.length} lịch thi\n- ${courses.length} lớp mở\n\nKiểm tra bên tab Tool nhé!`);
+            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu tổng hợp gồm:\n- Thông tin SV & Điểm thi\n- ${studentPayload.exams.midterm?.length + studentPayload.exams.final?.length} lịch thi\n- ${courses.length} lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
         } else {
+            // giờ cụm này kh hoạt động nma để lại cho HK nha :>
+            alert(`Vui lòng mở Portal bằng nút "Đăng nhập" để công cụ hoạt động.`);
             const blob = new Blob([JSON.stringify(fullDataPacket, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

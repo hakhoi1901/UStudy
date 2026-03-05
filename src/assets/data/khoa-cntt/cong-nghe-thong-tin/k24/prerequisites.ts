@@ -21,7 +21,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC10105",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -181,12 +181,12 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC13007",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREREQUISITE"
   },
   {
     "course_id": "CSC13008",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREREQUISITE"
   },
   {
@@ -196,7 +196,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC13009",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREREQUISITE"
   },
   {
@@ -216,7 +216,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC13102",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREREQUISITE"
   },
   {
@@ -306,7 +306,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC14007",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -361,7 +361,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC14117",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -376,7 +376,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC14120",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -401,7 +401,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC15003",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -411,7 +411,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC15005",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -426,7 +426,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC15007",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -436,7 +436,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC15009",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -526,37 +526,37 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC16001",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16002",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16003",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16004",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16005",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16101",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16102",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -566,27 +566,27 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC16104",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16105",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16106",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16107",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
     "course_id": "CSC16109",
-    "prereq_id": "CSC10001",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -626,7 +626,7 @@ export const prerequisites = [
   },
   {
     "course_id": "CSC17104",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
@@ -641,7 +641,7 @@ export const prerequisites = [
   },
   {
     "course_id": "MTH00050",
-    "prereq_id": "CSC10002",
+    "prereq_id": "CSC10012",
     "type": "PREVIOUS"
   },
   {
