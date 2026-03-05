@@ -5,6 +5,9 @@ export const STORAGE_KEYS = {
     // Dữ liệu sinh viên đầy đủ (thông tin cá nhân, điểm thi, lịch thi)
     STUDENT_DB: 'student_db_full',
 
+    // Dữ liệu RAW nguyên vẹn từ Portal (chưa xử lý)
+    RAW_STUDENT_DB: 'raw_student_db',
+
     // Dữ liệu danh sách môn học offline được cào về
     COURSE_DB_OFFLINE: 'course_db_offline',
 

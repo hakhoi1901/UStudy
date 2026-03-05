@@ -8,7 +8,7 @@ export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
   const [gpaStatus, setGpaStatus] = useState('');
   const { currentGPA, accumulatedCredits, totalCredits, estimatedTuition, isReady, hasData } = useStudentGradeData();
-  const [tuitionDueDate, setTuitionDueDate] = useState('15/03/2026');
+  const [tuitionDueDate, setTuitionDueDate] = useState('NaN');
 
   useEffect(() => {
     setIsMounted(true);
@@ -20,7 +20,7 @@ export function DashboardWidgets() {
     const fetchTuitionDueDate = async () => {
       // Simulate API call
       setTimeout(() => {
-        setTuitionDueDate('25/03/2026');
+        setTuitionDueDate('NaN');
       }, 500);
     };
 

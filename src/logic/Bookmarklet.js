@@ -215,7 +215,6 @@
     function scrapeGrades(doc) {
         try {
             let name = "Unknown";
-            // Lấy name từ document ảo hoặc document thật nếu không thấy
             const userEl = doc.getElementById('user_tools') || document.getElementById('user_tools');
             if (userEl) {
                 const match = userEl.innerText.match(/Xin chào\s+([^|]+)/i);
@@ -227,19 +226,19 @@
                 if (row.cells.length < 6) return;
                 const semester = row.cells[0]?.innerText.trim();
                 const rawSubj = row.cells[1]?.innerText.trim();
-                let id = "", name = rawSubj;
+                let id = "", subjName = rawSubj;
                 if (rawSubj.includes(" - ")) {
                     const parts = rawSubj.split(" - ");
                     id = parts[0].trim();
-                    name = parts.slice(1).join(" - ").trim();
+                    subjName = parts.slice(1).join(" - ").trim();
                 }
                 const credits = row.cells[2]?.innerText.trim();
                 const classID = row.cells[3]?.innerText.trim();
                 const type = row.cells[4]?.innerText.trim();
-                const rawScore = row.cells[5]?.innerText.trim();
-                let score = !isNaN(parseFloat(rawScore)) ? parseFloat(rawScore) : rawScore;
+                const score = row.cells[5]?.innerText.trim();
+                const notes = row.cells[6] ? row.cells[6].innerText.trim() : "";
 
-                if (id) grades.push({ semester, id, name, credits, class: classID, type, score });
+                if (id) grades.push({ semester, id, name: subjName, credits, class: classID, type, score, notes });
             });
             return { name, grades };
         } catch (e) { console.error("Grade Error", e); return { name: "Error", grades: [] }; }
@@ -250,35 +249,17 @@
         try {
             if (type === 'EXAM') {
                 const result = {
-                    midterm: [], // Giữa kỳ
-                    final: []    // Cuối kỳ
+                    midterm: [],
+                    final: []
                 };
 
-                // --- XỬ LÝ GIỮA KỲ (GK) ---
-                const tableGK = doc.getElementById('tbLichThiGK');
-                if (tableGK) {
-                    tableGK.querySelectorAll('tbody tr').forEach(row => {
+                const scrapeExamTable = (table, examType) => {
+                    if (!table) return [];
+                    const rows = [];
+                    table.querySelectorAll('tbody tr').forEach(row => {
                         if (row.cells.length > 7) {
-                            result.midterm.push({
-                                id: row.cells[1]?.innerText.trim(),      // Mã MH
-                                name: row.cells[2]?.innerText.trim(),    // Tên MH
-                                group: row.cells[3]?.innerText.trim(),   // Lớp
-                                date: row.cells[4]?.innerText.trim(),    // Ngày
-                                time: row.cells[5]?.innerText.trim(),    // Giờ
-                                room: row.cells[6]?.innerText.trim(),    // Phòng
-                                place: row.cells[7]?.innerText.trim(),   // Địa điểm
-                                type: 'GK'
-                            });
-                        }
-                    });
-                }
-
-                // --- XỬ LÝ CUỐI KỲ (CK) ---
-                const tableCK = doc.getElementById('tbLichThiCK');
-                if (tableCK) {
-                    tableCK.querySelectorAll('tbody tr').forEach(row => {
-                        if (row.cells.length > 7) {
-                            result.final.push({
+                            rows.push({
+                                stt: row.cells[0]?.innerText.trim(),
                                 id: row.cells[1]?.innerText.trim(),
                                 name: row.cells[2]?.innerText.trim(),
                                 group: row.cells[3]?.innerText.trim(),
@@ -286,11 +267,16 @@
                                 time: row.cells[5]?.innerText.trim(),
                                 room: row.cells[6]?.innerText.trim(),
                                 place: row.cells[7]?.innerText.trim(),
-                                type: 'CK'
+                                notes: row.cells[8] ? row.cells[8].innerText.trim() : "",
+                                type: examType
                             });
                         }
                     });
-                }
+                    return rows;
+                };
+
+                result.midterm = scrapeExamTable(doc.getElementById('tbLichThiGK'), 'GK');
+                result.final = scrapeExamTable(doc.getElementById('tbLichThiCK'), 'CK');
                 return result;
             }
 
@@ -299,19 +285,44 @@
                 doc.querySelectorAll('.dkhp-table tbody tr').forEach((row) => {
                     const c = row.querySelectorAll('td');
                     if (c.length > 9) {
-                        let rawName = c[2].innerText.trim();
-                        let codeMatch = rawName.match(/\[(.*?)\]/);
-                        let code = codeMatch ? codeMatch[1] : "";
-                        let name = rawName.replace(/\[.*?\]/g, '').trim();
-                        if (rawName) details.push({
-                            code,
-                            name,
-                            credits: c[3].innerText.trim(),
-                            fee: c[9].innerText.trim()
+                        const rawSubject = c[2] ? c[2].innerText.trim() : "";
+                        if (rawSubject) details.push({
+                            stt: c[0]?.innerText.trim(),
+                            semester: c[1]?.innerText.trim(),
+                            subject: rawSubject,
+                            credits: c[3]?.innerText.trim(),
+                            periods: c[4]?.innerText.trim(),
+                            tuitionCredits: c[5]?.innerText.trim(),
+                            originalFee: c[6]?.innerText.trim(),
+                            discount: c[7]?.innerText.trim(),
+                            support: c[8]?.innerText.trim(),
+                            fee: c[9]?.innerText.trim(),
+                            cost: c[10] ? c[10].innerText.trim() : "",
+                            notes: c[11] ? c[11].innerText.trim() : ""
                         });
                     }
                 });
-                const totalEl = doc.querySelector('th[title="Tổng số phải đóng"]');
+
+                // Cào footer totals
+                const footerRows = doc.querySelectorAll('.dkhp-table tfoot tr');
+                let totalCredits = "", totalPeriods = "", totalTuitionCredits = "", totalFee = "", totalActualFee = "", totalDue = "", updatedDate = "";
+
+                footerRows.forEach(row => {
+                    const ths = row.querySelectorAll('th');
+                    ths.forEach(th => {
+                        const title = th.getAttribute('title') || "";
+                        const text = th.innerText.trim();
+                        if (title === 'Số Tín Chỉ') totalCredits = text;
+                        if (title === 'Số Tiết') totalPeriods = text;
+                        if (title === 'Số TCHP') totalTuitionCredits = text;
+                        if (title === 'Học Phí') totalFee = text;
+                        if (title === 'Học Phí Thực Đóng') totalActualFee = text;
+                        if (title === 'Tổng số phải đóng') totalDue = text;
+                    });
+                    // Ngày cập nhật
+                    const italic = row.querySelector('i');
+                    if (italic) updatedDate = italic.innerText.trim();
+                });
 
                 const nhHkInput = doc.getElementById('ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_ctl00_ContentPlaceHolder1_ctl00_cboNamHoc')
                     || doc.querySelector('input[name="ctl00$ContentPlaceHolder1$ctl00$cboNamHoc"]');
@@ -328,8 +339,16 @@
                 }
 
                 return {
-                    total: totalEl ? totalEl.innerText.trim() : "0",
                     details: details,
+                    totals: {
+                        credits: totalCredits,
+                        periods: totalPeriods,
+                        tuitionCredits: totalTuitionCredits,
+                        fee: totalFee,
+                        actualFee: totalActualFee,
+                        totalDue: totalDue
+                    },
+                    updatedDate: updatedDate,
                     year: tuitionYear,
                     sem: tuitionSem
                 };
@@ -337,7 +356,7 @@
 
         } catch (e) {
             console.error("Lỗi cào dữ liệu background: ", e);
-            return type === 'EXAM' ? { midterm: [], final: [] } : { total: "0", details: [] };
+            return type === 'EXAM' ? { midterm: [], final: [] } : { details: [], totals: {}, year: "", sem: "" };
         }
         return [];
     }
@@ -380,92 +399,36 @@
         }
     }
 
-    // --- PHẦN XỬ LÝ LỚP MỞ ---
+    // --- PHẦN CÀO LỚP MỞ (RAW) ---
 
-    function parseScheduleString(str) {
-        if (!str) return [];
-        const regex = /T(\d|CN)\((\d+(\.\d+)?)-(\d+(\.\d+)?)\)/g;
-        const matches = str.match(regex);
-        return matches ? matches : [];
-    }
-
-    async function fetchPracticalClasses(lmid) {
-        try {
-            const url = `Modules/SVDangKyHocPhan/HandlerSVDKHP.ashx?method=LopThucHanh&lmid=${lmid}&dot=1`;
-            const res = await fetch(url);
-            const json = await res.json();
-            return json.LopMoTHs || [];
-        } catch (e) { return []; }
-    }
-
-    // Hàm cào lớp mở (Nhận vào Doc ảo)
-    async function scrapeOpenClassesAsync(doc) {
+    // Cào flat array tất cả rows, không xử lý gì
+    function scrapeOpenClassesRaw(doc) {
         const table = doc.getElementById('tbPDTKQ');
         if (!table) return [];
 
-        const rows = Array.from(table.querySelectorAll('tbody tr'));
-        const courseMap = {};
-
-        const total = rows.length;
-
-        for (let i = 0; i < rows.length; i++) {
-            if (i % 3 === 0) showLoading(`Đang quét lớp thực hành: ${i}/${total}`);
-
-            const row = rows[i];
+        const rows = [];
+        table.querySelectorAll('tbody tr').forEach(row => {
             const cells = row.cells;
-            if (cells.length < 9) continue;
+            if (cells.length < 9) return;
 
-            const subjID = cells[0].innerText.trim();
-            const subjName = cells[1].innerText.trim();
-            const ltClassID = cells[2].innerText.trim();
-            const credits = parseInt(cells[3].innerText.trim()) || 0;
-            const ltScheduleStr = cells[7] ? cells[7].innerText.trim() : "";
-            const ltSchedule = parseScheduleString(ltScheduleStr);
+            const courseId = cells[0]?.innerText.trim();
+            if (!courseId) return;
 
-            if (!subjID) continue;
-
-            if (!courseMap[subjID]) {
-                courseMap[subjID] = { id: subjID, name: subjName, credits: credits, classes: [] };
-            }
-
-            const thCell = cells[8];
-            const thLink = thCell.querySelector('a');
-
-            if (thLink) {
-                const onclickText = thLink.getAttribute('onclick');
-                const match = onclickText.match(/showFormDKThucHanh\("(\d+)"/);
-
-                if (match && match[1]) {
-                    const lmid = match[1];
-                    const thClasses = await fetchPracticalClasses(lmid);
-
-                    if (thClasses && thClasses.length > 0) {
-                        thClasses.forEach(th => {
-                            const thClassID = th.Nhom;
-                            const thSchedule = parseScheduleString(th.LichHoc);
-                            courseMap[subjID].classes.push({
-                                id: thClassID,
-                                schedule: [...ltSchedule, ...thSchedule]
-                            });
-                        });
-                    } else {
-                        courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
-                    }
-                } else {
-                    courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
-                }
-            } else {
-                const exists = courseMap[subjID].classes.find(c => c.id === ltClassID);
-                if (!exists) {
-                    courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
-                } else {
-                    if (ltSchedule.length > 0) {
-                        exists.schedule = [...new Set([...exists.schedule, ...ltSchedule])];
-                    }
-                }
-            }
-        }
-        return Object.values(courseMap);
+            rows.push({
+                id: courseId,
+                name: cells[1]?.innerText.trim(),
+                className: cells[2]?.innerText.trim(),
+                credits: cells[3]?.innerText.trim(),
+                capacity: cells[4]?.innerText.trim(),
+                enrolled: cells[5]?.innerText.trim(),
+                cohort: cells[6]?.innerText.trim(),
+                schedule: cells[7]?.innerText.trim(),
+                practicalGroup: cells[8]?.innerText.trim(),
+                exerciseGroup: cells[9] ? cells[9].innerText.trim() : "",
+                location: cells[10] ? cells[10].innerText.trim() : ""
+            });
+        });
+        return rows;
     }
 
     // --- LOGIC FETCH TRANG VÀ POSTBACK (CORE) ---
@@ -550,7 +513,7 @@
         showLoading("Đang khởi tạo & Lấy dữ liệu cơ bản...");
 
         let gradeData = { name: "Unknown", grades: [] };
-        let tuitionData = { total: "0", details: [] };
+        let tuitionData = { details: [], totals: {}, year: "", sem: "" };
         let examData = { midterm: [], final: [] };
         let courses = [];
         let registrations = [];
@@ -614,7 +577,8 @@
                 docLopMo = await postToGetSemester(URLS.LOPMO, docLopMo, openClassPageIds, config.classYear, config.classSem);
             }
 
-            courses = await scrapeOpenClassesAsync(docLopMo);
+            showLoading(`Đang cào dữ liệu lớp mở...`);
+            courses = scrapeOpenClassesRaw(docLopMo);
         }
 
         // 5. Xử lý Kết quả ĐKHP
@@ -669,13 +633,14 @@
             return;
         }
 
-        const studentPayload = {
+        // Raw data — nguyên vẹn từ Portal, không xử lý
+        const rawData = {
             name: gradeData.name,
             grades: gradeData.grades,
             exams: examData,
             tuition: tuitionData,
             registrations: registrations,
-            program: []
+            courses: courses
         };
 
         const metaData = {
@@ -689,8 +654,7 @@
         };
 
         const fullDataPacket = {
-            student: studentPayload,
-            courses: courses,
+            raw: rawData,
             meta: metaData
         };
 
@@ -698,7 +662,7 @@
 
         if (window.opener) {
             window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, '*');
-            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu tổng hợp gồm:\n- Thông tin SV & Điểm thi\n- ${studentPayload.exams.midterm?.length + studentPayload.exams.final?.length} lịch thi\n- ${courses.length} lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
+            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades.length} dòng điểm\n- ${(rawData.exams.midterm?.length || 0) + (rawData.exams.final?.length || 0)} lịch thi\n- ${rawData.tuition.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
         } else {
             // giờ cụm này kh hoạt động nma để lại cho HK nha :>
             alert(`Vui lòng mở Portal bằng nút "Đăng nhập" để công cụ hoạt động.`);

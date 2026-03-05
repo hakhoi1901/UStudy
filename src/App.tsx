@@ -10,6 +10,7 @@ import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider } from './context/DepartmentContext';
+import { processRawData } from './logic/dataProcessor';
 
 
 function AppContent() {
@@ -22,16 +23,24 @@ function AppContent() {
       // Listen for data from the Bookmarklet
       if (event.data && event.data.type === 'IMPORT_FULL_DATA') {
         const payload = event.data.payload;
-        if (payload && payload.student && payload.courses) {
-          localStorage.setItem('student_db_full', JSON.stringify(payload.student));
-          localStorage.setItem('course_db_offline', JSON.stringify(payload.courses));
+        if (payload && payload.raw) {
+          // 1. Lưu bản RAW nguyên vẹn
+          localStorage.setItem('raw_student_db', JSON.stringify(payload.raw));
+
+          // 2. Xử lý raw → processed (format cũ cho code hiện tại)
+          const { student, courses } = processRawData(payload.raw);
+
+          // 3. Lưu bản đã xử lý (backward compatible)
+          localStorage.setItem('student_db_full', JSON.stringify(student));
+          localStorage.setItem('course_db_offline', JSON.stringify(courses));
+
           if (payload.meta) {
             localStorage.setItem('import_meta', JSON.stringify(payload.meta));
           }
 
           addNotification({
             title: 'Khởi tạo thành công',
-            message: `Dữ liệu hệ thống cho sinh viên ${payload.student.name} đã sẵn sàng.`,
+            message: `Dữ liệu hệ thống cho sinh viên ${student.name} đã sẵn sàng.`,
             type: 'success'
           });
         }
