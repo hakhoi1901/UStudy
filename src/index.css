@@ -3002,3 +3002,67 @@ html {
     transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
   }
 }
+
+/* ==================== ADDITIONAL CLASSES FOR TUITION & SCHEDULE PAGES ==================== */
+
+@layer utilities {
+  /* Max-width */
+  .max-w-\[1600px\] { max-width: 1600px; }
+  .max-w-\[1800px\] { max-width: 1800px; }
+
+  /* Min-width */
+  .min-w-\[64px\] { min-width: 64px; }
+  .min-w-\[165px\] { min-width: 165px; }
+  .min-w-\[1100px\] { min-width: 1100px; }
+  .min-w-\[1200px\] { min-width: 1200px; }
+
+  /* Custom font sizes */
+  .text-\[7px\] { font-size: 7px; }
+  .text-\[8px\] { font-size: 8px; }
+  .text-\[9px\] { font-size: 9px; }
+  .text-\[10px\] { font-size: 10px; }
+  .text-\[11px\] { font-size: 11px; }
+
+  /* HCMUS brand colors */
+  .bg-\[\#004A98\] { background-color: #004A98; }
+  .text-\[\#004A98\] { color: #004A98; }
+  .hover\:bg-\[\#003d7a\]:hover { background-color: #003d7a; }
+  .hover\:bg-\[\#003A78\]:hover { background-color: #003A78; }
+  .from-\[\#004A98\] { --tw-gradient-from: #004A98; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #004A9800); }
+  .to-\[\#0066CC\] { --tw-gradient-to: #0066CC; }
+  .hover\:from-\[\#003A78\]:hover { --tw-gradient-from: #003A78; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #003A7800); }
+  .hover\:to-\[\#0052A3\]:hover { --tw-gradient-to: #0052A3; }
+
+  /* Opacity variants for green */
+  .bg-green-50\/50 { background-color: color-mix(in srgb, oklch(.982 .018 155.826) 50%, transparent); }
+  .bg-green-50\/30 { background-color: color-mix(in srgb, oklch(.982 .018 155.826) 30%, transparent); }
+  .bg-blue-50\/50 { background-color: color-mix(in srgb, oklch(.97 .014 254.604) 50%, transparent); }
+
+  /* Border colors for course cards */
+  .border-blue-500 { border-color: oklch(.623 .214 259.815); }
+  .border-green-500 { border-color: oklch(.723 .219 149.579); }
+  .border-yellow-500 { border-color: oklch(.795 .184 86.047); }
+  .border-purple-500 { border-color: oklch(.627 .265 303.9); }
+  .border-l-blue-600 { border-left-color: oklch(.546 .245 262.881); }
+  .border-l-green-600 { border-left-color: oklch(.627 .194 149.214); }
+  .border-l-yellow-600 { border-left-color: oklch(.681 .162 75.834); }
+  .border-l-purple-600 { border-left-color: oklch(.558 .288 302.321); }
+
+  /* Hover variants for course cards */
+  .hover\:bg-blue-100:hover { background-color: oklch(.932 .032 255.585); }
+  .hover\:bg-green-100:hover { background-color: oklch(.962 .044 156.743); }
+  .hover\:bg-yellow-100:hover { background-color: oklch(.973 .071 103.193); }
+  .hover\:bg-purple-100:hover { background-color: oklch(.946 .033 307.174); }
+
+  /* Purple shades */
+  .bg-purple-50 { background-color: oklch(.977 .014 308.299); }
+  .bg-purple-100 { background-color: oklch(.946 .033 307.174); }
+  .border-purple-600 { border-color: oklch(.558 .288 302.321); }
+  .text-purple-600 { color: oklch(.558 .288 302.321); }
+  .bg-purple-600 { background-color: oklch(.558 .288 302.321); }
+
+  /* Ring utilities */
+  .ring-2 { --tw-ring-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color, #3b82f6); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+  .ring-green-500 { --tw-ring-color: oklch(.723 .219 149.579); }
+  .ring-inset { --tw-ring-inset: inset; }
+}
