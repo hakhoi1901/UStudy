@@ -3,7 +3,7 @@ import { readFromStorage } from '../helpers/localStorage/save';
 import { CourseRecommender } from '../logic/scheduler/Recommender';
 import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
-import type { Course } from '../types'; // Just for the interface
+import type { Course } from '../types';
 
 export interface CourseGroupState {
     core: Course[];
@@ -17,12 +17,9 @@ export function useCourseData() {
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
 
-    // Lắng nghe sự kiện từ Bookmarklet
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
-            // Bookmarklet gửi message có type IMPORT_FULL_DATA
             if (event.data && event.data.type === 'IMPORT_FULL_DATA') {
-                // Cập nhật stamp để kích hoạt lại useMemo đọc data mới
                 setStamp(Date.now());
             }
         };
@@ -31,11 +28,9 @@ export function useCourseData() {
         return () => window.removeEventListener('message', handleMessage);
     }, []);
 
-    // Tính toán Recommender bên trong useMemo để tránh re-render nhiều lần
     const courseData = useMemo(() => {
         setIsReady(false)
 
-        // Đọc dữ liệu từ localStorage
         const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null)
         const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
 
@@ -58,17 +53,11 @@ export function useCourseData() {
 
         const tuition_rates = tuitionRates;
 
-        // Lấy mảng gốc (được filter + gắn trạng thái từ Recommender)
-        // Tạm thời comment vì recommend() chỉ trả về các môn có mở lớp. 
-        // Nếu UI muốn hiển thị cả môn KHÔNG mở lớp nhưng thiếu điều kiện, cần logic khác.
-        // Tạm thời gọi hàm getStudentStatus và tự map để hiện đủ danh sách môn tĩnh.
         const { failed } = recommender.getStudentStatus();
 
-        // Chạy để sinh recommendationsMap và lấy danh sách môn ĐƯỢC GỢI Ý (ĐÃ MỞ LỚP)
         const recommendedCourses = recommender.recommend();
         const recMap = (recommender as any).recommendationsMap;
 
-        // Helper function to map courses
         const mapCourseList = (sourceList: any[], isAllView: boolean = false): Course[] => {
             return sourceList.map((sourceCourse: any) => {
                 const cid = sourceCourse.id || sourceCourse.course_id;
@@ -82,8 +71,6 @@ export function useCourseData() {
 
                 const needsRetake = isFailed || recStatus === 'RETAKE';
 
-                // In "All Open Courses" view, everything is available unless it's a retake.
-                // In "Recommended" view, only recommended non-retake courses are available.
                 const isAvailable = isAllView
                     ? !needsRetake
                     : !!recStatus && recStatus !== 'RETAKE';

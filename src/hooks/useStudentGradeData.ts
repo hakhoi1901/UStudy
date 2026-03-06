@@ -38,17 +38,6 @@ export function useStudentGradeData() {
 
         const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034'];
 
-        // Debug: Log all English-related grades
-        const englishRelatedGrades = studentDb.grades.filter(
-            (g: any) => ENGLISH_COURSE_IDS.includes(String(g.id).trim()) || String(g.id).trim() === 'BAA00100'
-        );
-        console.group('🔍 DEBUG: Dữ liệu Anh văn trong grades');
-        console.log('Tất cả bản ghi liên quan Anh văn:', englishRelatedGrades);
-        englishRelatedGrades.forEach((g: any) => {
-            console.log(`  ${g.id} | type="${g.type}" | score="${g.score}" | class="${g.class}"`);
-        });
-        console.groupEnd();
-
         // Check English exemption - multiple detection methods:
         // 1. BAA00100 with type 'M'
         // 2. Any English course (ADD00031-34) with score 'M' (miễn)
@@ -59,7 +48,6 @@ export function useStudentGradeData() {
             (g: any) => ENGLISH_COURSE_IDS.includes(String(g.id).trim()) && String(g.score).trim().toUpperCase() === 'M'
         );
         const hasBLMExemption = hasExemptionByBAA00100 || hasExemptionByScore;
-        console.log(`🔑 Miễn Anh văn: ${hasBLMExemption} (BAA00100+M: ${hasExemptionByBAA00100}, Score=M: ${hasExemptionByScore})`);
 
         // Preprocess grades: handle CT (improvement) type
         // CT grades override the original grade for the same course
@@ -87,11 +75,6 @@ export function useStudentGradeData() {
         let accumulatedCredits = 0;
         let totalPoints = 0;
         let totalCreditsForGPA = 0;
-
-        console.group('📊 TÍNH ĐIỂM GPA - Chi tiết');
-        console.log(`🔑 Miễn Anh văn (BLM): ${hasBLMExemption ? 'CÓ' : 'KHÔNG'}`);
-        console.log(`📋 Tổng số môn gốc: ${studentDb.grades.length} | Sau xử lý CT: ${effectiveGrades.length}`);
-        console.log('---');
 
         const logTable: any[] = [];
 
@@ -145,14 +128,6 @@ export function useStudentGradeData() {
                 status,
             });
         });
-
-        console.table(logTable);
-        console.log(`\n📈 KẾT QUẢ:`);
-        console.log(`   Tổng điểm tích lũy: ${totalPoints.toFixed(2)}`);
-        console.log(`   Tổng TC tính GPA: ${totalCreditsForGPA}`);
-        console.log(`   GPA: ${totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA).toFixed(4) : 'N/A'}`);
-        console.log(`   TC tích lũy (đạt): ${accumulatedCredits}`);
-        console.groupEnd();
 
         // If BLM exemption exists, add English courses that student hasn't taken yet
         if (hasBLMExemption) {
@@ -220,7 +195,6 @@ export function useStudentGradeData() {
             });
 
             let calculatedTuition = 0;
-            console.group('💰 TÍNH HỌC PHÍ TỪ ĐKHP (fallback)');
 
             uniqueCourses.forEach((reg, courseId) => {
                 const cid = courseId.trim().toUpperCase();
@@ -250,12 +224,7 @@ export function useStudentGradeData() {
 
                 const courseFee = billingCredits * pricePerCredit;
                 calculatedTuition += courseFee;
-
-                console.log(`  ${courseId} | ${reg.name} | ${billingCredits.toFixed(1)} billing TC × ${pricePerCredit.toLocaleString()}đ = ${courseFee.toLocaleString()}đ`);
             });
-
-            console.log(`  📊 TỔNG: ${calculatedTuition.toLocaleString()}đ`);
-            console.groupEnd();
 
             estimatedTuition = calculatedTuition;
             tuitionSource = 'registration';

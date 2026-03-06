@@ -1,10 +1,7 @@
-/* VisualSchedule.tsx
-** Trang Thời khóa biểu
-*/
-
 import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
-import { Card, CardContent } from '../../components/ui/card';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -62,7 +59,18 @@ const DAYS: Day[] = [
   { value: 7, label: 'Thứ 7', short: 'T7' },
 ];
 
-
+const PERIODS: Period[] = [
+  { period: 1, time: '07:30', session: 'morning' },
+  { period: 2, time: '08:20', session: 'morning' },
+  { period: 3, time: '09:10', session: 'morning' },
+  { period: 4, time: '10:10', session: 'morning' },
+  { period: 5, time: '11:00', session: 'morning' },
+  { period: 6, time: '12:40', session: 'afternoon' },
+  { period: 7, time: '13:30', session: 'afternoon' },
+  { period: 8, time: '14:20', session: 'afternoon' },
+  { period: 9, time: '15:20', session: 'afternoon' },
+  { period: 10, time: '16:10', session: 'afternoon' },
+];
 
 const COLOR_LEGEND = [
   { color: 'blue', label: 'CSC - Công nghệ Thông tin', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
@@ -84,7 +92,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
   totalHoursPerWeek: 27,
   sessions: [
     // ============ LÝ THUYẾT ============
-
+    
     // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
     {
       id: 's1',
@@ -104,7 +112,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'morning',
       duration: 5,
     },
-
+    
     // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
     {
       id: 's2',
@@ -124,7 +132,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'afternoon',
       duration: 4,
     },
-
+    
     // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
     {
       id: 's3',
@@ -144,7 +152,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'morning',
       duration: 4,
     },
-
+    
     // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
     {
       id: 's4',
@@ -164,7 +172,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'afternoon',
       duration: 4,
     },
-
+    
     // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
     {
       id: 's5',
@@ -184,7 +192,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'afternoon',
       duration: 4,
     },
-
+    
     // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
     {
       id: 's6',
@@ -204,9 +212,9 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'morning',
       duration: 4,
     },
-
+    
     // ============ THỰC HÀNH (2.5 tiết) ============
-
+    
     // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
     {
       id: 's7',
@@ -226,7 +234,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'morning',
       duration: 2.5,
     },
-
+    
     // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
     {
       id: 's8',
@@ -246,7 +254,7 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
       session: 'morning',
       duration: 2.5,
     },
-
+    
     // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
     {
       id: 's9',
@@ -272,9 +280,9 @@ const SEMESTER_3_SCHEDULE: WeeklySchedule = {
 // ==================== HELPER FUNCTIONS ====================
 
 function getSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession | null {
-  return sessions.find(s =>
-    s.dayOfWeek === day &&
-    s.startPeriod <= period &&
+  return sessions.find(s => 
+    s.dayOfWeek === day && 
+    s.startPeriod <= period && 
     s.endPeriod >= period
   ) || null;
 }
@@ -299,12 +307,12 @@ function calculateRowSpan(session: ScheduleSession): number {
       return 2;
     }
   }
-
+  
   // Lý thuyết: span theo duration
   if (session.type === 'LT') {
     return session.duration; // 2, 4, 5 tiết
   }
-
+  
   return 2;
 }
 
@@ -314,14 +322,14 @@ function getCurrentDayAndTime(): { dayOfWeek: number; currentPeriod: number | nu
   const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, etc.
   const hours = now.getHours();
   const minutes = now.getMinutes();
-
+  
   // Convert Sunday (0) to 8, and Monday-Saturday (1-6) to 2-7
   const viDay = dayOfWeek === 0 ? 8 : dayOfWeek + 1;
-
+  
   // Determine current period based on time
   let currentPeriod: number | null = null;
   const timeInMinutes = hours * 60 + minutes;
-
+  
   if (timeInMinutes >= 7 * 60 + 30 && timeInMinutes < 8 * 60 + 20) currentPeriod = 1;
   else if (timeInMinutes >= 8 * 60 + 20 && timeInMinutes < 9 * 60 + 10) currentPeriod = 2;
   else if (timeInMinutes >= 9 * 60 + 10 && timeInMinutes < 10 * 60 + 10) currentPeriod = 3;
@@ -332,7 +340,7 @@ function getCurrentDayAndTime(): { dayOfWeek: number; currentPeriod: number | nu
   else if (timeInMinutes >= 14 * 60 + 20 && timeInMinutes < 15 * 60 + 20) currentPeriod = 8;
   else if (timeInMinutes >= 15 * 60 + 20 && timeInMinutes < 16 * 60 + 10) currentPeriod = 9;
   else if (timeInMinutes >= 16 * 60 + 10 && timeInMinutes < 17 * 60) currentPeriod = 10;
-
+  
   return {
     dayOfWeek: viDay,
     currentPeriod,
@@ -346,16 +354,16 @@ function exportCalendar(schedule: WeeklySchedule) {
   content += `Tuần ${schedule.weekNumber}/17 (${schedule.weekRange})\n`;
   content += `Tổng: ${schedule.totalCourses} môn | ${schedule.totalCredits} tín chỉ | ${schedule.totalPeriodsPerWeek} tiết/tuần\n`;
   content += `\n${'='.repeat(80)}\n\n`;
-
+  
   DAYS.forEach(day => {
     const daySessions = schedule.sessions
       .filter(s => s.dayOfWeek === day.value)
       .sort((a, b) => a.startPeriod - b.startPeriod);
-
+    
     if (daySessions.length > 0) {
       content += `${day.label.toUpperCase()}\n`;
       content += `${'-'.repeat(80)}\n`;
-
+      
       daySessions.forEach(session => {
         const typeLabel = session.type === 'LT' ? 'Lý thuyết' : session.type === 'TH' ? 'Thực hành' : 'Bài tập';
         content += `• ${session.startTime}-${session.endTime} | Tiết ${session.startPeriod}-${Math.floor(session.endPeriod)}\n`;
@@ -365,7 +373,7 @@ function exportCalendar(schedule: WeeklySchedule) {
       });
     }
   });
-
+  
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -392,7 +400,7 @@ function QuickStatsCard({ icon: Icon, title, value, subtitle, bgColor, trend }: 
       <CardContent className="p-6 relative">
         {/* Gradient overlay on hover */}
         <div className={`absolute inset-0 ${bgColor} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-
+        
         <div className="flex items-start gap-4 relative z-10">
           <div className={`p-3 rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 shadow-md`}>
             <Icon className="w-6 h-6 text-white" />
@@ -403,8 +411,9 @@ function QuickStatsCard({ icon: Icon, title, value, subtitle, bgColor, trend }: 
             <div className="flex items-center gap-2">
               <p className="text-xs text-gray-500">{subtitle}</p>
               {trend && (
-                <div className={`flex items-center gap-0.5 text-xs font-medium ${trend.direction === 'up' ? 'text-green-600' : 'text-orange-600'
-                  }`}>
+                <div className={`flex items-center gap-0.5 text-xs font-medium ${
+                  trend.direction === 'up' ? 'text-green-600' : 'text-orange-600'
+                }`}>
                   {trend.direction === 'up' ? (
                     <TrendingUp className="w-3 h-3" />
                   ) : (
@@ -439,7 +448,8 @@ function ColorLegend() {
 
 function CourseCard({ session }: { session: ScheduleSession }) {
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const isPractice = session.type === 'TH' || session.type === 'BT';
+  
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-500 hover:bg-blue-100',
     green: 'bg-green-50 border-green-500 hover:bg-green-100',
@@ -452,15 +462,15 @@ function CourseCard({ session }: { session: ScheduleSession }) {
     TH: 'TH',
     BT: 'BT',
   };
-
+  
   const typeFullLabels = {
     LT: 'Lý thuyết',
     TH: 'Thực hành',
     BT: 'Bài tập',
   };
-
+  
   return (
-    <div
+    <div 
       className="relative h-full w-full"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -470,24 +480,24 @@ function CourseCard({ session }: { session: ScheduleSession }) {
         <div className="font-mono text-[9px] font-bold text-gray-900 mb-0.5 leading-tight truncate">
           {session.courseCode}
         </div>
-
+        
         {/* Course Name - Max 2 lines with ellipsis */}
         <div className="text-[8px] font-medium text-gray-700 leading-tight mb-0.5 line-clamp-2">
           {session.courseName}
         </div>
-
+        
         {/* Type & Room - Truncate if too long */}
         <div className="text-[7px] text-gray-600 leading-tight truncate">
           {typeLabels[session.type]} | {session.room}
         </div>
       </div>
-
+      
       {/* Enhanced Tooltip */}
       {showTooltip && (
         <div className="absolute z-50 left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-gray-900 text-white rounded-lg shadow-2xl p-3 text-xs pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Arrow */}
           <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
-
+          
           <div className="relative">
             <div className="font-bold text-sm mb-2 text-blue-300">
               {session.courseCode} - {session.courseName}
@@ -538,7 +548,7 @@ function CourseDetailCard({ session, index }: { session: ScheduleSession; index:
     TH: 'Thực hành',
     BT: 'Bài tập',
   };
-
+  
   return (
     <div className={`bg-white rounded-lg border-l-4 ${colorClasses[session.color]} border border-gray-200 p-4 mb-3`}>
       <div className="flex items-start gap-3">
@@ -557,15 +567,15 @@ function CourseDetailCard({ session, index }: { session: ScheduleSession; index:
 }
 
 // Helper to render period row with today highlighting
-function PeriodRow({
-  period,
-  time,
-  schedule,
-  isToday,
-  currentPeriod
-}: {
-  period: number;
-  time: string;
+function PeriodRow({ 
+  period, 
+  time, 
+  schedule, 
+  isToday, 
+  currentPeriod 
+}: { 
+  period: number; 
+  time: string; 
   schedule: WeeklySchedule;
   isToday: (day: number) => boolean;
   currentPeriod: number | null;
@@ -580,17 +590,19 @@ function PeriodRow({
         const session = getSessionsForCell(day.value, period, schedule.sessions);
         const isTodayCell = isToday(day.value);
         const isCurrentPeriod = isTodayCell && currentPeriod === period;
-
+        
         if (session && shouldRenderCell(session, period)) {
           return (
-            <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-1 border border-gray-200 align-middle ${isTodayCell ? 'bg-green-50/50' : ''
-              } ${isCurrentPeriod ? 'ring-2 ring-green-500 ring-inset' : ''}`}>
+            <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-1 border border-gray-200 align-middle ${
+              isTodayCell ? 'bg-green-50/50' : ''
+            } ${isCurrentPeriod ? 'ring-2 ring-green-500 ring-inset' : ''}`}>
               <CourseCard session={session} />
             </td>
           );
         } else if (!session) {
-          return <td key={day.value} className={`p-1 border border-gray-200 bg-white h-14 ${isTodayCell ? 'bg-green-50/30' : ''
-            }`} />;
+          return <td key={day.value} className={`p-1 border border-gray-200 bg-white h-14 ${
+            isTodayCell ? 'bg-green-50/30' : ''
+          }`} />;
         }
         return null;
       })}
@@ -600,20 +612,20 @@ function PeriodRow({
 
 // ==================== MAIN COMPONENT ====================
 
-export function VisualSchedule() {
+export function VisualScheduleVi() {
   const [currentWeek, setCurrentWeek] = useState(2);
   const schedule = SEMESTER_3_SCHEDULE;
-
+  
   // Update schedule data based on current week
   const displaySchedule = {
     ...schedule,
     weekNumber: currentWeek,
     weekRange: `${String(4 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026 - ${String(10 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026`,
   };
-
+  
   // Get current day and time info
   const { isToday, currentPeriod } = getCurrentDayAndTime();
-
+  
   // Get unique courses for details section
   const uniqueCourses = schedule.sessions.reduce((acc, session) => {
     if (!acc.find(s => s.courseCode === session.courseCode)) {
@@ -621,20 +633,20 @@ export function VisualSchedule() {
     }
     return acc;
   }, [] as ScheduleSession[]);
-
+  
   // Handle week navigation
   const handlePreviousWeek = () => {
     if (currentWeek > 1) {
       setCurrentWeek(currentWeek - 1);
     }
   };
-
+  
   const handleNextWeek = () => {
     if (currentWeek < 17) {
       setCurrentWeek(currentWeek + 1);
     }
   };
-
+  
   const handleExport = () => {
     exportCalendar(displaySchedule);
   };
@@ -649,7 +661,7 @@ export function VisualSchedule() {
             Xem lịch học theo tuần - {schedule.semesterName}
           </p>
         </div>
-
+        
         {/* Export Button */}
         <button
           onClick={handleExport}
@@ -689,7 +701,7 @@ export function VisualSchedule() {
 
       {/* Color Legend */}
       <ColorLegend />
-
+      
       {/* Week Navigation */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
         <button
@@ -700,14 +712,14 @@ export function VisualSchedule() {
           <ChevronLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Tuần trước</span>
         </button>
-
+        
         <div className="text-center">
           <div className="text-lg font-semibold text-[#004A98]">
             Tuần {displaySchedule.weekNumber}
           </div>
           <div className="text-xs text-gray-500">{displaySchedule.weekRange}</div>
         </div>
-
+        
         <button
           onClick={handleNextWeek}
           disabled={currentWeek === 17}
@@ -727,8 +739,9 @@ export function VisualSchedule() {
                 Tiết
               </th>
               {DAYS.map((day) => (
-                <th key={day.value} className={`border border-gray-300 p-2 text-white text-xs font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
-                  }`}>
+                <th key={day.value} className={`border border-gray-300 p-2 text-white text-xs font-semibold min-w-[165px] ${
+                  isToday(day.value) ? 'bg-green-600' : ''
+                }`}>
                   {day.label}
                   {isToday(day.value) && (
                     <div className="text-[10px] font-normal mt-0.5">📍 Hôm nay</div>
@@ -744,20 +757,20 @@ export function VisualSchedule() {
                 🌅 SÁNG
               </td>
             </tr>
-
+            
             <PeriodRow period={1} time="7:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={2} time="8:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={3} time="9:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={4} time="10:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={5} time="11:00" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-
+            
             {/* BUỔI CHIỀU */}
             <tr className="bg-orange-50">
               <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
                 ☀️ CHIỀU
               </td>
             </tr>
-
+            
             <PeriodRow period={6} time="12:40" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={7} time="13:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
             <PeriodRow period={8} time="14:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
