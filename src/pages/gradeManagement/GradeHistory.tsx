@@ -54,6 +54,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                         </tr>
                     </thead>
 
+                    
                     {/* Danh sách các môn học */}
                     <tbody className="divide-y divide-gray-200">
                         {filteredHistory.map((course) => (

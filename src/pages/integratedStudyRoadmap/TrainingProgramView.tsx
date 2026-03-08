@@ -191,6 +191,7 @@ export function TrainingProgramView() {
             </div>
 
             <div className="space-y-6">
+                
                 {Object.entries(preprocessedCategories).map(([key, category]) => (
                     <div key={key}>
                         <CategoryNode
