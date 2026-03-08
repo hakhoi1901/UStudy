@@ -76,6 +76,15 @@ export function useStudentGradeData() {
         let totalPoints = 0;
         let totalCreditsForGPA = 0;
 
+        // GPA theo kỳ: map semester -> { points, credits }
+        const semesterMap = new Map<string, { points: number; credits: number; earnedCredits: number }>();
+
+        // Điểm cơ sở ngành: chỉ tính các môn chuyên ngành (không phải đại cương)
+        // Loại trừ: BAA (Quốc phòng/Anh văn/Thể chất), ADD (các môn hỗ trợ)
+        const MAJOR_PREFIXES = ['CSC1'];
+        let majorPoints = 0;
+        let majorCreditsForGPA = 0;
+
         const logTable: any[] = [];
 
         effectiveGrades.forEach((g: any, index: number) => {
@@ -101,6 +110,25 @@ export function useStudentGradeData() {
                 accumulatedCredits += earnedCredits;
                 totalPoints += pointsForGPA;
                 totalCreditsForGPA += creditsForGPA;
+
+                // Tích lũy GPA theo kỳ
+                if (creditsForGPA > 0) {
+                    const sem = g.semester || 'Không rõ';
+                    if (!semesterMap.has(sem)) {
+                        semesterMap.set(sem, { points: 0, credits: 0, earnedCredits: 0 });
+                    }
+                    const s = semesterMap.get(sem)!;
+                    s.points += pointsForGPA;
+                    s.credits += creditsForGPA;
+                    s.earnedCredits += earnedCredits;
+                }
+
+                // Tích lũy điểm cơ sở ngành (loại trừ môn không phải chuyên ngành)
+                const isMajor = MAJOR_PREFIXES.some(prefix => code.startsWith(prefix));
+                if (isMajor && creditsForGPA > 0) {
+                    majorPoints += pointsForGPA;
+                    majorCreditsForGPA += creditsForGPA;
+                }
             }
 
             logTable.push({
@@ -128,6 +156,20 @@ export function useStudentGradeData() {
                 status,
             });
         });
+
+        // Chuyển semesterMap -> mảng GPA theo kỳ, sắp xếp theo học kỳ tăng dần
+        const gpaPerSemester = Array.from(semesterMap.entries())
+            .map(([semester, data]) => ({
+                semester,
+                gpa: data.credits > 0 ? data.points / data.credits : 0,
+                credits: data.credits,
+                earnedCredits: data.earnedCredits,
+            }))
+            .sort((a, b) => a.semester.localeCompare(b.semester));
+
+        // Điểm cơ sở ngành
+        const majorGPA = majorCreditsForGPA > 0 ? majorPoints / majorCreditsForGPA : 0;
+
 
         // If BLM exemption exists, add English courses that student hasn't taken yet
         if (hasBLMExemption) {
@@ -196,7 +238,7 @@ export function useStudentGradeData() {
 
             let calculatedTuition = 0;
 
-            uniqueCourses.forEach((reg, courseId) => {
+            uniqueCourses.forEach((_reg, courseId) => {
                 const cid = courseId.trim().toUpperCase();
 
                 // Tìm đơn giá theo prefix
@@ -242,6 +284,8 @@ export function useStudentGradeData() {
             totalCredits,
             estimatedTuition,
             tuitionSource,
+            gpaPerSemester,
+            majorGPA,
         };
 
     }, [stamp, tuitionRates, allCoursesMeta]);

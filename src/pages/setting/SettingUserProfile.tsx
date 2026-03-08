@@ -14,7 +14,7 @@ export function SettingUserProfile() {
             <h2 className="text-gray-900 font-semibold mb-4">Chương trình đào tạo</h2>
             <p className="text-sm text-gray-500 mb-6">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="w grid grid-cols-1 md:grid-cols-1 gap-6">
                 <Select
                     label="Khoa"
                     value={facultyId}

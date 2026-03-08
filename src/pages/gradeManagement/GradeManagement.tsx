@@ -10,6 +10,7 @@ import { GPASimulation } from './GPASimulation';
 import { RetakeCourses } from './RetakeCourses';
 import { GradeHistory } from './GradeHistory';
 import { GPACalculator } from '../../logic/GPACalculator';
+import { GPAsem } from './GPAsem';
 
 export function GradeManagement() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -17,7 +18,7 @@ export function GradeManagement() {
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
   const hasAlertedRef = useRef(false);
 
-  const { gradesHistory, currentGPA, isReady, hasData } = useStudentGradeData();
+  const { gradesHistory, currentGPA, isReady, hasData, gpaPerSemester, majorGPA } = useStudentGradeData();
   const { addNotification } = useAppNotification();
 
   // Lấy danh sách học kỳ
@@ -91,7 +92,10 @@ export function GradeManagement() {
       </div>
 
       {/* Thông tin GPA */}
-      <GPAInformation currentGPA={currentGPA} projectedGPA={projectedGPA} getClassification={getClassification} />
+      <GPAInformation currentGPA={currentGPA} projectedGPA={projectedGPA} majorGPA={majorGPA} />
+
+      {/* GPA theo học kỳ */}
+      <GPAsem currentGPA={currentGPA} projectedGPA={projectedGPA} getClassification={getClassification} gpaPerSemester={gpaPerSemester} majorGPA={majorGPA} />
 
       {/* Mô phỏng GPA - Học kỳ tiếp theo */}
       <GPASimulation courses={courses} expandedSection={expandedSection} setExpandedSection={setExpandedSection} projectedGPA={projectedGPA} getClassification={getClassification} handleGradeChange={handleGradeChange} />
