@@ -16,190 +16,200 @@ import { CalendarView } from './CalenderView';
 import { PrerequisiteTreeView } from './PrerequisiteTreeView';
 import type { Course } from '../../types';
 
+
 // Danh sách các tab
 export const tabs = {
-  trainingProgram: 'trainingProgram',
-  prerequisiteTree: 'prerequisiteTree',
-  selection: 'selection',
-  calendar: 'calendar',
+    trainingProgram: 'trainingProgram',
+    //   prerequisiteTree: 'prerequisiteTree',
+    selection: 'selection',
+    calendar: 'calendar',
 } as const;
 
 export type Tab = keyof typeof tabs;
 
+
 export function IntegratedStudyRoadmap() {
-  const [activeTab, setActiveTab] = useState<Tab>('trainingProgram');
-  const [viewMode, setViewMode] = useState<'recommend' | 'all'>('recommend');
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
-    const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
-    return Array.isArray(saved) ? new Set(saved) : new Set();
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFlowchart, setShowFlowchart] = useState(false);
-  const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
-
-  // Lưu selected courses vào localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SELECTED_BASKET, JSON.stringify(Array.from(selectedCourses)));
-  }, [selectedCourses]);
-
-  // Reset search term khi chuyển tab
-  useEffect(() => {
-    setSearchTerm('');
-  }, [activeTab]);
-
-  // Lấy data từ localStorage qua Recommender
-  const { recommended, all, isReady, hasData } = useCourseData();
-
-  // Bộ xếp lịch di truyền
-  const { solve, solving, options, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
-
-  // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
-  const currentSource = viewMode === 'recommend' ? recommended : all;
-
-  const allCurrentCourses = [...currentSource.core, ...currentSource.major, ...currentSource.electives];
-
-  // Xử lý chọn môn học
-  const handleCourseToggle = (courseId: string) => {
-    setSelectedCourses(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(courseId)) {
-        newSet.delete(courseId);
-      } else {
-        newSet.add(courseId);
-      }
-      return newSet;
+    const [activeTab, setActiveTab] = useState<Tab>('trainingProgram');
+    const [viewMode, setViewMode] = useState<'recommend' | 'all'>('recommend');
+    const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
+        const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
+        return Array.isArray(saved) ? new Set(saved) : new Set();
     });
-  };
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showFlowchart, setShowFlowchart] = useState(false);
+    const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
 
-  // Xử lý hiển thị sơ đồ
-  const handleShowFlowchart = (course: Course) => {
-    setFlowchartCourse(course);
-    setShowFlowchart(true);
-  };
+    // Lưu selected courses vào localStorage
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.SELECTED_BASKET, JSON.stringify(Array.from(selectedCourses)));
+    }, [selectedCourses]);
 
-  // Lọc môn học
-  const filteredCourses = {
-    // Môn bắt buộc
-    core: currentSource.core.filter(c =>
-      c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    // Môn chuyên ngành
-    major: currentSource.major.filter(c =>
-      c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    // Môn tự chọn
-    electives: currentSource.electives.filter(c =>
-      c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-  };
+    // Reset search term khi chuyển tab
+    useEffect(() => {
+        setSearchTerm('');
+    }, [activeTab]);
 
-  // Từ kết quả solver -> xác định conflict (sử dụng Domain Service)
-  const confirmedSections: ClassSection[] = currentSections;
-  const handleGetConflicts = (section: ClassSection) => getConflicts(section, confirmedSections);
+    // Lấy data từ localStorage qua Recommender
+    const { recommended, all, isReady, hasData } = useCourseData();
 
-  // Tải dữ liệu
-  if (!isReady) {
+    // Bộ xếp lịch di truyền
+    const { solve, solving, options, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+
+    // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
+    const currentSource = viewMode === 'recommend' ? recommended : all;
+
+    const allCurrentCourses = [...currentSource.core, ...currentSource.major, ...currentSource.electives];
+
+    // Xử lý chọn môn học
+    const handleCourseToggle = (courseId: string) => {
+        setSelectedCourses(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(courseId)) {
+                newSet.delete(courseId);
+            } else {
+                newSet.add(courseId);
+            }
+            return newSet;
+        });
+    };
+
+    // Xử lý hiển thị sơ đồ
+    const handleShowFlowchart = (course: Course) => {
+        setFlowchartCourse(course);
+        setShowFlowchart(true);
+    };
+
+    // Lọc môn học
+    const filteredCourses = {
+        // Môn bắt buộc
+        core: currentSource.core.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        // Môn chuyên ngành
+        major: currentSource.major.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        // Môn tự chọn
+        electives: currentSource.electives.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+    };
+
+    // Từ kết quả solver -> xác định conflict (sử dụng Domain Service)
+    const confirmedSections: ClassSection[] = currentSections;
+    const handleGetConflicts = (section: ClassSection) => getConflicts(section, confirmedSections);
+
+    // Tải dữ liệu
+    if (!isReady) {
+        return (
+            <div className="flex-1">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
+            </div>
+        );
+    }
+
+    // Không có dữ liệu
+    if (!hasData) {
+        return <div>
+            <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
+            <p className="text-gray-600 mb-8">Đây là lộ trình học tập của bạn.</p>
+            <NoDataCard />
+        </div>;
+    }
+
+    // Giao diện chính
     return (
-      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
-      </div>
-    );
-  }
+        <div className="flex gap-6 min-h-screen pb-10">
+            {/* Nội dung chính */}
+            <div className="flex-1 w-full">
+                <div className="mb-6">
+                    <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
 
-  // Không có dữ liệu
-  if (!hasData) {
-    return <div>
-      <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
-      <p className="text-gray-600 mb-8">Đây là lộ trình học tập của bạn.</p>
-      <NoDataCard />
-    </div>;
-  }
+                    <p className="text-gray-600">Chọn môn học và xem lịch trực quan với phát hiện xung đột thời gian.</p>
+                </div>
 
-  // Giao diện chính
-  return (
-    <div className="flex h-full gap-6">
-      {/* Nội dung chính */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mb-6">
-          <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
-          <p className="text-gray-600">Chọn môn học và xem lịch trực quan với phát hiện xung đột thời gian.</p>
-        </div>
+                {/* Thanh điều hướng */}
+                <NavigationBar
+                    tabs={[
+                        { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
+                        //   { id: tabs.prerequisiteTree, label: 'Sơ đồ tiên quyết', icon: GitBranch },
+                        { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
+                        { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                    ]}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                />
 
-        {/* Thanh điều hướng */}
-        <NavigationBar
-          tabs={[
-            { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
-            { id: tabs.prerequisiteTree, label: 'Sơ đồ tiên quyết', icon: GitBranch },
-            { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
-            { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
-          ]}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
+                {/* Tab 1: */}
+                {activeTab === 'trainingProgram' && (
+                    <TrainingProgramView />
+                )}
 
-        {/* Tab 1: */}
-        {activeTab === 'trainingProgram' && (
-          <TrainingProgramView />
-        )}
-
-        {/* Tab 2: Sơ đồ tiên quyết */}
+                {/* Tab 2: Sơ đồ tiên quyết
         {activeTab === 'prerequisiteTree' && (
           <PrerequisiteTreeView />
-        )}
+        )} */}
+                {/* Tab 2: Chọn môn học */}
+                {activeTab === 'selection' && (
+                    <div className="flex flex-row lg:flex-row gap-6 items-start w-full relative">
 
-        {/* Tab 2: Chọn môn học */}
-        {activeTab === 'selection' && (
-          <SelectionView
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            recommended={recommended}
-            all={all}
-            filteredCourses={filteredCourses}
-            selectedCourses={selectedCourses}
-            handleCourseToggle={handleCourseToggle}
-            handleShowFlowchart={handleShowFlowchart}
-          />
-        )}
+                        {/* CỘT TRÁI: Thêm chiều cao cố định và cho phép cuộn riêng biệt nếu cần */}
+                        <div className="flex-1 min-w-0">
+                            <SelectionView
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                recommended={recommended}
+                                all={all}
+                                filteredCourses={filteredCourses}
+                                selectedCourses={selectedCourses}
+                                handleCourseToggle={handleCourseToggle}
+                                handleShowFlowchart={handleShowFlowchart}
+                            />
+                        </div>
 
-        {/* Tab 3: Lịch trực quan */}
-        {activeTab === 'calendar' && (
-          <CalendarView
-            selectedCourses={selectedCourses}
-            setActiveTab={setActiveTab}
-            currentSections={currentSections}
-            activeOption={activeOption}
-            options={options}
-            allCurrentCourses={allCurrentCourses as Course[]}
-            solve={solve}
-            solving={solving}
-            solverError={solverError}
-            setActiveOption={setActiveOption}
-            getConflicts={handleGetConflicts}
-          />
-        )}
-      </div>
+                        {/* CỘT PHẢI: Giỏ hàng */}
+                        <div className="hidden lg:block sticky top-6 w-[350px] flex-shrink-0">
+                            <SelectionBasketVi
+                                selectedCourses={Array.from(selectedCourses)
+                                    .map(id => allCurrentCourses.find(c => c.id === id)!)
+                                    .filter(Boolean)}
+                                onRemoveCourse={handleCourseToggle}
+                            />
+                        </div>
+                    </div>
+                )}
 
-      {/* Sidebar Giỏ hàng */}
-      <SelectionBasketVi
-        selectedCourses={Array.from(selectedCourses)
-          .map(id => allCurrentCourses.find(c => c.id === id)!)
-          .filter(Boolean)}
-        onRemoveCourse={handleCourseToggle}
-      />
+                {/* Tab 3: Lịch trực quan */}
+                {activeTab === 'calendar' && (
+                    <CalendarView
+                        selectedCourses={selectedCourses}
+                        setActiveTab={setActiveTab}
+                        currentSections={currentSections}
+                        activeOption={activeOption}
+                        options={options}
+                        allCurrentCourses={allCurrentCourses as Course[]}
+                        solve={solve}
+                        solving={solving}
+                        solverError={solverError}
+                        setActiveOption={setActiveOption}
+                        getConflicts={handleGetConflicts}
+                    />
+                )}
+            </div>
 
-      {/* Modal Sơ đồ Tiên quyết */}
-      {showFlowchart && flowchartCourse && (
-        <PrerequisiteFlowchart
-          course={flowchartCourse}
-          allCourses={allCurrentCourses as Course[]}
-          onClose={() => setShowFlowchart(false)}
-        />
-      )}
-    </div>
-  );
+            {/* Modal Sơ đồ Tiên quyết */}
+            {showFlowchart && flowchartCourse && (
+                <PrerequisiteFlowchart
+                    course={flowchartCourse}
+                    allCourses={allCurrentCourses as Course[]}
+                    onClose={() => setShowFlowchart(false)}
+                />
+            )}
+        </div>
+    );
 }

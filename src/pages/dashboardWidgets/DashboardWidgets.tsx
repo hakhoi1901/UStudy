@@ -3,6 +3,7 @@ import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { NoDataCard } from '../../components/nodataCard';
 import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
+import { CardFooter } from '../../components/ui/card';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
@@ -217,6 +218,8 @@ export function DashboardWidgets() {
           </div>
         </div>
       </div>
+
+      <CardFooter/>
     </div>
   );
 }
