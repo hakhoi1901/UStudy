@@ -544,11 +544,30 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
     ? parseSemesterFormat(initialSelectedSemester)
     : '24-25/3';
 
-  const currentSemesterSummary = allSemesterSummaries.find(
+  const currentSemesterSummaryObj = allSemesterSummaries.find(
     (s) => s.semester === selectedSemester
-  ) || allSemesterSummaries[2];
+  );
 
-  const currentSemesterData = semesterDataMap[selectedSemester] || semester3Data;
+  const currentSemesterSummary = currentSemesterSummaryObj || {
+    semester: selectedSemester,
+    semesterName: initialSelectedSemester || 'Học kỳ chưa có dữ liệu',
+    totalCredits: 0,
+    totalPeriods: 0,
+    totalTuitionCredits: 0,
+    totalFee: 0,
+    advancePayment: 0,
+    amountDue: 0,
+    dueDate: new Date().toISOString(),
+    status: 'paid' as const,
+    lastUpdated: new Date().toLocaleString('vi-VN'),
+    hasAdvancePayment: false,
+  };
+
+  if (currentSemesterSummaryObj && initialSelectedSemester) {
+    currentSemesterSummary.semesterName = initialSelectedSemester;
+  }
+
+  const currentSemesterData = semesterDataMap[selectedSemester] || [];
 
   // Calculate days until due
   useEffect(() => {

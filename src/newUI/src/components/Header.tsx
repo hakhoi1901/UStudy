@@ -1,5 +1,7 @@
 import { Bell, LogOut, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { ACADEMIC_YEARS } from '../../../assets/data/tuition';
+import { useDepartmentData } from '../../../context/DepartmentContext';
 
 interface HeaderProps {
   selectedSemester: string;
@@ -10,14 +12,32 @@ export function Header({ selectedSemester, onSemesterChange }: HeaderProps) {
   const [notificationCount] = useState(3);
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
 
-  const semesters = [
-    'Học kỳ 1, 2025-2026',
-    'Học kỳ 2, 2025-2026',
-    'Học kỳ 3, 2025-2026',
-    'Học kỳ 1, 2024-2025',
-    'Học kỳ 2, 2024-2025',
-    'Học kỳ 3, 2024-2025',
-  ];
+  // Generate semesters using the predefined academic years (3 semesters per year)
+  const semesters = ACADEMIC_YEARS.flatMap(year => [
+    `Học kỳ 1, Năm học ${year.id}`,
+    `Học kỳ 2, Năm học ${year.id}`,
+    `Học kỳ 3, Năm học ${year.id}`,
+  ]);
+
+  const { academicYear, setAcademicYear, setSemesterNumber } = useDepartmentData();
+
+  const handleSemesterSelect = (semesterStr: string) => {
+    onSemesterChange(semesterStr);
+    
+    // Parses string like "Học kỳ 1, Năm học 2024-2025"
+    const match = semesterStr.match(/Học kỳ (\d+),\s+Năm học\s+(.+)/);
+    if (match) {
+      const semNum = parseInt(match[1]);
+      const yearStr = match[2];
+      
+      setSemesterNumber(semNum);
+      
+      if (yearStr !== academicYear) {
+        setAcademicYear(yearStr);
+      }
+    }
+    setShowSemesterDropdown(false);
+  };
 
   const handleLogOut = () => {
     // Clear local storage
@@ -54,10 +74,7 @@ export function Header({ selectedSemester, onSemesterChange }: HeaderProps) {
                     {semesters.map((semester) => (
                       <button
                         key={semester}
-                        onClick={() => {
-                          onSemesterChange(semester);
-                          setShowSemesterDropdown(false);
-                        }}
+                        onClick={() => handleSemesterSelect(semester)}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                           selectedSemester === semester
                             ? 'bg-[#004A98] bg-opacity-10 text-[#004A98]'

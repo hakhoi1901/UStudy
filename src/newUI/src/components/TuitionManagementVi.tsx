@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-  DollarSign, 
-  CheckCircle2, 
-  AlertCircle, 
-  CreditCard, 
-  ExternalLink, 
-  Copy, 
+import {
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
+  CreditCard,
+  ExternalLink,
+  Copy,
   Check,
   Download,
   TrendingUp,
@@ -367,11 +367,11 @@ function calculateDaysUntilDue(dueDate: string): number {
 function getTrendComparison(currentSummary: TuitionSummary, allSummaries: TuitionSummary[]): { direction: 'up' | 'down' | 'neutral'; value: string; percent: number } {
   const currentIndex = allSummaries.findIndex(s => s.semester === currentSummary.semester);
   if (currentIndex <= 0) return { direction: 'neutral', value: 'Học kỳ đầu', percent: 0 };
-  
+
   const previousSummary = allSummaries[currentIndex - 1];
   const diff = currentSummary.totalFee - previousSummary.totalFee;
   const percent = (diff / previousSummary.totalFee) * 100;
-  
+
   if (diff > 0) {
     return { direction: 'down', value: `+${new Intl.NumberFormat('vi-VN').format(Math.abs(diff))}₫`, percent: Math.abs(percent) };
   } else if (diff < 0) {
@@ -389,10 +389,10 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
   content += `Tổng số tiết: ${summary.totalPeriods} tiết\n`;
   content += `Hạn thanh toán: ${new Date(summary.dueDate).toLocaleDateString('vi-VN')}\n`;
   content += `Trạng thái: ${summary.status === 'paid' ? 'Đã thanh toán' : summary.status === 'partial' ? 'Thanh toán một phần' : 'Chưa thanh toán'}\n\n`;
-  
+
   content += `CHI TIẾT CÁC MÔN HỌC:\n`;
   content += `${'-'.repeat(80)}\n`;
-  
+
   courses.forEach((course) => {
     content += `${course.stt}. ${course.courseCode} - ${course.courseName}\n`;
     content += `   Lớp: ${course.classCode} | TC: ${course.credits} | Tiết: ${course.periods}\n`;
@@ -401,7 +401,7 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
     if (course.support > 0) content += `   Hỗ trợ: ${new Intl.NumberFormat('vi-VN').format(course.support)}₫\n`;
     content += `   Thực đóng: ${new Intl.NumberFormat('vi-VN').format(course.actualFee)}₫\n\n`;
   });
-  
+
   content += `${'-'.repeat(80)}\n`;
   content += `TỔNG KẾT:\n`;
   content += `Tổng học phí: ${new Intl.NumberFormat('vi-VN').format(summary.totalFee)}₫\n`;
@@ -411,7 +411,7 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
   content += `Tổng phải đóng: ${new Intl.NumberFormat('vi-VN').format(summary.amountDue)}₫\n\n`;
   content += `Ngày xuất: ${new Date().toLocaleString('vi-VN')}\n`;
   content += `Cập nhật lần cuối: ${summary.lastUpdated}\n`;
-  
+
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -425,13 +425,13 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
 
 // ==================== SUB-COMPONENTS ====================
 
-function EnhancedSummaryCard({ 
-  icon: Icon, 
-  title, 
+function EnhancedSummaryCard({
+  icon: Icon,
+  title,
   subtitle,
-  value, 
+  value,
   detail,
-  bgColor, 
+  bgColor,
   textColor,
   trend,
   progress
@@ -450,7 +450,7 @@ function EnhancedSummaryCard({
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group relative">
       {/* Gradient overlay on hover */}
       <div className={`absolute inset-0 ${bgColor} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-      
+
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-4">
           <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md`}>
@@ -461,17 +461,16 @@ function EnhancedSummaryCard({
             <p className="text-xs text-gray-500">{subtitle}</p>
           </div>
         </div>
-        
+
         <p className={`text-2xl font-bold ${textColor} mb-2`}>
           {value}
         </p>
-        
+
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">{detail}</p>
           {trend && trend.direction !== 'neutral' && (
-            <div className={`flex items-center gap-0.5 text-xs font-medium ${
-              trend.direction === 'up' ? 'text-green-600' : 'text-orange-600'
-            }`}>
+            <div className={`flex items-center gap-0.5 text-xs font-medium ${trend.direction === 'up' ? 'text-green-600' : 'text-orange-600'
+              }`}>
               {trend.direction === 'up' ? (
                 <TrendingUp className="w-3 h-3" />
               ) : (
@@ -481,12 +480,12 @@ function EnhancedSummaryCard({
             </div>
           )}
         </div>
-        
+
         {/* Progress bar */}
         {progress !== undefined && (
           <div className="mt-3">
             <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div 
+              <div
                 className={`h-full ${bgColor} transition-all duration-500 ease-out`}
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
@@ -501,9 +500,9 @@ function EnhancedSummaryCard({
 
 function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false);
-  
+
   return (
-    <div 
+    <div
       className="relative inline-flex items-center"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
@@ -527,36 +526,56 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
   const paymentLink = 'https://hocphi.hcmus.edu.vn/';
 
   const parseSemesterFormat = (semesterStr: string): string => {
-    const match = semesterStr.match(/Học kỳ (\d), (\d{4})-(\d{4})/);
+    // Expected incoming format: "Học kỳ 1, Năm học 2024-2025" or "Học kỳ 1, 2024-2025"
+    const match = semesterStr.match(/Học kỳ (\d+),\s*(?:Năm học\s*)?(\d{4})-(\d{4})/i);
     if (match) {
       const semesterNum = match[1];
       const yearStart = match[2].slice(2);
       const yearEnd = match[3].slice(2);
-      return `${yearStart}-${yearEnd}/${semesterNum}`;
+      return `${yearStart}-${yearEnd}/${semesterNum}`; // e.g., "24-25/1"
     }
-    return '24-25/3';
+    // Fallback exactly to input if it's already in short format
+    return semesterStr;
   };
 
-  const selectedSemester = initialSelectedSemester
+  const parsedSemesterKey = initialSelectedSemester
     ? parseSemesterFormat(initialSelectedSemester)
     : '24-25/3';
 
-  const currentSemesterSummary = allSemesterSummaries.find(
-    (s) => s.semester === selectedSemester
-  ) || allSemesterSummaries[2];
+  const currentSemesterSummary = {
+    ...(allSemesterSummaries.find(
+      (s) => s.semester === parsedSemesterKey
+    ) || {
+      semester: parsedSemesterKey,
+      semesterName: 'Học kỳ chưa có dữ liệu',
+      totalCredits: 0,
+      totalPeriods: 0,
+      totalTuitionCredits: 0,
+      totalFee: 0,
+      advancePayment: 0,
+      amountDue: 0,
+      dueDate: new Date().toISOString(),
+      status: 'paid' as const,
+      lastUpdated: new Date().toLocaleString('vi-VN'),
+      hasAdvancePayment: false,
+    })
+  };
 
-  const currentSemesterData = semesterDataMap[selectedSemester] || semester3Data;
+  // Override the semesterName with the exact prop passed internally for perfect sync
+  currentSemesterSummary.semesterName = initialSelectedSemester || currentSemesterSummary.semesterName;
+
+  const currentSemesterData = semesterDataMap[parsedSemesterKey] || [];
 
   // Calculate days until due
   useEffect(() => {
     const days = calculateDaysUntilDue(currentSemesterSummary.dueDate);
     setDaysUntilDue(days);
-    
+
     // Update every hour
     const interval = setInterval(() => {
       setDaysUntilDue(calculateDaysUntilDue(currentSemesterSummary.dueDate));
     }, 3600000);
-    
+
     return () => clearInterval(interval);
   }, [currentSemesterSummary.dueDate]);
 
@@ -616,8 +635,8 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
   };
 
   const trend = getTrendComparison(currentSemesterSummary, allSemesterSummaries);
-  const paymentProgress = currentSemesterSummary.hasAdvancePayment 
-    ? (currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100 
+  const paymentProgress = currentSemesterSummary.hasAdvancePayment
+    ? (currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100
     : 0;
 
   return (
@@ -627,10 +646,10 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
         <div>
           <h1 className="text-gray-900 mb-2">Học phí</h1>
           <p className="text-gray-600">
-            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông tin thanh toán.
+            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName.replace(/^Học kỳ /, '')}</span> và thông tin thanh toán.
           </p>
         </div>
-        
+
         <button
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
@@ -653,7 +672,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
             textColor="text-[#004A98]"
             trend={trend}
           />
-          
+
           <EnhancedSummaryCard
             icon={CheckCircle2}
             title="Trừ tạm thu nhập học"
@@ -664,7 +683,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
             textColor="text-green-600"
             progress={paymentProgress}
           />
-          
+
           <EnhancedSummaryCard
             icon={AlertCircle}
             title="Tổng phải đóng"
@@ -688,7 +707,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
             textColor="text-[#004A98]"
             trend={trend}
           />
-          
+
           <EnhancedSummaryCard
             icon={AlertCircle}
             title="Tổng phải đóng"
@@ -732,7 +751,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
                 <th className="px-2 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-center font-semibold">
                   <Tooltip text="Số tín chỉ tính học phí (có thể khác số TC thực tế)">
                     <span className="cursor-help flex items-center gap-0.5 justify-center">
-                      TC<br/>HP
+                      TC<br />HP
                       <Info className="w-3 h-3 text-gray-400" />
                     </span>
                   </Tooltip>
@@ -744,10 +763,10 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
                   Giảm
                 </th>
                 <th className="px-2 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-right font-semibold">
-                  Hỗ Trợ<br/>HP
+                  Hỗ Trợ<br />HP
                 </th>
                 <th className="px-2.5 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-right font-semibold">
-                  HP<br/>Thực Động
+                  HP<br />Thực Động
                 </th>
                 <th className="px-2 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-right font-semibold">
                   Chi Phí
@@ -759,11 +778,10 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentSemesterData.map((course, index) => (
-                <tr 
-                  key={course.stt} 
-                  className={`hover:bg-blue-50/50 transition-colors duration-150 ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                  }`}
+                <tr
+                  key={course.stt}
+                  className={`hover:bg-blue-50/50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                    }`}
                 >
                   <td className="px-2 py-2.5 text-center text-gray-900 font-medium text-xs">
                     {course.stt}
@@ -862,15 +880,13 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
       </div>
 
       {/* Enhanced Payment Information */}
-      <div className={`bg-gradient-to-br ${
-        currentSemesterSummary.status === 'unpaid' ? 'from-red-50 to-orange-50' : 
-        currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' : 
-        'from-green-50 to-blue-50'
-      } rounded-xl p-6 shadow-md border-2 ${
-        currentSemesterSummary.status === 'unpaid' ? 'border-red-200' : 
-        currentSemesterSummary.status === 'partial' ? 'border-yellow-200' : 
-        'border-green-200'
-      } mb-6 transition-all duration-300 hover:shadow-lg`}>
+      <div className={`bg-gradient-to-br ${currentSemesterSummary.status === 'unpaid' ? 'from-red-50 to-orange-50' :
+        currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' :
+          'from-green-50 to-blue-50'
+        } rounded-xl p-6 shadow-md border-2 ${currentSemesterSummary.status === 'unpaid' ? 'border-red-200' :
+          currentSemesterSummary.status === 'partial' ? 'border-yellow-200' :
+            'border-green-200'
+        } mb-6 transition-all duration-300 hover:shadow-lg`}>
         <h3 className="text-gray-900 font-bold mb-6 flex items-center gap-2 text-lg">
           <CreditCard className="w-6 h-6 text-[#004A98]" />
           Thông tin thanh toán
@@ -880,9 +896,8 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
           {/* Hạn thanh toán với Countdown */}
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className={`w-12 h-12 rounded-lg ${
-                daysUntilDue < 0 ? 'bg-red-500' : daysUntilDue <= 7 ? 'bg-orange-500' : 'bg-blue-500'
-              } flex items-center justify-center flex-shrink-0 shadow-md`}>
+              <div className={`w-12 h-12 rounded-lg ${daysUntilDue < 0 ? 'bg-red-500' : daysUntilDue <= 7 ? 'bg-orange-500' : 'bg-blue-500'
+                } flex items-center justify-center flex-shrink-0 shadow-md`}>
                 <Clock className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
@@ -891,9 +906,8 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
                   {formatDate(currentSemesterSummary.dueDate)}
                 </p>
                 {daysUntilDue >= 0 ? (
-                  <div className={`flex items-center gap-1 text-sm font-semibold ${
-                    daysUntilDue <= 7 ? 'text-orange-600' : 'text-green-600'
-                  }`}>
+                  <div className={`flex items-center gap-1 text-sm font-semibold ${daysUntilDue <= 7 ? 'text-orange-600' : 'text-green-600'
+                    }`}>
                     <Clock className="w-4 h-4" />
                     <span>Còn {daysUntilDue} ngày</span>
                   </div>
@@ -910,13 +924,11 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
           {/* Trạng thái */}
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className={`w-12 h-12 rounded-lg ${
-                currentSemesterSummary.status === 'paid' ? 'bg-green-500' :
+              <div className={`w-12 h-12 rounded-lg ${currentSemesterSummary.status === 'paid' ? 'bg-green-500' :
                 currentSemesterSummary.status === 'partial' ? 'bg-yellow-500' :
-                'bg-red-500'
-              } flex items-center justify-center flex-shrink-0 shadow-md ${
-                currentSemesterSummary.status === 'unpaid' ? 'animate-pulse' : ''
-              }`}>
+                  'bg-red-500'
+                } flex items-center justify-center flex-shrink-0 shadow-md ${currentSemesterSummary.status === 'unpaid' ? 'animate-pulse' : ''
+                }`}>
                 {currentSemesterSummary.status === 'paid' ? (
                   <CheckCircle2 className="w-6 h-6 text-white" />
                 ) : currentSemesterSummary.status === 'partial' ? (
@@ -944,7 +956,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
               <p className="text-sm text-gray-600">Thanh toán nhanh chóng và an toàn qua cổng trường</p>
             </div>
           </div>
-          
+
           {/* Link Box */}
           <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 mb-4 hover:border-blue-400 transition-colors">
             <FileText className="w-5 h-5 text-[#004A98] flex-shrink-0" />

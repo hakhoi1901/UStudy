@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
-import { Badge } from './ui/badge';
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -36,12 +35,6 @@ interface WeeklySchedule {
   sessions: ScheduleSession[];
 }
 
-interface Period {
-  period: number;
-  time: string;
-  session: 'morning' | 'afternoon';
-}
-
 interface Day {
   value: 2 | 3 | 4 | 5 | 6 | 7;
   label: string;
@@ -57,19 +50,6 @@ const DAYS: Day[] = [
   { value: 5, label: 'Thứ 5', short: 'T5' },
   { value: 6, label: 'Thứ 6', short: 'T6' },
   { value: 7, label: 'Thứ 7', short: 'T7' },
-];
-
-const PERIODS: Period[] = [
-  { period: 1, time: '07:30', session: 'morning' },
-  { period: 2, time: '08:20', session: 'morning' },
-  { period: 3, time: '09:10', session: 'morning' },
-  { period: 4, time: '10:10', session: 'morning' },
-  { period: 5, time: '11:00', session: 'morning' },
-  { period: 6, time: '12:40', session: 'afternoon' },
-  { period: 7, time: '13:30', session: 'afternoon' },
-  { period: 8, time: '14:20', session: 'afternoon' },
-  { period: 9, time: '15:20', session: 'afternoon' },
-  { period: 10, time: '16:10', session: 'afternoon' },
 ];
 
 const COLOR_LEGEND = [
@@ -448,7 +428,6 @@ function ColorLegend() {
 
 function CourseCard({ session }: { session: ScheduleSession }) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const isPractice = session.type === 'TH' || session.type === 'BT';
   
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-500 hover:bg-blue-100',
@@ -535,7 +514,7 @@ function CourseCard({ session }: { session: ScheduleSession }) {
   );
 }
 
-function CourseDetailCard({ session, index }: { session: ScheduleSession; index: number }) {
+function CourseDetailCard({ session }: { session: ScheduleSession }) {
   const colorClasses = {
     blue: 'border-l-blue-600',
     green: 'border-l-green-600',
@@ -612,9 +591,22 @@ function PeriodRow({
 
 // ==================== MAIN COMPONENT ====================
 
-export function VisualScheduleVi() {
+export function VisualScheduleVi({ selectedSemester }: { selectedSemester?: string }) {
   const [currentWeek, setCurrentWeek] = useState(2);
-  const schedule = SEMESTER_3_SCHEDULE;
+  
+  // Only mock data for HK3 2024-2025 exists. We will allow matching if the string has '3' and '2024' or '24-25'
+  const isMatch = selectedSemester 
+    ? (selectedSemester.includes('3') && (selectedSemester.includes('2024') || selectedSemester.includes('24-25'))) 
+    : true;
+  const schedule = {
+    ...SEMESTER_3_SCHEDULE,
+    semesterName: selectedSemester || SEMESTER_3_SCHEDULE.semesterName,
+    totalCourses: isMatch ? SEMESTER_3_SCHEDULE.totalCourses : 0,
+    totalCredits: isMatch ? SEMESTER_3_SCHEDULE.totalCredits : 0,
+    totalPeriodsPerWeek: isMatch ? SEMESTER_3_SCHEDULE.totalPeriodsPerWeek : 0,
+    totalHoursPerWeek: isMatch ? SEMESTER_3_SCHEDULE.totalHoursPerWeek : 0,
+    sessions: isMatch ? SEMESTER_3_SCHEDULE.sessions : [],
+  };
   
   // Update schedule data based on current week
   const displaySchedule = {
@@ -787,8 +779,8 @@ export function VisualScheduleVi() {
           📚 Chi tiết môn học đã đăng ký
         </h3>
         <div className="space-y-0">
-          {uniqueCourses.map((session, index) => (
-            <CourseDetailCard key={session.id} session={session} index={index} />
+          {uniqueCourses.map((session) => (
+            <CourseDetailCard key={session.id} session={session} />
           ))}
         </div>
       </div>

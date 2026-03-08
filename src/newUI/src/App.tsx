@@ -6,16 +6,20 @@ import { GradeManagementVi } from './components/GradeManagementVi';
 import { TuitionManagementVi } from './components/TuitionManagementVi';
 import { VisualScheduleVi } from './components/VisualScheduleVi';
 import { useState } from 'react';
+import { useDepartmentData } from '../../context/DepartmentContext';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
-  const [selectedSemester, setSelectedSemester] = useState<string>('Học kỳ 2, 2025-2026');
+  const { semesterNumber, academicYear } = useDepartmentData();
+  
+  // Calculate selected semester string dynamically from context!
+  const selectedSemester = `Học kỳ ${semesterNumber}, Năm học ${academicYear}`;
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header selectedSemester={selectedSemester} onSemesterChange={setSelectedSemester} />
+        <Header selectedSemester={selectedSemester} onSemesterChange={() => {}} />
         {/* Main scrollable container - ONLY scrolling point */}
         <main className="flex-1 overflow-y-auto">
           {currentPage === 'dashboard' && (
@@ -38,7 +42,7 @@ export default function App() {
 
           {currentPage === 'grades' && (
             <div className="p-6">
-              <GradeManagementVi />
+              <GradeManagementVi selectedSemester={selectedSemester} />
             </div>
           )}
 
@@ -50,7 +54,7 @@ export default function App() {
 
           {currentPage === 'schedule' && (
             <div className="p-6">
-              <VisualScheduleVi />
+              <VisualScheduleVi selectedSemester={selectedSemester} />
             </div>
           )}
 

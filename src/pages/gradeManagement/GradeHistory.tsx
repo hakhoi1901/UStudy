@@ -1,7 +1,7 @@
 import { Filter } from "lucide-react";
 import type { StudentCourseGrade } from "../../types";
 
-export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemesters, setSelectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string, uniqueSemesters: string[], setSelectedSemester: (semester: string) => void }) {
+export function GradeHistory({ filteredHistory, selectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string }) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -14,16 +14,14 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
 
                 {/* Lọc theo học kỳ */}
                 <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-600" />
+                    <Filter className="w-4 h-4 text-gray-500" />
                     <select
                         value={selectedSemester}
-                        onChange={(e) => setSelectedSemester(e.target.value)}
-                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+                        disabled
+                        onChange={() => {}}
+                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed font-medium focus:outline-none"
                     >
-                        <option value="all">Tất cả học kỳ</option>
-                        {uniqueSemesters.map(sem => (
-                            <option key={sem} value={sem}>{sem}</option>
-                        ))}
+                        <option value={selectedSemester}>{selectedSemester}</option>
                     </select>
                 </div>
             </div>

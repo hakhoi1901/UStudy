@@ -42,6 +42,7 @@ export function SettingUserProfile() {
                     value={academicYear}
                     options={academicYears}
                     onChange={setAcademicYear}
+                    disabled={true}
                 />
             </div>
 

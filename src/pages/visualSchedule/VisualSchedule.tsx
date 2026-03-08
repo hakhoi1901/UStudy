@@ -39,11 +39,7 @@ interface WeeklySchedule {
   sessions: ScheduleSession[];
 }
 
-interface Period {
-  period: number;
-  time: string;
-  session: 'morning' | 'afternoon';
-}
+
 
 interface Day {
   value: 2 | 3 | 4 | 5 | 6 | 7;
@@ -525,7 +521,7 @@ function CourseCard({ session }: { session: ScheduleSession }) {
   );
 }
 
-function CourseDetailCard({ session, index }: { session: ScheduleSession; index: number }) {
+function CourseDetailCard({ session }: { session: ScheduleSession }) {
   const colorClasses = {
     blue: 'border-l-blue-600',
     green: 'border-l-green-600',
@@ -600,9 +596,16 @@ function PeriodRow({
 
 // ==================== MAIN COMPONENT ====================
 
-export function VisualSchedule() {
+interface VisualScheduleProps {
+  selectedSemester?: string;
+}
+
+export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const [currentWeek, setCurrentWeek] = useState(2);
-  const schedule = SEMESTER_3_SCHEDULE;
+  const schedule = {
+    ...SEMESTER_3_SCHEDULE,
+    semesterName: selectedSemester || SEMESTER_3_SCHEDULE.semesterName
+  };
 
   // Update schedule data based on current week
   const displaySchedule = {
@@ -774,8 +777,8 @@ export function VisualSchedule() {
           📚 Chi tiết môn học đã đăng ký
         </h3>
         <div className="space-y-0">
-          {uniqueCourses.map((session, index) => (
-            <CourseDetailCard key={session.id} session={session} index={index} />
+          {uniqueCourses.map((session) => (
+            <CourseDetailCard key={session.id} session={session} />
           ))}
         </div>
       </div>

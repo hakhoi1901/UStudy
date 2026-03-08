@@ -36,6 +36,7 @@ interface DepartmentContextType {
     majorId: string;
     cohortId: string;
     academicYear: string;
+    semesterNumber: number;
     currentFaculty: FacultyInfo | undefined;
     currentMajor: MajorInfo | undefined;
     currentCohort: CohortInfo | undefined;
@@ -47,6 +48,7 @@ interface DepartmentContextType {
     setMajor: (majorId: string) => void;
     setCohort: (cohortId: string) => void;
     setAcademicYear: (year: string) => void;
+    setSemesterNumber: (semesterNumber: number) => void;
 }
 
 const defaultTuitionRates = getTuitionRates(DEFAULT_ACADEMIC_YEAR, DEFAULT_MAJOR_ID);
@@ -65,6 +67,7 @@ const DepartmentContext = createContext<DepartmentContextType>({
     majorId: DEFAULT_MAJOR_ID,
     cohortId: DEFAULT_COHORT_ID,
     academicYear: DEFAULT_ACADEMIC_YEAR,
+    semesterNumber: 1,
     currentFaculty: FACULTIES[0],
     currentMajor: FACULTIES[0]?.majors[0],
     currentCohort: FACULTIES[0]?.majors[0]?.cohorts[0],
@@ -74,6 +77,7 @@ const DepartmentContext = createContext<DepartmentContextType>({
     setMajor: () => { },
     setCohort: () => { },
     setAcademicYear: () => { },
+    setSemesterNumber: () => { },
 });
 
 export function DepartmentProvider({ children }: { children: React.ReactNode }) {
@@ -88,6 +92,9 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
     });
     const [academicYear, setAcademicYearState] = useState<string>(() => {
         return localStorage.getItem(STORAGE_KEYS.ACADEMIC_YEAR) || DEFAULT_ACADEMIC_YEAR;
+    });
+    const [semesterNumber, setSemesterNumberState] = useState<number>(() => {
+        return parseInt(localStorage.getItem('selected_semester_number') || '1');
     });
     const [data, setData] = useState<DepartmentData>(defaultData);
     const [isLoading, setIsLoading] = useState(false);
@@ -158,6 +165,11 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
         setAcademicYearState(year);
     };
 
+    const setSemesterNumber = (num: number) => {
+        localStorage.setItem('selected_semester_number', num.toString());
+        setSemesterNumberState(num);
+    };
+
     return (
         <DepartmentContext.Provider value={{
             data,
@@ -166,6 +178,7 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
             majorId,
             cohortId,
             academicYear,
+            semesterNumber,
             currentFaculty,
             currentMajor,
             currentCohort,
@@ -175,6 +188,7 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
             setMajor,
             setCohort,
             setAcademicYear,
+            setSemesterNumber,
         }}>
             {children}
         </DepartmentContext.Provider>

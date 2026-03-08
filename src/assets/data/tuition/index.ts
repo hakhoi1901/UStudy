@@ -2,6 +2,7 @@
  * Tuition Registry: Đăng ký bảng giá theo năm học.
  * getTuitionRates(year, majorId) trả về bảng giá đã merge (shared + major).
  */
+import { tuition_2024_2025 } from './2024-2025';
 import { tuition_2025_2026 } from './2025-2026';
 
 interface TuitionYear {
@@ -12,12 +13,14 @@ interface TuitionYear {
 
 export const ACADEMIC_YEARS = [
     { id: '2025-2026', name: 'Năm học 2025-2026' },
+    { id: '2024-2025', name: 'Năm học 2024-2025' },
 ];
 
 export const DEFAULT_ACADEMIC_YEAR = '2025-2026';
 
 const tuitionMap: Record<string, TuitionYear> = {
     '2025-2026': tuition_2025_2026,
+    '2024-2025': tuition_2024_2025,
 };
 
 /**

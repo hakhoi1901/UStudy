@@ -39,14 +39,18 @@ const simulatorCourses: SimulatorCourse[] = [
   { id: 's5', code: 'CSC15001', nameVi: 'Trí tuệ nhân tạo', credits: 3, projectedGrade: 9.0 },
 ];
 
-export function GradeManagementVi() {
+export function GradeManagementVi({ selectedSemester }: { selectedSemester: string }) {
   const [courses, setCourses] = useState<SimulatorCourse[]>(simulatorCourses);
-  const [selectedSemester, setSelectedSemester] = useState('all');
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
+  
+  // Extract number and year safely
+  const match = selectedSemester.match(/Học kỳ (\d+),\s*(?:Năm học\s*)?(.+)/);
+  const semNum = match ? match[1] : '';
+  const yearStr = match ? match[2] : '';
+  const formattedSemester = `HK${semNum} ${yearStr}`;
 
   // Current GPA (Scale 10)
   const currentGPA = 8.5;
-  const totalCompletedCredits = gradeHistory.reduce((sum, c) => sum + c.credits, 0);
 
   // Calculate Projected GPA
   const calculateProjectedGPA = () => {
@@ -87,9 +91,18 @@ export function GradeManagementVi() {
     }
   };
 
+  const yearShort = yearStr && yearStr.length >= 9 ? yearStr.substring(2, 4) + "-" + yearStr.substring(7, 9) : yearStr;
+  const yearStart = yearStr ? yearStr.substring(0, 4) : '';
+
   const filteredHistory = selectedSemester === 'all' 
     ? gradeHistory 
-    : gradeHistory.filter(c => c.semester === selectedSemester);
+    : gradeHistory.filter(c => {
+        if (!semNum || !yearStr) return false;
+        const checkSemester = c.semester || '';
+        const hasSem = new RegExp(`(?:^|\\D)${semNum}(?:\\D|$)`, 'i').test(checkSemester) || checkSemester.includes('HK' + semNum);
+        const hasYear = checkSemester.includes(yearStr) || checkSemester.includes(yearShort) || checkSemester.includes(yearStart);
+        return hasSem && hasYear;
+    });
 
   const retakeCourses = gradeHistory.filter(c => c.needsRetake);
 
@@ -288,16 +301,14 @@ export function GradeManagementVi() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-600" />
+            <Filter className="w-4 h-4 text-gray-400" />
             <select
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+              value={formattedSemester}
+              disabled
+              className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none bg-gray-50 text-gray-500 cursor-not-allowed font-medium appearance-none select-caret"
             >
               <option value="all">Tất cả học kỳ</option>
-              <option value="HK1 2024-2025">HK1 2024-2025</option>
-              <option value="HK2 2024-2025">HK2 2024-2025</option>
-              <option value="HK3 2024-2025">HK3 2024-2025</option>
+              <option value={formattedSemester}>{formattedSemester}</option>
             </select>
           </div>
         </div>
