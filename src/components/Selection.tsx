@@ -12,6 +12,7 @@ interface SelectProps {
     options: Option[];
     onChange: (value: string) => void;
     subLabel?: string;
+    disabled?: boolean;
 }
 
 /**
@@ -20,8 +21,9 @@ interface SelectProps {
 *   @param options: Danh sách các option
 *   @param onChange: Hàm callback khi giá trị thay đổi
 *   @param subLabel: Label phụ
+*   @param disabled: Vô hiệu hóa dropdown
 */
-export function Select({ label, value, options, onChange, subLabel }: SelectProps) {
+export function Select({ label, value, options, onChange, subLabel, disabled }: SelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -47,15 +49,20 @@ export function Select({ label, value, options, onChange, subLabel }: SelectProp
 
             {/* Nút bấm giả lập Select */}
             <div
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg text-sm text-gray-900 cursor-pointer flex justify-between items-center transition-all ${isOpen ? "border-[#004A98] ring-2 ring-[#004A98] ring-opacity-20" : "border-gray-200"
-                    }`}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg text-sm transition-all flex justify-between items-center ${
+                    disabled 
+                        ? "border-gray-200 text-gray-400 cursor-not-allowed" 
+                        : `text-gray-900 cursor-pointer ${isOpen ? "border-[#004A98] ring-2 ring-[#004A98] ring-opacity-20" : "border-gray-200"}`
+                }`}
             >
                 <span className="truncate">{selectedOption ? selectedOption.name : "Chọn..."}</span>
                 {/* Icon mũi tên */}
-                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                {!disabled && (
+                    <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                )}
             </div>
 
             {/* Cửa sổ xổ xuống được định dạng hoàn toàn bằng Tailwind */}

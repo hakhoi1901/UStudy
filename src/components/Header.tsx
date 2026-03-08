@@ -4,12 +4,16 @@ import { useStudentGradeData } from '../hooks/useStudentGradeData';
 import { BookmarkletButton } from './BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../context/NotificationContext';
+import { useDepartmentData } from '../context/DepartmentContext';
+import { ACADEMIC_YEARS } from '../assets/data/tuition';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
 
 export function Header() {
   const [studentName, setStudentName] = useState('');
-  const [selectedSemester, setSelectedSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
+  const { academicYear, setAcademicYear, semesterNumber, setSemesterNumber } = useDepartmentData();
+
+  const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
 
   const { hasData } = useStudentGradeData();
   const { addNotification } = useAppNotification();
@@ -22,7 +26,27 @@ export function Header() {
     }
   }, [hasData]);
 
-  const semesters = APP_CONFIG.AVAILABLE_SEMESTERS;
+  // Generate semesters using the predefined academic years (3 semesters per year)
+  const semesters = ACADEMIC_YEARS.flatMap(year => [
+    `Học kỳ 1, ${year.id}`,
+    `Học kỳ 2, ${year.id}`,
+    `Học kỳ 3, ${year.id}`,
+  ]);
+
+  const handleSemesterSelect = (semesterStr: string) => {
+    const match = semesterStr.match(/Học kỳ (\d+),\s+(.+)/);
+    if (match) {
+      const semNum = parseInt(match[1]);
+      const yearStr = match[2];
+      
+      setSemesterNumber(semNum);
+      
+      if (yearStr !== academicYear) {
+        setAcademicYear(yearStr);
+      }
+    }
+    setShowSemesterDropdown(false);
+  };
 
   const handleLogOut = () => {
     // Clear local storage
@@ -73,10 +97,7 @@ export function Header() {
                     {semesters.map((semester) => (
                       <button
                         key={semester}
-                        onClick={() => {
-                          setSelectedSemester(semester);
-                          setShowSemesterDropdown(false);
-                        }}
+                        onClick={() => handleSemesterSelect(semester)}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
                           ? 'text-[#004A98] bg-opacity-10'
                           : 'text-gray-700 hover:bg-gray-50'

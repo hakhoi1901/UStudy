@@ -1,7 +1,3 @@
-/* TuitionManagement.tsx
-** Trang Quản lý học phí
-*/
-
 import { useState, useEffect } from 'react';
 import {
   DollarSign,
@@ -53,7 +49,7 @@ interface TuitionSummary {
   hasAdvancePayment: boolean;
 }
 
-interface TuitionManagementProps {
+interface TuitionManagementViProps {
   selectedSemester?: string;
 }
 
@@ -524,50 +520,51 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
 
 // ==================== MAIN COMPONENT ====================
 
-export function TuitionManagement({ selectedSemester: initialSelectedSemester }: TuitionManagementProps) {
+export function TuitionManagementVi({ selectedSemester: initialSelectedSemester }: TuitionManagementViProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [daysUntilDue, setDaysUntilDue] = useState(0);
   const paymentLink = 'https://hocphi.hcmus.edu.vn/';
 
   const parseSemesterFormat = (semesterStr: string): string => {
-    const match = semesterStr.match(/Học kỳ (\d), (\d{4})-(\d{4})/);
+    // Expected incoming format: "Học kỳ 1, Năm học 2024-2025" or "Học kỳ 1, 2024-2025"
+    const match = semesterStr.match(/Học kỳ (\d+),\s*(?:Năm học\s*)?(\d{4})-(\d{4})/i);
     if (match) {
       const semesterNum = match[1];
       const yearStart = match[2].slice(2);
       const yearEnd = match[3].slice(2);
-      return `${yearStart}-${yearEnd}/${semesterNum}`;
+      return `${yearStart}-${yearEnd}/${semesterNum}`; // e.g., "24-25/1"
     }
-    return '24-25/3';
+    // Fallback exactly to input if it's already in short format
+    return semesterStr;
   };
 
-  const selectedSemester = initialSelectedSemester
+  const parsedSemesterKey = initialSelectedSemester
     ? parseSemesterFormat(initialSelectedSemester)
     : '24-25/3';
 
-  const currentSemesterSummaryObj = allSemesterSummaries.find(
-    (s) => s.semester === selectedSemester
-  );
-
-  const currentSemesterSummary = currentSemesterSummaryObj || {
-    semester: selectedSemester,
-    semesterName: initialSelectedSemester || 'Học kỳ chưa có dữ liệu',
-    totalCredits: 0,
-    totalPeriods: 0,
-    totalTuitionCredits: 0,
-    totalFee: 0,
-    advancePayment: 0,
-    amountDue: 0,
-    dueDate: new Date().toISOString(),
-    status: 'paid' as const,
-    lastUpdated: new Date().toLocaleString('vi-VN'),
-    hasAdvancePayment: false,
+  const currentSemesterSummary = {
+    ...(allSemesterSummaries.find(
+      (s) => s.semester === parsedSemesterKey
+    ) || {
+      semester: parsedSemesterKey,
+      semesterName: 'Học kỳ chưa có dữ liệu',
+      totalCredits: 0,
+      totalPeriods: 0,
+      totalTuitionCredits: 0,
+      totalFee: 0,
+      advancePayment: 0,
+      amountDue: 0,
+      dueDate: new Date().toISOString(),
+      status: 'paid' as const,
+      lastUpdated: new Date().toLocaleString('vi-VN'),
+      hasAdvancePayment: false,
+    })
   };
 
-  if (currentSemesterSummaryObj && initialSelectedSemester) {
-    currentSemesterSummary.semesterName = initialSelectedSemester;
-  }
+  // Override the semesterName with the exact prop passed internally for perfect sync
+  currentSemesterSummary.semesterName = initialSelectedSemester || currentSemesterSummary.semesterName;
 
-  const currentSemesterData = semesterDataMap[selectedSemester] || [];
+  const currentSemesterData = semesterDataMap[parsedSemesterKey] || [];
 
   // Calculate days until due
   useEffect(() => {
@@ -649,7 +646,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
         <div>
           <h1 className="text-gray-900 mb-2">Học phí</h1>
           <p className="text-gray-600">
-            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông tin thanh toán.
+            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName.replace(/^Học kỳ /, '')}</span> và thông tin thanh toán.
           </p>
         </div>
 
@@ -769,7 +766,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
                   Hỗ Trợ<br />HP
                 </th>
                 <th className="px-2.5 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-right font-semibold">
-                  HP<br />Thực Đóng
+                  HP<br />Thực Động
                 </th>
                 <th className="px-2 py-2.5 text-[10px] text-gray-700 uppercase tracking-wide text-right font-semibold">
                   Chi Phí
@@ -884,8 +881,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
 
       {/* Enhanced Payment Information */}
       <div className={`bg-gradient-to-br ${currentSemesterSummary.status === 'unpaid' ? 'from-red-50 to-orange-50' :
-          currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' :
-            'from-green-50 to-blue-50'
+        currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' :
+          'from-green-50 to-blue-50'
         } rounded-xl p-6 shadow-md border-2 ${currentSemesterSummary.status === 'unpaid' ? 'border-red-200' :
           currentSemesterSummary.status === 'partial' ? 'border-yellow-200' :
             'border-green-200'
@@ -928,8 +925,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
               <div className={`w-12 h-12 rounded-lg ${currentSemesterSummary.status === 'paid' ? 'bg-green-500' :
-                  currentSemesterSummary.status === 'partial' ? 'bg-yellow-500' :
-                    'bg-red-500'
+                currentSemesterSummary.status === 'partial' ? 'bg-yellow-500' :
+                  'bg-red-500'
                 } flex items-center justify-center flex-shrink-0 shadow-md ${currentSemesterSummary.status === 'unpaid' ? 'animate-pulse' : ''
                 }`}>
                 {currentSemesterSummary.status === 'paid' ? (

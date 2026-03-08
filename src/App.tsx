@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
-import { DepartmentProvider } from './context/DepartmentContext';
+import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
 
 
@@ -17,6 +17,9 @@ function AppContent() {
   {/* Trang hiện tại */ }
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const { addNotification } = useAppNotification();
+  const { semesterNumber, academicYear } = useDepartmentData();
+
+  const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -83,13 +86,13 @@ function AppContent() {
 
           {currentPage === 'tuition' && (
             <div className="p-6">
-              <TuitionManagement />
+              <TuitionManagement selectedSemester={selectedSemester} />
             </div>
           )}
 
           {currentPage === 'schedule' && (
             <div className="p-6">
-              <VisualSchedule />
+              <VisualSchedule selectedSemester={selectedSemester} />
             </div>
           )}
 
