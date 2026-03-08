@@ -1,7 +1,7 @@
 import { Filter } from "lucide-react";
 import type { StudentCourseGrade } from "../../types";
 
-export function GradeHistory({ filteredHistory, selectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string }) {
+export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemesters, setSelectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string, uniqueSemesters: string[], setSelectedSemester: (semester: string) => void }) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -17,11 +17,13 @@ export function GradeHistory({ filteredHistory, selectedSemester }: { filteredHi
                     <Filter className="w-4 h-4 text-gray-500" />
                     <select
                         value={selectedSemester}
-                        disabled
-                        onChange={() => {}}
-                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed font-medium focus:outline-none"
+                        onChange={(e) => setSelectedSemester(e.target.value)}
+                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
                     >
-                        <option value={selectedSemester}>{selectedSemester}</option>
+                        <option value="all">Tất cả học kỳ</option>
+                        {uniqueSemesters.map(sem => (
+                            <option key={sem} value={sem}>{sem}</option>
+                        ))}
                     </select>
                 </div>
             </div>
@@ -52,7 +54,7 @@ export function GradeHistory({ filteredHistory, selectedSemester }: { filteredHi
                         </tr>
                     </thead>
 
-                    
+
                     {/* Danh sách các môn học */}
                     <tbody className="divide-y divide-gray-200">
                         {filteredHistory.map((course) => (

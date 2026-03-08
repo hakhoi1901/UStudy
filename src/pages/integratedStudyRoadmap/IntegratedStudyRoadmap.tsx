@@ -149,9 +149,9 @@ export function IntegratedStudyRoadmap() {
                 )}
 
                 {/* Tab 2: Sơ đồ tiên quyết
-        {activeTab === 'prerequisiteTree' && (
-          <PrerequisiteTreeView />
-        )} */}
+                {activeTab === 'prerequisiteTree' && (
+                <PrerequisiteTreeView />
+                )} */}
                 {/* Tab 2: Chọn môn học */}
                 {activeTab === 'selection' && (
                     <div className="flex flex-row lg:flex-row gap-6 items-start w-full relative">

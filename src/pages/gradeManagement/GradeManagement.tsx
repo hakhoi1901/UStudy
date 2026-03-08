@@ -17,7 +17,7 @@ export function GradeManagement() {
   const [courses, setCourses] = useState<Course[]>([]);
   const { academicYear, semesterNumber } = useDepartmentData();
 
-  const selectedSemester = `HK${semesterNumber} ${academicYear}`;
+  const [selectedSemester, setSelectedSemester] = useState<string>(`HK${semesterNumber} ${academicYear}`);
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
   const hasAlertedRef = useRef(false);
 
@@ -25,8 +25,7 @@ export function GradeManagement() {
   const { addNotification } = useAppNotification();
 
   // Lấy danh sách học kỳ
-  // Lấy danh sách học kỳ (Currently disabled filter, kept for reference)
-  // const uniqueSemesters = Array.from(new Set(gradesHistory.map(g => g.semester))).sort((a, b) => b.localeCompare(a));
+  const uniqueSemesters = Array.from(new Set(gradesHistory.map(g => g.semester))).sort((a, b) => b.localeCompare(a));
 
   // Tính GPA dự kiến bằng Domain Service
   const projectedGPA = GPACalculator.calculateProjectedGPA(
@@ -60,19 +59,10 @@ export function GradeManagement() {
     }
   };
 
-  // Lọc danh sách điểm theo học kỳ
-  const yearShort = academicYear.length >= 9 ? academicYear.substring(2, 4) + "-" + academicYear.substring(7, 9) : academicYear;
-  const yearStart = academicYear.substring(0, 4);
-
   const filteredHistory = selectedSemester === 'all'
     ? gradesHistory
-    : gradesHistory.filter(c => {
-      const checkSemester = c.semester || '';
-      const semStr = semesterNumber.toString();
-      const hasSem = new RegExp(`(?:^|\\D)${semStr}(?:\\D|$)`, 'i').test(checkSemester) || checkSemester.includes('HK' + semStr);
-      const hasYear = checkSemester.includes(academicYear) || checkSemester.includes(yearShort) || checkSemester.includes(yearStart);
-      return hasSem && hasYear;
-    });
+    : gradesHistory.filter(c => c.semester === selectedSemester);
+
 
   // Lấy danh sách các môn học cần học lại
   const retakeCourses = gradesHistory.filter(c => c.needsRetake && c.status === 'retake');
@@ -119,7 +109,7 @@ export function GradeManagement() {
       )}
 
       {/* Lịch sử điểm */}
-      <GradeHistory filteredHistory={filteredHistory} selectedSemester={selectedSemester} />
+      <GradeHistory filteredHistory={filteredHistory} selectedSemester={selectedSemester} uniqueSemesters={uniqueSemesters} setSelectedSemester={setSelectedSemester} />
 
       {/* Footer */}
       <PrivacyFooter />
