@@ -219,13 +219,13 @@ const COLOR_LEGEND = [
 function getSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession | null {
   return sessions.find(s =>
     s.dayOfWeek === day &&
-    s.startPeriod <= period &&
-    s.endPeriod >= period
+    Math.floor(s.startPeriod) <= period &&
+    Math.ceil(s.endPeriod) >= period
   ) || null;
 }
 
 function shouldRenderCell(session: ScheduleSession, period: number): boolean {
-  return session.startPeriod === period;
+  return Math.floor(session.startPeriod) === period;
 }
 
 function calculateRowSpan(session: ScheduleSession): number {

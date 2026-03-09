@@ -102,15 +102,45 @@ export function useSchedule(): WeeklySchedule {
                     const dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
 
                     let startPeriod = parseFloat(match[2]);
-                    const endPeriod = parseFloat(match[3]);
-                    const duration = endPeriod - startPeriod + 1;
-                    (course.courseType === 'TH' || course.courseType === 'BT')
-                    const startObj = timePeriods.find(p => p.period === Math.floor(startPeriod));
-                    const endObj = timePeriods.find(p => p.period === Math.ceil(endPeriod));
+                    let endPeriod = parseFloat(match[3]);
 
-                    const startTime = startObj ? startObj.time.split(' - ')[0].trim() : '00:00';
-                    const endTime = endObj ? endObj.time.split(' - ')[1].trim() : '00:00'
-                    const sessionParams = startObj?.label === 'Sáng' ? 'morning' as const : 'afternoon' as const;
+                    // Logic xử lý ca Thực Hành (TH) hoặc Bài Tập (BT) bị chia rưỡi
+                    if (course.courseType === 'TH' || course.courseType === 'BT') {
+                        if (startPeriod === 1 && endPeriod === 3) {
+                            endPeriod = 2.5;
+                        } else if (startPeriod === 3 && endPeriod === 5) {
+                            startPeriod = 3.5;
+                        } else if (startPeriod === 6 && endPeriod === 8) {
+                            endPeriod = 7.5;
+                        } else if (startPeriod === 8 && endPeriod === 10) {
+                            startPeriod = 8.5;
+                        }
+                    }
+
+                    const duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
+
+                    // Lấy string thời gian gốc từ constants
+                    let startTimeStr = '00:00';
+                    let endTimeStr = '00:00';
+
+                    // Xử lý custom time cho startPeriod
+                    if (startPeriod === 3.5) startTimeStr = '09:45';
+                    else if (startPeriod === 8.5) startTimeStr = '14:55';
+                    else {
+                        const startObj = timePeriods.find(p => p.period === Math.floor(startPeriod));
+                        if (startObj) startTimeStr = startObj.time.split(' - ')[0].trim();
+                    }
+
+                    // Xử lý custom time cho endPeriod 
+                    if (endPeriod === 2.5) endTimeStr = '09:35';
+                    else if (endPeriod === 7.5) endTimeStr = '14:45';
+                    else {
+                        const endObj = timePeriods.find(p => p.period === Math.ceil(endPeriod));
+                        if (endObj) endTimeStr = endObj.time.split(' - ')[1].trim();
+                    }
+
+                    // Xác định Buổi (Sáng/Chiều) dựa trên startPeriod
+                    const sessionParams = Math.floor(startPeriod) <= 5 ? 'morning' as const : 'afternoon' as const;
 
                     totalPeriodsPerWeek += duration;
                     totalHoursPerWeek += duration;
@@ -127,8 +157,8 @@ export function useSchedule(): WeeklySchedule {
                         dayOfWeek: dayOfWeek,
                         startPeriod: startPeriod,
                         endPeriod: endPeriod,
-                        startTime: startTime,
-                        endTime: endTime,
+                        startTime: startTimeStr,
+                        endTime: endTimeStr,
                         color: color,
                         session: sessionParams,
                         duration: duration,
