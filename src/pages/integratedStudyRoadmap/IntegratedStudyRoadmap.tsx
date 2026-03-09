@@ -173,7 +173,7 @@ export function IntegratedStudyRoadmap() {
                         </div>
 
                         {/* CỘT PHẢI: Giỏ hàng */}
-                        <div className="hidden lg:block sticky top-6 w-[350px] flex-shrink-0">
+                        <div className="lg:block sticky top-6 w-[350px] flex-shrink-0">
                             <SelectionBasketVi
                                 selectedCourses={Array.from(selectedCourses)
                                     .map(id => allCurrentCourses.find(c => c.id === id)!)
