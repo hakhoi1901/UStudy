@@ -20,7 +20,11 @@ export interface ScheduleSession {
     endTime: string;
     color: 'blue' | 'green' | 'yellow' | 'purple';
     session: 'morning' | 'afternoon';
-    duration: number;
+    duration: number; // Số tiết: 2, 2.5, etc.
+    totalWeeks: number;
+    startDate: string;
+    endDate: string;
+    location?: string;
 }
 
 export interface WeeklySchedule {
@@ -80,11 +84,14 @@ export function useSchedule(): WeeklySchedule {
         courses_registered.forEach((course: any, index: number) => {
             const meta = allCoursesMeta.find((m: any) => m.course_id === course.id);
             const credits = parseInt(meta?.credits as any) || 0;
+            const theoryHours = parseInt(meta?.theory_hours as any) || 0;
+            const labHours = parseInt(meta?.lab_hours as any) || 0;
+            const exerciseHours = parseInt(meta?.exercise_hours as any) || 0;
 
             const scheduleStr = course.schedule || '';
             const scheduleParts = scheduleStr.split(',').map((s: string) => s.trim()).filter(Boolean);
 
-            if (scheduleParts.length > 0) {
+            if (scheduleParts.length > 0 && course.courseType === 'LT') {
                 totalCourses++;
                 totalCredits += credits;
             }
@@ -98,7 +105,6 @@ export function useSchedule(): WeeklySchedule {
             scheduleParts.forEach((part: string, partIdx: number) => {
                 const match = part.match(/T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^:]+)(?::\s*(.*))?)?/);
                 if (match) {
-                    console.log(match)
                     const dayStr = match[1];
                     const dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
 
@@ -106,7 +112,10 @@ export function useSchedule(): WeeklySchedule {
                     let endPeriod = parseFloat(match[3]);
                     let room = match[5];
 
+                    let duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
+
                     if (course.courseType === 'TH' || course.courseType === 'BT') {
+                        duration = 2.5;
                         if (startPeriod === 1 && endPeriod === 3) {
                             endPeriod = 2.5;
                         } else if (startPeriod === 3 && endPeriod === 5) {
@@ -117,8 +126,6 @@ export function useSchedule(): WeeklySchedule {
                             startPeriod = 8.5;
                         }
                     }
-
-                    const duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
 
                     let startTimeStr = '00:00';
                     let endTimeStr = '00:00';
@@ -142,13 +149,35 @@ export function useSchedule(): WeeklySchedule {
                     totalPeriodsPerWeek += duration;
                     totalHoursPerWeek += duration;
 
+                    const cType = (course.courseType || 'LT') as 'LT' | 'TH' | 'BT';
+                    let requiredHours = theoryHours;
+                    if (cType === 'TH') requiredHours = labHours;
+                    else if (cType === 'BT') requiredHours = exerciseHours;
+
+                    const totalWeeks = requiredHours > 0 && duration > 0 ? Math.ceil(requiredHours / duration) : 0;
+
+                    let startDateStr = course.startWeek || '';
+                    let endDateStr = '';
+                    if (startDateStr && totalWeeks > 0) {
+                        const parts = startDateStr.split('/');
+                        if (parts.length === 3) {
+                            const [day, month, year] = parts.map(Number);
+                            const startD = new Date(year, month - 1, day);
+                            if (!isNaN(startD.getTime())) {
+                                const endD = new Date(startD);
+                                endD.setDate(endD.getDate() + (totalWeeks - 1) * 7);
+                                endDateStr = `${endD.getDate().toString().padStart(2, '0')}/${(endD.getMonth() + 1).toString().padStart(2, '0')}/${endD.getFullYear()}`;
+                            }
+                        }
+                    }
+
                     sessions.push({
                         id: `${course.id}_${index}_${partIdx}`,
                         courseCode: course.id,
                         courseName: course.name,
                         classCode: course.classGroup,
                         credits: credits,
-                        type: (course.courseType || 'LT') as 'LT' | 'TH' | 'BT',
+                        type: cType,
                         instructor: course.instructor || '',
                         room: room || '',
                         dayOfWeek: dayOfWeek,
@@ -159,6 +188,9 @@ export function useSchedule(): WeeklySchedule {
                         color: color,
                         session: sessionParams,
                         duration: duration,
+                        totalWeeks: totalWeeks,
+                        startDate: startDateStr,
+                        endDate: endDateStr,
                     });
                 }
             });

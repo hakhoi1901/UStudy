@@ -15,6 +15,9 @@ export interface ScheduleSession {
     color: 'blue' | 'green' | 'yellow' | 'purple';
     session: 'morning' | 'afternoon';
     duration: number; // Số tiết: 2, 2.5, etc.
+    totalWeeks: number;
+    startDate: string;
+    endDate: string;
 }
 
 export interface WeeklySchedule {

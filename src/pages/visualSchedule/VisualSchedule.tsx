@@ -445,6 +445,12 @@ function CourseCard({ session }: { session: ScheduleSession }) {
                 <span>Thời gian:</span>
                 <span className="font-medium">{session.startTime} - {session.endTime}</span>
               </div>
+              {session.totalWeeks > 0 && (
+                <div className="flex justify-between">
+                  <span>Thời hạn:</span>
+                  <span className="font-medium">{session.startDate} - {session.endDate} ({session.totalWeeks} tuần)</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Tiết:</span>
                 <span className="font-medium">{session.startPeriod} - {Math.floor(session.endPeriod)}</span>
@@ -492,7 +498,10 @@ function CourseDetailCard({ session }: { session: ScheduleSession }) {
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
             <div>• {session.credits} TC | {typeLabels[session.type]} | Phòng: {session.room}</div>
-            <div>• GV: {session.instructor} | Lớp: {session.classCode}</div>
+            {session.totalWeeks > 0 && (
+              <div>• Học từ: {session.startDate} - {session.endDate} ({session.totalWeeks} tuần)</div>
+            )}
+            <div className="md:col-span-2">• GV: {session.instructor} | Lớp: {session.classCode}</div>
           </div>
         </div>
       </div>
