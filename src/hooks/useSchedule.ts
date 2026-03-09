@@ -4,40 +4,7 @@ import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { timePeriods } from '../constants/timetable';
 
-export interface ScheduleSession {
-    id: string;
-    courseCode: string;
-    courseName: string;
-    classCode: string;
-    credits: number;
-    type: 'LT' | 'TH' | 'BT'; // Lý thuyết, Thực hành, Bài tập
-    instructor: string;
-    room: string;
-    dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7;
-    startPeriod: number;
-    endPeriod: number;
-    startTime: string;
-    endTime: string;
-    color: 'blue' | 'green' | 'yellow' | 'purple';
-    session: 'morning' | 'afternoon';
-    duration: number; // Số tiết: 2, 2.5, etc.
-    totalWeeks: number;
-    startDate: string;
-    endDate: string;
-    location?: string;
-}
-
-export interface WeeklySchedule {
-    semester: string;
-    semesterName: string;
-    weekNumber: number;
-    weekRange: string;
-    totalCourses: number;
-    totalCredits: number;
-    totalPeriodsPerWeek: number;
-    totalHoursPerWeek: number;
-    sessions: ScheduleSession[];
-}
+import { type ScheduleSession, type WeeklySchedule } from '../types/Schedule';
 
 export interface Day {
     value: 2 | 3 | 4 | 5 | 6 | 7;
@@ -76,10 +43,23 @@ export function useSchedule(): WeeklySchedule {
         let totalPeriodsPerWeek = 0;
         let totalHoursPerWeek = 0;
 
+        let earliestDate: Date | null = null;
         const sessions: ScheduleSession[] = [];
 
         const colorMap = new Map<string, typeof COLORS[number]>();
         let colorIndex = 0;
+
+        const courseStartWeeks = new Map<string, string>();
+        courses_registered.forEach((c: any) => {
+            // Lưu lại startWeek của môn (thường LT sẽ có) để TH/BT xài ké nếu trống
+            if (c.startWeek && c.startWeek.trim() !== '') {
+                // Nếu đã có mà ngắn hơn (vd thiếu phẩy) thì ưu tiên chuỗi dài hơn/đầy đủ hơn
+                const existing = courseStartWeeks.get(c.id) || '';
+                if (c.startWeek.length > existing.length) {
+                    courseStartWeeks.set(c.id, c.startWeek);
+                }
+            }
+        });
 
         courses_registered.forEach((course: any, index: number) => {
             const meta = allCoursesMeta.find((m: any) => m.course_id === course.id);
@@ -156,18 +136,58 @@ export function useSchedule(): WeeklySchedule {
 
                     const totalWeeks = requiredHours > 0 && duration > 0 ? Math.ceil(requiredHours / duration) : 0;
 
-                    let startDateStr = course.startWeek || '';
+                    // Xử lý chuỗi startWeek, có thể có nhiều ngày phân tách bằng phẩy nếu có nhiều lịch
+                    let isInheritedStartWeek = false;
+                    let startDateStr = course.startWeek;
+                    if (!startDateStr) {
+                        startDateStr = courseStartWeeks.get(course.id) || '';
+                        if (startDateStr) {
+                            isInheritedStartWeek = true;
+                        }
+                    }
+
                     let endDateStr = '';
-                    if (startDateStr && totalWeeks > 0) {
+                    let startDateParsed: Date | undefined = undefined;
+                    let endDateParsed: Date | undefined = undefined;
+
+                    if (startDateStr) {
+                        const datePartsOfStartWeek = startDateStr.split(',').map((s: string) => s.trim()).filter(Boolean);
+                        if (datePartsOfStartWeek.length > 0) {
+                            // Nếu số lượng lịch khớp với số lượng ngày, ta lấy ngày tương ứng, nếu không thì lấy ngày đầu tiên
+                            if (datePartsOfStartWeek.length === scheduleParts.length) {
+                                startDateStr = datePartsOfStartWeek[partIdx];
+                            } else {
+                                startDateStr = datePartsOfStartWeek[0];
+                            }
+                        }
+                    }
+
+                    if (startDateStr) {
                         const parts = startDateStr.split('/');
                         if (parts.length === 3) {
                             const [day, month, year] = parts.map(Number);
                             const startD = new Date(year, month - 1, day);
+
+                            // Tịnh tiến thêm 2 tuần định mức nếu TH/BT vay mượn ngày bắt đầu từ LT
+                            if (isInheritedStartWeek && (cType === 'TH' || cType === 'BT')) {
+                                startD.setDate(startD.getDate() + 14);
+                                // Cập nhật lại chuỗi ngày hiển thị sau khi đã dời
+                                startDateStr = `${startD.getDate().toString().padStart(2, '0')}/${(startD.getMonth() + 1).toString().padStart(2, '0')}/${startD.getFullYear()}`;
+                            }
+
                             if (!isNaN(startD.getTime())) {
+                                startDateParsed = startD;
+                                if (!earliestDate || startD < earliestDate) {
+                                    earliestDate = new Date(startD);
+                                }
+                                const actualWeeks = totalWeeks > 0 ? totalWeeks : 15;
                                 const endD = new Date(startD);
-                                endD.setDate(endD.getDate() + (totalWeeks - 1) * 7);
+                                endD.setDate(endD.getDate() + (actualWeeks - 1) * 7 + 6); // Cuối tuần kết thúc
+                                endDateParsed = endD;
                                 endDateStr = `${endD.getDate().toString().padStart(2, '0')}/${(endD.getMonth() + 1).toString().padStart(2, '0')}/${endD.getFullYear()}`;
                             }
+                        } else {
+                            console.warn("Invalid start date format, expected dd/mm/yyyy", startDateStr);
                         }
                     }
 
@@ -191,6 +211,8 @@ export function useSchedule(): WeeklySchedule {
                         totalWeeks: totalWeeks,
                         startDate: startDateStr,
                         endDate: endDateStr,
+                        startDateParsed: startDateParsed,
+                        endDateParsed: endDateParsed
                     });
                 }
             });
@@ -201,7 +223,14 @@ export function useSchedule(): WeeklySchedule {
             return a.startPeriod - b.startPeriod;
         });
 
-        console.log("Secsions: ", sessions)
+        const ed = earliestDate as Date | null;
+        if (ed !== null) {
+            const day = ed.getDay();
+            const diff = ed.getDate() - day + (day === 0 ? -6 : 1);
+            ed.setDate(diff); // Shift to Monday
+            ed.setHours(0, 0, 0, 0);
+            earliestDate = ed;
+        }
 
         return {
             semester: `${semester}-${year}`,
@@ -213,6 +242,7 @@ export function useSchedule(): WeeklySchedule {
             totalPeriodsPerWeek: totalPeriodsPerWeek,
             totalHoursPerWeek: totalHoursPerWeek,
             sessions: sessions,
+            semesterStartDate: earliestDate || undefined
         };
     }, [courses_registered, metadata, allCoursesMeta]);
 }

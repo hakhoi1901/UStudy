@@ -18,6 +18,8 @@ export interface ScheduleSession {
     totalWeeks: number;
     startDate: string;
     endDate: string;
+    startDateParsed?: Date;
+    endDateParsed?: Date;
 }
 
 export interface WeeklySchedule {
@@ -30,6 +32,7 @@ export interface WeeklySchedule {
     totalPeriodsPerWeek: number;
     totalHoursPerWeek: number;
     sessions: ScheduleSession[];
+    semesterStartDate?: Date;
 }
 
 

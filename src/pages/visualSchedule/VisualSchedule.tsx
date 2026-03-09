@@ -559,23 +559,101 @@ interface VisualScheduleProps {
 
 export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
-  const [currentWeek, setCurrentWeek] = useState(2);
+  const [currentWeek, setCurrentWeek] = useState(() => {
+    if (!SEMESTER_3_SCHEDULE.semesterStartDate) return 1;
+    const now = new Date();
+    const msDiff = now.getTime() - SEMESTER_3_SCHEDULE.semesterStartDate.getTime();
+    if (msDiff < 0) return 1;
+    const week = Math.floor(msDiff / (7 * 24 * 60 * 60 * 1000)) + 1;
+    return week;
+  });
+
   const schedule = {
     ...SEMESTER_3_SCHEDULE,
     semesterName: selectedSemester || SEMESTER_3_SCHEDULE.semesterName
   };
 
+  const { semesterStartDate } = schedule;
+  let weekStartStr = `Tuần ${currentWeek}`;
+
+  const displaySessions = schedule.sessions.filter(session => {
+    if (!semesterStartDate || !session.startDateParsed || !session.endDateParsed) return true;
+
+    const currentWeekStart = new Date(semesterStartDate);
+    currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeek - 1) * 7);
+
+    // Cuối Chủ Nhật
+    const currentWeekEnd = new Date(currentWeekStart);
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
+    currentWeekEnd.setHours(23, 59, 59, 999);
+
+    if (currentWeekStart > session.endDateParsed || currentWeekEnd < session.startDateParsed) {
+      return false;
+    }
+    return true;
+  });
+
+  if (semesterStartDate) {
+    const wStart = new Date(semesterStartDate);
+    wStart.setDate(wStart.getDate() + (currentWeek - 1) * 7);
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wEnd.getDate() + 6);
+    weekStartStr = `${String(wStart.getDate()).padStart(2, '0')}/${String(wStart.getMonth() + 1).padStart(2, '0')}/${wStart.getFullYear()} - ${String(wEnd.getDate()).padStart(2, '0')}/${String(wEnd.getMonth() + 1).padStart(2, '0')}/${wEnd.getFullYear()}`;
+  }
+
+  const totalFilteredCredits = Array.from(new Set(displaySessions.map(s => s.courseCode))).reduce((acc, code) => {
+    const s = displaySessions.find(s => s.courseCode === code);
+    return acc + (s?.credits || 0);
+  }, 0);
+
+  const totalFilteredCourses = new Set(displaySessions.map(s => s.courseCode)).size;
+  const totalPeriods = displaySessions.reduce((acc, s) => acc + s.duration, 0);
+
   // Update schedule data based on current week
   const displaySchedule = {
     ...schedule,
     weekNumber: currentWeek,
-    weekRange: `${String(4 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026 - ${String(10 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026`,
+    weekRange: weekStartStr,
+    sessions: displaySessions,
+    totalCourses: totalFilteredCourses,
+    totalCredits: totalFilteredCredits,
+    totalPeriodsPerWeek: totalPeriods,
+    totalHoursPerWeek: totalPeriods, // Using periods directly for hours per requirements
   };
+
+  // Tính trend so với tuần trước
+  let periodsTrend: { direction: 'up' | 'down'; value: string } | undefined = undefined;
+  let coursesTrend: { direction: 'up' | 'down'; value: string } | undefined = undefined;
+
+  if (currentWeek > 1 && semesterStartDate) {
+    const prevWeekStart = new Date(semesterStartDate);
+    prevWeekStart.setDate(prevWeekStart.getDate() + (currentWeek - 2) * 7);
+    const prevWeekEnd = new Date(prevWeekStart);
+    prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
+    prevWeekEnd.setHours(23, 59, 59, 999);
+
+    const prevSessions = schedule.sessions.filter(session => {
+      if (!session.startDateParsed || !session.endDateParsed) return true;
+      if (prevWeekStart > session.endDateParsed || prevWeekEnd < session.startDateParsed) return false;
+      return true;
+    });
+
+    const prevTotalPeriods = prevSessions.reduce((acc, s) => acc + s.duration, 0);
+    const prevTotalCourses = new Set(prevSessions.map(s => s.courseCode)).size;
+
+    const diffPeriods = totalPeriods - prevTotalPeriods;
+    if (diffPeriods > 0) periodsTrend = { direction: 'up', value: `+${diffPeriods} tiết` };
+    else if (diffPeriods < 0) periodsTrend = { direction: 'down', value: `${diffPeriods} tiết` };
+
+    const diffCourses = totalFilteredCourses - prevTotalCourses;
+    if (diffCourses > 0) coursesTrend = { direction: 'up', value: `+${diffCourses} môn` };
+    else if (diffCourses < 0) coursesTrend = { direction: 'down', value: `${diffCourses} môn` };
+  }
 
   // Get current day and time info
   const { isToday, currentPeriod } = getCurrentDayAndTime();
 
-  // Get unique courses for details section
+  // Get unique courses for details section (hiển thị toàn bộ môn đã đăng ký)
   const uniqueCourses = schedule.sessions.reduce((acc, session) => {
     if (!acc.find(s => s.courseCode === session.courseCode)) {
       acc.push(session);
@@ -591,7 +669,8 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   };
 
   const handleNextWeek = () => {
-    if (currentWeek < 17) {
+    // Arbitrary maximum of 25 weeks for navigation bounds
+    if (currentWeek < 25) {
       setCurrentWeek(currentWeek + 1);
     }
   };
@@ -626,18 +705,18 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
         <QuickStatsCard
           icon={BookOpen}
           title="Tổng môn học"
-          value={`${schedule.totalCourses} môn`}
-          subtitle={`${schedule.totalCredits} tín chỉ`}
+          value={`${displaySchedule.totalCourses}/${schedule.totalCourses} môn `}
+          subtitle={`${displaySchedule.totalCredits} tín chỉ`}
           bgColor="bg-[#004A98]"
-          trend={{ direction: 'up', value: '+2 môn' }}
+          trend={coursesTrend}
         />
         <QuickStatsCard
           icon={Clock}
           title="Tiết học / tuần"
-          value={`${schedule.totalPeriodsPerWeek} tiết`}
-          subtitle={`${schedule.totalHoursPerWeek} giờ`}
+          value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
+          subtitle={`${displaySchedule.totalPeriodsPerWeek} giờ`}
           bgColor="bg-green-600"
-          trend={{ direction: 'up', value: '+4 tiết' }}
+          trend={periodsTrend}
         />
         <QuickStatsCard
           icon={Calendar}
@@ -706,11 +785,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               </td>
             </tr>
 
-            <PeriodRow period={1} time="7:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={2} time="8:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={3} time="9:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={4} time="10:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={5} time="11:00" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={1} time="7:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={2} time="8:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={3} time="9:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={4} time="10:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={5} time="11:00" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
 
             {/* BUỔI CHIỀU */}
             <tr className="bg-orange-50">
@@ -719,11 +798,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               </td>
             </tr>
 
-            <PeriodRow period={6} time="12:40" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={7} time="13:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={8} time="14:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={9} time="15:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={10} time="16:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={6} time="12:40" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={7} time="13:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={8} time="14:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={9} time="15:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={10} time="16:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
           </tbody>
         </table>
       </div>
