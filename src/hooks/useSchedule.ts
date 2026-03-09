@@ -13,14 +13,14 @@ export interface ScheduleSession {
     type: 'LT' | 'TH' | 'BT'; // Lý thuyết, Thực hành, Bài tập
     instructor: string;
     room: string;
-    dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7; // 2=T2, 7=T7
+    dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7;
     startPeriod: number;
-    endPeriod: number; // Có thể là số thập phân cho TH: 3.5, 5.5, 8.5, 10.5
+    endPeriod: number;
     startTime: string;
     endTime: string;
     color: 'blue' | 'green' | 'yellow' | 'purple';
     session: 'morning' | 'afternoon';
-    duration: number; // Số tiết: 2, 2.5, etc.
+    duration: number;
 }
 
 export interface WeeklySchedule {
@@ -61,7 +61,7 @@ export function useSchedule(): WeeklySchedule {
 
     const courses_registered = studentDb?.registrations || [];
 
-    console.log(courses_registered)
+    console.log("Registered: ", courses_registered)
 
     return useMemo(() => {
         const semester = metadata?.params?.registration?.sem || '1';
@@ -96,15 +96,16 @@ export function useSchedule(): WeeklySchedule {
             const color = colorMap.get(course.id) || 'blue';
 
             scheduleParts.forEach((part: string, partIdx: number) => {
-                const match = part.match(/T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)/);
+                const match = part.match(/T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^:]+)(?::\s*(.*))?)?/);
                 if (match) {
+                    console.log(match)
                     const dayStr = match[1];
                     const dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
 
                     let startPeriod = parseFloat(match[2]);
                     let endPeriod = parseFloat(match[3]);
+                    let room = match[5];
 
-                    // Logic xử lý ca Thực Hành (TH) hoặc Bài Tập (BT) bị chia rưỡi
                     if (course.courseType === 'TH' || course.courseType === 'BT') {
                         if (startPeriod === 1 && endPeriod === 3) {
                             endPeriod = 2.5;
@@ -119,11 +120,9 @@ export function useSchedule(): WeeklySchedule {
 
                     const duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
 
-                    // Lấy string thời gian gốc từ constants
                     let startTimeStr = '00:00';
                     let endTimeStr = '00:00';
 
-                    // Xử lý custom time cho startPeriod
                     if (startPeriod === 3.5) startTimeStr = '09:45';
                     else if (startPeriod === 8.5) startTimeStr = '14:55';
                     else {
@@ -131,7 +130,6 @@ export function useSchedule(): WeeklySchedule {
                         if (startObj) startTimeStr = startObj.time.split(' - ')[0].trim();
                     }
 
-                    // Xử lý custom time cho endPeriod 
                     if (endPeriod === 2.5) endTimeStr = '09:35';
                     else if (endPeriod === 7.5) endTimeStr = '14:45';
                     else {
@@ -139,7 +137,6 @@ export function useSchedule(): WeeklySchedule {
                         if (endObj) endTimeStr = endObj.time.split(' - ')[1].trim();
                     }
 
-                    // Xác định Buổi (Sáng/Chiều) dựa trên startPeriod
                     const sessionParams = Math.floor(startPeriod) <= 5 ? 'morning' as const : 'afternoon' as const;
 
                     totalPeriodsPerWeek += duration;
@@ -153,7 +150,7 @@ export function useSchedule(): WeeklySchedule {
                         credits: credits,
                         type: (course.courseType || 'LT') as 'LT' | 'TH' | 'BT',
                         instructor: course.instructor || '',
-                        room: course.room || '',
+                        room: room || '',
                         dayOfWeek: dayOfWeek,
                         startPeriod: startPeriod,
                         endPeriod: endPeriod,
@@ -172,7 +169,7 @@ export function useSchedule(): WeeklySchedule {
             return a.startPeriod - b.startPeriod;
         });
 
-        console.log(sessions)
+        console.log("Secsions: ", sessions)
 
         return {
             semester: `${semester}-${year}`,
