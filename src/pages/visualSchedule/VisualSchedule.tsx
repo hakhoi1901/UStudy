@@ -5,60 +5,8 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
-
-// ==================== TYPE DEFINITIONS ====================
-
-interface ScheduleSession {
-  id: string;
-  courseCode: string;
-  courseName: string;
-  classCode: string;
-  credits: number;
-  type: 'LT' | 'TH' | 'BT'; // Lý thuyết, Thực hành, Bài tập
-  instructor: string;
-  room: string;
-  dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7; // 2=T2, 7=T7
-  startPeriod: number;
-  endPeriod: number; // Có thể là số thập phân cho TH: 3.5, 5.5, 8.5, 10.5
-  startTime: string;
-  endTime: string;
-  color: 'blue' | 'green' | 'yellow' | 'purple';
-  session: 'morning' | 'afternoon';
-  duration: number; // Số tiết: 2, 2.5, etc.
-}
-
-interface WeeklySchedule {
-  semester: string;
-  semesterName: string;
-  weekNumber: number;
-  weekRange: string;
-  totalCourses: number;
-  totalCredits: number;
-  totalPeriodsPerWeek: number;
-  totalHoursPerWeek: number;
-  sessions: ScheduleSession[];
-}
-
-
-
-interface Day {
-  value: 2 | 3 | 4 | 5 | 6 | 7;
-  label: string;
-  short: string;
-}
-
-// ==================== CONSTANTS ====================
-
-const DAYS: Day[] = [
-  { value: 2, label: 'Thứ 2', short: 'T2' },
-  { value: 3, label: 'Thứ 3', short: 'T3' },
-  { value: 4, label: 'Thứ 4', short: 'T4' },
-  { value: 5, label: 'Thứ 5', short: 'T5' },
-  { value: 6, label: 'Thứ 6', short: 'T6' },
-  { value: 7, label: 'Thứ 7', short: 'T7' },
-];
-
-
+import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
+import { useSchedule } from '../../hooks/useSchedule';
 
 const COLOR_LEGEND = [
   { color: 'blue', label: 'CSC - Công nghệ Thông tin', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
@@ -69,201 +17,202 @@ const COLOR_LEGEND = [
 
 // ==================== MOCK DATA ====================
 
-const SEMESTER_3_SCHEDULE: WeeklySchedule = {
-  semester: '24-25/3',
-  semesterName: 'Học kỳ 3, Năm học 2024-2025',
-  weekNumber: 2,
-  weekRange: '11/01/2026 - 17/01/2026',
-  totalCourses: 7,
-  totalCredits: 27,
-  totalPeriodsPerWeek: 32,
-  totalHoursPerWeek: 27,
-  sessions: [
-    // ============ LÝ THUYẾT ============
+// const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
+// {
+//   semester: '',
+//   semesterName: '',
+//   weekNumber: 2,
+//   weekRange: '',
+//   totalCourses: 7,
+//   totalCredits: 27,
+//   totalPeriodsPerWeek: 32,
+//   totalHoursPerWeek: 27,
+//   sessions: [
+//     // ============ LÝ THUYẾT ============
 
-    // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
-    {
-      id: 's1',
-      courseCode: 'BAA00101',
-      courseName: 'Triết học Mác - Lênin',
-      classCode: '24SHH3',
-      credits: 3.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Nguyễn Văn Minh',
-      room: 'F201',
-      dayOfWeek: 3,
-      startPeriod: 1,
-      endPeriod: 5,
-      startTime: '07:30',
-      endTime: '11:50',
-      color: 'yellow',
-      session: 'morning',
-      duration: 5,
-    },
+//     // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
+//     {
+//       id: 's1',
+//       courseCode: 'BAA00101',
+//       courseName: 'Triết học Mác - Lênin',
+//       classCode: '24SHH3',
+//       credits: 3.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Nguyễn Văn Minh',
+//       room: 'F201',
+//       dayOfWeek: 3,
+//       startPeriod: 1,
+//       endPeriod: 5,
+//       startTime: '07:30',
+//       endTime: '11:50',
+//       color: 'yellow',
+//       session: 'morning',
+//       duration: 5,
+//     },
 
-    // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's2',
-      courseCode: 'BAA00103',
-      courseName: 'Chủ nghĩa xã hội khoa học',
-      classCode: '24CMT1',
-      credits: 2.0,
-      type: 'LT',
-      instructor: 'TS. Trần Thị Hương',
-      room: 'F103',
-      dayOfWeek: 2,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'yellow',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's2',
+//       courseCode: 'BAA00103',
+//       courseName: 'Chủ nghĩa xã hội khoa học',
+//       classCode: '24CMT1',
+//       credits: 2.0,
+//       type: 'LT',
+//       instructor: 'TS. Trần Thị Hương',
+//       room: 'F103',
+//       dayOfWeek: 2,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'yellow',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
-    {
-      id: 's3',
-      courseCode: 'CSC10003',
-      courseName: 'Phương pháp lập trình hướng đối tượng',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'TS. Lê Thành Sơn',
-      room: 'E210',
-      dayOfWeek: 7,
-      startPeriod: 1,
-      endPeriod: 4,
-      startTime: '07:30',
-      endTime: '11:00',
-      color: 'blue',
-      session: 'morning',
-      duration: 4,
-    },
+//     // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
+//     {
+//       id: 's3',
+//       courseCode: 'CSC10003',
+//       courseName: 'Phương pháp lập trình hướng đối tượng',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'TS. Lê Thành Sơn',
+//       room: 'E210',
+//       dayOfWeek: 7,
+//       startPeriod: 1,
+//       endPeriod: 4,
+//       startTime: '07:30',
+//       endTime: '11:00',
+//       color: 'blue',
+//       session: 'morning',
+//       duration: 4,
+//     },
 
-    // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's4',
-      courseCode: 'CSC10008',
-      courseName: 'Mạng máy tính',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Phạm Văn Tuấn',
-      room: 'E307',
-      dayOfWeek: 5,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'blue',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's4',
+//       courseCode: 'CSC10008',
+//       courseName: 'Mạng máy tính',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Phạm Văn Tuấn',
+//       room: 'E307',
+//       dayOfWeek: 5,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'blue',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's5',
-      courseCode: 'MTH00044',
-      courseName: 'Xác suất thống kê',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'TS. Đỗ Thị Mai',
-      room: 'E205',
-      dayOfWeek: 6,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'green',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's5',
+//       courseCode: 'MTH00044',
+//       courseName: 'Xác suất thống kê',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'TS. Đỗ Thị Mai',
+//       room: 'E205',
+//       dayOfWeek: 6,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'green',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
-    {
-      id: 's6',
-      courseCode: 'MTH00050',
-      courseName: 'Toán học tổ hợp',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Nguyễn Hữu Đức',
-      room: 'E210',
-      dayOfWeek: 6,
-      startPeriod: 2,
-      endPeriod: 5,
-      startTime: '08:20',
-      endTime: '11:50',
-      color: 'green',
-      session: 'morning',
-      duration: 4,
-    },
+//     // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
+//     {
+//       id: 's6',
+//       courseCode: 'MTH00050',
+//       courseName: 'Toán học tổ hợp',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Nguyễn Hữu Đức',
+//       room: 'E210',
+//       dayOfWeek: 6,
+//       startPeriod: 2,
+//       endPeriod: 5,
+//       startTime: '08:20',
+//       endTime: '11:50',
+//       color: 'green',
+//       session: 'morning',
+//       duration: 4,
+//     },
 
-    // ============ THỰC HÀNH (2.5 tiết) ============
+//     // ============ THỰC HÀNH (2.5 tiết) ============
 
-    // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
-    {
-      id: 's7',
-      courseCode: 'CSC10003',
-      courseName: 'Phương pháp lập trình hướng đối tượng',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Võ Thị Lan',
-      room: 'PMT_D202',
-      dayOfWeek: 5,
-      startPeriod: 1,
-      endPeriod: 3,
-      startTime: '07:30',
-      endTime: '09:35',
-      color: 'blue',
-      session: 'morning',
-      duration: 2.5,
-    },
+//     // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
+//     {
+//       id: 's7',
+//       courseCode: 'CSC10003',
+//       courseName: 'Phương pháp lập trình hướng đối tượng',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Võ Thị Lan',
+//       room: 'PMT_D202',
+//       dayOfWeek: 5,
+//       startPeriod: 1,
+//       endPeriod: 3,
+//       startTime: '07:30',
+//       endTime: '09:35',
+//       color: 'blue',
+//       session: 'morning',
+//       duration: 2.5,
+//     },
 
-    // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
-    {
-      id: 's8',
-      courseCode: 'MTH00050',
-      courseName: 'Toán học tổ hợp',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Lê Minh Tuấn',
-      room: 'PMT_D202',
-      dayOfWeek: 5,
-      startPeriod: 4,
-      endPeriod: 5,
-      startTime: '09:45',
-      endTime: '11:50',
-      color: 'green',
-      session: 'morning',
-      duration: 2.5,
-    },
+//     // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
+//     {
+//       id: 's8',
+//       courseCode: 'MTH00050',
+//       courseName: 'Toán học tổ hợp',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Lê Minh Tuấn',
+//       room: 'PMT_D202',
+//       dayOfWeek: 5,
+//       startPeriod: 4,
+//       endPeriod: 5,
+//       startTime: '09:45',
+//       endTime: '11:50',
+//       color: 'green',
+//       session: 'morning',
+//       duration: 2.5,
+//     },
 
-    // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
-    {
-      id: 's9',
-      courseCode: 'MTH00044',
-      courseName: 'Xác suất thống kê',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Hoàng Văn Nam',
-      room: 'PMT_NDH4.5',
-      dayOfWeek: 3,
-      startPeriod: 9,
-      endPeriod: 10,
-      startTime: '14:55',
-      endTime: '17:00',
-      color: 'green',
-      session: 'afternoon',
-      duration: 2.5,
-    },
-  ],
-};
+//     // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
+//     {
+//       id: 's9',
+//       courseCode: 'MTH00044',
+//       courseName: 'Xác suất thống kê',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Hoàng Văn Nam',
+//       room: 'PMT_NDH4.5',
+//       dayOfWeek: 3,
+//       startPeriod: 9,
+//       endPeriod: 10,
+//       startTime: '14:55',
+//       endTime: '17:00',
+//       color: 'green',
+//       session: 'afternoon',
+//       duration: 2.5,
+//     },
+//   ],
+// };
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -601,6 +550,7 @@ interface VisualScheduleProps {
 }
 
 export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
+  const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
   const [currentWeek, setCurrentWeek] = useState(2);
   const schedule = {
     ...SEMESTER_3_SCHEDULE,
