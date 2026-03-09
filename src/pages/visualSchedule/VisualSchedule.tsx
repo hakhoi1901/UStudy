@@ -229,28 +229,7 @@ function shouldRenderCell(session: ScheduleSession, period: number): boolean {
 }
 
 function calculateRowSpan(session: ScheduleSession): number {
-  // Thực hành/Bài tập 2.5 tiết
-  if (session.duration === 2.5) {
-    // TH ca 2 chiều (tiết 9-10): chỉ span 2 rows
-    if (session.startPeriod === 9) {
-      return 2;
-    }
-    // TH ca 1 sáng (tiết 1-3): span 3 rows
-    if (session.startPeriod === 1) {
-      return 3;
-    }
-    // TH ca 2 sáng (tiết 4-5): span 2 rows
-    if (session.startPeriod === 4) {
-      return 2;
-    }
-  }
-
-  // Lý thuyết: span theo duration
-  if (session.type === 'LT') {
-    return session.duration; // 2, 4, 5 tiết
-  }
-
-  return 2;
+  return Math.ceil(session.duration);
 }
 
 // Get current day of week (2-7) and time
@@ -404,13 +383,33 @@ function CourseCard({ session }: { session: ScheduleSession }) {
     BT: 'Bài tập',
   };
 
+  // Tính toán % height và offset top cho các block không nguyên (VD: 2.5 tiết)
+  const rowSpan = Math.ceil(session.duration);
+  const heightPercent = (session.duration / rowSpan) * 100;
+
+  // Nếu session bắt đầu ở giữa tiết (vd: 3.5), offset top xuống (0.5 / rowSpan) * 100%
+  const isFractionalStart = session.startPeriod % 1 !== 0;
+  let topOffsetPercent = 0;
+  if (isFractionalStart) {
+    topOffsetPercent = (0.5 / rowSpan) * 100;
+  }
+
   return (
     <div
-      className="relative h-full w-full"
+      className="relative w-full h-full"
+      style={{
+        minHeight: `${rowSpan * 56}px`, // 56px là h-14 của 1 tiết
+      }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div className={`p-1.5 rounded border-l-2 h-full w-full flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}>
+      <div
+        className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}
+        style={{
+          top: `${topOffsetPercent}%`,
+          height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
+        }}
+      >
         {/* Course Code */}
         <div className="font-mono text-[9px] font-bold text-gray-900 mb-0.5 leading-tight truncate">
           {session.courseCode}

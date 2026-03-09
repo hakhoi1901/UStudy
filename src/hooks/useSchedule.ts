@@ -153,7 +153,7 @@ export function useSchedule(): WeeklySchedule {
                         credits: credits,
                         type: (course.courseType || 'LT') as 'LT' | 'TH' | 'BT',
                         instructor: course.instructor || '',
-                        room: course.room || '---',
+                        room: course.room || '',
                         dayOfWeek: dayOfWeek,
                         startPeriod: startPeriod,
                         endPeriod: endPeriod,
