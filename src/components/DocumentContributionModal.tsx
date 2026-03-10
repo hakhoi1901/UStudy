@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, ExternalLink, Send, Info } from 'lucide-react';
+import { useState } from 'react';
+import { X, Send, Info } from 'lucide-react';
 
 interface DocumentContributionModalProps {
     courseId: string;
@@ -19,9 +19,9 @@ export function DocumentContributionModal({
     if (!isOpen) return null;
 
     const handleSendEmail = () => {
-        const email = 'your.email@example.com'; // Replace with a real email
+        const email = 'hakhoi.contact@gmail.com';
         const subject = `[Đóng góp tài liệu] ${courseId} - ${courseName}`;
-        const body = `Chào admin,\n\nMình muốn đóng góp tài liệu cho môn:\n- Mã môn: ${courseId}\n- Tên môn: ${courseName}\n\nLink thư mục Drive của mình:\n${driveLink}\n\nCảm ơn admin đã cập nhật giúp cộng đồng!`;
+        const body = `Chào admin,\n\nMình muốn đóng góp tài liệu cho môn:\n- Mã môn: ${courseId}\n- Tên môn: ${courseName}\n\nLink thư mục Drive của mình:\n${driveLink}\n\n`;
 
         const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.open(mailtoLink, '_blank');
