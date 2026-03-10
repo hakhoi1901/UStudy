@@ -15,9 +15,7 @@ import { GPAsem } from './GPAsem';
 
 export function GradeManagement() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const { academicYear, semesterNumber } = useDepartmentData();
-
-  const [selectedSemester, setSelectedSemester] = useState<string>(`HK${semesterNumber} ${academicYear}`);
+  const [selectedSemester, setSelectedSemester] = useState('all');
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
   const hasAlertedRef = useRef(false);
 

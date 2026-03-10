@@ -166,7 +166,7 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
     };
 
     const setSemesterNumber = (num: number) => {
-        localStorage.setItem('selected_semester_number', num.toString());
+        localStorage.setItem(STORAGE_KEYS.ACADEMIC_SEMESTER, num.toString());
         setSemesterNumberState(num);
     };
 
