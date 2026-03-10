@@ -3,6 +3,8 @@
 */
 
 import { useState, useEffect } from 'react';
+import { useTuitionCalculator, TuitionCourse, TuitionSummary } from '../../hooks/useTuitionCalculator';
+
 import {
   DollarSign,
   CheckCircle2,
@@ -57,306 +59,6 @@ interface TuitionManagementProps {
   selectedSemester?: string;
 }
 
-// Mock data
-const semester1Data: TuitionCourse[] = [
-  {
-    stt: 1,
-    semester: '24-25/1',
-    courseCode: 'CSC10012',
-    classCode: '24CTT1',
-    courseName: 'Cơ sở lập trình',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 3865000,
-    discount: 0,
-    support: 0,
-    actualFee: 3865000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 2,
-    semester: '24-25/1',
-    courseCode: 'CSC00004',
-    classCode: '24CTT1',
-    courseName: 'Nhập môn Công nghệ Thông tin',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 3,
-    semester: '24-25/1',
-    courseCode: 'ADD00002',
-    classCode: '1',
-    courseName: 'Nhập môn đầu khóa',
-    credits: 0.0,
-    periods: 30.0,
-    tuitionCredits: 2.00,
-    tuitionFee: 740000,
-    discount: 0,
-    support: 0,
-    actualFee: 740000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 4,
-    semester: '24-25/1',
-    courseCode: 'BAA00021',
-    classCode: '24VT_TSTT1',
-    courseName: 'Thể dục 1',
-    credits: 2.0,
-    periods: 45.0,
-    tuitionCredits: 3.00,
-    tuitionFee: 1110000,
-    discount: 0,
-    support: 0,
-    actualFee: 1110000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 5,
-    semester: '24-25/1',
-    courseCode: 'MTH00045',
-    classCode: '24CTT1',
-    courseName: 'Toán rời rạc',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 6,
-    semester: '24-25/1',
-    courseCode: 'MTH00021',
-    classCode: '24CTT1',
-    courseName: 'Vi tích phân 1',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-];
-
-const semester2Data: TuitionCourse[] = [
-  {
-    stt: 1,
-    semester: '24-25/2',
-    courseCode: 'CSC10004',
-    classCode: '24CTT1',
-    courseName: 'Cấu trúc dữ liệu và giải thuật',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 3865000,
-    discount: 0,
-    support: 0,
-    actualFee: 3865000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 2,
-    semester: '24-25/2',
-    courseCode: 'CSC10006',
-    classCode: '24CTT1',
-    courseName: 'Cơ sở dữ liệu',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 3865000,
-    discount: 0,
-    support: 0,
-    actualFee: 3865000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 3,
-    semester: '24-25/2',
-    courseCode: 'MTH00022',
-    classCode: '24CTT1',
-    courseName: 'Vi tích phân 2',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 4,
-    semester: '24-25/2',
-    courseCode: 'MTH00040',
-    classCode: '24CTT1',
-    courseName: 'Xác suất thống kê',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 5,
-    semester: '24-25/2',
-    courseCode: 'BAA00022',
-    classCode: '24VT_TSTT2',
-    courseName: 'Thể dục 2',
-    credits: 2.0,
-    periods: 45.0,
-    tuitionCredits: 3.00,
-    tuitionFee: 1110000,
-    discount: 0,
-    support: 0,
-    actualFee: 1110000,
-    otherFees: 0,
-    note: '',
-  },
-];
-
-const semester3Data: TuitionCourse[] = [
-  {
-    stt: 1,
-    semester: '24-25/3',
-    courseCode: 'CSC10002',
-    classCode: '24CTT1',
-    courseName: 'Kỹ thuật lập trình',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 3865000,
-    discount: 0,
-    support: 0,
-    actualFee: 3865000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 2,
-    semester: '24-25/3',
-    courseCode: 'CSC10003',
-    classCode: '24CTT1',
-    courseName: 'Phương pháp lập trình hướng đối tượng',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 3865000,
-    discount: 0,
-    support: 0,
-    actualFee: 3865000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 3,
-    semester: '24-25/3',
-    courseCode: 'MTH00050',
-    classCode: '24CTT1',
-    courseName: 'Toán học tổ hợp',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-  {
-    stt: 4,
-    semester: '24-25/3',
-    courseCode: 'MTH00041',
-    classCode: '24CTT1',
-    courseName: 'Toán ứng dụng và thống kê',
-    credits: 4.0,
-    periods: 75.0,
-    tuitionCredits: 5.00,
-    tuitionFee: 2780000,
-    discount: 0,
-    support: 0,
-    actualFee: 2780000,
-    otherFees: 0,
-    note: '',
-  },
-];
-
-const allSemesterSummaries: TuitionSummary[] = [
-  {
-    semester: '24-25/1',
-    semesterName: 'Học kỳ 1, Năm học 2024-2025',
-    totalCredits: 18.0,
-    totalPeriods: 375.0,
-    totalTuitionCredits: 25.00,
-    totalFee: 14055000,
-    advancePayment: 12000000,
-    amountDue: 2055000,
-    dueDate: '2024-09-15',
-    status: 'paid',
-    lastUpdated: '02/12/2024 16:19',
-    hasAdvancePayment: true,
-  },
-  {
-    semester: '24-25/2',
-    semesterName: 'Học kỳ 2, Năm học 2024-2025',
-    totalCredits: 18.0,
-    totalPeriods: 375.0,
-    totalTuitionCredits: 23.00,
-    totalFee: 14400000,
-    advancePayment: 0,
-    amountDue: 14400000,
-    dueDate: '2025-02-15',
-    status: 'paid',
-    lastUpdated: '15/01/2025 10:30',
-    hasAdvancePayment: false,
-  },
-  {
-    semester: '24-25/3',
-    semesterName: 'Học kỳ 3, Năm học 2024-2025',
-    totalCredits: 16.0,
-    totalPeriods: 300.0,
-    totalTuitionCredits: 20.00,
-    totalFee: 13290000,
-    advancePayment: 0,
-    amountDue: 13290000,
-    dueDate: '2025-07-15',
-    status: 'unpaid',
-    lastUpdated: '10/01/2026 14:25',
-    hasAdvancePayment: false,
-  },
-];
-
-const semesterDataMap: { [key: string]: TuitionCourse[] } = {
-  '24-25/1': semester1Data,
-  '24-25/2': semester2Data,
-  '24-25/3': semester3Data,
-};
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -410,7 +112,7 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
   content += `TỔNG KẾT:\n`;
   content += `Tổng học phí: ${new Intl.NumberFormat('vi-VN').format(summary.totalFee)}₫\n`;
   if (summary.hasAdvancePayment) {
-    content += `Trừ tạm thu nhập học: ${new Intl.NumberFormat('vi-VN').format(summary.advancePayment)}₫\n`;
+    content += `Tổng đã đóng: ${new Intl.NumberFormat('vi-VN').format(summary.advancePayment)}₫\n`;
   }
   content += `Tổng phải đóng: ${new Intl.NumberFormat('vi-VN').format(summary.amountDue)}₫\n\n`;
   content += `Ngày xuất: ${new Date().toLocaleString('vi-VN')}\n`;
@@ -513,9 +215,9 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
     >
       {children}
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap z-50 animate-in fade-in slide-in-from-bottom-1 duration-200">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap z-[9999] animate-in fade-in slide-in-from-top-1 duration-200" style={{ minWidth: 'max-content' }}>
           {text}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-900 rotate-45" />
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-1 w-2 h-2 bg-gray-900 rotate-45" />
         </div>
       )}
     </div>
@@ -529,45 +231,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   const [daysUntilDue, setDaysUntilDue] = useState(0);
   const paymentLink = 'https://hocphi.hcmus.edu.vn/';
 
-  const parseSemesterFormat = (semesterStr: string): string => {
-    const match = semesterStr.match(/Học kỳ (\d), (\d{4})-(\d{4})/);
-    if (match) {
-      const semesterNum = match[1];
-      const yearStart = match[2].slice(2);
-      const yearEnd = match[3].slice(2);
-      return `${yearStart}-${yearEnd}/${semesterNum}`;
-    }
-    return '24-25/3';
-  };
-
-  const selectedSemester = initialSelectedSemester
-    ? parseSemesterFormat(initialSelectedSemester)
-    : '24-25/3';
-
-  const currentSemesterSummaryObj = allSemesterSummaries.find(
-    (s) => s.semester === selectedSemester
-  );
-
-  const currentSemesterSummary = currentSemesterSummaryObj || {
-    semester: selectedSemester,
-    semesterName: initialSelectedSemester || 'Học kỳ chưa có dữ liệu',
-    totalCredits: 0,
-    totalPeriods: 0,
-    totalTuitionCredits: 0,
-    totalFee: 0,
-    advancePayment: 0,
-    amountDue: 0,
-    dueDate: new Date().toISOString(),
-    status: 'paid' as const,
-    lastUpdated: new Date().toLocaleString('vi-VN'),
-    hasAdvancePayment: false,
-  };
-
-  if (currentSemesterSummaryObj && initialSelectedSemester) {
-    currentSemesterSummary.semesterName = initialSelectedSemester;
-  }
-
-  const currentSemesterData = semesterDataMap[selectedSemester] || [];
+  const selectedSemesterName = initialSelectedSemester || 'Học kỳ 1, 2025-2026';
+  const { courses: currentSemesterData, summary: currentSemesterSummary, isDataAvailable } = useTuitionCalculator(selectedSemesterName);
 
   // Calculate days until due
   useEffect(() => {
@@ -637,7 +302,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
     }
   };
 
-  const trend = getTrendComparison(currentSemesterSummary, allSemesterSummaries);
+  const trend = { direction: 'neutral' as const, value: 'Không đổi', percent: 0 }; // Cannot compare without history
   const paymentProgress = currentSemesterSummary.hasAdvancePayment
     ? (currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100
     : 0;
@@ -678,7 +343,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
 
           <EnhancedSummaryCard
             icon={CheckCircle2}
-            title="Trừ tạm thu nhập học"
+            title="Tổng đã đóng"
             subtitle="Đã đóng trước"
             value={`${formatCurrency(currentSemesterSummary.advancePayment)} ₫`}
             detail={`${((currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100).toFixed(1)}% tổng học phí`}
@@ -852,7 +517,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
               {currentSemesterSummary.hasAdvancePayment && (
                 <tr className="border-t border-gray-200">
                   <td colSpan={9} className="px-2.5 py-2 text-right text-xs font-semibold text-gray-700">
-                    Trừ tạm thu nhập học:
+                    Tổng đã đóng:
                   </td>
                   <td className="px-2.5 py-2 text-right font-bold text-green-700 text-sm">
                     {formatCurrency(currentSemesterSummary.advancePayment)}
@@ -884,8 +549,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
 
       {/* Enhanced Payment Information */}
       <div className={`bg-gradient-to-br ${currentSemesterSummary.status === 'unpaid' ? 'from-red-50 to-orange-50' :
-          currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' :
-            'from-green-50 to-blue-50'
+        currentSemesterSummary.status === 'partial' ? 'from-yellow-50 to-orange-50' :
+          'from-green-50 to-blue-50'
         } rounded-xl p-6 shadow-md border-2 ${currentSemesterSummary.status === 'unpaid' ? 'border-red-200' :
           currentSemesterSummary.status === 'partial' ? 'border-yellow-200' :
             'border-green-200'
@@ -928,8 +593,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
               <div className={`w-12 h-12 rounded-lg ${currentSemesterSummary.status === 'paid' ? 'bg-green-500' :
-                  currentSemesterSummary.status === 'partial' ? 'bg-yellow-500' :
-                    'bg-red-500'
+                currentSemesterSummary.status === 'partial' ? 'bg-yellow-500' :
+                  'bg-red-500'
                 } flex items-center justify-center flex-shrink-0 shadow-md ${currentSemesterSummary.status === 'unpaid' ? 'animate-pulse' : ''
                 }`}>
                 {currentSemesterSummary.status === 'paid' ? (

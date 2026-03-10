@@ -6,6 +6,7 @@ import { GradeManagement } from './pages/gradeManagement/GradeManagement';
 import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
 import { useState, useEffect } from 'react';
+import { APP_CONFIG } from './config';
 import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
@@ -16,6 +17,7 @@ import { processRawData } from './logic/dataProcessor';
 function AppContent() {
   {/* Trang hiện tại */ }
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
+  const [selectedSemester, setSelectedSemester] = useState<string>(APP_CONFIG.AVAILABLE_SEMESTERS[1] || 'Học kỳ 1, 2025-2026');
   const { addNotification } = useAppNotification();
   const { semesterNumber, academicYear } = useDepartmentData();
 
@@ -59,7 +61,7 @@ function AppContent() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header selectedSemester={selectedSemester} onSemesterChange={setSelectedSemester} />
         {/* Giao diện chính/các trang*/}
         <main className="flex-1 overflow-y-auto">
           {currentPage === 'dashboard' && (

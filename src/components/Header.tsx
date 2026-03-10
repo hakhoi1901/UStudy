@@ -8,8 +8,15 @@ import { useDepartmentData } from '../context/DepartmentContext';
 import { ACADEMIC_YEARS } from '../assets/data/tuition';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
 
-export function Header() {
+export interface HeaderProps {
+  selectedSemester?: string;
+  onSemesterChange?: (semester: string) => void;
+}
+
+export function Header({ selectedSemester: propSelectedSemester, onSemesterChange }: HeaderProps = {}) {
   const [studentName, setStudentName] = useState('');
+  const [localSemester, setLocalSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
+  const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
   const { academicYear, setAcademicYear, semesterNumber, setSemesterNumber } = useDepartmentData();
 
@@ -38,9 +45,9 @@ export function Header() {
     if (match) {
       const semNum = parseInt(match[1]);
       const yearStr = match[2];
-      
+
       setSemesterNumber(semNum);
-      
+
       if (yearStr !== academicYear) {
         setAcademicYear(yearStr);
       }
@@ -97,7 +104,11 @@ export function Header() {
                     {semesters.map((semester) => (
                       <button
                         key={semester}
-                        onClick={() => handleSemesterSelect(semester)}
+                        onClick={() => {
+                          if (onSemesterChange) onSemesterChange(semester);
+                          else setLocalSemester(semester);
+                          setShowSemesterDropdown(false);
+                        }}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
                           ? 'text-[#004A98] bg-opacity-10'
                           : 'text-gray-700 hover:bg-gray-50'
