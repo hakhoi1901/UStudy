@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch, ExternalLink } from 'lucide-react';
+import { courseLinks } from '../assets/data/courseLinks';
 
 export function CourseRowTrainingProgram({
   course,
@@ -155,7 +156,7 @@ export function CourseRowTrainingProgram({
         <div className="mt-2 px-4 py-4 bg-gray-50 border border-gray-200 rounded-lg ml-8 relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-300"></div>
           <div className="space-y-4 text-sm">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-6 p-2">
               <div>
                 <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium flex items-center gap-1">
                   Lý thuyết
@@ -179,6 +180,39 @@ export function CourseRowTrainingProgram({
               <div className="pt-3 border-t border-gray-200">
                 <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium">Ghi chú từ CTĐT</p>
                 <p className="text-gray-800 leading-relaxed">{course.description}</p>
+              </div>
+            )}
+            {/* Document Link */}
+            {(courseLinks[course.course_id] || true) && (
+              <div className="pt-3 border-t border-gray-200 p-2">
+                <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">Tài liệu tham khảo</p>
+                <div className="flex flex-wrap items-center gap-3 p-2">
+                  {courseLinks[course.course_id] ? (
+                    <a
+                      href={courseLinks[course.course_id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-[#004A98] hover:text-[#003d7a] rounded-lg transition-colors text-sm font-medium shadow-sm"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Mở thư mục Drive tài liệu
+                    </a>
+                  ) : (
+                    <span className="text-sm text-gray-500 italic">Chưa có tài liệu cho môn học này.</span>
+                  )}
+
+                  {/* Nút đóng góp tài liệu */}
+                  <a
+                    href="https://forms.gle/placeholder" /* Thay bằng link Form thực tế */
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-green-400 text-green-700 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium shadow-sm"
+                    title="Đóng góp tài liệu, đề thi, bài tập cho môn này"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Đóng góp tài liệu
+                  </a>
+                </div>
               </div>
             )}
           </div>
