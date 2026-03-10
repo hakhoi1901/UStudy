@@ -406,7 +406,7 @@ function exportTuitionData(summary: TuitionSummary, courses: TuitionCourse[]) {
   content += `TỔNG KẾT:\n`;
   content += `Tổng học phí: ${new Intl.NumberFormat('vi-VN').format(summary.totalFee)}₫\n`;
   if (summary.hasAdvancePayment) {
-    content += `Trừ tạm thu nhập học: ${new Intl.NumberFormat('vi-VN').format(summary.advancePayment)}₫\n`;
+    content += `Tổng đã đóng: ${new Intl.NumberFormat('vi-VN').format(summary.advancePayment)}₫\n`;
   }
   content += `Tổng phải đóng: ${new Intl.NumberFormat('vi-VN').format(summary.amountDue)}₫\n\n`;
   content += `Ngày xuất: ${new Date().toLocaleString('vi-VN')}\n`;
@@ -656,7 +656,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
           
           <EnhancedSummaryCard
             icon={CheckCircle2}
-            title="Trừ tạm thu nhập học"
+            title="Tổng đã đóng"
             subtitle="Đã đóng trước"
             value={`${formatCurrency(currentSemesterSummary.advancePayment)} ₫`}
             detail={`${((currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100).toFixed(1)}% tổng học phí`}
@@ -831,7 +831,7 @@ export function TuitionManagementVi({ selectedSemester: initialSelectedSemester 
               {currentSemesterSummary.hasAdvancePayment && (
                 <tr className="border-t border-gray-200">
                   <td colSpan={9} className="px-2.5 py-2 text-right text-xs font-semibold text-gray-700">
-                    Trừ tạm thu nhập học:
+                    Tổng đã đóng:
                   </td>
                   <td className="px-2.5 py-2 text-right font-bold text-green-700 text-sm">
                     {formatCurrency(currentSemesterSummary.advancePayment)}

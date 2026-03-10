@@ -6,9 +6,15 @@ import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../context/NotificationContext';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
 
-export function Header() {
+export interface HeaderProps {
+  selectedSemester?: string;
+  onSemesterChange?: (semester: string) => void;
+}
+
+export function Header({ selectedSemester: propSelectedSemester, onSemesterChange }: HeaderProps = {}) {
   const [studentName, setStudentName] = useState('');
-  const [selectedSemester, setSelectedSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
+  const [localSemester, setLocalSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
+  const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
 
   const { hasData } = useStudentGradeData();
@@ -74,7 +80,8 @@ export function Header() {
                       <button
                         key={semester}
                         onClick={() => {
-                          setSelectedSemester(semester);
+                          if (onSemesterChange) onSemesterChange(semester);
+                          else setLocalSemester(semester);
                           setShowSemesterDropdown(false);
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
