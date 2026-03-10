@@ -15,12 +15,11 @@ export interface HeaderProps {
 
 export function Header({ selectedSemester: propSelectedSemester, onSemesterChange }: HeaderProps = {}) {
   const [studentName, setStudentName] = useState('');
-  const [localSemester, setLocalSemester] = useState(APP_CONFIG.AVAILABLE_SEMESTERS[1]);
+  const [localSemester, setLocalSemester] = useState(`Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`);
   const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
   const { academicYear, setAcademicYear, semesterNumber, setSemesterNumber } = useDepartmentData();
 
-  const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
 
   const { hasData } = useStudentGradeData();
   const { addNotification } = useAppNotification();
@@ -35,9 +34,9 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
 
   // Generate semesters using the predefined academic years (3 semesters per year)
   const semesters = ACADEMIC_YEARS.flatMap(year => [
-    `Học kỳ 1, ${year.id}`,
-    `Học kỳ 2, ${year.id}`,
     `Học kỳ 3, ${year.id}`,
+    `Học kỳ 2, ${year.id}`,
+    `Học kỳ 1, ${year.id}`,
   ]);
 
   const handleSemesterSelect = (semesterStr: string) => {
@@ -105,9 +104,9 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
                       <button
                         key={semester}
                         onClick={() => {
+                          handleSemesterSelect(semester);
                           if (onSemesterChange) onSemesterChange(semester);
                           else setLocalSemester(semester);
-                          setShowSemesterDropdown(false);
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
                           ? 'text-[#004A98] bg-opacity-10'

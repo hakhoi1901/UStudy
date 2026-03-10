@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '../config';
+import { APP_CONFIG, STORAGE_KEYS } from '../config';
 import {
     FACULTIES,
     DEFAULT_FACULTY_ID,
@@ -66,8 +66,8 @@ const DepartmentContext = createContext<DepartmentContextType>({
     facultyId: DEFAULT_FACULTY_ID,
     majorId: DEFAULT_MAJOR_ID,
     cohortId: DEFAULT_COHORT_ID,
-    academicYear: DEFAULT_ACADEMIC_YEAR,
-    semesterNumber: 1,
+    academicYear: APP_CONFIG.DEFAULT_ACADEMIC_YEAR,
+    semesterNumber: APP_CONFIG.DEFAULT_SEMESTER,
     currentFaculty: FACULTIES[0],
     currentMajor: FACULTIES[0]?.majors[0],
     currentCohort: FACULTIES[0]?.majors[0]?.cohorts[0],
@@ -91,10 +91,10 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
         return localStorage.getItem(STORAGE_KEYS.COHORT_ID) || DEFAULT_COHORT_ID;
     });
     const [academicYear, setAcademicYearState] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.ACADEMIC_YEAR) || DEFAULT_ACADEMIC_YEAR;
+        return localStorage.getItem(STORAGE_KEYS.ACADEMIC_YEAR) || APP_CONFIG.DEFAULT_ACADEMIC_YEAR;
     });
     const [semesterNumber, setSemesterNumberState] = useState<number>(() => {
-        return parseInt(localStorage.getItem('selected_semester_number') || '1');
+        return parseInt(localStorage.getItem(STORAGE_KEYS.ACADEMIC_SEMESTER) || APP_CONFIG.DEFAULT_SEMESTER.toString());
     });
     const [data, setData] = useState<DepartmentData>(defaultData);
     const [isLoading, setIsLoading] = useState(false);

@@ -3,7 +3,7 @@
 */
 
 import { useState, useEffect } from 'react';
-import { useTuitionCalculator, TuitionCourse, TuitionSummary } from '../../hooks/useTuitionCalculator';
+import { useTuitionCalculator } from '../../hooks/useTuitionCalculator';
 
 import {
   DollarSign,

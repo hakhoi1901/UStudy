@@ -11,12 +11,14 @@ interface TuitionYear {
     majors: Record<string, Record<string, number>>;
 }
 
+import { APP_CONFIG } from '../../../config/appConfig';
+
 export const ACADEMIC_YEARS = [
     { id: '2025-2026', name: 'Năm học 2025-2026' },
     { id: '2024-2025', name: 'Năm học 2024-2025' },
 ];
 
-export const DEFAULT_ACADEMIC_YEAR = '2025-2026';
+export const DEFAULT_ACADEMIC_YEAR = APP_CONFIG.DEFAULT_ACADEMIC_YEAR;
 
 const tuitionMap: Record<string, TuitionYear> = {
     '2025-2026': tuition_2025_2026,

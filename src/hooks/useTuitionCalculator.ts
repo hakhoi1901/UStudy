@@ -3,35 +3,35 @@ import { useStudentDb } from './useStudentDb';
 import { useDepartmentData } from '../context/DepartmentContext';
 
 export interface TuitionCourse {
-  stt: number;
-  semester: string;
-  courseCode: string;
-  classCode: string;
-  courseName: string;
-  credits: number;
-  periods: number;
-  tuitionCredits: number;
-  tuitionFee: number;
-  discount: number;
-  support: number;
-  actualFee: number;
-  otherFees: number;
-  note: string;
+    stt: number;
+    semester: string;
+    courseCode: string;
+    classCode: string;
+    courseName: string;
+    credits: number;
+    periods: number;
+    tuitionCredits: number;
+    tuitionFee: number;
+    discount: number;
+    support: number;
+    actualFee: number;
+    otherFees: number;
+    note: string;
 }
 
 export interface TuitionSummary {
-  semester: string;
-  semesterName: string;
-  totalCredits: number;
-  totalPeriods: number;
-  totalTuitionCredits: number;
-  totalFee: number;
-  advancePayment: number;
-  amountDue: number;
-  dueDate: string;
-  status: 'paid' | 'partial' | 'unpaid';
-  lastUpdated: string;
-  hasAdvancePayment: boolean;
+    semester: string;
+    semesterName: string;
+    totalCredits: number;
+    totalPeriods: number;
+    totalTuitionCredits: number;
+    totalFee: number;
+    advancePayment: number;
+    amountDue: number;
+    dueDate: string;
+    status: 'paid' | 'partial' | 'unpaid';
+    lastUpdated: string;
+    hasAdvancePayment: boolean;
 }
 
 export function useTuitionCalculator(selectedSemesterName: string) {
@@ -72,7 +72,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             };
         }
 
-                let regTarget = '';
+        let regTarget = '';
         let registrationSemesterName = '';
         const importMetaRaw = localStorage.getItem('import_meta');
         if (importMetaRaw) {
@@ -81,18 +81,18 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 const regMeta = importMeta?.params?.registration;
                 if (regMeta && regMeta.sem && regMeta.year) {
                     registrationSemesterName = `Học kỳ ${regMeta.sem}, ${regMeta.year}`;
-                    
+
                     let y = String(regMeta.year);
                     if (y.length === 9) {
                         y = `${y.substring(2, 4)}-${y.substring(7, 9)}`;
                     }
                     regTarget = `${y}/${regMeta.sem}`;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         const isCurrentRegMatch = !regTarget || regTarget === targetSemester;
-        
+
         // Cố gắng tìm danh sách môn học cho học kỳ mục tiêu
         let matchingCourses: any[] = [];
         let isFromHistory = false;
@@ -113,7 +113,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                     }));
                     isFromHistory = matchingCourses.length > 0;
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         if (matchingCourses.length === 0) {
@@ -124,7 +124,6 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 registrationSemesterName
             };
         }
-
         const ltCourses = matchingCourses;
         const uniqueCourses = new Map<string, any>();
         ltCourses.forEach((r: any) => {
@@ -132,6 +131,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 uniqueCourses.set(r.id, r);
             }
         });
+
 
         const calculatedCourses: TuitionCourse[] = [];
         let totalCredits = 0;
@@ -142,11 +142,11 @@ export function useTuitionCalculator(selectedSemesterName: string) {
 
         uniqueCourses.forEach((reg, courseId) => {
             const cid = String(courseId).trim().toUpperCase();
-            
+
             let pricePerCredit = tuitionRates?.default_price || 425000;
             // Dựa vào cấu trúc tuition_rates (như trong ttest/2025-2026.ts)
             // Có format rates or (shared & majors merged)
-            
+
             if (tuitionRates?.rates) {
                 const sortedKeys = Object.keys(tuitionRates.rates).sort((a: string, b: string) => b.length - a.length);
                 for (const key of sortedKeys) {
@@ -159,11 +159,11 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 const ratesDict: Record<string, number> = {};
                 // Flatten shared
                 Object.keys(tuitionRates.shared).forEach(k => {
-                   ratesDict[k] = tuitionRates.shared[k];
+                    ratesDict[k] = tuitionRates.shared[k];
                 });
                 // Flatten majors[major_id] maybe? It was already merged by getTuitionRates in DepartmentContext
                 // We'll just assume standard 'rates' dictionary is constructed or fallback to default_price
-                if (tuitionRates?.rates === undefined) { 
+                if (tuitionRates?.rates === undefined) {
                     // getTuitionRates from context usually merges into `tuitionRates` itself if it's dynamic
                     // We'll iterate the object directly filtering number values.
                     const sortedKeys = Object.keys(tuitionRates).filter(k => typeof tuitionRates[k] === 'number' && k !== 'default_price').sort((a: string, b: string) => b.length - a.length);
@@ -187,12 +187,12 @@ export function useTuitionCalculator(selectedSemesterName: string) {
 
             const meta = allCoursesMeta ? allCoursesMeta.find((m: any) => m.course_id === cid) : null;
             const credits = parseInt(reg.credits || meta?.credits || 3);
-            
+
             const theoryH = parseInt(meta?.theory_hours || 0);
             const labH = parseInt(meta?.lab_hours || 0);
             const exerciseH = parseInt(meta?.exercise_hours || 0);
             const totalHours = theoryH + labH + exerciseH;
-            
+
             const periods = totalHours > 0 ? totalHours : (credits * 15);
             const billingCredits = totalHours > 0 ? totalHours / 15 : credits;
 
@@ -202,7 +202,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 stt: stt++,
                 semester: targetSemester,
                 courseCode: cid,
-                classCode: reg.classId || 'N/A',
+                classCode: reg.classGroup || 'N/A',
                 courseName: reg.name || meta?.name || 'Môn học',
                 credits: credits,
                 periods: periods,
@@ -225,43 +225,43 @@ export function useTuitionCalculator(selectedSemesterName: string) {
         emptySummary.totalPeriods = totalPeriods;
         emptySummary.totalTuitionCredits = totalTuitionCredits;
         emptySummary.totalFee = totalFee;
-        
+
         // Xử lý thanh toán
         if (isFromHistory) {
-             // Học kỳ sử dụng dữ liệu lịch sử -> Đã coi như đóng rồi
-             emptySummary.amountDue = 0;
-             emptySummary.advancePayment = totalFee;
-             emptySummary.status = 'paid';
-             emptySummary.hasAdvancePayment = true;
+            // Học kỳ sử dụng dữ liệu lịch sử -> Đã coi như đóng rồi
+            emptySummary.amountDue = 0;
+            emptySummary.advancePayment = totalFee;
+            emptySummary.status = 'paid';
+            emptySummary.hasAdvancePayment = true;
         } else {
-             // Học kỳ hiện tại -> Kiểm tra studentDb.tuition
-             let isPaid = false;
-             try {
+            // Học kỳ hiện tại -> Kiểm tra studentDb.tuition
+            let isPaid = false;
+            try {
                 const studentDb = JSON.parse(localStorage.getItem('student_db_full') || '{}');
                 if (studentDb?.tuition?.totals?.totalDue !== undefined) {
                     const totalDueStr = String(studentDb.tuition.totals.totalDue).replace(/,/g, '');
                     const dueNum = parseFloat(totalDueStr) || 0;
                     if (dueNum === 0 && totalFee > 0) {
-                         isPaid = true;
+                        isPaid = true;
                     }
                 }
-             } catch(e) {}
+            } catch (e) { }
 
-             if (isPaid) {
-                 emptySummary.amountDue = 0;
-                 emptySummary.advancePayment = totalFee;
-                 emptySummary.status = 'paid';
-                 emptySummary.hasAdvancePayment = true;
-             } else {
-                 emptySummary.amountDue = totalFee;
-                 emptySummary.advancePayment = 0;
-                 emptySummary.status = 'unpaid';
-                 emptySummary.hasAdvancePayment = false;
-             }
+            if (isPaid) {
+                emptySummary.amountDue = 0;
+                emptySummary.advancePayment = totalFee;
+                emptySummary.status = 'paid';
+                emptySummary.hasAdvancePayment = true;
+            } else {
+                emptySummary.amountDue = totalFee;
+                emptySummary.advancePayment = 0;
+                emptySummary.status = 'unpaid';
+                emptySummary.hasAdvancePayment = false;
+            }
         }
 
         emptySummary.lastUpdated = new Date().toLocaleString('vi-VN');
-        
+
         return {
             courses: calculatedCourses,
             summary: emptySummary,
