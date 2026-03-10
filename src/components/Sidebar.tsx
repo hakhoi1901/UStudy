@@ -1,11 +1,11 @@
-import { Home, Map, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, Map, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles } from 'lucide-react';
 import { useState } from 'react';
 
 const navGroups = [
   {
     title: 'Chính',
     items: [
-      { icon: Home, label: 'Tổng quan', active: false, page: 'dashboard' },
+      { icon: Home, label: 'Tổng quan', active: false, subtitle: "Điểm & tín chỉ tích lũy", page: 'dashboard' },
       { icon: Map, label: 'Lộ trình học tập', active: true, subtitle: 'Chọn môn & Lịch', page: 'courses' },
       { icon: BarChart3, label: 'Quản lý điểm', active: false, subtitle: 'GPA & Môn học lại', page: 'grades' },
     ],
@@ -13,14 +13,14 @@ const navGroups = [
   {
     title: 'Tài chính',
     items: [
-      { icon: DollarSign, label: 'Học phí', active: false, page: 'tuition' },
+      { icon: DollarSign, label: 'Học phí', active: false, subtitle: "Học phí năm học", page: 'tuition' },
     ],
   },
   {
     title: 'Công cụ',
     items: [
       { icon: Calendar, label: 'Thời khóa biểu', active: false, subtitle: 'Lịch đã chốt', page: 'schedule' },
-      { icon: Settings, label: 'Cài đặt', active: false, page: 'settings' },
+      { icon: Settings, label: 'Cài đặt', active: false, subtitle: "Thiết lập cá nhân", page: 'settings' },
     ],
   },
 ];
@@ -91,8 +91,8 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                         onPageChange(item.page);
                       }}
                       className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${isActive
-                          ? 'bg-white/10'
-                          : 'hover:bg-white/5'
+                        ? 'bg-white/10'
+                        : 'hover:bg-white/5'
                         } ${isCollapsed ? 'justify-center' : ''}`}
                       title={isCollapsed ? item.label : undefined}
                     >
