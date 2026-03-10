@@ -5,60 +5,8 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
-
-// ==================== TYPE DEFINITIONS ====================
-
-interface ScheduleSession {
-  id: string;
-  courseCode: string;
-  courseName: string;
-  classCode: string;
-  credits: number;
-  type: 'LT' | 'TH' | 'BT'; // Lý thuyết, Thực hành, Bài tập
-  instructor: string;
-  room: string;
-  dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7; // 2=T2, 7=T7
-  startPeriod: number;
-  endPeriod: number; // Có thể là số thập phân cho TH: 3.5, 5.5, 8.5, 10.5
-  startTime: string;
-  endTime: string;
-  color: 'blue' | 'green' | 'yellow' | 'purple';
-  session: 'morning' | 'afternoon';
-  duration: number; // Số tiết: 2, 2.5, etc.
-}
-
-interface WeeklySchedule {
-  semester: string;
-  semesterName: string;
-  weekNumber: number;
-  weekRange: string;
-  totalCourses: number;
-  totalCredits: number;
-  totalPeriodsPerWeek: number;
-  totalHoursPerWeek: number;
-  sessions: ScheduleSession[];
-}
-
-
-
-interface Day {
-  value: 2 | 3 | 4 | 5 | 6 | 7;
-  label: string;
-  short: string;
-}
-
-// ==================== CONSTANTS ====================
-
-const DAYS: Day[] = [
-  { value: 2, label: 'Thứ 2', short: 'T2' },
-  { value: 3, label: 'Thứ 3', short: 'T3' },
-  { value: 4, label: 'Thứ 4', short: 'T4' },
-  { value: 5, label: 'Thứ 5', short: 'T5' },
-  { value: 6, label: 'Thứ 6', short: 'T6' },
-  { value: 7, label: 'Thứ 7', short: 'T7' },
-];
-
-
+import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
+import { useSchedule } from '../../hooks/useSchedule';
 
 const COLOR_LEGEND = [
   { color: 'blue', label: 'CSC - Công nghệ Thông tin', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
@@ -69,239 +17,219 @@ const COLOR_LEGEND = [
 
 // ==================== MOCK DATA ====================
 
-const SEMESTER_3_SCHEDULE: WeeklySchedule = {
-  semester: '24-25/3',
-  semesterName: 'Học kỳ 3, Năm học 2024-2025',
-  weekNumber: 2,
-  weekRange: '11/01/2026 - 17/01/2026',
-  totalCourses: 7,
-  totalCredits: 27,
-  totalPeriodsPerWeek: 32,
-  totalHoursPerWeek: 27,
-  sessions: [
-    // ============ LÝ THUYẾT ============
+// const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
+// {
+//   semester: '',
+//   semesterName: '',
+//   weekNumber: 2,
+//   weekRange: '',
+//   totalCourses: 7,
+//   totalCredits: 27,
+//   totalPeriodsPerWeek: 32,
+//   totalHoursPerWeek: 27,
+//   sessions: [
+//     // ============ LÝ THUYẾT ============
 
-    // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
-    {
-      id: 's1',
-      courseCode: 'BAA00101',
-      courseName: 'Triết học Mác - Lênin',
-      classCode: '24SHH3',
-      credits: 3.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Nguyễn Văn Minh',
-      room: 'F201',
-      dayOfWeek: 3,
-      startPeriod: 1,
-      endPeriod: 5,
-      startTime: '07:30',
-      endTime: '11:50',
-      color: 'yellow',
-      session: 'morning',
-      duration: 5,
-    },
+//     // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
+//     {
+//       id: 's1',
+//       courseCode: 'BAA00101',
+//       courseName: 'Triết học Mác - Lênin',
+//       classCode: '24SHH3',
+//       credits: 3.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Nguyễn Văn Minh',
+//       room: 'F201',
+//       dayOfWeek: 3,
+//       startPeriod: 1,
+//       endPeriod: 5,
+//       startTime: '07:30',
+//       endTime: '11:50',
+//       color: 'yellow',
+//       session: 'morning',
+//       duration: 5,
+//     },
 
-    // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's2',
-      courseCode: 'BAA00103',
-      courseName: 'Chủ nghĩa xã hội khoa học',
-      classCode: '24CMT1',
-      credits: 2.0,
-      type: 'LT',
-      instructor: 'TS. Trần Thị Hương',
-      room: 'F103',
-      dayOfWeek: 2,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'yellow',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's2',
+//       courseCode: 'BAA00103',
+//       courseName: 'Chủ nghĩa xã hội khoa học',
+//       classCode: '24CMT1',
+//       credits: 2.0,
+//       type: 'LT',
+//       instructor: 'TS. Trần Thị Hương',
+//       room: 'F103',
+//       dayOfWeek: 2,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'yellow',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
-    {
-      id: 's3',
-      courseCode: 'CSC10003',
-      courseName: 'Phương pháp lập trình hướng đối tượng',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'TS. Lê Thành Sơn',
-      room: 'E210',
-      dayOfWeek: 7,
-      startPeriod: 1,
-      endPeriod: 4,
-      startTime: '07:30',
-      endTime: '11:00',
-      color: 'blue',
-      session: 'morning',
-      duration: 4,
-    },
+//     // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
+//     {
+//       id: 's3',
+//       courseCode: 'CSC10003',
+//       courseName: 'Phương pháp lập trình hướng đối tượng',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'TS. Lê Thành Sơn',
+//       room: 'E210',
+//       dayOfWeek: 7,
+//       startPeriod: 1,
+//       endPeriod: 4,
+//       startTime: '07:30',
+//       endTime: '11:00',
+//       color: 'blue',
+//       session: 'morning',
+//       duration: 4,
+//     },
 
-    // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's4',
-      courseCode: 'CSC10008',
-      courseName: 'Mạng máy tính',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Phạm Văn Tuấn',
-      room: 'E307',
-      dayOfWeek: 5,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'blue',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's4',
+//       courseCode: 'CSC10008',
+//       courseName: 'Mạng máy tính',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Phạm Văn Tuấn',
+//       room: 'E307',
+//       dayOfWeek: 5,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'blue',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-    {
-      id: 's5',
-      courseCode: 'MTH00044',
-      courseName: 'Xác suất thống kê',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'TS. Đỗ Thị Mai',
-      room: 'E205',
-      dayOfWeek: 6,
-      startPeriod: 6,
-      endPeriod: 9,
-      startTime: '12:40',
-      endTime: '16:10',
-      color: 'green',
-      session: 'afternoon',
-      duration: 4,
-    },
+//     // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
+//     {
+//       id: 's5',
+//       courseCode: 'MTH00044',
+//       courseName: 'Xác suất thống kê',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'TS. Đỗ Thị Mai',
+//       room: 'E205',
+//       dayOfWeek: 6,
+//       startPeriod: 6,
+//       endPeriod: 9,
+//       startTime: '12:40',
+//       endTime: '16:10',
+//       color: 'green',
+//       session: 'afternoon',
+//       duration: 4,
+//     },
 
-    // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
-    {
-      id: 's6',
-      courseCode: 'MTH00050',
-      courseName: 'Toán học tổ hợp',
-      classCode: '24CTT5',
-      credits: 4.0,
-      type: 'LT',
-      instructor: 'PGS.TS. Nguyễn Hữu Đức',
-      room: 'E210',
-      dayOfWeek: 6,
-      startPeriod: 2,
-      endPeriod: 5,
-      startTime: '08:20',
-      endTime: '11:50',
-      color: 'green',
-      session: 'morning',
-      duration: 4,
-    },
+//     // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
+//     {
+//       id: 's6',
+//       courseCode: 'MTH00050',
+//       courseName: 'Toán học tổ hợp',
+//       classCode: '24CTT5',
+//       credits: 4.0,
+//       type: 'LT',
+//       instructor: 'PGS.TS. Nguyễn Hữu Đức',
+//       room: 'E210',
+//       dayOfWeek: 6,
+//       startPeriod: 2,
+//       endPeriod: 5,
+//       startTime: '08:20',
+//       endTime: '11:50',
+//       color: 'green',
+//       session: 'morning',
+//       duration: 4,
+//     },
 
-    // ============ THỰC HÀNH (2.5 tiết) ============
+//     // ============ THỰC HÀNH (2.5 tiết) ============
 
-    // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
-    {
-      id: 's7',
-      courseCode: 'CSC10003',
-      courseName: 'Phương pháp lập trình hướng đối tượng',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Võ Thị Lan',
-      room: 'PMT_D202',
-      dayOfWeek: 5,
-      startPeriod: 1,
-      endPeriod: 3,
-      startTime: '07:30',
-      endTime: '09:35',
-      color: 'blue',
-      session: 'morning',
-      duration: 2.5,
-    },
+//     // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
+//     {
+//       id: 's7',
+//       courseCode: 'CSC10003',
+//       courseName: 'Phương pháp lập trình hướng đối tượng',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Võ Thị Lan',
+//       room: 'PMT_D202',
+//       dayOfWeek: 5,
+//       startPeriod: 1,
+//       endPeriod: 3,
+//       startTime: '07:30',
+//       endTime: '09:35',
+//       color: 'blue',
+//       session: 'morning',
+//       duration: 2.5,
+//     },
 
-    // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
-    {
-      id: 's8',
-      courseCode: 'MTH00050',
-      courseName: 'Toán học tổ hợp',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Lê Minh Tuấn',
-      room: 'PMT_D202',
-      dayOfWeek: 5,
-      startPeriod: 4,
-      endPeriod: 5,
-      startTime: '09:45',
-      endTime: '11:50',
-      color: 'green',
-      session: 'morning',
-      duration: 2.5,
-    },
+//     // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
+//     {
+//       id: 's8',
+//       courseCode: 'MTH00050',
+//       courseName: 'Toán học tổ hợp',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Lê Minh Tuấn',
+//       room: 'PMT_D202',
+//       dayOfWeek: 5,
+//       startPeriod: 4,
+//       endPeriod: 5,
+//       startTime: '09:45',
+//       endTime: '11:50',
+//       color: 'green',
+//       session: 'morning',
+//       duration: 2.5,
+//     },
 
-    // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
-    {
-      id: 's9',
-      courseCode: 'MTH00044',
-      courseName: 'Xác suất thống kê',
-      classCode: '24CTT5A',
-      credits: 4.0,
-      type: 'TH',
-      instructor: 'ThS. Hoàng Văn Nam',
-      room: 'PMT_NDH4.5',
-      dayOfWeek: 3,
-      startPeriod: 9,
-      endPeriod: 10,
-      startTime: '14:55',
-      endTime: '17:00',
-      color: 'green',
-      session: 'afternoon',
-      duration: 2.5,
-    },
-  ],
-};
+//     // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
+//     {
+//       id: 's9',
+//       courseCode: 'MTH00044',
+//       courseName: 'Xác suất thống kê',
+//       classCode: '24CTT5A',
+//       credits: 4.0,
+//       type: 'TH',
+//       instructor: 'ThS. Hoàng Văn Nam',
+//       room: 'PMT_NDH4.5',
+//       dayOfWeek: 3,
+//       startPeriod: 9,
+//       endPeriod: 10,
+//       startTime: '14:55',
+//       endTime: '17:00',
+//       color: 'green',
+//       session: 'afternoon',
+//       duration: 2.5,
+//     },
+//   ],
+// };
 
 // ==================== HELPER FUNCTIONS ====================
 
 function getSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession | null {
   return sessions.find(s =>
     s.dayOfWeek === day &&
-    s.startPeriod <= period &&
-    s.endPeriod >= period
+    Math.floor(s.startPeriod) <= period &&
+    Math.ceil(s.endPeriod) >= period
   ) || null;
 }
 
 function shouldRenderCell(session: ScheduleSession, period: number): boolean {
-  return session.startPeriod === period;
+  return Math.floor(session.startPeriod) === period;
 }
 
 function calculateRowSpan(session: ScheduleSession): number {
-  // Thực hành/Bài tập 2.5 tiết
-  if (session.duration === 2.5) {
-    // TH ca 2 chiều (tiết 9-10): chỉ span 2 rows
-    if (session.startPeriod === 9) {
-      return 2;
-    }
-    // TH ca 1 sáng (tiết 1-3): span 3 rows
-    if (session.startPeriod === 1) {
-      return 3;
-    }
-    // TH ca 2 sáng (tiết 4-5): span 2 rows
-    if (session.startPeriod === 4) {
-      return 2;
-    }
-  }
-
-  // Lý thuyết: span theo duration
-  if (session.type === 'LT') {
-    return session.duration; // 2, 4, 5 tiết
-  }
-
-  return 2;
+  return Math.ceil(session.duration);
 }
 
 // Get current day of week (2-7) and time
@@ -455,13 +383,33 @@ function CourseCard({ session }: { session: ScheduleSession }) {
     BT: 'Bài tập',
   };
 
+  // Tính toán % height và offset top cho các block không nguyên (VD: 2.5 tiết)
+  const rowSpan = Math.ceil(session.duration);
+  const heightPercent = (session.duration / rowSpan) * 100;
+
+  // Nếu session bắt đầu ở giữa tiết (vd: 3.5), offset top xuống (0.5 / rowSpan) * 100%
+  const isFractionalStart = session.startPeriod % 1 !== 0;
+  let topOffsetPercent = 0;
+  if (isFractionalStart) {
+    topOffsetPercent = (0.5 / rowSpan) * 100;
+  }
+
   return (
     <div
-      className="relative h-full w-full"
+      className="relative w-full h-full"
+      style={{
+        minHeight: `${rowSpan * 56}px`, // 56px là h-14 của 1 tiết
+      }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div className={`p-1.5 rounded border-l-2 h-full w-full flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}>
+      <div
+        className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}
+        style={{
+          top: `${topOffsetPercent}%`,
+          height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
+        }}
+      >
         {/* Course Code */}
         <div className="font-mono text-[9px] font-bold text-gray-900 mb-0.5 leading-tight truncate">
           {session.courseCode}
@@ -497,6 +445,12 @@ function CourseCard({ session }: { session: ScheduleSession }) {
                 <span>Thời gian:</span>
                 <span className="font-medium">{session.startTime} - {session.endTime}</span>
               </div>
+              {session.totalWeeks > 0 && (
+                <div className="flex justify-between">
+                  <span>Thời hạn:</span>
+                  <span className="font-medium">{session.startDate} - {session.endDate} ({session.totalWeeks} tuần)</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Tiết:</span>
                 <span className="font-medium">{session.startPeriod} - {Math.floor(session.endPeriod)}</span>
@@ -544,7 +498,10 @@ function CourseDetailCard({ session }: { session: ScheduleSession }) {
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
             <div>• {session.credits} TC | {typeLabels[session.type]} | Phòng: {session.room}</div>
-            <div>• GV: {session.instructor} | Lớp: {session.classCode}</div>
+            {session.totalWeeks > 0 && (
+              <div>• Học từ: {session.startDate} - {session.endDate} ({session.totalWeeks} tuần)</div>
+            )}
+            <div className="md:col-span-2">• GV: {session.instructor} | Lớp: {session.classCode}</div>
           </div>
         </div>
       </div>
@@ -601,23 +558,102 @@ interface VisualScheduleProps {
 }
 
 export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
-  const [currentWeek, setCurrentWeek] = useState(2);
+  const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
+  const [currentWeek, setCurrentWeek] = useState(() => {
+    if (!SEMESTER_3_SCHEDULE.semesterStartDate) return 1;
+    const now = new Date();
+    const msDiff = now.getTime() - SEMESTER_3_SCHEDULE.semesterStartDate.getTime();
+    if (msDiff < 0) return 1;
+    const week = Math.floor(msDiff / (7 * 24 * 60 * 60 * 1000)) + 1;
+    return week;
+  });
+
   const schedule = {
     ...SEMESTER_3_SCHEDULE,
     semesterName: selectedSemester || SEMESTER_3_SCHEDULE.semesterName
   };
 
+  const { semesterStartDate } = schedule;
+  let weekStartStr = `Tuần ${currentWeek}`;
+
+  const displaySessions = schedule.sessions.filter(session => {
+    if (!semesterStartDate || !session.startDateParsed || !session.endDateParsed) return true;
+
+    const currentWeekStart = new Date(semesterStartDate);
+    currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeek - 1) * 7);
+
+    // Cuối Chủ Nhật
+    const currentWeekEnd = new Date(currentWeekStart);
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
+    currentWeekEnd.setHours(23, 59, 59, 999);
+
+    if (currentWeekStart > session.endDateParsed || currentWeekEnd < session.startDateParsed) {
+      return false;
+    }
+    return true;
+  });
+
+  if (semesterStartDate) {
+    const wStart = new Date(semesterStartDate);
+    wStart.setDate(wStart.getDate() + (currentWeek - 1) * 7);
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wEnd.getDate() + 6);
+    weekStartStr = `${String(wStart.getDate()).padStart(2, '0')}/${String(wStart.getMonth() + 1).padStart(2, '0')}/${wStart.getFullYear()} - ${String(wEnd.getDate()).padStart(2, '0')}/${String(wEnd.getMonth() + 1).padStart(2, '0')}/${wEnd.getFullYear()}`;
+  }
+
+  const totalFilteredCredits = Array.from(new Set(displaySessions.map(s => s.courseCode))).reduce((acc, code) => {
+    const s = displaySessions.find(s => s.courseCode === code);
+    return acc + (s?.credits || 0);
+  }, 0);
+
+  const totalFilteredCourses = new Set(displaySessions.map(s => s.courseCode)).size;
+  const totalPeriods = displaySessions.reduce((acc, s) => acc + s.duration, 0);
+
   // Update schedule data based on current week
   const displaySchedule = {
     ...schedule,
     weekNumber: currentWeek,
-    weekRange: `${String(4 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026 - ${String(10 + (currentWeek - 1) * 7).padStart(2, '0')}/01/2026`,
+    weekRange: weekStartStr,
+    sessions: displaySessions,
+    totalCourses: totalFilteredCourses,
+    totalCredits: totalFilteredCredits,
+    totalPeriodsPerWeek: totalPeriods,
+    totalHoursPerWeek: totalPeriods, // Using periods directly for hours per requirements
   };
+
+  // Tính trend so với tuần trước
+  let periodsTrend: { direction: 'up' | 'down'; value: string } | undefined = undefined;
+  let coursesTrend: { direction: 'up' | 'down'; value: string } | undefined = undefined;
+
+  if (currentWeek > 1 && semesterStartDate) {
+    const prevWeekStart = new Date(semesterStartDate);
+    prevWeekStart.setDate(prevWeekStart.getDate() + (currentWeek - 2) * 7);
+    const prevWeekEnd = new Date(prevWeekStart);
+    prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
+    prevWeekEnd.setHours(23, 59, 59, 999);
+
+    const prevSessions = schedule.sessions.filter(session => {
+      if (!session.startDateParsed || !session.endDateParsed) return true;
+      if (prevWeekStart > session.endDateParsed || prevWeekEnd < session.startDateParsed) return false;
+      return true;
+    });
+
+    const prevTotalPeriods = prevSessions.reduce((acc, s) => acc + s.duration, 0);
+    const prevTotalCourses = new Set(prevSessions.map(s => s.courseCode)).size;
+
+    const diffPeriods = totalPeriods - prevTotalPeriods;
+    if (diffPeriods > 0) periodsTrend = { direction: 'up', value: `+${diffPeriods} tiết` };
+    else if (diffPeriods < 0) periodsTrend = { direction: 'down', value: `${diffPeriods} tiết` };
+
+    const diffCourses = totalFilteredCourses - prevTotalCourses;
+    if (diffCourses > 0) coursesTrend = { direction: 'up', value: `+${diffCourses} môn` };
+    else if (diffCourses < 0) coursesTrend = { direction: 'down', value: `${diffCourses} môn` };
+  }
 
   // Get current day and time info
   const { isToday, currentPeriod } = getCurrentDayAndTime();
 
-  // Get unique courses for details section
+  // Get unique courses for details section (hiển thị toàn bộ môn đã đăng ký)
   const uniqueCourses = schedule.sessions.reduce((acc, session) => {
     if (!acc.find(s => s.courseCode === session.courseCode)) {
       acc.push(session);
@@ -633,7 +669,8 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   };
 
   const handleNextWeek = () => {
-    if (currentWeek < 17) {
+    // Arbitrary maximum of 25 weeks for navigation bounds
+    if (currentWeek < 25) {
       setCurrentWeek(currentWeek + 1);
     }
   };
@@ -668,18 +705,18 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
         <QuickStatsCard
           icon={BookOpen}
           title="Tổng môn học"
-          value={`${schedule.totalCourses} môn`}
-          subtitle={`${schedule.totalCredits} tín chỉ`}
+          value={`${displaySchedule.totalCourses}/${schedule.totalCourses} môn `}
+          subtitle={`${displaySchedule.totalCredits} tín chỉ`}
           bgColor="bg-[#004A98]"
-          trend={{ direction: 'up', value: '+2 môn' }}
+          trend={coursesTrend}
         />
         <QuickStatsCard
           icon={Clock}
           title="Tiết học / tuần"
-          value={`${schedule.totalPeriodsPerWeek} tiết`}
-          subtitle={`${schedule.totalHoursPerWeek} giờ`}
+          value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
+          subtitle={`${displaySchedule.totalPeriodsPerWeek} giờ`}
           bgColor="bg-green-600"
-          trend={{ direction: 'up', value: '+4 tiết' }}
+          trend={periodsTrend}
         />
         <QuickStatsCard
           icon={Calendar}
@@ -748,11 +785,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               </td>
             </tr>
 
-            <PeriodRow period={1} time="7:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={2} time="8:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={3} time="9:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={4} time="10:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={5} time="11:00" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={1} time="7:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={2} time="8:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={3} time="9:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={4} time="10:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={5} time="11:00" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
 
             {/* BUỔI CHIỀU */}
             <tr className="bg-orange-50">
@@ -761,11 +798,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               </td>
             </tr>
 
-            <PeriodRow period={6} time="12:40" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={7} time="13:30" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={8} time="14:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={9} time="15:20" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={10} time="16:10" schedule={schedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={6} time="12:40" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={7} time="13:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={8} time="14:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={9} time="15:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            <PeriodRow period={10} time="16:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
           </tbody>
         </table>
       </div>
