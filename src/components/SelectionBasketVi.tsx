@@ -1,13 +1,18 @@
-import { X, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { X, CheckCircle2, ListFilter } from 'lucide-react';
 import type { Course } from '../types';
 import { useDepartmentData } from '../context/DepartmentContext';
+import { CourseClassFilterModal } from './CourseClassFilterModal';
 
 interface SelectionBasketViProps {
     selectedCourses: Course[];
     onRemoveCourse: (courseId: string) => void;
+    allowedClassesMap: Record<string, string[]>;
+    setAllowedClassesMap: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
 }
 
-export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: SelectionBasketViProps) {
+export function SelectionBasketVi({ selectedCourses, onRemoveCourse, allowedClassesMap, setAllowedClassesMap }: SelectionBasketViProps) {
+    const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
     const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
     const totalCredits = selectedCourses.reduce((sum, course) => sum + course.credits, 0);
 
@@ -92,13 +97,22 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
                                     )}
                                 </div>
                             </div>
-                            <button
-                                onClick={() => onRemoveCourse(course.id)}
-                                className="p-1 hover:bg-red-100 rounded transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
-                                title="Xóa khỏi giỏ"
-                            >
-                                <X className="w-4 h-4 text-red-600" />
-                            </button>
+                            <div className="flex flex-col gap-1 flex-shrink-0 opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => setFilterModalCourse(course)}
+                                    className="p-1 hover:bg-blue-100 rounded text-blue-600 transition-colors"
+                                    title="Lọc lớp học"
+                                >
+                                    <ListFilter className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => onRemoveCourse(course.id)}
+                                    className="p-1 hover:bg-red-100 rounded text-red-600 transition-colors"
+                                    title="Xóa khỏi giỏ"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     ))
                 )}
@@ -157,6 +171,18 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse }: Selection
                     Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
                 </p>
             </div>
+
+            {/* Modal Lọc lớp học */}
+            {filterModalCourse && (
+                <CourseClassFilterModal
+                    courseCode={filterModalCourse.id}
+                    courseNameVi={filterModalCourse.nameVi}
+                    isOpen={!!filterModalCourse}
+                    onClose={() => setFilterModalCourse(null)}
+                    allowedClassesMap={allowedClassesMap}
+                    setAllowedClassesMap={setAllowedClassesMap}
+                />
+            )}
         </div>
     );
 }

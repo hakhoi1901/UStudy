@@ -16,205 +16,6 @@ const COLOR_LEGEND = [
   { color: 'purple', label: 'Khác', bgClass: 'bg-purple-100', borderClass: 'border-purple-600' },
 ];
 
-// ==================== MOCK DATA ====================
-
-// const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
-// {
-//   semester: '',
-//   semesterName: '',
-//   weekNumber: 2,
-//   weekRange: '',
-//   totalCourses: 7,
-//   totalCredits: 27,
-//   totalPeriodsPerWeek: 32,
-//   totalHoursPerWeek: 27,
-//   sessions: [
-//     // ============ LÝ THUYẾT ============
-
-//     // BAA00101 - Triết học Mác-Lênin - T3 (Tiết 1-5 LT) - SÁNG - 5 TIẾT
-//     {
-//       id: 's1',
-//       courseCode: 'BAA00101',
-//       courseName: 'Triết học Mác - Lênin',
-//       classCode: '24SHH3',
-//       credits: 3.0,
-//       type: 'LT',
-//       instructor: 'PGS.TS. Nguyễn Văn Minh',
-//       room: 'F201',
-//       dayOfWeek: 3,
-//       startPeriod: 1,
-//       endPeriod: 5,
-//       startTime: '07:30',
-//       endTime: '11:50',
-//       color: 'yellow',
-//       session: 'morning',
-//       duration: 5,
-//     },
-
-//     // BAA00103 - Chủ nghĩa xã hội khoa học - T2 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-//     {
-//       id: 's2',
-//       courseCode: 'BAA00103',
-//       courseName: 'Chủ nghĩa xã hội khoa học',
-//       classCode: '24CMT1',
-//       credits: 2.0,
-//       type: 'LT',
-//       instructor: 'TS. Trần Thị Hương',
-//       room: 'F103',
-//       dayOfWeek: 2,
-//       startPeriod: 6,
-//       endPeriod: 9,
-//       startTime: '12:40',
-//       endTime: '16:10',
-//       color: 'yellow',
-//       session: 'afternoon',
-//       duration: 4,
-//     },
-
-//     // CSC10003 - PPLT hướng đối tượng - T7 (Tiết 1-4 LT) - SÁNG - 4 TIẾT
-//     {
-//       id: 's3',
-//       courseCode: 'CSC10003',
-//       courseName: 'Phương pháp lập trình hướng đối tượng',
-//       classCode: '24CTT5',
-//       credits: 4.0,
-//       type: 'LT',
-//       instructor: 'TS. Lê Thành Sơn',
-//       room: 'E210',
-//       dayOfWeek: 7,
-//       startPeriod: 1,
-//       endPeriod: 4,
-//       startTime: '07:30',
-//       endTime: '11:00',
-//       color: 'blue',
-//       session: 'morning',
-//       duration: 4,
-//     },
-
-//     // CSC10008 - Mạng máy tính - T5 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-//     {
-//       id: 's4',
-//       courseCode: 'CSC10008',
-//       courseName: 'Mạng máy tính',
-//       classCode: '24CTT5',
-//       credits: 4.0,
-//       type: 'LT',
-//       instructor: 'PGS.TS. Phạm Văn Tuấn',
-//       room: 'E307',
-//       dayOfWeek: 5,
-//       startPeriod: 6,
-//       endPeriod: 9,
-//       startTime: '12:40',
-//       endTime: '16:10',
-//       color: 'blue',
-//       session: 'afternoon',
-//       duration: 4,
-//     },
-
-//     // MTH00044 - Xác suất thống kê - T6 (Tiết 6-9 LT) - CHIỀU - 4 TIẾT
-//     {
-//       id: 's5',
-//       courseCode: 'MTH00044',
-//       courseName: 'Xác suất thống kê',
-//       classCode: '24CTT5',
-//       credits: 4.0,
-//       type: 'LT',
-//       instructor: 'TS. Đỗ Thị Mai',
-//       room: 'E205',
-//       dayOfWeek: 6,
-//       startPeriod: 6,
-//       endPeriod: 9,
-//       startTime: '12:40',
-//       endTime: '16:10',
-//       color: 'green',
-//       session: 'afternoon',
-//       duration: 4,
-//     },
-
-//     // MTH00050 - Toán học tổ hợp - T6 (Tiết 2-5 LT) - SÁNG - 4 TIẾT
-//     {
-//       id: 's6',
-//       courseCode: 'MTH00050',
-//       courseName: 'Toán học tổ hợp',
-//       classCode: '24CTT5',
-//       credits: 4.0,
-//       type: 'LT',
-//       instructor: 'PGS.TS. Nguyễn Hữu Đức',
-//       room: 'E210',
-//       dayOfWeek: 6,
-//       startPeriod: 2,
-//       endPeriod: 5,
-//       startTime: '08:20',
-//       endTime: '11:50',
-//       color: 'green',
-//       session: 'morning',
-//       duration: 4,
-//     },
-
-//     // ============ THỰC HÀNH (2.5 tiết) ============
-
-//     // CSC10003 - PPLT hướng đối tượng - T5 (Tiết 1-2.5 TH) - SÁNG CA 1
-//     {
-//       id: 's7',
-//       courseCode: 'CSC10003',
-//       courseName: 'Phương pháp lập trình hướng đối tượng',
-//       classCode: '24CTT5A',
-//       credits: 4.0,
-//       type: 'TH',
-//       instructor: 'ThS. Võ Thị Lan',
-//       room: 'PMT_D202',
-//       dayOfWeek: 5,
-//       startPeriod: 1,
-//       endPeriod: 3,
-//       startTime: '07:30',
-//       endTime: '09:35',
-//       color: 'blue',
-//       session: 'morning',
-//       duration: 2.5,
-//     },
-
-//     // MTH00050 - Toán học tổ hợp - T5 (Tiết 3.5-5 TH) - SÁNG CA 2
-//     {
-//       id: 's8',
-//       courseCode: 'MTH00050',
-//       courseName: 'Toán học tổ hợp',
-//       classCode: '24CTT5A',
-//       credits: 4.0,
-//       type: 'TH',
-//       instructor: 'ThS. Lê Minh Tuấn',
-//       room: 'PMT_D202',
-//       dayOfWeek: 5,
-//       startPeriod: 4,
-//       endPeriod: 5,
-//       startTime: '09:45',
-//       endTime: '11:50',
-//       color: 'green',
-//       session: 'morning',
-//       duration: 2.5,
-//     },
-
-//     // MTH00044 - Xác suất thống kê - T3 (Tiết 8.5-10 TH) - CHIỀU CA 2
-//     {
-//       id: 's9',
-//       courseCode: 'MTH00044',
-//       courseName: 'Xác suất thống kê',
-//       classCode: '24CTT5A',
-//       credits: 4.0,
-//       type: 'TH',
-//       instructor: 'ThS. Hoàng Văn Nam',
-//       room: 'PMT_NDH4.5',
-//       dayOfWeek: 3,
-//       startPeriod: 9,
-//       endPeriod: 10,
-//       startTime: '14:55',
-//       endTime: '17:00',
-//       color: 'green',
-//       session: 'afternoon',
-//       duration: 2.5,
-//     },
-//   ],
-// };
-
 // ==================== HELPER FUNCTIONS ====================
 
 function getSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession | null {
@@ -399,7 +200,7 @@ function CourseCard({ session }: { session: ScheduleSession }) {
         <div
           className="relative w-full h-full"
           style={{
-            minHeight: `${rowSpan * 56}px`, // 56px là h-14 của 1 tiết
+            minHeight: `${rowSpan * 56}px`,
           }}
         >
           <div
@@ -764,15 +565,15 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
           <table className="w-full border-collapse table-fixed min-w-[1200px]">
             <thead>
               <tr className="bg-[#004A98]">
-                <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-2 text-white text-xs font-semibold w-16 min-w-[64px]">
+                <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-1 text-white text-xs font-semibold w-16 min-w-[64px]">
                   Tiết
                 </th>
                 {DAYS.map((day) => (
-                  <th key={day.value} className={`border border-gray-300 p-2 text-white text-xs font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
+                  <th key={day.value} className={`border border-gray-300 p-1 text-white text-[13px] font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
                     }`}>
                     {day.label}
                     {isToday(day.value) && (
-                      <div className="text-[10px] font-normal mt-0.5">📍 Hôm nay</div>
+                      <div className="text-[11px] font-normal mt-0.5">Hôm nay</div>
                     )}
                   </th>
                 ))}
@@ -782,7 +583,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               {/* BUỔI SÁNG */}
               <tr className="bg-green-50">
                 <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
-                  🌅 SÁNG
+                  SÁNG
                 </td>
               </tr>
 
@@ -795,7 +596,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
               {/* BUỔI CHIỀU */}
               <tr className="bg-orange-50">
                 <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
-                  ☀️ CHIỀU
+                  <span>CHIỀU</span>
                 </td>
               </tr>
 
@@ -828,6 +629,6 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
           </p>
         </div>
       </div>
-    </TooltipProvider>
+    </TooltipProvider >
   );
 }

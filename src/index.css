@@ -75,6 +75,31 @@
   }
 }
 
+@layer components {
+
+  /* Tui đổi sang các mã màu mượt hơn của Tailwind (sky, emerald, amber, violet) */
+  .card-pastel-blue {
+    @apply bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-colors duration-200;
+  }
+
+  .card-pastel-green {
+    @apply bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 transition-colors duration-200;
+  }
+
+  .card-pastel-yellow {
+    @apply bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-colors duration-200;
+  }
+
+  .card-pastel-purple {
+    @apply bg-violet-50 border border-violet-200 text-violet-800 hover:bg-violet-100 transition-colors duration-200;
+  }
+
+  /* Tặng thêm ông màu hường nhẹ nhàng nếu có xài */
+  .card-pastel-rose {
+    @apply bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 transition-colors duration-200;
+  }
+}
+
 @layer theme {
 
   :root,
@@ -952,6 +977,14 @@
     width: 80%
   }
 
+  .w-07 {
+    width: 70%
+  }
+
+  .w-05 {
+    width: 50%
+  }
+
   .w-full {
     width: 100%;
   }
@@ -1357,6 +1390,10 @@
     border-color: var(--color-gray-300);
   }
 
+  .border-gray-500 {
+    border-color: var(--color-gray-500);
+  }
+
   .border-gray-700 {
     border-color: var(--color-gray-700);
   }
@@ -1481,6 +1518,10 @@
 
   .bg-blue-500 {
     background-color: var(--color-blue-500);
+  }
+
+  .bg-blue-600 {
+    background-color: var(--color-blue-600);
   }
 
   .bg-card {
@@ -1712,6 +1753,12 @@
   .to-orange-50 {
     --tw-gradient-to: var(--color-orange-50);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+
+
+  .p-0\.5 {
+    padding: calc(var(--spacing) * 0.5);
   }
 
   .p-1 {
@@ -3177,6 +3224,14 @@ html {
   }
 
   /* Border colors for course cards */
+  .border-blue-200 {
+    border-color: oklch(.839 .088 259.815);
+  }
+
+  .border-blue-300 {
+    border-color: oklch(.707 .165 254.624);
+  }
+
   .border-blue-500 {
     border-color: oklch(.623 .214 259.815);
   }

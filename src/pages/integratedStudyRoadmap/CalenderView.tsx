@@ -11,11 +11,12 @@ interface CalendarViewProps {
     activeOption: number;
     options: any[]; // Or define the Option type if it exists in useScheduleSolver
     allCurrentCourses: Course[];
-    solve: (courses: Course[]) => void;
+    solve: (courses: Course[], allowedClassesMap: Record<string, string[]>) => void;
     solving: boolean;
     solverError: string | null;
     setActiveOption: (option: number) => void;
     getConflicts: (section: ClassSection) => ClassSection[];
+    allowedClassesMap: Record<string, string[]>;
 }
 
 export function CalendarView({
@@ -30,6 +31,7 @@ export function CalendarView({
     solverError,
     setActiveOption,
     getConflicts,
+    allowedClassesMap,
 }: CalendarViewProps) {
     if (selectedCourses.size === 0) {
         return (
@@ -68,7 +70,7 @@ export function CalendarView({
                         const coursesToSchedule = Array.from(selectedCourses)
                             .map(id => allCurrentCourses.find(c => c.id === id))
                             .filter((c): c is NonNullable<typeof c> => !!c);
-                        solve(coursesToSchedule);
+                        solve(coursesToSchedule, allowedClassesMap);
                     }}
                     disabled={solving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm"
@@ -81,37 +83,44 @@ export function CalendarView({
             {/* Hiển thị lỗi */}
             {solverError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                    ⚠️ {solverError}
+                    <AlertTriangle className="w-4 h-4" />{solverError}
                 </div>
             )}
 
             {/* Điều hướng phương án */}
             {options.length > 1 && (
                 <div className="mb-4 flex items-center gap-2">
-                    <span className="text-sm text-gray-600 font-medium">Phương án:</span>
-                    <div className="flex gap-1">
-                        {options.map((opt, idx) => (
-                            <button
-                                key={opt.option}
-                                onClick={() => setActiveOption(idx)}
-                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${activeOption === idx
-                                    ? 'bg-[#004A98] text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
-                            >
-                                PA {opt.option}
-                                <span className="ml-1 opacity-60">({Math.round(opt.fitness / 1000)}k)</span>
-                            </button>
-                        ))}
+                    <div className="mb-4 flex items-center gap-3 bg-white p-2 border border-slate-200 rounded-xl w-fit shadow-sm">
+                        <span className="text-sm text-gray-600 font-medium p-2">Phương án:</span>
+                        <button
+                            onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
+                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex gap-1.5">
+                            {options.map((opt, idx) => (
+                                <button
+                                    key={opt.option}
+                                    onClick={() => setActiveOption(idx)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeOption === idx
+                                        ? 'bg-[#004A98] text-white shadow-md'
+                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                        }`}
+                                >
+                                    PA {opt.option} <p className='text-[9px] font-medium'>{(opt.fitness / 10).toFixed(0)}</p>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))}
+                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-                    <ChevronLeft
-                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-700"
-                        onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
-                    />
-                    <ChevronRight
-                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-700"
-                        onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))}
-                    />
                 </div>
             )}
 
@@ -124,7 +133,7 @@ export function CalendarView({
                         style={{ gridTemplateColumns: '76px repeat(6, 1fr)' }}
                     >
                         <div className="bg-[#004A98] rounded-tl-2xl h-12 flex items-end pb-1 justify-center">
-                            <span className="text-[10px] text-white/60 font-medium">Tiết</span>
+                            <span className="text-[14px] text-white font-medium">Tiết</span>
                         </div>
                         {weekDays.map((day, idx) => (
                             <div
@@ -209,10 +218,10 @@ export function CalendarView({
                             const heightPx = heightPeriods * 60 + (spansLunch ? 22 : 0);
                             const dayColIndex = classSection.day - 2; // T2→0 … T7→5
 
-                            const bgColor = hasConflict ? '#FEF2F2' : classSection.color;
+                            const bgColor = hasConflict ? '#ffffffff' : classSection.color;
                             const borderColor = hasConflict ? '#EF4444' : classSection.color;
-                            const textColor = hasConflict ? '#991B1B' : '#ffffff';
-                            const subTextColor = hasConflict ? '#B91C1C' : 'rgba(255,255,255,0.85)';
+                            const textColor = hasConflict ? '#991B1B' : '#ffffffff';
+                            const subTextColor = hasConflict ? '#B91C1C' : 'rgba(255, 255, 255, 0.85)';
 
                             const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
                             const endTime = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
@@ -248,13 +257,13 @@ export function CalendarView({
                                     )}
 
                                     {/* Mã học phần */}
-                                    <p className="text-[11px] font-black leading-none truncate" style={{ color: textColor }}>
+                                    <p className="text-[12px] p-0.5 font-bold text-black font-black leading-none truncate" style={{ color: textColor }}>
                                         {classSection.courseCode}
                                     </p>
 
                                     {/* Tên học phần */}
                                     {heightPx >= 80 && (
-                                        <p className="text-[9px] leading-tight mt-0.5 line-clamp-2" style={{ color: subTextColor }}>
+                                        <p className="text-[10px] font-semibold p-0.5 leading-tight mt-0.5 line-clamp-2" style={{ color: subTextColor }}>
                                             {classSection.courseNameVi}
                                         </p>
                                     )}
@@ -267,7 +276,7 @@ export function CalendarView({
                                         {/* Nhóm + Phòng */}
                                         <div className="flex items-center gap-1">
                                             <span
-                                                className="text-[8px] font-bold px-1 py-0.5 rounded"
+                                                className="text-[9px] font-bold px-1 py-0.5 rounded"
                                                 style={{
                                                     backgroundColor: hasConflict ? '#FEE2E2' : 'rgba(0,0,0,0.2)',
                                                     color: hasConflict ? '#991B1B' : 'rgba(255,255,255,0.95)',
@@ -276,15 +285,15 @@ export function CalendarView({
                                                 {classSection.sectionNumber}
                                             </span>
                                             {classSection.room !== '---' && heightPx >= 70 && (
-                                                <span className="text-[8px] truncate" style={{ color: subTextColor }}>
-                                                    📍 {classSection.room}
+                                                <span className="text-[9px] font-semibold px-1 py-0.5 rounded truncate" style={{ color: subTextColor }}>
+                                                    {classSection.room}
                                                 </span>
                                             )}
                                         </div>
 
                                         {/* Khung giờ */}
                                         {heightPx >= 90 && startTime && (
-                                            <p className="text-[8px] font-medium" style={{ color: subTextColor }}>
+                                            <p className="text-[10px] px-1 py-0.5 rounded font-semibold" style={{ color: subTextColor }}>
                                                 {startTime} – {endTime}
                                             </p>
                                         )}

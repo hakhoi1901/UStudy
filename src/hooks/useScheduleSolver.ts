@@ -34,7 +34,7 @@ export function useScheduleSolver() {
     const [activeOption, setActiveOption] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const solve = useCallback((selectedCourses: Course[], prefs: SolverPreferences = {}) => {
+    const solve = useCallback((selectedCourses: Course[], selectedClassMap: Record<string, string[]> = {}, prefs: SolverPreferences = {}) => {
         setSolving(true);
         setError(null);
 
@@ -47,7 +47,7 @@ export function useScheduleSolver() {
 
                 const userWants = selectedCourses.map(c => c.code);
 
-                const results = runScheduleSolver(dbData, userWants, {}, {
+                const results = runScheduleSolver(dbData, userWants, selectedClassMap, {
                     daysOff: prefs.daysOff || [],
                     session: prefs.session || '0',
                     strategy: prefs.strategy || 'compress',

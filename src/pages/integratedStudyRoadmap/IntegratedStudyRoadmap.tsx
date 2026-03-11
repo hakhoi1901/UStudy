@@ -38,6 +38,7 @@ export function IntegratedStudyRoadmap() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFlowchart, setShowFlowchart] = useState(false);
     const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
+    const [allowedClassesMap, setAllowedClassesMap] = useState<Record<string, string[]>>({});
 
     // Lưu selected courses vào localStorage
     useEffect(() => {
@@ -179,6 +180,8 @@ export function IntegratedStudyRoadmap() {
                                     .map(id => allCurrentCourses.find(c => c.id === id)!)
                                     .filter(Boolean)}
                                 onRemoveCourse={handleCourseToggle}
+                                allowedClassesMap={allowedClassesMap}
+                                setAllowedClassesMap={setAllowedClassesMap}
                             />
                         </div>
                     </div>
@@ -198,6 +201,7 @@ export function IntegratedStudyRoadmap() {
                         solverError={solverError}
                         setActiveOption={setActiveOption}
                         getConflicts={handleGetConflicts}
+                        allowedClassesMap={allowedClassesMap}
                     />
                 )}
             </div>
