@@ -1,4 +1,4 @@
-import { Info, Search, Filter } from 'lucide-react';
+import { Info, Search, Filter, DatabaseBackup } from 'lucide-react';
 import { STORAGE_KEYS, ACADEMIC_RULES } from '../../config';
 import { CategoryNode } from '../../components/CategoryNode';
 import type { CourseData } from '../../components/CategoryNode';
@@ -11,7 +11,7 @@ export function TrainingProgramView() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFlowchart, setShowFlowchart] = useState(false);
     const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
-    const { data: { courses: courses_cntt, categories } } = useDepartmentData();
+    const { data: { courses: courses, categories } } = useDepartmentData();
 
     const studentDb = useMemo(() => {
         try {
@@ -74,7 +74,7 @@ export function TrainingProgramView() {
     }
 
     const handleShowFlowchart = (courseId: string) => {
-        const fullCourseMeta = courses_cntt.find(c => c.course_id === courseId);
+        const fullCourseMeta = courses.find(c => c.course_id === courseId);
         if (fullCourseMeta) {
             const courseMapping: Course = {
                 id: fullCourseMeta.course_id,
@@ -103,7 +103,7 @@ export function TrainingProgramView() {
             const getAllCoursesWithStatus = (courseIds: string[]) => {
                 return courseIds
                     .map((id) => {
-                        const metadata = courses_cntt.find((c) => c.course_id === id);
+                        const metadata = courses.find((c) => c.course_id === id);
                         if (!metadata) return null;
                         return {
                             ...metadata,
@@ -158,58 +158,74 @@ export function TrainingProgramView() {
 
     return (
         <div>
-
-            {/* Tìm kiếm và lọc */}
-            <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm theo tên môn học hoặc mã môn..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
-                    />
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <Filter className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-700 text-sm">Lọc</span>
-                </button>
-            </div>
-
-            {/* Thông tin */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                    <p className="text-sm text-blue-900 font-medium">
-                        Chương trình đào tạo toàn khóa
-                    </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                        Danh sách tổng hợp các môn học thuộc chương trình đào tạo phân theo từng nhóm. Bạn có thể tra cứu thông tin số tín chỉ, số tiết và khối lượng của từng môn học.
-                    </p>
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                
-                {Object.entries(preprocessedCategories).map(([key, category]) => (
-                    <div key={key}>
-                        <CategoryNode
-                            category={category}
-                            isCourseExcludedFromGPA={isCourseExcludedFromGPA}
-                            onShowFlowchart={handleShowFlowchart}
-                        />
+            {courses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col w-0.5 rounded-xl p-12 items-center justify-center py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center mt-4">
+                        <div className="w-20 h-20 p-5 bg-blue-50 rounded-full flex items-center justify-center mb-5 border border-blue-100 shadow-sm">
+                            <DatabaseBackup className="w-10 h-10 text-blue-500" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">Đang cập nhật dữ liệu</h2>
+                        <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                            Chương trình đào tạo cho chuyên ngành và khóa học này hiện đang trong quá trình thu thập và cập nhật. Vui lòng quay lại kiểm tra sau.
+                        </p>
                     </div>
-                ))}
-            </div>
+                </div>
+            ) : (
+                <>
+                    {/* Tìm kiếm và lọc */}
 
-            {/* Prerequisite Flowchart Modal */}
-            {showFlowchart && flowchartCourse && (
-                <PrerequisiteFlowchart
-                    course={flowchartCourse}
-                    allCourses={[]} // Passing empty array since PrerequisiteFlowchart now uses useDepartmentData internally
-                    onClose={() => setShowFlowchart(false)}
-                />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="flex-1 relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo tên môn học hoặc mã môn..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                            />
+                        </div>
+                        <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <Filter className="w-5 h-5 text-gray-600" />
+                            <span className="text-gray-700 text-sm">Lọc</span>
+                        </button>
+                    </div>
+
+                    {/* Thông tin */}
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm text-blue-900 font-medium">
+                                Chương trình đào tạo toàn khóa
+                            </p>
+                            <p className="text-xs text-blue-700 mt-1">
+                                Danh sách tổng hợp các môn học thuộc chương trình đào tạo phân theo từng nhóm. Bạn có thể tra cứu thông tin số tín chỉ, số tiết và khối lượng của từng môn học.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+
+                        {Object.entries(preprocessedCategories).map(([key, category]) => (
+                            <div key={key}>
+                                <CategoryNode
+                                    category={category}
+                                    isCourseExcludedFromGPA={isCourseExcludedFromGPA}
+                                    onShowFlowchart={handleShowFlowchart}
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Prerequisite Flowchart Modal */}
+                    {showFlowchart && flowchartCourse && (
+                        <PrerequisiteFlowchart
+                            course={flowchartCourse}
+                            allCourses={[]} // Passing empty array since PrerequisiteFlowchart now uses useDepartmentData internally
+                            onClose={() => setShowFlowchart(false)}
+                        />
+                    )}
+                </>
             )}
         </div>
     );

@@ -44,6 +44,7 @@ const RAW_FACULTIES = [
         id: 'khoa-cntt',
         name: 'Khoa Công nghệ Thông tin',
         majors: [
+            { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)', dataSource: { 'k25': 'k24' } },
             { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSource: { 'k25': 'k24' } },
             { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSource: { 'k25': 'k24' } },
             { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },

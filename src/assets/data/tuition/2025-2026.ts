@@ -32,6 +32,7 @@ export const tuition_2025_2026 = {
 
     // Đơn giá riêng theo ngành
     majors: {
+        'nhom-nganh': { CSC1: 857000 },
         'cong-nghe-thong-tin': { CSC1: 857000 },
         'he-thong-thong-tin': { CSC1: 857000 },
         'ky-thuat-phan-mem': { CSC1: 857000 },

@@ -29,8 +29,8 @@ export type Tab = keyof typeof tabs;
 
 
 export function IntegratedStudyRoadmap() {
-    const [activeTab, setActiveTab] = useState<Tab>('trainingProgram');
-    const [viewMode, setViewMode] = useState<'recommend' | 'all'>('recommend');
+    const [activeTab, setActiveTab] = useState<Tab>('selection');
+    const [viewMode, setViewMode] = useState<'recommend' | 'all'>('all');
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
         const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
         return Array.isArray(saved) ? new Set(saved) : new Set();

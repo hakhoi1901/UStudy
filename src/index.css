@@ -116,6 +116,8 @@
     --color-red-900: oklch(.396 .141 25.723);
     --color-orange-50: oklch(.98 .016 73.684);
     --color-orange-100: oklch(.954 .038 75.164);
+    --color-orange-150: oklch(922 .60 .71.719);
+    --color-orange-250: oklch(800 .150 .60.719);
     --color-orange-500: oklch(.705 .213 47.604);
     --color-orange-600: oklch(.646 .222 41.116);
     --color-orange-700: oklch(.553 .195 38.402);
@@ -889,6 +891,14 @@
     max-height: 90vh;
   }
 
+  .w-0\.5 {
+    width: 50%;
+  }
+
+  .w-0\.8 {
+    width: 80%;
+  }
+
   .w-1 {
     width: calc(var(--spacing) * 1);
   }
@@ -1596,6 +1606,14 @@
 
   .bg-orange-100 {
     background-color: var(--color-orange-100);
+  }
+
+  .bg-orange-150 {
+    background-color: var(--color-orange-150);
+  }
+
+  .bg-orange-250 {
+    background-color: var(--color-orange-250);
   }
 
   .bg-orange-500 {
@@ -3221,6 +3239,22 @@ html {
 
   .bg-blue-50\/50 {
     background-color: color-mix(in srgb, oklch(.97 .014 254.604) 50%, transparent);
+  }
+
+  .border-orange-100 {
+    border-color: var(--color-orange-100);
+  }
+
+  .border-orange-250 {
+    border-color: var(--color-orange-250);
+  }
+
+  .hover\:bg-orange-150:hover {
+    background-color: #faf0e6;
+  }
+
+  .hover\:border-orange-250:hover {
+    border-color: #ff9a3b;
   }
 
   /* Border colors for course cards */

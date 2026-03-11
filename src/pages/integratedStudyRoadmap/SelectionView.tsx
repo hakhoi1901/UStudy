@@ -1,4 +1,4 @@
-import { Filter, Search, Info } from 'lucide-react';
+import { Filter, Search, Info, DatabaseBackup } from 'lucide-react';
 import { CourseRow } from '../../components/CourseRow';
 import type { Course } from '../../types';
 
@@ -27,6 +27,22 @@ export function SelectionView({
     handleCourseToggle,
     handleShowFlowchart,
 }: SelectionViewProps) {
+    const isAllEmpty = all.core.length === 0 && all.major.length === 0 && all.electives.length === 0;
+
+    if (isAllEmpty) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center">
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-5 border border-blue-100 shadow-sm">
+                    <DatabaseBackup className="w-10 h-10 text-blue-500" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Đang cập nhật dữ liệu</h2>
+                <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                    Dữ liệu môn học gợi ý cho chuyên ngành và khóa học này hiện đang được xử lý và cập nhật. Vui lòng quay lại kiểm tra sau.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div>
             {/* Tìm kiếm và lọc */}
@@ -63,21 +79,6 @@ export function SelectionView({
             {/* Chuyển đổi chế độ xem */}
             <div className="mb-6 flex items-center justify-between p-1 bg-gray-100 rounded-lg max-w-sm">
                 <button
-                    onClick={() => setViewMode('recommend')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${viewMode === 'recommend'
-                        ? 'bg-white text-[#004A98] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-                        }`}
-                >
-                    <span>Gợi ý</span>
-                    <span
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] ${viewMode === 'recommend' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-500'
-                            }`}
-                    >
-                        {recommended.core.length + recommended.major.length + recommended.electives.length}
-                    </span>
-                </button>
-                <button
                     onClick={() => setViewMode('all')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${viewMode === 'all'
                         ? 'bg-white text-[#004A98] shadow-sm'
@@ -92,70 +93,107 @@ export function SelectionView({
                         {all.core.length + all.major.length + all.electives.length}
                     </span>
                 </button>
+                <button
+                    onClick={() => setViewMode('recommend')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${viewMode === 'recommend'
+                        ? 'bg-white text-[#004A98] shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                        }`}
+                >
+                    <span>Gợi ý</span>
+                    <span
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] ${viewMode === 'recommend' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-500'
+                            }`}
+                    >
+                        {recommended.core.length + recommended.major.length + recommended.electives.length}
+                    </span>
+                </button>
             </div>
+
+            {filteredCourses.core.length + filteredCourses.electives.length + filteredCourses.major.length === 0 &&
+                <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col w-0.8 rounded-xl p-12 items-center justify-center py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center mt-4">
+                        <div className="w-20 h-20 p-5 bg-blue-50 rounded-full flex items-center justify-center mb-5 border border-blue-100 shadow-sm">
+                            <DatabaseBackup className="w-10 h-10 text-blue-500" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">Đang cập nhật dữ liệu</h2>
+                        <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                            Chương trình đào tạo cho chuyên ngành và khóa học này hiện đang trong quá trình thu thập và cập nhật. Vui lòng quay lại kiểm tra sau.
+                        </p>
+                    </div>
+                </div>
+            }
 
             {/* Môn học cơ sở ngành */}
-            <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-gray-900 font-semibold">Môn học cơ sở ngành</h3>
-                    <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
-                        {filteredCourses.core.length} môn
-                    </span>
+            {filteredCourses.core.length > 0 &&
+                <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-gray-900 font-semibold">Môn học cơ sở ngành</h3>
+                        <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
+                            {filteredCourses.core.length} môn
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {filteredCourses.core.map((course) => (
+                            <CourseRow
+                                key={course.id}
+                                course={course}
+                                isSelected={selectedCourses.has(course.id)}
+                                onToggle={handleCourseToggle}
+                                onShowFlowchart={handleShowFlowchart}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="space-y-2">
-                    {filteredCourses.core.map((course) => (
-                        <CourseRow
-                            key={course.id}
-                            course={course}
-                            isSelected={selectedCourses.has(course.id)}
-                            onToggle={handleCourseToggle}
-                            onShowFlowchart={handleShowFlowchart}
-                        />
-                    ))}
-                </div>
-            </div>
+            }
+
 
             {/* Môn học chuyên ngành */}
-            <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-gray-900 font-semibold">Môn học chuyên ngành</h3>
-                    <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
-                        {filteredCourses.major.length} môn
-                    </span>
+            {filteredCourses.major.length > 0 &&
+                <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-gray-900 font-semibold">Môn học chuyên ngành</h3>
+                        <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
+                            {filteredCourses.major.length} môn
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {filteredCourses.major.map((course) => (
+                            <CourseRow
+                                key={course.id}
+                                course={course}
+                                isSelected={selectedCourses.has(course.id)}
+                                onToggle={handleCourseToggle}
+                                onShowFlowchart={handleShowFlowchart}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="space-y-2">
-                    {filteredCourses.major.map((course) => (
-                        <CourseRow
-                            key={course.id}
-                            course={course}
-                            isSelected={selectedCourses.has(course.id)}
-                            onToggle={handleCourseToggle}
-                            onShowFlowchart={handleShowFlowchart}
-                        />
-                    ))}
-                </div>
-            </div>
+            }
+
 
             {/* Môn học tự chọn */}
-            <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-gray-900 font-semibold">Môn học tự chọn</h3>
-                    <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
-                        {filteredCourses.electives.length} môn
-                    </span>
+            {filteredCourses.electives.length > 0 &&
+                <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-gray-900 font-semibold">Môn học tự chọn</h3>
+                        <span className="px-2.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
+                            {filteredCourses.electives.length} môn
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {filteredCourses.electives.map((course) => (
+                            <CourseRow
+                                key={course.id}
+                                course={course}
+                                isSelected={selectedCourses.has(course.id)}
+                                onToggle={handleCourseToggle}
+                                onShowFlowchart={handleShowFlowchart}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="space-y-2">
-                    {filteredCourses.electives.map((course) => (
-                        <CourseRow
-                            key={course.id}
-                            course={course}
-                            isSelected={selectedCourses.has(course.id)}
-                            onToggle={handleCourseToggle}
-                            onShowFlowchart={handleShowFlowchart}
-                        />
-                    ))}
-                </div>
-            </div>
+            }
         </div>
     );
 }

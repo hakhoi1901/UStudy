@@ -8,6 +8,8 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../components/ui/tooltip';
 import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
 import { useSchedule } from '../../hooks/useSchedule';
+import { useCourseData } from '../../hooks/useCourseData';
+import { NoDataCard } from '../../components/nodataCard';
 
 const COLOR_LEGEND = [
   { color: 'green', label: 'Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
@@ -360,6 +362,10 @@ interface VisualScheduleProps {
 
 export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
+
+  // Lấy data từ localStorage qua Recommender
+  const { isReady, hasData } = useCourseData();
+
   const [currentWeek, setCurrentWeek] = useState(() => {
     if (!SEMESTER_3_SCHEDULE.semesterStartDate) return 1;
     const now = new Date();
@@ -479,6 +485,24 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const handleExport = () => {
     exportCalendar(displaySchedule);
   };
+
+  // Tải dữ liệu
+  if (!isReady) {
+    return (
+      <div className="flex-1">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
+      </div>
+    );
+  }
+
+  // Không có dữ liệu
+  if (!hasData) {
+    return <div>
+      <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
+      <p className="text-gray-600 mb-8">Đây là lộ trình học tập của bạn.</p>
+      <NoDataCard />
+    </div>;
+  }
 
   return (
     <TooltipProvider>

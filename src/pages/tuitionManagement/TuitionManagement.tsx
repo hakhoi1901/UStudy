@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTuitionCalculator } from '../../hooks/useTuitionCalculator';
+import { useCourseData } from '../../hooks/useCourseData';
 
 import {
   DollarSign,
@@ -22,6 +23,7 @@ import {
   FileText,
   BarChart3
 } from 'lucide-react';
+import { NoDataCard } from '../../components/nodataCard';
 
 interface TuitionCourse {
   stt: number;
@@ -234,6 +236,10 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   const selectedSemesterName = initialSelectedSemester || 'Học kỳ 1, 2025-2026';
   const { courses: currentSemesterData, summary: currentSemesterSummary, isDataAvailable } = useTuitionCalculator(selectedSemesterName);
 
+
+  // Lấy data từ localStorage qua Recommender
+  const { recommended, all, isReady, hasData } = useCourseData();
+
   // Calculate days until due
   useEffect(() => {
     const days = calculateDaysUntilDue(currentSemesterSummary.dueDate);
@@ -306,6 +312,25 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   const paymentProgress = currentSemesterSummary.hasAdvancePayment
     ? (currentSemesterSummary.advancePayment / currentSemesterSummary.totalFee) * 100
     : 0;
+
+
+  // Tải dữ liệu
+  if (!isReady) {
+    return (
+      <div className="flex-1">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
+      </div>
+    );
+  }
+
+  // Không có dữ liệu
+  if (!hasData) {
+    return <div>
+      <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
+      <p className="text-gray-600 mb-8">Đây là lộ trình học tập của bạn.</p>
+      <NoDataCard />
+    </div>;
+  }
 
   return (
     <div className="max-w-[1600px] mx-auto">
@@ -454,12 +479,12 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
                   <td className="px-2 py-2.5 text-center text-gray-900 font-medium text-xs">
                     {course.stt}
                   </td>
-                  <td className="px-2 py-2.5 text-center text-gray-600 text-[10px] font-mono">
+                  <td className="px-2 py-2.5 text-center text-gray-600 text-[12px] font-mono">
                     {course.semester}
                   </td>
                   <td className="px-2.5 py-2.5">
                     <div className="flex flex-col">
-                      <span className="font-mono text-[9px] text-gray-500 mb-0.5">
+                      <span className="font-mono text-[11px] text-gray-500 mb-0.5">
                         [{course.courseCode}/{course.classCode}]
                       </span>
                       <span className="text-xs text-gray-900 font-medium leading-tight">{course.courseName}</span>

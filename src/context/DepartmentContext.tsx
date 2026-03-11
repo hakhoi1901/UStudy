@@ -120,7 +120,13 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
             setData({ ...cohortData, tuitionRates });
         } catch (err) {
             console.error('[DepartmentContext] Failed to load data:', err);
-            setData({ ...defaultData, tuitionRates });
+            // Nếu không load được (chưa có data cho khoa/ngành này), trả về rỗng để hiển thị Empty State
+            setData({
+                courses: [],
+                prerequisites: [],
+                categories: {},
+                tuitionRates
+            });
         } finally {
             setIsLoading(false);
         }
