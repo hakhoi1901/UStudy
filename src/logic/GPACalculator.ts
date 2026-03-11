@@ -1,4 +1,5 @@
 import { GPA_CONFIG, ACADEMIC_RULES } from '../config';
+import { AcademicRulesEngine } from './AcademicRulesEngine';
 import type { StudentCourseGrade } from '../types';
 
 /**
@@ -7,20 +8,37 @@ import type { StudentCourseGrade } from '../types';
  */
 export const GPACalculator = {
     /**
-     * Tính GPA dự kiến khi kết hợp điểm lịch sử + điểm dự kiến học kỳ tới
+     * Tính GPA dự kiến khi kết hợp điểm lịch sử + điểm dự kiến học kỳ tới.
      */
     calculateProjectedGPA: (
         gradesHistory: StudentCourseGrade[],
         projectedCourses: { credits: number; projectedGrade: number }[]
     ): number => {
-        const currentTotalPoints = gradesHistory
-            .filter(c => c.status === 'passed')
-            .reduce((sum, c) => sum + (c.grade * c.credits), 0);
+        // ── Phần 1: Tính điểm lịch sử (reuse AcademicRulesEngine) ────────
+        // [TN-FIX] Code cũ chỉ filter status === 'passed', không loại
+        // GDQP/TC/AV và bỏ qua retake → GPA sai so với currentGPA.
+        // const currentTotalPoints = gradesHistory
+        //     .filter(c => c.status === 'passed')
+        //     .reduce((sum, c) => sum + (c.grade * c.credits), 0);
+        // const currentCredits = gradesHistory
+        //     .filter(c => c.status === 'passed')
+        //     .reduce((sum, c) => sum + c.credits, 0);
 
-        const currentCredits = gradesHistory
-            .filter(c => c.status === 'passed')
-            .reduce((sum, c) => sum + c.credits, 0);
+        let currentTotalPoints = 0;
+        let currentCredits = 0;
 
+        for (const c of gradesHistory) {
+            // Chỉ tính môn có điểm số hợp lệ (passed hoặc retake)
+            if (c.status === 'ongoing') continue;
+
+            const result = AcademicRulesEngine.calculateAccumulationParams(
+                c.code, c.credits, c.grade, c.status
+            );
+            currentTotalPoints += result.pointsForGPA;
+            currentCredits += result.creditsForGPA;
+        }
+
+        // ── Phần 2: Tính điểm dự kiến (học kỳ mô phỏng) ─────────────────
         const projectedPoints = projectedCourses.reduce(
             (sum, c) => sum + ((c.projectedGrade ?? 0) * c.credits), 0
         );
@@ -28,6 +46,7 @@ export const GPACalculator = {
             (sum, c) => sum + c.credits, 0
         );
 
+        // ── Kết hợp ──────────────────────────────────────────────────────
         const totalPoints = currentTotalPoints + projectedPoints;
         const totalCredits = currentCredits + projectedCredits;
 

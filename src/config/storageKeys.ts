@@ -26,4 +26,6 @@ export const STORAGE_KEYS = {
 
     // Metadata từ Bookmarklet (thời gian cào, năm/học kỳ của từng loại dữ liệu)
     IMPORT_META: 'import_meta',
+    // Điểm dự đoán do người dùng nhập cho GPA Simulator
+    PROJECTED_GRADES: 'gpa_projected_grades',
 };

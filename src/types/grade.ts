@@ -13,7 +13,8 @@ export interface SimulatorCourseGrade {
     id: string;
     code: string;
     name: string;
-    credits: number;
+    credits: number | null;
     currentGrade: number | null;
-    projectedGrade: number;
+    projectedGrade: number | null;
+    source: 'ongoing' | 'registration';
 }
