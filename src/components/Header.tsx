@@ -82,7 +82,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
         <div className="flex items-center justify-between">
           {/* Left Side - Title and Semester Selector */}
           <div className="flex items-center gap-4">
-            <h2 className="text-gray-900" style={{ fontWeight: 600 }}>Cổng thông tin sinh viên CNTT</h2>
+            <h2 className="text-gray-900" style={{ fontWeight: 600 }}>Hệ thống quản lý học tập</h2>
             <div className="relative">
               <button
                 onClick={() => setShowSemesterDropdown(!showSemesterDropdown)}
