@@ -157,7 +157,7 @@ export function CalendarView({
                                     {isFirstAfternoon && (
                                         <div
                                             className="grid items-center"
-                                            style={{ gridTemplateColumns: '76px 1fr', height: '22px' }}
+                                            style={{ gridTemplateColumns: '76px 1fr', height: '30px' }}
                                         >
                                             <div className="bg-amber-50 border-b border-t border-amber-200 flex items-center justify-center">
                                                 <span className="text-[8px] text-amber-600 font-semibold">Trưa</span>
@@ -177,11 +177,11 @@ export function CalendarView({
                                     >
                                         {/* Nhãn tiết học */}
                                         <div
-                                            className={`flex flex-col items-center justify-center border-b border-r px-1 shrink-0 ${period.label === 'Sáng' ? 'bg-sky-50 border-gray-200' : 'bg-orange-50 border-gray-200'
+                                            className={`flex flex-col items-center justify-center border-b border-r px-1 shrink-0 ${period.label === 'Sáng' ? 'bg-sky-50 border-gray-200' : 'bg-sky-50 border-gray-200'
                                                 }`}
                                         >
                                             <div
-                                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full mb-0.5 ${period.label === 'Sáng' ? 'bg-sky-100 text-sky-700' : 'bg-orange-100 text-orange-700'
+                                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full mb-0.5 ${period.label === 'Sáng' ? 'bg-sky-100 text-sky-700' : 'bg-sky-100 text-sky-700'
                                                     }`}
                                             >
                                                 P{period.period}
