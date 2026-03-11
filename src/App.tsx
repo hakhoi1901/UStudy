@@ -54,6 +54,34 @@ function AppContent() {
     return () => window.removeEventListener('message', handleMessage, true);
   }, [addNotification]);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    const isSmallScreen = window.innerWidth <= 768;
+
+    if (checkMobile || isSmallScreen) {
+      setIsMobile(true);
+    }
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] max-w-sm w-full text-center border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h1 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">Trải nghiệm trên PC</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-6">
+            Hệ thống quản lý học tập và xếp lịch hiện tại chỉ hỗ trợ hiển thị và thao tác trên máy tính (PC/Laptop) để đảm bảo trải nghiệm tốt nhất.
+          </p>
+          <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 inline-block">
+            <p className="text-xs font-medium text-gray-600">Vui lòng truy cập lại bằng máy tính nhé! </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
