@@ -206,7 +206,7 @@ export function CourseRowTrainingProgram({
                   {/* Nút đóng góp tài liệu */}
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-green-400 text-green-700 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium shadow-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-green-600 text-green-700 hover:bg-green-100 rounded-lg transition-colors text-sm font-medium shadow-sm"
                     title="Đóng góp tài liệu, đề thi, bài tập cho môn này"
                   >
                     <ExternalLink className="w-4 h-4" />
