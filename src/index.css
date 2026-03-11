@@ -3164,6 +3164,10 @@ html {
     background-color: color-mix(in srgb, oklch(.97 .014 254.604) 50%, transparent);
   }
 
+  .bg-blue-30 {
+    background-color: color-mix(in srgb, oklch(.97 .014 254.604) 30%, transparent);
+  }
+
   /* Border colors for course cards */
   .border-blue-500 {
     border-color: oklch(.623 .214 259.815);

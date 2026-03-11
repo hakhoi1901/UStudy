@@ -56,68 +56,69 @@ export function DocumentContributionModal({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div
-                style={{ width: '50%' }}
-                className="bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+                className="w-06 max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/80">
+                {/* Header: Đặt flex-none để không bị bóp méo khi thu hẹp không gian */}
+                <div className="flex-none flex items-center justify-between p-3 border-b border-gray-100 bg-gray-50/80">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 p-1">Đóng góp tài liệu</h2>
-                        <p className="text-base font-medium text-[#004A98] p-1">{courseId} - {courseName}</p>
+                        <h2 className="text-xl font-bold text-gray-900 px-1">Đóng góp tài liệu</h2>
+                        <p className="text-sm font-medium text-[#004A98] px-1">{courseId} - {courseName}</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6">
+                {/* Content: Đặt flex-1 và overflow-y-auto để phần này cuộn được nếu nội dung quá dài */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
                     {/* Instructions & Checkboxes */}
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                        <h4 className="flex items-center gap-2 text-base font-bold text-blue-900 mb-3">
-                            <Info className="w-5 h-5 text-blue-600" />
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                        <h4 className="flex items-center gap-2 text-sm font-bold text-blue-900 mb-2">
+                            <Info className="w-4 h-4 text-blue-600" />
                             Phân loại tài liệu trong Drive
                         </h4>
-                        <p className="text-sm text-blue-800 mb-3">Đầu tiên admin xin cảm ơn bạn đã đóng góp tài liệu cho cộng đồng!</p>
-                        <p className="text-sm text-blue-800 mb-3">Để dễ dàng phân loại và tổng hợp tài liệu, bạn vui lòng tạo các thư mục tương ứng trong Drive theo các loại dưới đây và tích vào ô tương ứng:</p>
+                        <p className="text-sm text-blue-800 mb-1.5">Đầu tiên admin xin cảm ơn bạn đã đóng góp tài liệu cho cộng đồng!</p>
+                        <p className="text-sm text-blue-800 mb-3">Để dễ dàng phân loại, bạn vui lòng tạo các thư mục tương ứng trong Drive và tích vào ô bên dưới:</p>
 
-                        <div className="grid grid-cols-1 gap-2 text-sm font-medium text-blue-800">
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.exams} onChange={() => handleCheckboxChange('exams')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>1. Đề thi</span>
-                            </label>
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.slides} onChange={() => handleCheckboxChange('slides')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>2. Slide bài giảng</span>
-                            </label>
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.books} onChange={() => handleCheckboxChange('books')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>3. Giáo trình / Tham khảo</span>
-                            </label>
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.theory} onChange={() => handleCheckboxChange('theory')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>4. Bài tập Lý thuyết</span>
-                            </label>
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.practice} onChange={() => handleCheckboxChange('practice')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>5. Bài tập Thực hành</span>
-                            </label>
-                            <label className="flex items-center gap-2 bg-white/60 p-2.5 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <input type="checkbox" checked={selectedTypes.other} onChange={() => handleCheckboxChange('other')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span>6. Khác</span>
-                                <input type="text" onChange={(e) => setOtherType(e.target.value)} value={otherType} placeholder="Vui lòng ghi rõ loại tài liệu trong phần ghi chú" className="w-085 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-base" />
+                        <div className="grid grid-cols-1 gap-1.5 text-sm font-medium text-blue-800">
+                            {[
+                                { id: 'exams', label: '1. Đề thi' },
+                                { id: 'slides', label: '2. Slide bài giảng' },
+                                { id: 'books', label: '3. Giáo trình / Tham khảo' },
+                                { id: 'theory', label: '4. Bài tập Lý thuyết' },
+                                { id: 'practice', label: '5. Bài tập Thực hành' },
+                            ].map((item) => (
+                                <label key={item.id} className="flex items-center gap-2 bg-white/60 p-2 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
+                                    <input type="checkbox" checked={selectedTypes[item.id as keyof typeof selectedTypes]} onChange={() => handleCheckboxChange(item.id as keyof typeof selectedTypes)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                                    <span>{item.label}</span>
+                                </label>
+                            ))}
+
+                            <label className="flex items-center flex-wrap gap-2 bg-white/60 p-2 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
+                                <div className="flex items-center gap-2">
+                                    <input type="checkbox" checked={selectedTypes.other} onChange={() => handleCheckboxChange('other')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                                    <span>6. Khác</span>
+                                </div>
+                                <input
+                                    type="text"
+                                    onChange={(e) => setOtherType(e.target.value)}
+                                    value={otherType}
+                                    placeholder="Ghi rõ loại tài liệu..."
+                                    // Chú ý: w-085 là class không tồn tại trong Tailwind chuẩn, đã đổi thành flex-1 để tự động điền đầy không gian
+                                    className="flex-1 min-w-[200px] px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-sm"
+                                />
                             </label>
                         </div>
                     </div>
 
                     {/* Form */}
-                    <div>
-                        <label htmlFor="driveLink" className="block text-base font-medium text-gray-700 mb-2">
+                    <div className='p-2'>
+                        <label htmlFor="driveLink" className="block p-1 text-sm font-medium text-gray-700 mb-1.5">
                             Liên kết thư mục Google Drive (Vui lòng mở quyền truy cập)
                         </label>
                         <input
@@ -126,26 +127,26 @@ export function DocumentContributionModal({
                             value={driveLink}
                             onChange={(e) => setDriveLink(e.target.value)}
                             placeholder="https://drive.google.com/drive/folders/..."
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-base"
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-sm"
                         />
                     </div>
 
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-100 bg-gray-50/80">
+                {/* Footer: Đặt flex-none tương tự Header */}
+                <div className="flex-none flex items-center justify-end gap-3 p-3 border-t border-gray-100 bg-gray-50/80">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         onClick={handleSendEmail}
                         disabled={!driveLink.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 text-base font-medium text-white bg-[#004A98] rounded-lg hover:bg-[#003d7a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-[#004A98] rounded hover:bg-[#003d7a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
-                        <Send className="w-5 h-5" />
+                        <Send className="w-4 h-4" />
                         Gửi email đóng góp
                     </button>
                 </div>
