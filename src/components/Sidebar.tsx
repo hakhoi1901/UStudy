@@ -43,7 +43,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
       <div className={`p-6 relative ${isCollapsed ? 'px-4' : ''}`}>
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className={`${isCollapsed ? 'w-10 h-10' : 'w-10 h-10'} bg-white rounded-lg flex items-center justify-center flex-shrink-0`}>
-            <span className="text-[#004A98]" style={{ fontWeight: 600 }}>LMS</span>
+            <span className="text-[#004A98]" style={{ fontWeight: 600 }}>UNP</span>
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
