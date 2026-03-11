@@ -14,7 +14,11 @@ export const AcademicRulesEngine = {
         const codeMatch = rawName.match(/\[(.*?)\]/);
         let nameVi = rawName;
 
-        if (rawName.includes(" - ")) {
+        const prefixMatch = rawName.match(/^([a-zA-Z]{3,4}\d{3,5})\s*-\s*(.*)/);
+
+        if (prefixMatch) {
+            nameVi = prefixMatch[2].trim();
+        } else if (rawName.includes(" - ") && rawName.match(/^[a-zA-Z0-9_\s]+ - /) && rawName.split(" - ")[0].length < 15 && /\d/.test(rawName.split(" - ")[0])) {
             const parts = rawName.split(" - ");
             nameVi = parts.slice(1).join(" - ").trim();
         } else if (codeMatch) {
