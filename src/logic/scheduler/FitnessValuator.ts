@@ -78,7 +78,7 @@ export class FitnessEvaluator {
                         const startBit = dayForbidden * 10;
                         const endBit = startBit + 9;
                         for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k)) {
+                            if (currentMask.test(k) || currentMask.test(k + 70)) {
                                 score -= WEIGHTS.PENALTY_DAY_OFF;
                                 break; // Dính 1 tiết là phạt, không cần check tiếp
                             }
@@ -161,7 +161,7 @@ export class FitnessEvaluator {
                         const startBit = dayForbidden * 10;
                         const endBit = startBit + 9;
                         for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k)) {
+                            if (currentMask.test(k) || currentMask.test(k + 70)) {
                                 report.penalties.push(`Học ngày nghỉ (Thứ ${dayForbidden + 2}): ${subjects[idx].id} (${cls.id})`);
                                 break;
                             }
@@ -191,11 +191,11 @@ export class FitnessEvaluator {
         for (let d = 0; d < 7; d++) {
             // Sáng: bit 0-4
             for (let p = 0; p < 5; p++) {
-                if (mask.test(d * 10 + p)) hasMorning = true;
+                if (mask.test(d * 10 + p) || mask.test(70 + d * 10 + p)) hasMorning = true;
             }
             // Chiều: bit 5-9
             for (let p = 5; p < 10; p++) {
-                if (mask.test(d * 10 + p)) hasAfternoon = true;
+                if (mask.test(d * 10 + p) || mask.test(70 + d * 10 + p)) hasAfternoon = true;
             }
         }
 
@@ -208,15 +208,22 @@ export class FitnessEvaluator {
     calculateDailyLoad(combinedMask: Bitset) {
         const load = new Array(7).fill(0);
         for (let d = 0; d < 7; d++) {
+            let loadP1 = 0;
+            let loadP2 = 0;
             for (let p = 0; p < 10; p++) {
-                if (combinedMask.test(d * 10 + p)) load[d]++;
+                if (combinedMask.test(d * 10 + p)) loadP1++;
+                if (combinedMask.test(70 + d * 10 + p)) loadP2++;
             }
+            // Một ngày chỉ có tối đa load lớn nhất giữa Phase 1 và Phase 2 vì chúng không diễn ra cùng tuần
+            load[d] = Math.max(loadP1, loadP2);
         }
         return load;
     }
 
     calculateGaps(combinedMask: Bitset) {
         let totalGaps = 0;
+        
+        // Tính gap cho Phase 1 (0-69)
         for (let d = 0; d < 7; d++) {
             let first = -1;
             let last = -1;
@@ -231,9 +238,26 @@ export class FitnessEvaluator {
             }
 
             if (first !== -1 && last !== -1) {
-                const span = last - first + 1;
-                // Số tiết trống = Khoảng thời gian ở trường - Số tiết thực học
-                totalGaps += (span - learningBits);
+                totalGaps += (last - first + 1 - learningBits);
+            }
+        }
+        
+        // Tính gap cho Phase 2 (70-139)
+        for (let d = 0; d < 7; d++) {
+            let first = -1;
+            let last = -1;
+            let learningBits = 0;
+
+            for (let p = 0; p < 10; p++) {
+                if (combinedMask.test(70 + d * 10 + p)) {
+                    if (first === -1) first = p;
+                    last = p;
+                    learningBits++;
+                }
+            }
+
+            if (first !== -1 && last !== -1) {
+                totalGaps += (last - first + 1 - learningBits);
             }
         }
         return totalGaps;

@@ -399,35 +399,93 @@
         }
     }
 
-    // --- PHẦN CÀO LỚP MỞ (RAW) ---
+    async function fetchSubClasses(lmid, type) {
+        try {
+            // type sẽ là 'LopThucHanh' hoặc 'LopBaiTap'
+            const url = `Modules/SVDangKyHocPhan/HandlerSVDKHP.ashx?method=${type}&lmid=${lmid}&dot=1`;
+            const res = await fetch(url);
+            const json = await res.json();
 
-    // Cào flat array tất cả rows, không xử lý gì
-    function scrapeOpenClassesRaw(doc) {
+            // Tùy thuộc vào loại API, nó sẽ trả về mảng nằm ở key khác nhau
+            if (type === 'LopThucHanh') return json.LopMoTHs || [];
+            if (type === 'LopBaiTap') return json.LopMoBTs || json.LopMoTHs || []; // Fallback
+
+            return [];
+        } catch (e) {
+            console.error(`Lỗi lấy dữ liệu ${type}:`, e);
+            return [];
+        }
+    }
+
+    // Cào raw rows kèm theo fetch chi tiết TH/BT
+    async function scrapeOpenClassesRaw(doc) {
         const table = doc.getElementById('tbPDTKQ');
         if (!table) return [];
 
         const rows = [];
-        table.querySelectorAll('tbody tr').forEach(row => {
-            const cells = row.cells;
-            if (cells.length < 9) return;
+        // Lấy tất cả thẻ tr (bỏ qua thẻ tr tiêu đề nếu có)
+        const trElements = Array.from(table.querySelectorAll('tr'));
+        const total = trElements.length;
 
-            const courseId = cells[0]?.innerText.trim();
-            if (!courseId) return;
+        // Phải dùng for...of để có thể dùng await bên trong
+        for (let i = 0; i < total; i++) {
+            // Hiển thị tiến độ cho User đỡ sốt ruột vì fetch API sẽ hơi lâu
+            if (i % 3 === 0) showLoading(`Đang quét chi tiết Thực hành/Bài tập: ${i}/${total}`);
 
+            const row = trElements[i];
+            const cells = row.querySelectorAll('td');
+
+            // Bỏ qua dòng Header (thường < 9 cột)
+            if (cells.length < 9) continue;
+
+            const courseId = cells[0]?.textContent.trim();
+            if (!courseId || courseId === "Mã MH") continue;
+
+            let practicalClasses = [];
+            let exerciseClasses = [];
+
+            // 1. Kiểm tra và cào danh sách Thực Hành (Nằm ở cột index 8)
+            const thLink = cells[8]?.querySelector('a');
+            if (thLink) {
+                const onclickText = thLink.getAttribute('onclick') || "";
+                const matchTH = onclickText.match(/showFormDKThucHanh\("(\d+)"/);
+                if (matchTH && matchTH[1]) {
+                    practicalClasses = await fetchSubClasses(matchTH[1], 'LopThucHanh');
+                }
+            }
+
+            // 2. Kiểm tra và cào danh sách Bài Tập (Nằm ở cột index 9)
+            const btLink = cells[9]?.querySelector('a');
+            if (btLink) {
+                const onclickText = btLink.getAttribute('onclick') || "";
+                const matchBT = onclickText.match(/showFormDKBaiTap\("(\d+)"/);
+                // Một số trường hợp trường code nhầm form Bài tập thành Thực hành, ta cứ fallback tìm số ID
+                const matchFallback = onclickText.match(/\("(\d+)"/);
+                const finalMatchBT = matchBT || matchFallback;
+
+                if (finalMatchBT && finalMatchBT[1]) {
+                    exerciseClasses = await fetchSubClasses(finalMatchBT[1], 'LopBaiTap');
+                }
+            }
+
+            // 3. Đóng gói dữ liệu (Raw Lý thuyết + Raw Thực Hành + Raw Bài tập)
             rows.push({
                 id: courseId,
-                name: cells[1]?.innerText.trim(),
-                className: cells[2]?.innerText.trim(),
-                credits: cells[3]?.innerText.trim(),
-                capacity: cells[4]?.innerText.trim(),
-                enrolled: cells[5]?.innerText.trim(),
-                cohort: cells[6]?.innerText.trim(),
-                schedule: cells[7]?.innerText.trim(),
-                practicalGroup: cells[8]?.innerText.trim(),
-                exerciseGroup: cells[9] ? cells[9].innerText.trim() : "",
-                location: cells[10] ? cells[10].innerText.trim() : ""
+                name: cells[1]?.textContent.trim(),
+                className: cells[2]?.textContent.trim(),
+                credits: cells[3]?.textContent.trim(),
+                capacity: cells[4]?.textContent.trim(),
+                enrolled: cells[5]?.textContent.trim(),
+                cohort: cells[6]?.textContent.trim(),
+                schedule: cells[7]?.textContent.trim(),
+                practicalGroupRaw: cells[8]?.textContent.trim(),
+                exerciseGroupRaw: cells[9] ? cells[9].textContent.trim() : "",
+                location: cells[10] ? cells[10].textContent.trim() : "",
+                // Nhét thẳng mảng kết quả cào được vào đây
+                practicalClasses: practicalClasses,
+                exerciseClasses: exerciseClasses
             });
-        });
+        }
         return rows;
     }
 
@@ -578,7 +636,7 @@
             }
 
             showLoading(`Đang cào dữ liệu lớp mở...`);
-            courses = scrapeOpenClassesRaw(docLopMo);
+            courses = await scrapeOpenClassesRaw(docLopMo);
         }
 
         // 5. Xử lý Kết quả ĐKHP

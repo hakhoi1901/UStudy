@@ -1435,6 +1435,10 @@
     border-left-color: var(--color-yellow-600);
   }
 
+  .bg-\[\#e8f0fd\] {
+    background-color: #e8f0fd;
+  }
+
   .bg-\[\#3B82F6\] {
     background-color: #3b82f6;
   }
@@ -1918,6 +1922,22 @@
 
   .text-\[11px\] {
     font-size: 11px;
+  }
+
+  .text-\[12px\] {
+    font-size: 12px;
+  }
+
+  .text-\[13px\] {
+    font-size: 13px;
+  }
+
+  .text-\[14px\] {
+    font-size: 14px;
+  }
+
+  .text-\[15px\] {
+    font-size: 15px;
   }
 
   .leading-none {

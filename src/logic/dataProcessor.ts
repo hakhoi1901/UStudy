@@ -49,6 +49,18 @@ interface RawTuitionDetail {
     notes: string;
 }
 
+interface RawSubClass {
+    MaLopMoTH?: string;
+    MaLopMoBT?: string;
+    MaLopMoID?: string;
+    Nhom?: string;
+    SiSo?: string;
+    DaDK?: string;
+    MaDiaDiem?: string;
+    DiaDiem?: string;
+    LichHoc?: string;
+}
+
 interface RawOpenClass {
     id: string;
     name: string;
@@ -58,9 +70,11 @@ interface RawOpenClass {
     enrolled: string;
     cohort: string;
     schedule: string;
-    practicalGroup: string;
-    exerciseGroup: string;
+    practicalGroupRaw: string;
+    exerciseGroupRaw: string;
     location: string;
+    practicalClasses: RawSubClass[];
+    exerciseClasses: RawSubClass[];
 }
 
 interface RawRegistration {
@@ -167,11 +181,20 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
         classes: { id: string; schedule: string[] }[];
     }> = {};
 
+    // Group rows by SubjectID -> ClassID
+    // To handle edge cases where the university splits a single class LT into multiple rows
+    const groupedData: Record<string, Record<string, { 
+        lt: string[], 
+        th: Record<string, string[]>, 
+        bt: Record<string, string[]> 
+    }>> = {};
+
     for (const row of rawClasses) {
         const subjID = row.id;
         if (!subjID) continue;
 
-        if (!courseMap[subjID]) {
+        if (!groupedData[subjID]) {
+            groupedData[subjID] = {};
             courseMap[subjID] = {
                 id: subjID,
                 name: row.name,
@@ -180,15 +203,86 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
             };
         }
 
-        const ltSchedule = parseScheduleString(row.schedule);
-        const ltClassID = row.className;
+        const classID = row.className;
+        if (!groupedData[subjID][classID]) {
+            groupedData[subjID][classID] = { lt: [], th: {}, bt: {} };
+        }
 
-        const exists = courseMap[subjID].classes.find(c => c.id === ltClassID);
-        if (!exists) {
-            courseMap[subjID].classes.push({ id: ltClassID, schedule: ltSchedule });
-        } else {
-            if (ltSchedule.length > 0) {
-                exists.schedule = [...new Set([...exists.schedule, ...ltSchedule])];
+        const parsedSchedule = parseScheduleString(row.schedule);
+        if (parsedSchedule.length > 0) {
+            groupedData[subjID][classID].lt.push(...parsedSchedule);
+        }
+
+        // Add practical classes (TH)
+        if (Array.isArray(row.practicalClasses)) {
+            for (const th of row.practicalClasses) {
+                const thSched = parseScheduleString(th.LichHoc || "");
+                const thNhom = th.Nhom || "Unknown";
+                if (!groupedData[subjID][classID].th[thNhom]) {
+                    groupedData[subjID][classID].th[thNhom] = [];
+                }
+                groupedData[subjID][classID].th[thNhom].push(...thSched);
+            }
+        }
+
+        // Add exercise classes (BT)
+        if (Array.isArray(row.exerciseClasses)) {
+            for (const bt of row.exerciseClasses) {
+                const btSched = parseScheduleString(bt.LichHoc || "");
+                const btNhom = bt.Nhom || "Unknown";
+                if (!groupedData[subjID][classID].bt[btNhom]) {
+                    groupedData[subjID][classID].bt[btNhom] = [];
+                }
+                groupedData[subjID][classID].bt[btNhom].push(...btSched);
+            }
+        }
+    }
+
+    // Cross-join lấy tổ hợp hợp lệ
+    for (const subjID in groupedData) {
+        for (const classID in groupedData[subjID]) {
+            const classData = groupedData[subjID][classID];
+            
+            // Lọc unique các ca LT
+            const combinedLTSchedule = [...new Set(classData.lt)];
+
+            const thGroups = Object.entries(classData.th);
+            const btGroups = Object.entries(classData.bt);
+
+            // Dummy values để map cross-join nếu không có mảng con
+            const thMultiplier = thGroups.length > 0 ? thGroups : [["", []] as [string, string[]]];
+            const btMultiplier = btGroups.length > 0 ? btGroups : [["", []] as [string, string[]]];
+
+            for (const [thNhom, thSched] of thMultiplier) {
+                for (const [btNhom, btSched] of btMultiplier) {
+                    
+                    const combinedSchedule = [...new Set([
+                        ...combinedLTSchedule, 
+                        ...thSched, 
+                        ...btSched
+                    ])];
+                    
+                    if (combinedSchedule.length > 0) {
+                        let newClassID = classID;
+                        if (thNhom) {
+                            newClassID += `_TH_${thNhom.replace(/\s+/g, '')}`;
+                        }
+                        if (btNhom) {
+                            newClassID += `_BT_${btNhom.replace(/\s+/g, '')}`;
+                        }
+
+                        // Không được thêm trùng id (hãn hữu xảy ra)
+                        const exists = courseMap[subjID].classes.find(c => c.id === newClassID);
+                        if (!exists) {
+                            courseMap[subjID].classes.push({
+                                id: newClassID,
+                                schedule: combinedSchedule
+                            });
+                        } else {
+                            exists.schedule = [...new Set([...exists.schedule, ...combinedSchedule])];
+                        }
+                    }
+                }
             }
         }
     }

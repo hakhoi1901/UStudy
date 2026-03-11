@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
@@ -46,9 +46,6 @@ export function useSchedule(): WeeklySchedule {
         let earliestDate: Date | null = null;
         const sessions: ScheduleSession[] = [];
 
-        const colorMap = new Map<string, typeof COLORS[number]>();
-        let colorIndex = 0;
-
         const courseStartWeeks = new Map<string, string>();
         courses_registered.forEach((c: any) => {
             // Lưu lại startWeek của môn (thường LT sẽ có) để TH/BT xài ké nếu trống
@@ -76,11 +73,21 @@ export function useSchedule(): WeeklySchedule {
                 totalCredits += credits;
             }
 
-            if (!colorMap.has(course.id)) {
-                colorMap.set(course.id, COLORS[colorIndex % COLORS.length]);
-                colorIndex++;
+            // Logic cấp màu chuẩn:
+            // 1. Nhóm toán: MTH hoặc MTT
+            // 2. Nhóm BAA/ADD: thể chất, anh văn, chính trị...
+            // 3. Cơ sở ngành / Chuyên ngành: 3 hoặc 4 kí tự kèm theo số 1 (Ví dụ: CSC1, CMTR1)
+            // 4. Khác
+            let color: typeof COLORS[number] = 'purple'; // Mặc định là khác
+            const cid = course.id.toUpperCase();
+
+            if (cid.startsWith('MTH') || cid.startsWith('MTT')) {
+                color = 'green';
+            } else if (cid.startsWith('BAA') || cid.startsWith('ADD')) {
+                color = 'yellow';
+            } else if (/^[A-Z]{3,4}1/.test(cid)) {
+                color = 'blue';
             }
-            const color = colorMap.get(course.id) || 'blue';
 
             scheduleParts.forEach((part: string, partIdx: number) => {
                 const match = part.match(/T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^:]+)(?::\s*(.*))?)?/);

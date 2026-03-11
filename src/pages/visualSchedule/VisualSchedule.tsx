@@ -5,13 +5,14 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../components/ui/tooltip';
 import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
 import { useSchedule } from '../../hooks/useSchedule';
 
 const COLOR_LEGEND = [
-  { color: 'blue', label: 'CSC - Công nghệ Thông tin', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
-  { color: 'green', label: 'MTH - Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
-  { color: 'yellow', label: 'BAA - Thể dục / Ngoại ngữ', bgClass: 'bg-yellow-100', borderClass: 'border-yellow-600' },
+  { color: 'green', label: 'Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
+  { color: 'yellow', label: 'Chính trị - Thể chất - Anh văn - ...', bgClass: 'bg-yellow-100', borderClass: 'border-yellow-600' },
+  { color: 'blue', label: 'Cơ sở ngành / Chuyên ngành', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
   { color: 'purple', label: 'Khác', bgClass: 'bg-purple-100', borderClass: 'border-purple-600' },
 ];
 
@@ -362,8 +363,6 @@ function ColorLegend() {
 }
 
 function CourseCard({ session }: { session: ScheduleSession }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-500 hover:bg-blue-100',
     green: 'bg-green-50 border-green-500 hover:bg-green-100',
@@ -395,83 +394,84 @@ function CourseCard({ session }: { session: ScheduleSession }) {
   }
 
   return (
-    <div
-      className="relative w-full h-full"
-      style={{
-        minHeight: `${rowSpan * 56}px`, // 56px là h-14 của 1 tiết
-      }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <div
-        className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}
-        style={{
-          top: `${topOffsetPercent}%`,
-          height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
-        }}
-      >
-        {/* Course Code */}
-        <div className="font-mono text-[9px] font-bold text-gray-900 mb-0.5 leading-tight truncate">
-          {session.courseCode}
-        </div>
-
-        {/* Course Name - Max 2 lines with ellipsis */}
-        <div className="text-[8px] font-medium text-gray-700 leading-tight mb-0.5 line-clamp-2">
-          {session.courseName}
-        </div>
-
-        {/* Type & Room - Truncate if too long */}
-        <div className="text-[7px] text-gray-600 leading-tight truncate">
-          {typeLabels[session.type]} | {session.room}
-        </div>
-      </div>
-
-      {/* Enhanced Tooltip */}
-      {showTooltip && (
-        <div className="absolute z-50 left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-gray-900 text-white rounded-lg shadow-2xl p-3 text-xs pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Arrow */}
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
-
-          <div className="relative">
-            <div className="font-bold text-sm mb-2 text-blue-300">
-              {session.courseCode} - {session.courseName}
+    <Tooltip delayDuration={150}>
+      <TooltipTrigger asChild>
+        <div
+          className="relative w-full h-full"
+          style={{
+            minHeight: `${rowSpan * 56}px`, // 56px là h-14 của 1 tiết
+          }}
+        >
+          <div
+            className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}
+            style={{
+              top: `${topOffsetPercent}%`,
+              height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
+            }}
+          >
+            {/* Course Name - Max 2 lines with ellipsis */}
+            <div className="text-[13px] font-bold text-gray-700 leading-tight mb-0.5 line-clamp-2">
+              {session.courseName}
             </div>
-            <div className="space-y-1 text-gray-300">
+
+            {/* Course Code */}
+            <div className="font-mono text-[13px] font-medium text-gray-900 mb-0.5 leading-tight truncate">
+              {session.courseCode}
+            </div>
+
+            {/* Type & Room - Truncate if too long */}
+            <div className="text-[12px] text-gray-600 leading-tight truncate">
+              {typeLabels[session.type]} | {session.room}
+            </div>
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right" align="start" className="z-[100] w-64 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
+        <div className="relative">
+          <div className="font-bold text-sm mb-2 text-blue-800">
+            {session.courseCode} - {session.courseName}
+          </div>
+          <div className="space-y-1 text-gray-600">
+            <div className="flex justify-between">
+              <span>Loại:</span>
+              <span className="font-medium text-gray-900">{typeFullLabels[session.type]}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Phòng:</span>
+              <span className="font-medium text-gray-900">{session.room}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tiết:</span>
+              <span className="font-medium text-gray-900">{session.startPeriod} - {Math.floor(session.endPeriod)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Thời gian: </span>
+              <span className="font-medium text-gray-900">{session.startTime} - {session.endTime}</span>
+            </div>
+            {session.totalWeeks > 0 && (
               <div className="flex justify-between">
-                <span>Loại:</span>
-                <span className="font-medium">{typeFullLabels[session.type]}</span>
+                <span>Thời gian: </span>
+                <span className="font-medium text-gray-900">{session.startDate} - {session.endDate} </span>
               </div>
+            )}
+            {session.totalWeeks > 0 && (
               <div className="flex justify-between">
-                <span>Thời gian:</span>
-                <span className="font-medium">{session.startTime} - {session.endTime}</span>
+                <span>Thời lượng:</span>
+                <span className="font-medium text-gray-900">{session.totalWeeks} tuần</span>
               </div>
-              {session.totalWeeks > 0 && (
-                <div className="flex justify-between">
-                  <span>Thời hạn:</span>
-                  <span className="font-medium">{session.startDate} - {session.endDate} ({session.totalWeeks} tuần)</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Tiết:</span>
-                <span className="font-medium">{session.startPeriod} - {Math.floor(session.endPeriod)}</span>
+            )}
+            <div className="border-t border-gray-200 pt-1 mt-1">
+              <div className="text-[11px] text-gray-500">
+                GV: {session.instructor}
               </div>
-              <div className="flex justify-between">
-                <span>Phòng:</span>
-                <span className="font-medium">{session.room}</span>
-              </div>
-              <div className="border-t border-gray-700 pt-1 mt-1">
-                <div className="text-[11px] text-gray-400">
-                  GV: {session.instructor}
-                </div>
-                <div className="text-[11px] text-gray-400">
-                  Lớp: {session.classCode} • {session.credits} TC
-                </div>
+              <div className="text-[11px] text-gray-500">
+                Lớp: {session.classCode} • {session.credits} TC
               </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -526,8 +526,8 @@ function PeriodRow({
   return (
     <tr>
       <td className="sticky left-0 bg-gray-50 z-10 p-1.5 border border-gray-200 text-center h-14">
-        <div className="text-[11px] font-semibold text-gray-700">{period}</div>
-        <div className="text-[9px] text-gray-500">{time}</div>
+        <div className="text-[13px] font-semibold text-gray-700">{period}</div>
+        <div className="text-[11px] text-gray-500">{time}</div>
       </td>
       {DAYS.map((day) => {
         const session = getSessionsForCell(day.value, period, schedule.sessions);
@@ -680,152 +680,154 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   };
 
   return (
-    <div className="max-w-[1800px] mx-auto">
-      {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-gray-900 mb-2">Thời khóa biểu</h1>
-          <p className="text-gray-600">
-            Xem lịch học theo tuần - {schedule.semesterName}
+    <TooltipProvider>
+      <div className="max-w-[1800px] mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-gray-900 mb-2">Thời khóa biểu</h1>
+            <p className="text-gray-600">
+              Xem lịch học theo tuần - {schedule.semesterName}
+            </p>
+          </div>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <Download className="w-4 h-4" />
+            <span className="text-sm font-medium">Xuất lịch</span>
+          </button>
+        </div>
+
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <QuickStatsCard
+            icon={BookOpen}
+            title="Tổng môn học"
+            value={`${displaySchedule.totalCourses}/${schedule.totalCourses} môn `}
+            subtitle={`${displaySchedule.totalCredits} tín chỉ`}
+            bgColor="bg-[#004A98]"
+            trend={coursesTrend}
+          />
+          <QuickStatsCard
+            icon={Clock}
+            title="Tiết học / tuần"
+            value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
+            subtitle={`${displaySchedule.totalPeriodsPerWeek} giờ`}
+            bgColor="bg-green-600"
+            trend={periodsTrend}
+          />
+          <QuickStatsCard
+            icon={Calendar}
+            title="Tuần hiện tại"
+            value={`Tuần ${displaySchedule.weekNumber}/17`}
+            subtitle={displaySchedule.weekRange}
+            bgColor="bg-orange-600"
+          />
+        </div>
+
+        {/* Color Legend */}
+        <ColorLegend />
+
+        {/* Week Navigation */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
+          <button
+            onClick={handlePreviousWeek}
+            disabled={currentWeek === 1}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Tuần trước</span>
+          </button>
+
+          <div className="text-center">
+            <div className="text-lg font-semibold text-[#004A98]">
+              Tuần {displaySchedule.weekNumber}
+            </div>
+            <div className="text-xs text-gray-500">{displaySchedule.weekRange}</div>
+          </div>
+
+          <button
+            onClick={handleNextWeek}
+            disabled={currentWeek === 17}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="text-sm font-medium">Tuần sau</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Weekly Calendar Grid */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-6">
+          <table className="w-full border-collapse table-fixed min-w-[1200px]">
+            <thead>
+              <tr className="bg-[#004A98]">
+                <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-2 text-white text-xs font-semibold w-16 min-w-[64px]">
+                  Tiết
+                </th>
+                {DAYS.map((day) => (
+                  <th key={day.value} className={`border border-gray-300 p-2 text-white text-xs font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
+                    }`}>
+                    {day.label}
+                    {isToday(day.value) && (
+                      <div className="text-[10px] font-normal mt-0.5">📍 Hôm nay</div>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {/* BUỔI SÁNG */}
+              <tr className="bg-green-50">
+                <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
+                  🌅 SÁNG
+                </td>
+              </tr>
+
+              <PeriodRow period={1} time="7:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={2} time="8:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={3} time="9:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={4} time="10:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={5} time="11:00" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+
+              {/* BUỔI CHIỀU */}
+              <tr className="bg-orange-50">
+                <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
+                  ☀️ CHIỀU
+                </td>
+              </tr>
+
+              <PeriodRow period={6} time="12:40" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={7} time="13:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={8} time="14:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={9} time="15:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              <PeriodRow period={10} time="16:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+            </tbody>
+          </table>
+        </div>
+
+        {/* Course Details Section */}
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-[#004A98]" />
+            📚 Chi tiết môn học đã đăng ký
+          </h3>
+          <div className="space-y-0">
+            {uniqueCourses.map((session) => (
+              <CourseDetailCard key={session.id} session={session} />
+            ))}
+          </div>
+        </div>
+
+        {/* Privacy Footer */}
+        <div className="py-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p className="text-[10px] text-gray-500 text-center">
+            Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
           </p>
         </div>
-
-        {/* Export Button */}
-        <button
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
-        >
-          <Download className="w-4 h-4" />
-          <span className="text-sm font-medium">Xuất lịch</span>
-        </button>
       </div>
-
-      {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <QuickStatsCard
-          icon={BookOpen}
-          title="Tổng môn học"
-          value={`${displaySchedule.totalCourses}/${schedule.totalCourses} môn `}
-          subtitle={`${displaySchedule.totalCredits} tín chỉ`}
-          bgColor="bg-[#004A98]"
-          trend={coursesTrend}
-        />
-        <QuickStatsCard
-          icon={Clock}
-          title="Tiết học / tuần"
-          value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
-          subtitle={`${displaySchedule.totalPeriodsPerWeek} giờ`}
-          bgColor="bg-green-600"
-          trend={periodsTrend}
-        />
-        <QuickStatsCard
-          icon={Calendar}
-          title="Tuần hiện tại"
-          value={`Tuần ${displaySchedule.weekNumber}/17`}
-          subtitle={displaySchedule.weekRange}
-          bgColor="bg-orange-600"
-        />
-      </div>
-
-      {/* Color Legend */}
-      <ColorLegend />
-
-      {/* Week Navigation */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
-        <button
-          onClick={handlePreviousWeek}
-          disabled={currentWeek === 1}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Tuần trước</span>
-        </button>
-
-        <div className="text-center">
-          <div className="text-lg font-semibold text-[#004A98]">
-            Tuần {displaySchedule.weekNumber}
-          </div>
-          <div className="text-xs text-gray-500">{displaySchedule.weekRange}</div>
-        </div>
-
-        <button
-          onClick={handleNextWeek}
-          disabled={currentWeek === 17}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="text-sm font-medium">Tuần sau</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Weekly Calendar Grid */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-6">
-        <table className="w-full border-collapse table-fixed min-w-[1200px]">
-          <thead>
-            <tr className="bg-[#004A98]">
-              <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-2 text-white text-xs font-semibold w-16 min-w-[64px]">
-                Tiết
-              </th>
-              {DAYS.map((day) => (
-                <th key={day.value} className={`border border-gray-300 p-2 text-white text-xs font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
-                  }`}>
-                  {day.label}
-                  {isToday(day.value) && (
-                    <div className="text-[10px] font-normal mt-0.5">📍 Hôm nay</div>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {/* BUỔI SÁNG */}
-            <tr className="bg-green-50">
-              <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
-                🌅 SÁNG
-              </td>
-            </tr>
-
-            <PeriodRow period={1} time="7:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={2} time="8:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={3} time="9:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={4} time="10:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={5} time="11:00" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-
-            {/* BUỔI CHIỀU */}
-            <tr className="bg-orange-50">
-              <td colSpan={7} className="text-center font-semibold py-1.5 text-xs text-gray-700 border border-gray-200">
-                ☀️ CHIỀU
-              </td>
-            </tr>
-
-            <PeriodRow period={6} time="12:40" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={7} time="13:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={8} time="14:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={9} time="15:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-            <PeriodRow period={10} time="16:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-          </tbody>
-        </table>
-      </div>
-
-      {/* Course Details Section */}
-      <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <GraduationCap className="w-5 h-5 text-[#004A98]" />
-          📚 Chi tiết môn học đã đăng ký
-        </h3>
-        <div className="space-y-0">
-          {uniqueCourses.map((session) => (
-            <CourseDetailCard key={session.id} session={session} />
-          ))}
-        </div>
-      </div>
-
-      {/* Privacy Footer */}
-      <div className="py-3 bg-gray-50 border border-gray-200 rounded-lg">
-        <p className="text-[10px] text-gray-500 text-center">
-          Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
-        </p>
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }

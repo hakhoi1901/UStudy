@@ -27,7 +27,7 @@ export default class CourseDatabase {
                 // Ưu tiên 2: Tính toán từ lịch học (nếu là dữ liệu Portal)
                 else if (cls.schedule) {
                     // Gọi hàm encode mới đã sửa ở Utils.js
-                    const calculatedData = encodeScheduleToMask(cls.schedule);
+                    const calculatedData = encodeScheduleToMask(cls.schedule, subj.id);
                     // calculatedData trả về { parts: [...] }
                     bitsetMask.loadFromData(calculatedData.parts);
                 }
