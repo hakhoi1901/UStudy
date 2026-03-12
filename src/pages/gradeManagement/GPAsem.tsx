@@ -1,4 +1,4 @@
-import { BookOpen, BarChart2, ChevronUp, ChevronDown, Minus, ChartBarBigIcon } from "lucide-react";
+import { ChartBarBigIcon, FlaskConicalIcon } from "lucide-react";
 
 
 interface SemesterGPA {
@@ -33,6 +33,7 @@ export function GPAsem({ getClassification, gpaPerSemester = [], majorGPA = 0 }:
         <div>
             {
                 (hasSemesterData || hasMajorGPA) && (
+
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
                             <ChartBarBigIcon className="w-8 h-8 text-[#004A98]" />

@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, ArrowUpNarrowWideIcon } from "lucide-react";
 import type { SimulatorCourseGrade } from "../../types";
 
 export function GPASimulation({
@@ -26,7 +26,8 @@ export function GPASimulation({
                 className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
             >
                 <div className="flex items-center gap-3">
-                    <h3 className="text-gray-900">Mô phỏng GPA - Học kỳ tiếp theo</h3>
+                    <ArrowUpNarrowWideIcon className="w-8 h-8 text-[#004A98]" />
+                    <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA - Học kỳ tiếp theo</h3>
                     <span className="px-2 py-0.5 bg-[#004A98] text-white text-xs rounded-full">
                         {courses.length} môn
                     </span>
