@@ -1,10 +1,27 @@
 import { ACADEMIC_RULES } from '../config';
+import { type StudentCourseGrade } from '../types';
+
+// ─── Constants ───────────────────────────────────────────────────────
+
+/** Mã môn Anh văn dùng cho kiểm tra miễn (BLM) */
+const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034'];
+
+// ─── Types ───────────────────────────────────────────────────────────
+
+/** Trạng thái chi tiết 4-state (dùng cho Training Program, UI hiển thị) */
+export type CourseStatus4 = 'passed' | 'failed' | 'studying' | 'none';
+
+/** Trạng thái 3-state (dùng cho GPA calculation nội bộ) */
+export type CourseStatus3 = 'passed' | 'retake' | 'ongoing';
 
 /**
  * Domain Logic Engine cho các quy tắc học vụ
  * Chịu trách nhiệm xử lý các logic nghiệp vụ lõi độc lập với React/UI.
  */
 export const AcademicRulesEngine = {
+
+    // ───────────── Tên & Trích xuất ─────────────
+
     /**
      * Làm sạch và trích xuất tên môn học tiếng Việt từ chuỗi đầu vào của hệ thống cũ
      */
@@ -28,8 +45,10 @@ export const AcademicRulesEngine = {
         return nameVi;
     },
 
+    // ───────────── GPA Exclusion ─────────────
+
     /**
-     * Xác định xem môn học có bị loại trừ khỏi điểm trung bình (GPA) hay không
+     * Xác định xem môn học có bị loại trừ khỏi GPA hay không (theo mã môn).
      */
     isCourseExcludedFromGPA: (courseCode: string): boolean => {
         return ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix =>
@@ -38,8 +57,20 @@ export const AcademicRulesEngine = {
     },
 
     /**
-     * Chuyển đổi điểm dạng chuỗi từ Portal thành số thập phân hợp lệ
-     * Trả về null nếu môn học chưa có điểm (đang học) hoặc là điểm chữ/kí hiệu đặc biệt
+     * Xác định xem nhóm môn có bị loại trừ khỏi GPA hay không (theo tên nhóm).
+     * Dùng cho CategoryNode khi check tên danh mục.
+     */
+    isCategoryExcludedFromGPA: (categoryName: string): boolean => {
+        return ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix =>
+            categoryName.startsWith(prefix.name)
+        );
+    },
+
+    // ───────────── Điểm số ─────────────
+
+    /**
+     * Chuyển đổi điểm dạng chuỗi từ Portal thành số thập phân hợp lệ.
+     * Trả về null nếu môn học chưa có điểm (đang học) hoặc là điểm chữ/kí hiệu đặc biệt.
      */
     parseRawScore: (rawScore: any): number | null => {
         if (rawScore === "" || rawScore === "(*)" || rawScore == null || rawScore === undefined) {
@@ -55,12 +86,108 @@ export const AcademicRulesEngine = {
     },
 
     /**
-     * Đánh giá trạng thái qua môn dựa trên điểm số
+     * Đánh giá trạng thái qua môn dựa trên điểm số (3-state, cho GPA calculation).
      */
-    evaluateCourseStatus: (score: number | null): 'passed' | 'retake' | 'ongoing' => {
+    evaluateCourseStatus: (score: number | null): CourseStatus3 => {
         if (score === null) return 'ongoing';
         return score >= ACADEMIC_RULES.PASS_GRADE_DECIMAL ? 'passed' : 'retake';
     },
+
+    // ───────────── BLM Exemption (Miễn Anh văn) ─────────────
+
+    /** Danh sách mã môn Anh văn */
+    ENGLISH_COURSE_IDS,
+
+    /**
+     * Kiểm tra sinh viên có được miễn Anh văn hay không.
+     * Điều kiện miễn:
+     *   1. BAA00100 với type = 'M'
+     *   2. Bất kỳ môn ADD0003x nào có score = 'M'
+     */
+    checkBLMExemption: (grades: any[]): boolean => {
+        if (!grades || grades.length === 0) return false;
+
+        const hasExemptionByBAA00100 = grades.some(
+            (g: any) => String(g.id).trim() === 'BAA00100' && String(g.type).trim() === 'M'
+        );
+        const hasExemptionByScore = grades.some(
+            (g: any) => ENGLISH_COURSE_IDS.includes(String(g.id).trim()) && String(g.score).trim().toUpperCase() === 'M'
+        );
+
+        return hasExemptionByBAA00100 || hasExemptionByScore;
+    },
+
+    // ───────────── CT Grade Resolution (Điểm cải thiện) ─────────────
+
+    /**
+     * Từ mảng raw grades, trích xuất grade hiệu dụng cho mỗi môn.
+     * Nếu có bản ghi CT (cải thiện) → dùng bản CT.
+     * Nếu không → dùng bản ghi cuối cùng.
+     */
+    resolveEffectiveGrades: (rawGrades: any[]): any[] => {
+        const gradesByCourse = new Map<string, any[]>();
+        rawGrades.forEach((g: any) => {
+            const code = String(g.id).trim();
+            if (!gradesByCourse.has(code)) gradesByCourse.set(code, []);
+            gradesByCourse.get(code)!.push(g);
+        });
+
+        const effectiveGrades: any[] = [];
+        gradesByCourse.forEach((records) => {
+            const ctRecord = records.find((r: any) => String(r.type).trim() === 'CT');
+            effectiveGrades.push(ctRecord || records[records.length - 1]);
+        });
+
+        return effectiveGrades;
+    },
+
+    // ───────────── Course Status (Thống nhất) ─────────────
+
+    /**
+     * Xác định trạng thái 4-state của 1 môn, tổng hợp tất cả grade records.
+     * Có xét BLM exemption + CT resolution.
+     *
+     * Trả về: 'passed' | 'failed' | 'studying' | 'none'
+     */
+    getCourseStatus: (
+        courseId: string,
+        grades: any[],
+        hasBLMExemption: boolean
+    ): CourseStatus4 => {
+        // BLM exemption: English courses are auto-passed
+        if (hasBLMExemption && ENGLISH_COURSE_IDS.includes(courseId)) {
+            return 'passed';
+        }
+
+        if (!grades || grades.length === 0) return 'none';
+
+        const gradeRecords = grades.filter((g: any) => String(g.id).trim() === courseId);
+        if (gradeRecords.length === 0) return 'none';
+
+        // CT (improvement) record takes priority
+        const ctRecord = gradeRecords.find((g: any) => String(g.type).trim() === 'CT');
+        const recordToCheck = ctRecord || gradeRecords[gradeRecords.length - 1];
+
+        const score = AcademicRulesEngine.parseRawScore(recordToCheck.score);
+
+        if (score !== null && score >= ACADEMIC_RULES.PASS_GRADE_DECIMAL) {
+            return 'passed';
+        }
+
+        // Empty score → currently studying
+        if (recordToCheck.score === '' || recordToCheck.score === null || recordToCheck.score === undefined) {
+            return 'studying';
+        }
+
+        // Has a numeric score but didn't pass
+        if (score !== null && score < ACADEMIC_RULES.PASS_GRADE_DECIMAL) {
+            return 'failed';
+        }
+
+        return 'none';
+    },
+
+    // ───────────── GPA Accumulation ─────────────
 
     /**
      * Tính toán tổng điểm và số tín chỉ được tích lũy cho việc xét GPA
@@ -69,7 +196,7 @@ export const AcademicRulesEngine = {
         code: string,
         credits: number,
         score: number,
-        status: 'passed' | 'retake' | 'ongoing'
+        status: CourseStatus3
     ): { pointsForGPA: number, creditsForGPA: number, earnedCredits: number } => {
         let pointsForGPA = 0;
         let creditsForGPA = 0;
@@ -83,13 +210,136 @@ export const AcademicRulesEngine = {
                 pointsForGPA = score * credits;
                 creditsForGPA = credits;
             }
-        } else if (status === 'retake') {
-            if (!isExcluded) {
-                pointsForGPA = score * credits;
-                creditsForGPA = credits;
-            }
         }
+        // Môn rớt (retake, dưới 5 điểm) không tính vào GPA
 
         return { pointsForGPA, creditsForGPA, earnedCredits };
+    },
+
+    // ───────────── GPA Summary (từ useStudentGradeData.ts) ─────────────
+
+    /**
+     * Tính toán tổng hợp GPA từ effective grades.
+     * Trả về: gradesHistory, currentGPA, accumulatedCredits, gpaPerSemester, majorGPA.
+     * Trích xuất từ useStudentGradeData.ts L44-141.
+     */
+    calculateGPASummary: (
+        effectiveGrades: any[],
+        hasBLMExemption: boolean
+    ): {
+        gradesHistory: StudentCourseGrade[];
+        currentGPA: number;
+        accumulatedCredits: number;
+        gpaPerSemester: { semester: string; gpa: number; credits: number; earnedCredits: number }[];
+        majorGPA: number;
+    } => {
+        const gradesHistory: StudentCourseGrade[] = [];
+        let accumulatedCredits = 0;
+        let totalPoints = 0;
+        let totalCreditsForGPA = 0;
+
+        const semesterMap = new Map<string, { points: number; credits: number; earnedCredits: number }>();
+
+        const MAJOR_PREFIXES = ['CSC1'];
+        let majorPoints = 0;
+        let majorCreditsForGPA = 0;
+
+        effectiveGrades.forEach((g: any, index: number) => {
+            const code = String(g.id).trim();
+            const nameVi = AcademicRulesEngine.extractVietnameseCourseName(g.name);
+            const credits = parseInt(g.credits) || 0;
+
+            const isExemptedEnglish = hasBLMExemption && ENGLISH_COURSE_IDS.includes(code);
+            const score: number | null = isExemptedEnglish ? 10 : AcademicRulesEngine.parseRawScore(g.score);
+            const status = isExemptedEnglish ? 'passed' as const : AcademicRulesEngine.evaluateCourseStatus(score);
+            const needsRetake = status === 'retake';
+
+            const hasValidScore = typeof score === 'number' && !isNaN(score);
+            let pointsForGPA = 0, creditsForGPA = 0, earnedCredits = 0;
+
+            if (hasValidScore) {
+                const result = AcademicRulesEngine.calculateAccumulationParams(code, credits, score, status);
+                pointsForGPA = result.pointsForGPA;
+                creditsForGPA = result.creditsForGPA;
+                earnedCredits = result.earnedCredits;
+                accumulatedCredits += earnedCredits;
+                totalPoints += pointsForGPA;
+                totalCreditsForGPA += creditsForGPA;
+
+                // Tích lũy GPA theo kỳ
+                if (creditsForGPA > 0) {
+                    const sem = g.semester || 'Không rõ';
+                    if (!semesterMap.has(sem)) {
+                        semesterMap.set(sem, { points: 0, credits: 0, earnedCredits: 0 });
+                    }
+                    const s = semesterMap.get(sem)!;
+                    s.points += pointsForGPA;
+                    s.credits += creditsForGPA;
+                    s.earnedCredits += earnedCredits;
+                }
+
+                // Tích lũy điểm cơ sở ngành
+                const isMajor = MAJOR_PREFIXES.some(prefix => code.startsWith(prefix));
+                if (isMajor && creditsForGPA > 0) {
+                    majorPoints += pointsForGPA;
+                    majorCreditsForGPA += creditsForGPA;
+                }
+            }
+
+            gradesHistory.push({
+                id: index.toString(),
+                code,
+                nameVi,
+                credits,
+                grade: score ?? 0,
+                semester: g.semester || 'Không rõ',
+                needsRetake,
+                status,
+            });
+        });
+
+        const gpaPerSemester = Array.from(semesterMap.entries())
+            .map(([semester, data]) => ({
+                semester,
+                gpa: data.credits > 0 ? data.points / data.credits : 0,
+                credits: data.credits,
+                earnedCredits: data.earnedCredits,
+            }))
+            .sort((a, b) => a.semester.localeCompare(b.semester));
+
+        const currentGPA = totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA) : 0;
+        const majorGPA = majorCreditsForGPA > 0 ? majorPoints / majorCreditsForGPA : 0;
+
+        return { gradesHistory, currentGPA, accumulatedCredits, gpaPerSemester, majorGPA };
+    },
+
+    /**
+     * Tạo danh sách "ghost courses" cho các môn Anh văn được miễn (BLM)
+     * mà sinh viên chưa có trong bảng điểm.
+     * Trích xuất từ useStudentGradeData.ts L144-160.
+     */
+    buildExemptedGhostCourses: (
+        effectiveGrades: any[],
+        hasBLMExemption: boolean
+    ): StudentCourseGrade[] => {
+        if (!hasBLMExemption) return [];
+
+        const ghostCourses: StudentCourseGrade[] = [];
+        ENGLISH_COURSE_IDS.forEach(engId => {
+            if (!effectiveGrades.some((g: any) => String(g.id).trim() === engId)) {
+                ghostCourses.push({
+                    id: `exempted-${engId}`,
+                    code: engId,
+                    nameVi: `Anh văn (miễn)`,
+                    credits: 0,
+                    grade: 10,
+                    semester: 'Miễn',
+                    needsRetake: false,
+                    status: 'passed',
+                });
+            }
+        });
+        return ghostCourses;
     }
 };
+

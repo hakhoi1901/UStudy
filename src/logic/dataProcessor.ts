@@ -8,6 +8,8 @@
  * App cần lưu: student_db_full (processed) + course_db_offline (processed)
  */
 
+import { ScheduleLogic } from './ScheduleLogic';
+
 // === TYPES ===
 
 interface RawGrade {
@@ -160,15 +162,7 @@ function processTuition(rawTuition: RawData['tuition']) {
     };
 }
 
-/**
- * Parse lịch học string thành mảng schedule entries (vd: "T2(6-9)")
- */
-function parseScheduleString(str: string): string[] {
-    if (!str) return [];
-    const regex = /T(\d|CN)\((\d+(\.\d+)?)-(\d+(\.\d+)?)\)/g;
-    const matches = str.match(regex);
-    return matches ? matches : [];
-}
+
 
 /**
  * Xử lý lớp mở: group by courseId → build courseMap với classes + parsed schedule
@@ -208,7 +202,7 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
             groupedData[subjID][classID] = { lt: [], th: {}, bt: {} };
         }
 
-        const parsedSchedule = parseScheduleString(row.schedule);
+        const parsedSchedule = ScheduleLogic.parseScheduleSlots(row.schedule);
         if (parsedSchedule.length > 0) {
             groupedData[subjID][classID].lt.push(...parsedSchedule);
         }
@@ -216,7 +210,7 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
         // Add practical classes (TH)
         if (Array.isArray(row.practicalClasses)) {
             for (const th of row.practicalClasses) {
-                const thSched = parseScheduleString(th.LichHoc || "");
+                const thSched = ScheduleLogic.parseScheduleSlots(th.LichHoc || "");
                 const thNhom = th.Nhom || "Unknown";
                 if (!groupedData[subjID][classID].th[thNhom]) {
                     groupedData[subjID][classID].th[thNhom] = [];
@@ -228,7 +222,7 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
         // Add exercise classes (BT)
         if (Array.isArray(row.exerciseClasses)) {
             for (const bt of row.exerciseClasses) {
-                const btSched = parseScheduleString(bt.LichHoc || "");
+                const btSched = ScheduleLogic.parseScheduleSlots(bt.LichHoc || "");
                 const btNhom = bt.Nhom || "Unknown";
                 if (!groupedData[subjID][classID].bt[btNhom]) {
                     groupedData[subjID][classID].bt[btNhom] = [];

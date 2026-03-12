@@ -20,7 +20,8 @@ export const ACADEMIC_RULES = {
     EXCLUDED_COURSE_PREFIXES: [
         { id: 'BAA0002', name: 'Giáo dục quốc phòng - An ninh' },
         { id: 'ADD0003', name: 'Giáo dục thể chất' },
-        { id: 'BAA0003', name: 'Ngoại ngữ (Anh văn)' }
+        { id: 'BAA0003', name: 'Ngoại ngữ (Anh văn)' },
+        { id: 'CSC00003', name: 'Tin học cơ sở' }
     ],
 
     // Số chữ số sau dấu phẩy của GPA

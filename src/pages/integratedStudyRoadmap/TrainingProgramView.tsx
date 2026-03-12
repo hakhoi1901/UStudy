@@ -1,9 +1,11 @@
 import { Info, Search, Filter, DatabaseBackup } from 'lucide-react';
-import { STORAGE_KEYS, ACADEMIC_RULES } from '../../config';
 import { CategoryNode } from '../../components/CategoryNode';
 import type { CourseData } from '../../components/CategoryNode';
 import { useState, useMemo } from 'react';
 import { useDepartmentData } from '../../context/DepartmentContext';
+import { readFromStorage } from '../../helpers/localStorage/save';
+import { STORAGE_KEYS } from '../../config';
+import { AcademicRulesEngine } from '../../logic/AcademicRulesEngine';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import type { Course } from '../../types';
 
@@ -14,63 +16,27 @@ export function TrainingProgramView() {
     const { data: { courses: courses, categories } } = useDepartmentData();
 
     const studentDb = useMemo(() => {
-        try {
-            const data = localStorage.getItem(STORAGE_KEYS.STUDENT_DB);
-            return data ? JSON.parse(data) : null;
-        } catch {
-            return null;
-        }
+        return readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
     }, []);
-
-    const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034'];
 
     const hasBLMExemption = useMemo(() => {
         if (!studentDb || !studentDb.grades) return false;
-        const hasExemptionByBAA00100 = studentDb.grades.some(
-            (g: any) => String(g.id).trim() === 'BAA00100' && String(g.type).trim() === 'M'
-        );
-        const hasExemptionByScore = studentDb.grades.some(
-            (g: any) => ENGLISH_COURSE_IDS.includes(String(g.id).trim()) && String(g.score).trim().toUpperCase() === 'M'
-        );
-        return hasExemptionByBAA00100 || hasExemptionByScore;
+        return AcademicRulesEngine.checkBLMExemption(studentDb.grades);
     }, [studentDb]);
 
-    const getCourseStatus = useMemo(() => (courseId: string): 'passed' | 'studying' | 'failed' | 'none' => {
-        // BLM exemption: English courses are auto-passed
-        if (hasBLMExemption && ENGLISH_COURSE_IDS.includes(courseId)) {
-            return 'passed';
+    const getCourseStatus = useMemo(() => (courseId: string) => {
+        if (!studentDb || !studentDb.grades) {
+            // Still handle BLM exemption even without grades
+            if (hasBLMExemption && AcademicRulesEngine.ENGLISH_COURSE_IDS.includes(courseId)) {
+                return 'passed' as const;
+            }
+            return 'none' as const;
         }
-
-        if (!studentDb || !studentDb.grades) return 'none';
-        const gradeRecords = studentDb.grades.filter((g: any) => g.id === courseId);
-        if (gradeRecords.length === 0) return 'none';
-
-        // Check for CT (improvement) record — if exists, use only that
-        const ctRecord = gradeRecords.find((g: any) => String(g.type).trim() === 'CT');
-        const recordToCheck = ctRecord || gradeRecords[gradeRecords.length - 1];
-
-        // Check if the effective record has a passing score (>= 5.0)
-        const score = typeof recordToCheck.score === 'string' ? parseFloat(recordToCheck.score) : recordToCheck.score;
-
-        if (typeof score === 'number' && !isNaN(score) && score >= 5.0) {
-            return 'passed';
-        }
-
-        // Check if latest record has empty score (currently studying)
-        if (recordToCheck.score === '' || recordToCheck.score === null || recordToCheck.score === undefined) {
-            return 'studying';
-        }
-
-        // Has a score but didn't pass
-        if (typeof score === 'number' && !isNaN(score) && score < 5.0) {
-            return 'failed';
-        }
-
-        return 'none';
+        return AcademicRulesEngine.getCourseStatus(courseId, studentDb.grades, hasBLMExemption);
     }, [studentDb, hasBLMExemption]);
 
-    const isCourseExcludedFromGPA = (courseName: string): boolean => {
-        return ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => courseName.startsWith(prefix.name));
+    const isCourseExcludedFromGPA = (categoryName: string): boolean => {
+        return AcademicRulesEngine.isCategoryExcludedFromGPA(categoryName);
     }
 
     const handleShowFlowchart = (courseId: string) => {

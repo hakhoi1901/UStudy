@@ -234,7 +234,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   const paymentLink = 'https://hocphi.hcmus.edu.vn/';
 
   const selectedSemesterName = initialSelectedSemester || 'Học kỳ 1, 2025-2026';
-  const { courses: currentSemesterData, summary: currentSemesterSummary, isDataAvailable } = useTuitionCalculator(selectedSemesterName);
+  const { courses: currentSemesterData, summary: currentSemesterSummary, isDataAvailable, missingMetaCourses } = useTuitionCalculator(selectedSemesterName);
 
 
   // Lấy data từ localStorage qua Recommender
@@ -339,7 +339,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
         <div>
           <h1 className="text-gray-900 mb-2">Học phí</h1>
           <p className="text-gray-600">
-            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông tin thanh toán.
+            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông margin thanh toán.
           </p>
         </div>
 
@@ -351,6 +351,21 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
           <span className="text-sm font-medium">Xuất hóa đơn</span>
         </button>
       </div>
+
+      {/* Cảnh báo thiếu metadata */}
+      {missingMetaCourses && missingMetaCourses.length > 0 && (
+        <div className="rounded-xl mb-6 bg-red-50 border-l-4 border-red-500 p-4 shadow-sm flex items-start flex-col gap-2">
+          <div className="flex items-center gap-2 text-red-700 font-bold">
+            <AlertTriangle className="w-5 h-5" />
+            <span>Không thể tính học phí cho một số môn học</span>
+          </div>
+          <p className="text-sm text-red-600 ml-7">
+            Không tìm thấy thông tin số tiết (LT/TH/BT) trong Chương Trình Đào Tạo cho các môn sau, nên <strong>tạm tính học phí là 0₫</strong>:
+            <br />
+            <span className="font-mono font-semibold">{missingMetaCourses.join(', ')}</span>
+          </p>
+        </div>
+      )}
 
       {/* Enhanced Summary Cards - CONDITIONAL RENDERING */}
       {currentSemesterSummary.hasAdvancePayment ? (
