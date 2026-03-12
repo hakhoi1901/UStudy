@@ -68,11 +68,6 @@ export function useGPASimulator(
         // Set mã môn đã có trong ongoing → dùng để lọc trùng
         const ongoingIds = new Set(ongoingCourses.map(c => c.code));
 
-        // Thêm: lọc trùng với các môn ĐÃ CÓ ĐIỂM trong lịch sử
-        const gradedIds = new Set(
-            gradesHistory.filter(g => g.status !== 'ongoing').map(g => g.code)
-        );
-
         const seenReg = new Set<string>(); // deduplicate trong ĐKHP
         const regCourses: SimulatorCourseGrade[] = [];
 
@@ -82,7 +77,6 @@ export function useGPASimulator(
             if (!id) continue;                     // bỏ row không có mã
             if (reg.courseType !== 'LT') continue;   // chỉ lấy Lý Thuyết, bỏ TH/BT
             if (ongoingIds.has(id)) continue;        // bỏ nếu đã có trong ongoing (deduplicate)
-            if (gradedIds.has(id)) continue;         // bỏ nếu đã có điểm rồi
             if (seenReg.has(id)) continue;           // deduplicate trong ĐKHP
             seenReg.add(id);
 
@@ -140,6 +134,7 @@ export function useGPASimulator(
         () => GPACalculator.calculateProjectedGPA(
             gradesHistory,
             filledCourses.map(c => ({
+                code: c.code,
                 credits: c.credits!,
                 projectedGrade: c.projectedGrade!
             }))
