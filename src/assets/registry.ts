@@ -46,31 +46,41 @@ const RAW_FACULTIES = [
         majors: [
             { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)', dataSource: { 'k25': 'k24' } },
             { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSource: { 'k25': 'k24' } },
-            { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSource: { 'k25': 'k24' } },
-            { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },
+            // { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSource: { 'k25': 'k24' } },
+            // { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },
             { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSource: { 'k25': 'k24' } },
-            { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
-            { id: 'cu-nhan-tai-nang-cntt', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
+            // { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
+            // { id: 'cu-nhan-tai-nang-cntt', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
-        id: 'khoa-toan-tin',
-        name: 'Khoa Toán - Tin học',
+        id: 'khoa-ly',
+        name: 'Khoa Vật lý - Vật lý Kỹ thuật',
         majors: [
-            { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
-            { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
-            { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+            { id: 'vat-ly-hoc', name: 'Vật lý học', dataSource: { 'k25': 'k24' } },
+            { id: 'vat-ly-ky-thuat', name: 'Vật lý kỹ thuật', dataSource: { 'k25': 'k24' } },
+            { id: 'hai-duong-hoc', name: 'Hải dương học', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân', dataSource: { 'k25': 'k24' } },
         ],
     },
-    {
-        id: 'khoa-sinh-hoc',
-        name: 'Khoa Sinh học',
-        majors: [
-            { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
-        ],
-    },
+    // {
+    //     id: 'khoa-toan-tin',
+    //     name: 'Khoa Toán - Tin học',
+    //     majors: [
+    //         { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
+    //         { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
+    //         { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
+    //         { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
+    //         { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+    //     ],
+    // },
+    // {
+    //     id: 'khoa-sinh-hoc',
+    //     name: 'Khoa Sinh học',
+    //     majors: [
+    //         { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
+    //     ],
+    // },
 ];
 
 export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({
