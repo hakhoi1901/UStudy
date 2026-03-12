@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch, ExternalLink } from 'lucide-react';
+import { courseLinks } from '../assets/data/courseLinks';
+import { DocumentContributionModal } from './DocumentContributionModal';
 
 export function CourseRowTrainingProgram({
   course,
@@ -23,6 +25,7 @@ export function CourseRowTrainingProgram({
   onShowFlowchart?: (courseId: string) => void;
 }) {
   const [showDescription, setShowDescription] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Background and border colors based on status
   const getContainerStyle = () => {
@@ -155,7 +158,7 @@ export function CourseRowTrainingProgram({
         <div className="mt-2 px-4 py-4 bg-gray-50 border border-gray-200 rounded-lg ml-8 relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-300"></div>
           <div className="space-y-4 text-sm">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-6 p-2">
               <div>
                 <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium flex items-center gap-1">
                   Lý thuyết
@@ -181,6 +184,45 @@ export function CourseRowTrainingProgram({
                 <p className="text-gray-800 leading-relaxed">{course.description}</p>
               </div>
             )}
+            {/* Document Link */}
+            {(courseLinks[course.course_id] || true) && (
+              <div className="pt-3 border-t border-gray-200 p-2">
+                <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">Tài liệu tham khảo</p>
+                <div className="flex flex-wrap items-center gap-3 p-2">
+                  {courseLinks[course.course_id] ? (
+                    <a
+                      href={courseLinks[course.course_id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-[#004A98] hover:text-[#003d7a] rounded-lg transition-colors text-sm font-medium shadow-sm"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Mở thư mục Drive tài liệu
+                    </a>
+                  ) : (
+                    <span className="text-sm text-gray-500 italic">Chưa có tài liệu cho môn học này.</span>
+                  )}
+
+                  {/* Nút đóng góp tài liệu */}
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-green-600 text-green-700 hover:bg-green-100 rounded-lg transition-colors text-sm font-medium shadow-sm"
+                    title="Đóng góp tài liệu, đề thi, bài tập cho môn này"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Đóng góp tài liệu
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Modal */}
+            <DocumentContributionModal
+              courseId={course.course_id}
+              courseName={course.course_name_vi}
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
           </div>
         </div>
       )}
