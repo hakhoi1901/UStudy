@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
     // Thông báo
     APP_NOTIFICATION: 'app_notification',
 
+    PAGE: 'curent_page',
+
     // Khoa, Ngành, Khóa tuyển và Năm học đã chọn
     FACULTY_ID: 'selected_faculty_id',
     MAJOR_ID: 'selected_major_id',
