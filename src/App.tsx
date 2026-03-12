@@ -5,18 +5,19 @@ import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/Integrate
 import { GradeManagement } from './pages/gradeManagement/GradeManagement';
 import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Setting } from './pages/setting/Setting';
+import { SettingUserProfile } from './pages/setting/SettingUserProfile';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
-import { readFromStorage, saveToStorage } from './helpers/localStorage/save';
+import { Book } from 'lucide-react';
 import { STORAGE_KEYS } from './config/storageKeys';
 
 
 function AppContent() {
-  const { semesterNumber, academicYear } = useDepartmentData();
+  const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
 
@@ -99,44 +100,61 @@ function AppContent() {
         <Header selectedSemester={selectedSemester} />
         {/* Giao diện chính/các trang*/}
         <main className="flex-1 overflow-y-auto">
-          {currentPage === 'dashboard' && (
-            <div className="p-6">
-              <div className="max-w-7xl mx-auto">
-                <DashboardWidgets />
-              </div>
+          {!isConfigured ? (
+            <div className="p-6 h-full flex items-center justify-center">
+                <div className="max-w-2xl w-full mx-auto">
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-[#004A98] mb-4">
+                            <Book size={32} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn đến với HCMUS Portal</h2>
+                        <p className="text-gray-500">Vui lòng thiết lập chương trình đào tạo của bạn để bắt đầu sử dụng hệ thống.</p>
+                    </div>
+                    <SettingUserProfile />
+                </div>
             </div>
-          )}
+          ) : (
+            <>
+              {currentPage === 'dashboard' && (
+                <div className="p-6">
+                  <div className="max-w-7xl mx-auto">
+                    <DashboardWidgets />
+                  </div>
+                </div>
+              )}
 
-          {currentPage === 'courses' && (
-            <div className="p-6">
-              <div className="max-w-[1600px] mx-auto">
-                <IntegratedStudyRoadmap />
-              </div>
-            </div>
-          )}
+              {currentPage === 'courses' && (
+                <div className="p-6">
+                  <div className="max-w-[1600px] mx-auto">
+                    <IntegratedStudyRoadmap />
+                  </div>
+                </div>
+              )}
 
-          {currentPage === 'grades' && (
-            <div className="p-6">
-              <GradeManagement />
-            </div>
-          )}
+              {currentPage === 'grades' && (
+                <div className="p-6">
+                  <GradeManagement />
+                </div>
+              )}
 
-          {currentPage === 'tuition' && (
-            <div className="p-6">
-              <TuitionManagement selectedSemester={selectedSemester} />
-            </div>
-          )}
+              {currentPage === 'tuition' && (
+                <div className="p-6">
+                  <TuitionManagement selectedSemester={selectedSemester} />
+                </div>
+              )}
 
-          {currentPage === 'schedule' && (
-            <div className="p-6">
-              <VisualSchedule selectedSemester={selectedSemester} />
-            </div>
-          )}
+              {currentPage === 'schedule' && (
+                <div className="p-6">
+                  <VisualSchedule selectedSemester={selectedSemester} />
+                </div>
+              )}
 
-          {currentPage === 'settings' && (
-            <div className="p-6">
-              <Setting />
-            </div>
+              {currentPage === 'settings' && (
+                <div className="p-6">
+                  <Setting />
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

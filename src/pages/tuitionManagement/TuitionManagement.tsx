@@ -339,7 +339,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
         <div>
           <h1 className="text-gray-900 mb-2">Học phí</h1>
           <p className="text-gray-600">
-            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông margin thanh toán.
+            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông tin thanh toán.
           </p>
         </div>
 

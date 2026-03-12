@@ -42,6 +42,7 @@ interface DepartmentContextType {
     currentCohort: CohortInfo | undefined;
     faculties: FacultyInfo[];
     academicYears: typeof ACADEMIC_YEARS;
+    isConfigured: boolean;
 
     // Actions
     setFaculty: (facultyId: string) => void;
@@ -49,6 +50,7 @@ interface DepartmentContextType {
     setCohort: (cohortId: string) => void;
     setAcademicYear: (year: string) => void;
     setSemesterNumber: (semesterNumber: number) => void;
+    setIsConfigured: (isConfigured: boolean) => void;
 }
 
 const defaultTuitionRates = getTuitionRates(DEFAULT_ACADEMIC_YEAR, DEFAULT_MAJOR_ID);
@@ -73,11 +75,13 @@ const DepartmentContext = createContext<DepartmentContextType>({
     currentCohort: FACULTIES[0]?.majors[0]?.cohorts[0],
     faculties: FACULTIES,
     academicYears: ACADEMIC_YEARS,
+    isConfigured: false,
     setFaculty: () => { },
     setMajor: () => { },
     setCohort: () => { },
     setAcademicYear: () => { },
     setSemesterNumber: () => { },
+    setIsConfigured: () => { },
 });
 
 export function DepartmentProvider({ children }: { children: React.ReactNode }) {
@@ -98,6 +102,15 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
     });
     const [data, setData] = useState<DepartmentData>(defaultData);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [isConfigured, setIsConfiguredState] = useState<boolean>(() => {
+        return localStorage.getItem(STORAGE_KEYS.DEPARTMENT_CONFIGURED) === 'true';
+    });
+
+    const setIsConfigured = (value: boolean) => {
+        localStorage.setItem(STORAGE_KEYS.DEPARTMENT_CONFIGURED, value ? 'true' : 'false');
+        setIsConfiguredState(value);
+    };
 
     const currentFaculty = FACULTIES.find(f => f.id === facultyId);
     const currentMajor = currentFaculty?.majors.find(m => m.id === majorId);
@@ -190,11 +203,13 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
             currentCohort,
             faculties: FACULTIES,
             academicYears: ACADEMIC_YEARS,
+            isConfigured,
             setFaculty,
             setMajor,
             setCohort,
             setAcademicYear,
             setSemesterNumber,
+            setIsConfigured,
         }}>
             {children}
         </DepartmentContext.Provider>

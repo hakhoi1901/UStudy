@@ -25,6 +25,7 @@ export const STORAGE_KEYS = {
     COHORT_ID: 'selected_cohort_id',
     ACADEMIC_YEAR: 'selected_academic_year',
     ACADEMIC_SEMESTER: 'selected_semester_number',
+    DEPARTMENT_CONFIGURED: 'department_configured',
 
     // Metadata từ Bookmarklet (thời gian cào, năm/học kỳ của từng loại dữ liệu)
     IMPORT_META: 'import_meta',

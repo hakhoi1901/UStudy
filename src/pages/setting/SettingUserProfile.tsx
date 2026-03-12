@@ -1,12 +1,14 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
+import { CheckCircle } from "lucide-react";
 
 export function SettingUserProfile() {
     const {
         facultyId, majorId, cohortId, academicYear,
         currentFaculty, currentMajor,
         faculties, academicYears,
-        setFaculty, setMajor, setCohort, setAcademicYear
+        setFaculty, setMajor, setCohort, setAcademicYear,
+        isConfigured, setIsConfigured
     } = useDepartmentData();
 
     return (
@@ -47,22 +49,35 @@ export function SettingUserProfile() {
             </div>
 
             {/* Current selection badges */}
-            <div className="mt-4 flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1 text-xs rounded-full bg-[#004A98] text-white font-medium">
-                    {currentFaculty?.name}
-                </span>
-                <span className="text-gray-400">→</span>
-                <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 font-medium">
-                    {currentMajor?.name}
-                </span>
-                <span className="text-gray-400">→</span>
-                <span className="px-3 py-1 text-xs rounded-full bg-green-50 text-green-700 font-medium">
-                    {currentMajor?.cohorts.find(c => c.id === cohortId)?.name}
-                </span>
-                <span className="text-gray-400">|</span>
-                <span className="px-3 py-1 text-xs rounded-full bg-amber-50 text-amber-700 font-medium">
-                    {academicYears.find(y => y.id === academicYear)?.name}
-                </span>
+            <div className="mt-6 p-5 flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-3 py-1 text-xs rounded-full bg-[#004A98] text-white font-medium">
+                        {currentFaculty?.name}
+                    </span>
+                    <span className="text-gray-400">→</span>
+                    <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 font-medium">
+                        {currentMajor?.name}
+                    </span>
+                    <span className="text-gray-400">→</span>
+                    <span className="px-3 py-1 text-xs rounded-full bg-green-50 text-green-700 font-medium">
+                        {currentMajor?.cohorts.find(c => c.id === cohortId)?.name}
+                    </span>
+                    <span className="text-gray-400">|</span>
+                    <span className="px-3 py-1 text-xs rounded-full bg-amber-50 text-amber-700 font-medium">
+                        {academicYears.find(y => y.id === academicYear)?.name}
+                    </span>
+                </div>
+
+                <button
+                    onClick={() => setIsConfigured(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-[#004A98] text-white hover:bg-[#003B7A]'
+                        }`}
+                >
+                    <CheckCircle className="w-4 h-4" />
+                    {isConfigured ? 'Đã lưu thiết lập' : 'Xác nhận thông tin'}
+                </button>
             </div>
         </div>
     );
