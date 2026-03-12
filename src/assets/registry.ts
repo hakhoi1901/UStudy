@@ -103,12 +103,11 @@ export function resolveDataCohort(facultyId: string, majorId: string, cohortId: 
  */
 export async function loadCohortData(facultyId: string, majorId: string, cohortId: string) {
     const sourceCohort = resolveDataCohort(facultyId, majorId, cohortId);
-    const basePath = `./data/${facultyId}/${majorId}/${sourceCohort}`;
 
     const [coursesModule, prerequisitesModule, categoriesModule] = await Promise.all([
-        import(/* @vite-ignore */`${basePath}/courses.ts`),
-        import(/* @vite-ignore */`${basePath}/prerequisites.ts`),
-        import(/* @vite-ignore */`${basePath}/categories.ts`),
+        import(`./data/${facultyId}/${majorId}/${sourceCohort}/courses.ts`),
+        import(`./data/${facultyId}/${majorId}/${sourceCohort}/prerequisites.ts`),
+        import(`./data/${facultyId}/${majorId}/${sourceCohort}/categories.ts`),
     ]);
 
     return {
