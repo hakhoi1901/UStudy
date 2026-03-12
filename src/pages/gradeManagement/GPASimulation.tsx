@@ -1,4 +1,5 @@
 import { ChevronUp, ChevronDown } from "lucide-react";
+// [TN] SimulatorCourseGrade: interface định nghĩa cấu trúc dữ liệu cho môn học trong simulator
 import type { SimulatorCourseGrade } from "../../types";
 
 export function GPASimulation({
@@ -6,10 +7,13 @@ export function GPASimulation({
     expandedSection,
     setExpandedSection,
     handleGradeChange,
+    // [TN] semesterGPA: GPA của học kỳ hiện tại
+    // cumulativeGPA: GPA tích lũy
     semesterGPA,
     cumulativeGPA,
     getClassification
 }: {
+    // [TN] courses: danh sách môn học trong simulator
     courses: SimulatorCourseGrade[],
     expandedSection: string,
     setExpandedSection: (section: "history" | "simulator") => void,

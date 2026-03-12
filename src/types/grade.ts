@@ -16,5 +16,6 @@ export interface SimulatorCourseGrade {
     credits: number | null;
     currentGrade: number | null;
     projectedGrade: number | null;
+    // [TN] source: 'ongoing' | 'registration' - để phân biệt môn đang học và môn đã đăng ký
     source: 'ongoing' | 'registration';
 }
