@@ -1,4 +1,4 @@
-import { GPA_CONFIG, ACADEMIC_RULES } from '../config';
+import { GPA_CONFIG } from '../config';
 import { AcademicRulesEngine } from './AcademicRulesEngine';
 import type { StudentCourseGrade } from '../types';
 
@@ -71,7 +71,7 @@ export const GPACalculator = {
         courses: { code: string; credits: number; projectedGrade: number }[]
     ): number => {
         const validCourses = courses.filter(c =>
-            !ACADEMIC_RULES.EXCLUDED_COURSE_PREFIXES.some(prefix => c.code.startsWith(prefix.id))
+            !AcademicRulesEngine.isCourseExcludedFromGPA(c.code)
         );
         const totalCredits = validCourses.reduce((sum, c) => sum + c.credits, 0);
         const currentPoints = validCourses.reduce((sum, c) => sum + (c.projectedGrade * c.credits), 0);

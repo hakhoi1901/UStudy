@@ -1,4 +1,4 @@
-import { Filter } from "lucide-react";
+import { Filter, History } from "lucide-react";
 import type { StudentCourseGrade } from "../../types";
 
 export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemesters, setSelectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string, uniqueSemesters: string[], setSelectedSemester: (semester: string) => void }) {
@@ -6,7 +6,8 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <h3 className="text-gray-900">Lịch sử điểm</h3>
+                    <History className="w-8 h-8 text-[#004A98]" />
+                    <h3 className="text-sm font-semibold text-gray-800">Lịch sử điểm</h3>
                     <span className="px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full">
                         {filteredHistory.length} môn
                     </span>

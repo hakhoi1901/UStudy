@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { X, CheckCircle2, ListFilter } from 'lucide-react';
+import { X, CheckCircle2, ListFilter, AlertTriangle } from 'lucide-react';
 import type { Course } from '../types';
 import { useDepartmentData } from '../context/DepartmentContext';
+import { FinancialLogic } from '../logic/FinancialLogic';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
+import { courses } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/courses';
+
 
 interface SelectionBasketViProps {
     selectedCourses: Course[];
@@ -15,42 +18,21 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse, allowedClas
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
     const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
     const totalCredits = selectedCourses.reduce((sum, course) => sum + course.credits, 0);
+    const missingMetaCourses: string[] = [];
 
     const estimatedTuition = selectedCourses.reduce((sum, course) => {
-        let pricePerCredit = tuition_rates.default_price;
-        const id = course.code.trim().toUpperCase();
+        const { courseFee, missingMeta } = FinancialLogic.calculateCourseFee(
+            course.code, course.credits, tuition_rates, allCoursesMeta
+        );
+        course.price = courseFee;
 
-        // Find rate based on subject prefix (longest prefix match)
-        const sortedKeys = Object.keys(tuition_rates.rates).sort((a, b) => b.length - a.length);
-        for (const key of sortedKeys) {
-            if (id.startsWith(key)) {
-                pricePerCredit = (tuition_rates.rates as any)[key];
-                break;
-            }
+        if (missingMeta) {
+            missingMetaCourses.push(course.code);
         }
 
-        // Find billing credits (based on total hours / 15)
-        let billingCredits = course.credits || 0;
-        const meta = allCoursesMeta.find(c => c.course_id === id);
-        if (meta) {
-            const lt = parseInt(meta.theory_hours as any) || 0;
-            const th = parseInt(meta.lab_hours as any) || 0;
-            const bt = parseInt(meta.exercise_hours as any) || 0;
-            const totalHours = lt + th + bt;
-            if (totalHours > 0) {
-                billingCredits = totalHours / 15;
-            }
-        }
-
-        course.price = billingCredits * pricePerCredit;
-
-        return sum + (billingCredits * pricePerCredit);
+        return sum + courseFee;
     }, 0);
-
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('vi-VN').format(amount);
-    };
+    const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
     return (
         <div className="w-80 bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col max-h-[calc(100vh-140px)]">
@@ -87,7 +69,11 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse, allowedClas
                                     {course.code}
                                 </p>
                                 <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
-                                <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number)} đ</p>
+                                {course.price !== 0
+                                    ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number) + ' đ'}</p>
+                                    : <p className="text-xs text-red-600 truncate">Hệ thống không tìm thấy học phí</p>
+                                }
+
                                 <div className="flex items-center gap-2 mt-1.5">
                                     <span className="text-xs text-gray-500">{course.credits} tín chỉ</span>
                                     {course.needsRetake && (
@@ -147,12 +133,24 @@ export function SelectionBasketVi({ selectedCourses, onRemoveCourse, allowedClas
                 </div>
 
                 {/* Tuition Summary */}
-                <div className="mb-4 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-                    <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
-                    <p className="text-2xl font-bold text-[#004A98]">
-                        {formatCurrency(estimatedTuition)}
-                    </p>
-                    <p className="text-[10px] text-gray-500 mt-1">VNĐ (đã bao gồm các khoản phí)</p>
+                <div className="mb-4">
+                    {missingMetaCourses.length > 0 && (
+                        <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700">
+                            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <div className="text-xs">
+                                <p className="font-semibold mb-0.5">Không tìm thấy thông tin học phí của môn học:</p>
+                                <p className="font-mono">{missingMetaCourses.join(', ')}</p>
+                                <p className="mt-1 text-red-600">Đang tạm tính: 0₫</p>
+                            </div>
+                        </div>
+                    )}
+                    <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                        <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
+                        <p className="text-2xl font-bold text-[#004A98]">
+                            {formatCurrency(estimatedTuition)}
+                        </p>
+                        <p className="text-[10px] text-gray-500 mt-1">VNĐ (đã bao gồm các khoản phí)</p>
+                    </div>
                 </div>
 
                 {/* Confirm Button */}

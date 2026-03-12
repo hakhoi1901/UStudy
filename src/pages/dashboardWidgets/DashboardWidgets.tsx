@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 import { useStudentGradeData } from '../../hooks/useStudentGradeData';
 import { NoDataCard } from '../../components/nodataCard';
-import { GPA_CONFIG, ACADEMIC_RULES } from '../../config';
+import { ACADEMIC_RULES } from '../../config';
 import { CardFooter } from '../../components/ui/card';
+import { FinancialLogic } from '../../logic/FinancialLogic';
+import { GPACalculator } from '../../logic/GPACalculator';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
-  const [gpaStatus, setGpaStatus] = useState('');
   const { currentGPA, accumulatedCredits, totalCredits, estimatedTuition, isReady, hasData } = useStudentGradeData();
   const [tuitionDueDate, setTuitionDueDate] = useState('NaN');
 
@@ -34,22 +35,9 @@ export function DashboardWidgets() {
   const gpaPercentage = (currentGPA / ACADEMIC_RULES.MAX_GPA) * 100;
   const creditsPercentage = Math.min((accumulatedCredits / safeTotalCredits) * 100, 100);
 
-  // format tiền tệ
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount || 0);
-  };
-
-  useEffect(() => {
-    for (const gpa of GPA_CONFIG) {
-      if (currentGPA >= gpa.value) {
-        setGpaStatus(gpa.lable);
-        break;
-      }
-    }
-  }, [currentGPA]);
+  // Dùng centralized formatCurrency và GPACalculator
+  const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount, 'currency');
+  const gpaStatus = useMemo(() => GPACalculator.getClassification(currentGPA), [currentGPA]);
 
   if (!isMounted) {
     return null;

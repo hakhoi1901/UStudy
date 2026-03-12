@@ -16,4 +16,6 @@ export interface Course {
     theory_hours?: number;
     lab_hours?: number;
     exercise_hours?: number;
+    recommendationStatus?: string;
+    isOpen?: boolean;
 }

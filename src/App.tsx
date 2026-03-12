@@ -5,20 +5,30 @@ import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/Integrate
 import { GradeManagement } from './pages/gradeManagement/GradeManagement';
 import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Setting } from './pages/setting/Setting';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
+import { readFromStorage, saveToStorage } from './helpers/localStorage/save';
+import { STORAGE_KEYS } from './config/storageKeys';
 
 
 function AppContent() {
-  {/* Trang hiện tại */ }
-  const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const { semesterNumber, academicYear } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
+
+  const [currentPage, setCurrentPage] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'dashboard';
+    const savedPage = sessionStorage.getItem(STORAGE_KEYS.PAGE);
+    return savedPage ? savedPage : 'dashboard';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEYS.PAGE, currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
