@@ -58,7 +58,8 @@ export function IntegratedStudyRoadmap() {
     // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
     const currentSource = viewMode === 'recommend' ? recommended : all;
 
-    const allCurrentCourses = [...currentSource.core, ...currentSource.major, ...currentSource.electives];
+
+    const globalAllCourses = [...all.core, ...all.major, ...all.electives];
 
     // Xử lý chọn môn học
     const handleCourseToggle = (courseId: string) => {
@@ -173,10 +174,10 @@ export function IntegratedStudyRoadmap() {
                         </div>
 
                         {/* CỘT PHẢI: Giỏ hàng */}
-                        <div className="hidden lg:block sticky top-6 w-[350px] flex-shrink-0">
+                        <div className="lg:block sticky top-6 w-[350px] flex-shrink-0">
                             <SelectionBasketVi
                                 selectedCourses={Array.from(selectedCourses)
-                                    .map(id => allCurrentCourses.find(c => c.id === id)!)
+                                    .map(id => globalAllCourses.find(c => c.id === id)!)
                                     .filter(Boolean)}
                                 onRemoveCourse={handleCourseToggle}
                             />
@@ -192,7 +193,7 @@ export function IntegratedStudyRoadmap() {
                         currentSections={currentSections}
                         activeOption={activeOption}
                         options={options}
-                        allCurrentCourses={allCurrentCourses as Course[]}
+                        allCurrentCourses={globalAllCourses as Course[]}
                         solve={solve}
                         solving={solving}
                         solverError={solverError}
@@ -202,11 +203,10 @@ export function IntegratedStudyRoadmap() {
                 )}
             </div>
 
-            {/* Modal Sơ đồ Tiên quyết */}
             {showFlowchart && flowchartCourse && (
                 <PrerequisiteFlowchart
                     course={flowchartCourse}
-                    allCourses={allCurrentCourses as Course[]}
+                    allCourses={globalAllCourses as Course[]}
                     onClose={() => setShowFlowchart(false)}
                 />
             )}

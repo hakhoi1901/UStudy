@@ -34,10 +34,6 @@ export const categories = {
         "mandatory": true,
         "note": "Toán: 24 TC (bắt buộc) + 4 TC (chọn 1/3) + Khoa học: 6 TC + Môi trường: 2 TC",
         "breakdown": {
-          "GENERAL_MATH_SCIENCE": {
-            "name": "Toán – Khoa học tự nhiên – Môi trường",
-            "total_credits_required": 36,
-            "breakdown": {
               "MATH_MANDATORY": {
                 "name": "Toán bắt buộc",
                 "credits_required": 24,
@@ -80,8 +76,6 @@ export const categories = {
                 ]
               }
             }
-          }
-        }
       },
       "GENERAL_IT": {
         "name": "Tin học",
