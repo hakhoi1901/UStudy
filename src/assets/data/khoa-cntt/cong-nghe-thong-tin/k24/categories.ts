@@ -34,6 +34,7 @@ export const categories = {
         "mandatory": true,
         "note": "Toán: 24 TC (bắt buộc) + 4 TC (chọn 1/3) + Khoa học: 6 TC + Môi trường: 2 TC",
         "breakdown": {
+<<<<<<< HEAD
           "MATH_MANDATORY": {
             "name": "Toán bắt buộc",
             "credits_required": 24,
@@ -76,6 +77,50 @@ export const categories = {
             ]
           }
         }
+=======
+              "MATH_MANDATORY": {
+                "name": "Toán bắt buộc",
+                "credits_required": 24,
+                "courses": ["MTH00021", "MTH00022", "MTH00035", "MTH00044", "MTH00045", "MTH00050"]
+              },
+              "MATH_ELECTIVE": {
+                "name": "Toán tự chọn",
+                "credits_required": 4,
+                "note": "Chọn 1 trong 3",
+                "courses": [
+                  "MTH00051",
+                  "MTH00052",
+                  "MTH00053"
+                ]
+              },
+              "SCIENCE": {
+                "name": "Khoa học tự nhiên",
+                "credits_required": 6,
+                "note": "Chọn đủ 6 tín chỉ",
+                "courses": [
+                  "CHE00001",
+                  "CHE00002",
+                  "CHE00081",
+                  "CHE00082",
+                  "BIO00081",
+                  "BIO00082",
+                  "PHY00001",
+                  "PHY00002",
+                  "PHY00081"
+                ]
+              },
+              "ENVIRONMENT": {
+                "name": "Môi trường",
+                "credits_required": 2,
+                "note": "Chọn 1 trong 3 môn",
+                "courses": [
+                  "GEO00002",
+                  "ENV00001",
+                  "ENV00003"
+                ]
+              }
+            }
+>>>>>>> feature/fix-ui
       },
       "GENERAL_IT": {
         "name": "Tin học",
