@@ -179,7 +179,7 @@ export function CourseRowTrainingProgram({
               </div>
             </div>
             {course.description && (
-              <div className="pt-3 border-t border-gray-200">
+              <div className="pt-3 border-t p-2 border-gray-200">
                 <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium">Ghi chú từ CTĐT</p>
                 <p className="text-gray-800 leading-relaxed">{course.description}</p>
               </div>

@@ -46,11 +46,11 @@ const RAW_FACULTIES = [
         majors: [
             { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)', dataSource: { 'k25': 'k24' } },
             { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSource: { 'k25': 'k24' } },
-            // { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSource: { 'k25': 'k24' } },
-            // { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },
+            { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },
             { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSource: { 'k25': 'k24' } },
-            // { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
-            // { id: 'cu-nhan-tai-nang-cntt', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
+            { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
+            { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
@@ -58,9 +58,12 @@ const RAW_FACULTIES = [
         name: 'Khoa Vật lý - Vật lý Kỹ thuật',
         majors: [
             { id: 'vat-ly-hoc', name: 'Vật lý học', dataSource: { 'k25': 'k24' } },
+            { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa', dataSource: { 'k25': 'k24' } },
             { id: 'vat-ly-ky-thuat', name: 'Vật lý kỹ thuật', dataSource: { 'k25': 'k24' } },
             { id: 'hai-duong-hoc', name: 'Hải dương học', dataSource: { 'k25': 'k24' } },
             { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân', dataSource: { 'k25': 'k24' } },
+            { id: 'cn-vat-ly-dien-tu-va-tin-hoc', name: 'CN Vật lý điện tử và tin học', dataSource: { 'k25': 'k24' } },
+            { id: 'cn-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
         ],
     },
     // {
@@ -95,7 +98,7 @@ export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({
  * Giá trị mặc định khi người dùng chưa chọn.
  */
 export const DEFAULT_FACULTY_ID = 'khoa-cntt';
-export const DEFAULT_MAJOR_ID = 'khoa-hoc-may-tinh';
+export const DEFAULT_MAJOR_ID = 'cong-nghe-thong-tin';
 export const DEFAULT_COHORT_ID = 'k24';
 
 /**
