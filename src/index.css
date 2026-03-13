@@ -3361,4 +3361,37 @@ html {
       --tw-ring-inset: inset;
     }
   }
+
+  /* --- Lớp dành cho WebKit (Chrome, Edge, Safari) --- */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    /* Làm thanh cuộn cực mỏng */
+  }
+
+  /* Phần nền dưới thanh cuộn (Track) */
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    /* Trong suốt để tiệp màu nền xanh của Sidebar */
+  }
+
+  /* Cục nắm kéo (Thumb) */
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    /* Trắng mờ */
+    border-radius: 10px;
+    /* Bo góc tròn mềm mại */
+  }
+
+  /* Khi hover chuột vào cục nắm kéo */
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* --- Lớp dành cho Firefox (chuẩn mới) --- */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+
 }
