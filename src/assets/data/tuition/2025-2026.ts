@@ -27,21 +27,33 @@ export const tuition_2025_2026 = {
         BIO: 639000,
         GEO: 639000,
         ENV: 639000,
+        OMH: 639000,
         CSC0: 639000,
+
+        // Tin học cơ sở
+        CSC00003: 425000,
     },
 
     // Đơn giá riêng theo ngành
     majors: {
         'nhom-nganh': { CSC1: 857000 },
         'cong-nghe-thong-tin': { CSC1: 857000 },
-        'he-thong-thong-tin': { CSC1: 857000 },
+        'he-thong-thong-tin': { CSC1: 857000 }, // done
         'ky-thuat-phan-mem': { CSC1: 857000 },
         'khoa-hoc-may-tinh': { CSC1: 857000 },
         'tri-tue-nhan-tao': { CSC1: 891000 },
         'cu-nhan-tai-nang-cntt': { CSC1: 857000 },
 
-        'mang-may-tinh': { CSC1: 857000 },
+        'cong nghe ban dan': { PHY1: 825000, SEM1: 820000 },
+        'cn-vat-ly-dien-tu-va-tin-hoc': { PHY1: 782000, PET1: 782000 },
+        'hai-duong-hoc': { OMH1: 639000 },
+        'ky-thuat-hat-nhan': { PHY1: 670000, NET1: 670000 },
+        'vat-ly-hoc': { PHY1: 639000 },
+        'vat-ly-y-khoa': { PHY1: 809000, MPH: 809000 },
+
         'sinh-hoc': { BIO1: 854000 },
+        'cong-nghe-sinh-hoc': { BIO1: 903000, BTE1: 903000 },
+
         'toan-hoc': { MTH1: 965000 },
         'toan-tin': { MTH1: 898000 },
         'toan-ung-dung': { MTH1: 902000 },

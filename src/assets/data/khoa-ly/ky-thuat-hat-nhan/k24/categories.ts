@@ -61,48 +61,48 @@ export const categories = {
             ]
           }
         }
+      },
+      "GENERAL_IT": {
+        "name": "Tin học (Tin học cơ sở)",
+        "credits": 3,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "CSC00003"
+        ]
+      },
+      "GENERAL_ENGLISH": {
+        "name": "Ngoại ngữ (Anh văn)",
+        "credits": 12,
+        "mandatory": false,
+        "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học",
+        "courses": [
+          "ADD00031",
+          "ADD00032",
+          "ADD00033",
+          "ADD00034"
+        ]
+      },
+      "GENERAL_PE": {
+        "name": "Giáo dục thể chất",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "BAA00021",
+          "BAA00022"
+        ]
+      },
+      "GENERAL_DEFENSE": {
+        "name": "Giáo dục quốc phòng - An ninh",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "BAA00030"
+        ]
       }
     }
-  },
-  "GENERAL_IT": {
-    "name": "Tin học (Tin học cơ sở)",
-    "credits": 3,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "CSC00003"
-    ]
-  },
-  "GENERAL_ENGLISH": {
-    "name": "Ngoại ngữ (Anh văn)",
-    "credits": 12,
-    "mandatory": false,
-    "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học",
-    "courses": [
-      "ADD00031",
-      "ADD00032",
-      "ADD00033",
-      "ADD00034"
-    ]
-  },
-  "GENERAL_PE": {
-    "name": "Giáo dục thể chất",
-    "credits": 4,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "BAA00021",
-      "BAA00022"
-    ]
-  },
-  "GENERAL_DEFENSE": {
-    "name": "Giáo dục quốc phòng - An ninh",
-    "credits": 4,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "BAA00030"
-    ]
   },
   "FOUNDATION": {
     "name": "Kiến thức cơ sở ngành",
@@ -122,127 +122,133 @@ export const categories = {
       "NTE10001"
     ]
   },
-  "MAJOR_NUCLEAR_ENGINEERING": {
-    "name": "Chuyên ngành Kỹ thuật hạt nhân",
+  "MAJOR": {
+    "name": "Chuyên ngành",
     "total_credits_required": 41,
     "breakdown": {
-      "MANDATORY": {
-        "credits": 35,
-        "courses": [
-          "NTE10101",
-          "NTE10102",
-          "NTE10103",
-          "NTE10104",
-          "NTE10105",
-          "NTE10106",
-          "NTE10108",
-          "NTE10111",
-          "NTE10112",
-          "NTE10113",
-          "NTE10114",
-          "NTE10115",
-          "NTE10116",
-          "NTE10117"
-        ]
+      "MAJOR_NUCLEAR_ENGINEERING": {
+        "name": "Chuyên ngành Kỹ thuật hạt nhân",
+        "total_credits_required": 41,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 35,
+            "courses": [
+              "NTE10101",
+              "NTE10102",
+              "NTE10103",
+              "NTE10104",
+              "NTE10105",
+              "NTE10106",
+              "NTE10108",
+              "NTE10111",
+              "NTE10112",
+              "NTE10113",
+              "NTE10114",
+              "NTE10115",
+              "NTE10116",
+              "NTE10117"
+            ]
+          },
+          "ELECTIVE": {
+            "credits": 6,
+            "courses": [
+              "NTE10107",
+              "NTE10109",
+              "NTE10110",
+              "NTE10118",
+              "MPH10109",
+              "PHY10801",
+              "NTE10119",
+              "NTE10120",
+              "NTE10121",
+              "NTE10122",
+              "NTE10123",
+              "NTE10124",
+              "PHY10322",
+              "PHY10426"
+            ]
+          }
+        }
       },
-      "ELECTIVE": {
-        "credits": 6,
-        "courses": [
-          "NTE10107",
-          "NTE10109",
-          "NTE10110",
-          "NTE10118",
-          "MPH10109",
-          "PHY10801",
-          "NTE10119",
-          "NTE10120",
-          "NTE10121",
-          "NTE10122",
-          "NTE10123",
-          "NTE10124",
-          "PHY10322",
-          "PHY10426"
-        ]
-      }
-    }
-  },
-  "MAJOR_NUCLEAR_POWER": {
-    "name": "Chuyên ngành Năng lượng và điện hạt nhân",
-    "total_credits_required": 41,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 35,
-        "courses": [
-          "NTE10101",
-          "NTE10102",
-          "NTE10103",
-          "NTE10104",
-          "NTE10105",
-          "NTE10106",
-          "NTE10108",
-          "NTE10110",
-          "NTE10111",
-          "NTE10112",
-          "NTE10201",
-          "NTE10202",
-          "NTE10203",
-          "NTE10204"
-        ]
+      "MAJOR_NUCLEAR_POWER": {
+        "name": "Chuyên ngành Năng lượng và điện hạt nhân",
+        "total_credits_required": 41,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 35,
+            "courses": [
+              "NTE10101",
+              "NTE10102",
+              "NTE10103",
+              "NTE10104",
+              "NTE10105",
+              "NTE10106",
+              "NTE10108",
+              "NTE10110",
+              "NTE10111",
+              "NTE10112",
+              "NTE10201",
+              "NTE10202",
+              "NTE10203",
+              "NTE10204"
+            ]
+          },
+          "ELECTIVE": {
+            "credits": 6,
+            "courses": [
+              "NTE10107",
+              "NTE10205",
+              "NTE10117",
+              "NTE10109",
+              "NTE10116",
+              "PHY10801",
+              "PHY10322",
+              "NTE10121",
+              "NTE10122",
+              "NTE10123",
+              "NTE10124"
+            ]
+          }
+        }
       },
-      "ELECTIVE": {
-        "credits": 6,
-        "courses": [
-          "NTE10107",
-          "NTE10205",
-          "NTE10117",
-          "NTE10109",
-          "NTE10116",
-          "PHY10801",
-          "PHY10322",
-          "NTE10121",
-          "NTE10122",
-          "NTE10123",
-          "NTE10124"
-        ]
-      }
-    }
-  },
-  "MAJOR_MEDICAL_PHYSICS": {
-    "name": "Chuyên ngành Vật lý y khoa",
-    "total_credits_required": 40,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 34,
-        "courses": [
-          "NTE10101",
-          "NTE10102",
-          "NTE10103",
-          "NTE10104",
-          "NTE10105",
-          "MPH10106",
-          "MPH10107",
-          "MPH10108",
-          "MPH10109",
-          "MPH10110",
-          "MPH10111",
-          "MPH10112"
-        ]
-      },
-      "ELECTIVE": {
-        "credits": 6,
-        "courses": [
-          "NTE10106",
-          "NTE10107",
-          "NTE10108",
-          "NTE10109",
-          "NTE10118",
-          "MPH10120",
-          "PHY10801",
-          "NTE10119",
-          "NTE10121",
-          "NTE10123",
-          "NTE10124"
-        ]
+      "MAJOR_MEDICAL_PHYSICS": {
+        "name": "Chuyên ngành Vật lý y khoa",
+        "total_credits_required": 40,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 34,
+            "courses": [
+              "NTE10101",
+              "NTE10102",
+              "NTE10103",
+              "NTE10104",
+              "NTE10105",
+              "MPH10106",
+              "MPH10107",
+              "MPH10108",
+              "MPH10109",
+              "MPH10110",
+              "MPH10111",
+              "MPH10112"
+            ]
+          },
+          "ELECTIVE": {
+            "credits": 6,
+            "courses": [
+              "NTE10106",
+              "NTE10107",
+              "NTE10108",
+              "NTE10109",
+              "NTE10118",
+              "MPH10120",
+              "PHY10801",
+              "NTE10119",
+              "NTE10121",
+              "NTE10123",
+              "NTE10124"
+            ]
+          }
+        }
       }
     }
   },

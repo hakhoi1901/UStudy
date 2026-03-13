@@ -20,20 +20,25 @@ const COLOR_LEGEND = [
 
 // ==================== HELPER FUNCTIONS ====================
 
+function calculateRowSpan(session: ScheduleSession): number {
+  if ((session.type === 'TH' || session.type === 'BT') && [2, 2.5, 3].includes(session.duration)) {
+    return 2;
+  }
+  return Math.ceil(session.duration);
+}
+
 function getSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession | null {
-  return sessions.find(s =>
-    s.dayOfWeek === day &&
-    Math.floor(s.startPeriod) <= period &&
-    Math.ceil(s.endPeriod) >= period
-  ) || null;
+  return sessions.find(s => {
+    if (s.dayOfWeek !== day) return false;
+    const start = Math.floor(s.startPeriod);
+    const span = calculateRowSpan(s);
+    const end = start + span - 1;
+    return period >= start && period <= end;
+  }) || null;
 }
 
 function shouldRenderCell(session: ScheduleSession, period: number): boolean {
   return Math.floor(session.startPeriod) === period;
-}
-
-function calculateRowSpan(session: ScheduleSession): number {
-  return Math.ceil(session.duration);
 }
 
 // Get current day of week (2-7) and time
@@ -153,7 +158,7 @@ function ColorLegend() {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
       <div className="flex items-center gap-6 flex-wrap">
-        <span className="text-sm font-medium text-gray-700">🎨 Màu sắc môn học:</span>
+        <span className="text-sm font-medium text-gray-700">Màu môn học:</span>
         {COLOR_LEGEND.map((item) => (
           <div key={item.color} className="flex items-center gap-2">
             <div className={`w-4 h-4 rounded border-2 ${item.bgClass} ${item.borderClass}`} />
@@ -186,13 +191,17 @@ function CourseCard({ session }: { session: ScheduleSession }) {
   };
 
   // Tính toán % height và offset top cho các block không nguyên (VD: 2.5 tiết)
-  const rowSpan = Math.ceil(session.duration);
-  const heightPercent = (session.duration / rowSpan) * 100;
+  const rowSpan = calculateRowSpan(session);
 
-  // Nếu session bắt đầu ở giữa tiết (vd: 3.5), offset top xuống (0.5 / rowSpan) * 100%
-  const isFractionalStart = session.startPeriod % 1 !== 0;
+  let heightPercent = (session.duration / rowSpan) * 100;
   let topOffsetPercent = 0;
-  if (isFractionalStart) {
+  const isFractionalStart = session.startPeriod % 1 !== 0;
+
+  // Rule đặc biệt: TH và BT (2, 2.5, 3 tiết) vẽ cố định 2 ô full
+  if ((session.type === 'TH' || session.type === 'BT') && [2, 2.5, 3].includes(session.duration)) {
+    heightPercent = 100;
+    topOffsetPercent = 0;
+  } else if (isFractionalStart) {
     topOffsetPercent = (0.5 / rowSpan) * 100;
   }
 

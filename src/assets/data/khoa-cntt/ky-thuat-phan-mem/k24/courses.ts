@@ -73,8 +73,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_DEFENSE",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 01 học phần (02 tín chỉ) trong các học phần sau"
     },
     {
         "course_id": "BAA00006",
@@ -84,8 +84,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_DEFENSE",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 01 học phần (02 tín chỉ) trong các học phần sau"
     },
     {
         "course_id": "BAA00007",
@@ -95,8 +95,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_DEFENSE",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 01 học phần (02 tín chỉ) trong các học phần sau"
     },
     {
         "course_id": "MTH00021",
@@ -173,7 +173,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 01 học phần (04 tín chỉ) từ các học phần toán học sau"
     },
     {
         "course_id": "MTH00052",
@@ -184,7 +184,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 01 học phần (04 tín chỉ) từ các học phần toán học sau"
     },
     {
         "course_id": "MTH00053",
@@ -195,7 +195,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 01 học phần (04 tín chỉ) từ các học phần toán học sau"
     },
     {
         "course_id": "CHE00001",
@@ -206,7 +206,7 @@ export const courses = [
         "exercise_hours": 30,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "CHE00002",
@@ -217,7 +217,7 @@ export const courses = [
         "exercise_hours": 30,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "CHE00081",
@@ -228,7 +228,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "CHE00082",
@@ -239,29 +239,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
-    },
-    {
-        "course_id": "BIO00001",
-        "course_name_vi": "Sinh đại cương 1",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
-    },
-    {
-        "course_id": "BIO00002",
-        "course_name_vi": "Sinh đại cương 2",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "BIO00081",
@@ -272,7 +250,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "BIO00082",
@@ -283,7 +261,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "PHY00001",
@@ -294,7 +272,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "PHY00002",
@@ -305,7 +283,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "PHY00081",
@@ -316,7 +294,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "GEO00002",
@@ -326,8 +304,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "OTHER",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 01 học phần (02 tín chỉ) từ các học phần sau"
     },
     {
         "course_id": "ENV00001",
@@ -337,8 +315,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "OTHER",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 01 học phần (02 tín chỉ) từ các học phần sau"
     },
     {
         "course_id": "ENV00003",
@@ -348,8 +326,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "OTHER",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 01 học phần (02 tín chỉ) từ các học phần sau"
     },
     {
         "course_id": "CSC00004",
@@ -369,9 +347,9 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
+        "course_type": "TC",
         "category": "GENERAL_ENGLISH",
-        "description": ""
+        "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
     },
     {
         "course_id": "ADD00032",
@@ -380,9 +358,9 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
+        "course_type": "TC",
         "category": "GENERAL_ENGLISH",
-        "description": ""
+        "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
     },
     {
         "course_id": "ADD00033",
@@ -391,9 +369,9 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
+        "course_type": "TC",
         "category": "GENERAL_ENGLISH",
-        "description": ""
+        "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
     },
     {
         "course_id": "ADD00034",
@@ -402,9 +380,9 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
+        "course_type": "TC",
         "category": "GENERAL_ENGLISH",
-        "description": ""
+        "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
     },
     {
         "course_id": "BAA00021",
@@ -550,6 +528,655 @@ export const courses = [
         "description": ""
     },
     {
+        "course_id": "CSC11002",
+        "course_name_vi": "Hệ thống viễn thông",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11003",
+        "course_name_vi": "Lập trình mạng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11004",
+        "course_name_vi": "Mạng máy tính nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11006",
+        "course_name_vi": "Nhập môn điện toán đám mây",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11007",
+        "course_name_vi": "Nhập môn DevOps",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC15001",
+        "course_name_vi": "An ninh máy tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC10107",
+        "course_name_vi": "Thực tập thực tế",
+        "credits": 4,
+        "theory_hours": 30,
+        "lab_hours": 60,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_ELECTIVE",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC11106",
+        "course_name_vi": "Truyền thông không dây",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11115",
+        "course_name_vi": "An ninh mạng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11116",
+        "course_name_vi": "DevOps nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11117",
+        "course_name_vi": "Hệ điều hành Linux và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11118",
+        "course_name_vi": "Triển khai và vận hành điện toán đám mây",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC11120",
+        "course_name_vi": "Bảo mật web và thiết bị di động",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+    },
+    {
+        "course_id": "CSC15003",
+        "course_name_vi": "Mã hóa ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15005",
+        "course_name_vi": "Nhập môn mã hóa – mật mã",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC12002",
+        "course_name_vi": "Cơ sở dữ liệu nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_REQUIRED",
+        "description": "thuộc 7.2.2.1. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC12004",
+        "course_name_vi": "Phân tích thiết kế hệ thống thông tin",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_REQUIRED",
+        "description": "thuộc 7.2.2.1. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC13003",
+        "course_name_vi": "Kiểm thử phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13106",
+        "course_name_vi": "Kiến trúc phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC14004",
+        "course_name_vi": "Khai thác dữ liệu và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14005",
+        "course_name_vi": "Nhập môn học máy",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14119",
+        "course_name_vi": "Nhập môn khoa học dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC15004",
+        "course_name_vi": "Học thống kê",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15007",
+        "course_name_vi": "Thống kê máy tính và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15006",
+        "course_name_vi": "Nhập môn xử lý ngôn ngữ tự nhiên",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15011",
+        "course_name_vi": "Nhập môn ngôn ngữ học thống kê và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC16004",
+        "course_name_vi": "Thị giác máy tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16005",
+        "course_name_vi": "Xử lý ảnh số và video số",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC12003",
+        "course_name_vi": "Hệ quản trị cơ sở dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_REQUIRED",
+        "description": "thuộc 7.2.2.1. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC12005",
+        "course_name_vi": "Phát triển ứng dụng hệ thống thông tin hiện đại",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_REQUIRED",
+        "description": "thuộc 7.2.2.1. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC12105",
+        "course_name_vi": "Thương mại điện tử",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_ELECTIVE",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC17106",
+        "course_name_vi": "Xử lý phân tích dữ liệu trực tuyến",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_ELECTIVE",
+        "description": "thuộc 7.2.2.5.2. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC13006",
+        "course_name_vi": "Quản lý dự án phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13008",
+        "course_name_vi": "Phát triển ứng dụng web",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13010",
+        "course_name_vi": "Thiết kế phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13112",
+        "course_name_vi": "Thiết kế giao diện",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC14101",
+        "course_name_vi": "Ấn dữ liệu và chia sẻ thông tin",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14111",
+        "course_name_vi": "Nhập môn thiết kế và phân tích giải thuật",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14120",
+        "course_name_vi": "Lập trình song song",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14117",
+        "course_name_vi": "Nhập môn lập trình kết nối vạn vật",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC14118",
+        "course_name_vi": "Nhập môn dữ liệu lớn",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
+    },
+    {
+        "course_id": "CSC17001",
+        "course_name_vi": "Phân tích dữ liệu thông minh",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC17104",
+        "course_name_vi": "Lập trình cho khoa học dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC15107",
+        "course_name_vi": "Phân tích dữ liệu bảo toàn tính riêng tư",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15012",
+        "course_name_vi": "Ứng dụng xử lý ngôn ngữ tự nhiên trong doanh nghiệp",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15002",
+        "course_name_vi": "Bảo mật cơ sở dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15010",
+        "course_name_vi": "Blockchain và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC12001",
+        "course_name_vi": "An toàn và bảo mật dữ liệu trong hệ thống thông tin",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_ELECTIVE",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC16003",
+        "course_name_vi": "Phân tích thống kê dữ liệu nhiều biến",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16106",
+        "course_name_vi": "Nhập môn lập trình điều khiển thiết bị thông minh",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16107",
+        "course_name_vi": "Ứng dụng thị giác máy tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16109",
+        "course_name_vi": "Ứng dụng xử lý ảnh số và video số",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC11114",
+        "course_name_vi": "Ứng dụng dịch vụ điện toán đám mây cho doanh nghiệp",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC12112",
+        "course_name_vi": "Môi trường và công cụ cho tiếp thị số",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC12113",
+        "course_name_vi": "Nhập môn quản trị mối quan hệ khách hàng - sản phẩm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC13119",
+        "course_name_vi": "Lập trình Web 1",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC13120",
+        "course_name_vi": "Lập trình Web 2",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC13121",
+        "course_name_vi": "Lập trình ứng dụng quản lý 1",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC13122",
+        "course_name_vi": "Lập trình ứng dụng quản lý 2",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_IT",
+        "description": ""
+    },
+    {
         "course_id": "CSC10251",
         "course_name_vi": "Khóa luận tốt nghiệp",
         "credits": 10,
@@ -583,103 +1210,92 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "CSC13003",
-        "course_name_vi": "Kiểm thử phần mềm",
+        "course_id": "CSC11111",
+        "course_name_vi": "Chuyên đề tốt nghiệp Mạng máy tính",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "description": "thuộc 7.2.3.1. CTĐT CNTTin (MMT)"
     },
     {
-        "course_id": "CSC13005",
-        "course_name_vi": "Phân tích và quản lý yêu cầu phần mềm",
+        "course_id": "CSC11112",
+        "course_name_vi": "Chuyên đề Hệ thống phân tán",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "description": "thuộc 7.2.3.1. CTĐT CNTTin (MMT)"
     },
     {
-        "course_id": "CSC13006",
-        "course_name_vi": "Quản lý dự án phần mềm",
+        "course_id": "CSC11119",
+        "course_name_vi": "Chuyên đề phân tích mạng",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "description": "thuộc 7.2.3.1. CTĐT CNTTin (MMT)"
     },
     {
-        "course_id": "CSC13007",
-        "course_name_vi": "Phát triển game",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
+        "course_id": "CSC10202",
+        "course_name_vi": "Chuyên đề Tổ chức dữ liệu",
+        "credits": 6,
+        "theory_hours": 60,
+        "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": ""
     },
     {
-        "course_id": "CSC13008",
-        "course_name_vi": "Phát triển ứng dụng web",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
+        "course_id": "CSC10203",
+        "course_name_vi": "Chuyên đề Thiết kế phần mềm nâng cao",
+        "credits": 6,
+        "theory_hours": 60,
+        "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": ""
     },
     {
-        "course_id": "CSC13009",
-        "course_name_vi": "Phát triển phần mềm cho thiết bị di động",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
+        "course_id": "CSC13123",
+        "course_name_vi": "Đồ án Phần mềm",
+        "credits": 6,
+        "theory_hours": 60,
+        "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": ""
     },
     {
-        "course_id": "CSC13010",
-        "course_name_vi": "Thiết kế phần mềm",
-        "credits": 4,
+        "course_id": "BIO00001",
+        "course_name_vi": "Sinh đại cương 1",
+        "credits": 3,
         "theory_hours": 45,
-        "lab_hours": 30,
+        "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
-        "course_id": "CSC13106",
-        "course_name_vi": "Kiến trúc phần mềm",
-        "credits": 4,
+        "course_id": "BIO00002",
+        "course_name_vi": "Sinh đại cương 2",
+        "credits": 3,
         "theory_hours": 45,
-        "lab_hours": 30,
+        "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13112",
-        "course_name_vi": "Thiết kế giao diện",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 06 tín chỉ từ các học phần khoa học tự nhiên sau"
     },
     {
         "course_id": "CSC10121",
@@ -689,8 +1305,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
         "course_id": "CSC10102",
@@ -700,8 +1316,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
         "course_id": "CSC10103",
@@ -711,8 +1327,19 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC10104",
+        "course_name_vi": "Quy hoạch tuyến tỉnh",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
         "course_id": "CSC10105",
@@ -722,183 +1349,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC10107",
-        "course_name_vi": "Thực tập thực tế",
-        "credits": 4,
-        "theory_hours": 30,
-        "lab_hours": 60,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13001",
-        "course_name_vi": "Lập trình Windows",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13101",
-        "course_name_vi": "Các chủ đề nâng cao trong Công nghệ phần mềm",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13102",
-        "course_name_vi": "Lập trình ứng dụng Java",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13103",
-        "course_name_vi": "Nhập môn hệ thống phân tán",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13107",
-        "course_name_vi": "Mẫu thiết kế hướng đối tượng và ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13117",
-        "course_name_vi": "Phát triển game nâng cao",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13114",
-        "course_name_vi": "Phát triển ứng dụng web nâng cao",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.3. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13115",
-        "course_name_vi": "Các công nghệ mới trong phát triển phần mềm",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.3. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13116",
-        "course_name_vi": "Đồ án Công nghệ phần mềm",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.3. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC13118",
-        "course_name_vi": "Phát triển ứng dụng cho thiết bị di động nâng cao",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.3. CTĐT KTPM"
-    },
-    {
-        "course_id": "CSC12002",
-        "course_name_vi": "Cơ sở dữ liệu nâng cao",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC12003",
-        "course_name_vi": "Hệ quản trị cơ sở dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC12004",
-        "course_name_vi": "Phân tích thiết kế hệ thống thông tin",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC12005",
-        "course_name_vi": "Phát triển ứng dụng hệ thống thông tin hiện đại",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC10104",
-        "course_name_vi": "Quy hoạch tuyến tính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "GRADUATION",
         "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
@@ -909,29 +1360,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC12001",
-        "course_name_vi": "An toàn và bảo mật dữ liệu trong hệ thống thông tin",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT HTTT"
-    },
-    {
-        "course_id": "CSC12105",
-        "course_name_vi": "Thương mại điện tử",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "GRADUATION",
         "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
@@ -942,7 +1371,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "GRADUATION",
         "description": "thuộc 7.2.2.2. CTĐT HTTT"
     },
     {
@@ -953,8 +1382,107 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "GRADUATION",
         "description": "thuộc 7.2.2.2. CTĐT HTTT"
+    },
+    {
+        "course_id": "CSC13005",
+        "course_name_vi": "Phân tích và quản lý yêu cầu phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13007",
+        "course_name_vi": "Phát triển game",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13009",
+        "course_name_vi": "Phát triển phần mềm cho thiết bị di động",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.1. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13001",
+        "course_name_vi": "Lập trình Windows",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13101",
+        "course_name_vi": "Các chủ đề nâng cao trong Công nghệ phần mềm",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13102",
+        "course_name_vi": "Lập trình ứng dụng Java",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13103",
+        "course_name_vi": "Nhập môn hệ thống phân tán",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13107",
+        "course_name_vi": "Mẫu thiết kế hướng đối tượng và ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
+    },
+    {
+        "course_id": "CSC13117",
+        "course_name_vi": "Phát triển game nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT KTPM"
     },
     {
         "course_id": "CSC18001",
@@ -964,7 +1492,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1. CTĐT TTNT"
     },
     {
@@ -975,7 +1503,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2. CTĐT TTNT"
     },
     {
@@ -986,7 +1514,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2. CTĐT TTNT"
     },
     {
@@ -997,8 +1525,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT TTNT"
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT TTNT (red star)"
     },
     {
         "course_id": "CSC18104",
@@ -1008,8 +1536,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2. CTĐT TTNT"
+        "category": "SPECIALIZED_NETWORK",
+        "description": "thuộc 7.2.2.2. CTĐT TTNT (red star)"
     },
     {
         "course_id": "CSC14001",
@@ -1019,7 +1547,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
     },
     {
@@ -1030,29 +1558,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14004",
-        "course_name_vi": "Khai thác dữ liệu và ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14005",
-        "course_name_vi": "Nhập môn học máy",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
     },
     {
@@ -1063,51 +1569,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14101",
-        "course_name_vi": "Ẩn dữ liệu và chia sẻ thông tin",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14111",
-        "course_name_vi": "Nhập môn thiết kế và phân tích giải thuật",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14118",
-        "course_name_vi": "Nhập môn dữ liệu lớn",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14120",
-        "course_name_vi": "Lập trình song song",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.1. CTĐT KHMT (KHMT)"
     },
     {
@@ -1118,7 +1580,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
     },
     {
@@ -1129,7 +1591,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
     },
     {
@@ -1140,7 +1602,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
     },
     {
@@ -1151,18 +1613,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
-    },
-    {
-        "course_id": "CSC14117",
-        "course_name_vi": "Nhập môn lập trình kết nối vạn vật",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.1.2. CTĐT KHMT (KHMT)"
     },
     {
@@ -1173,84 +1624,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15001",
-        "course_name_vi": "An ninh máy tính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15002",
-        "course_name_vi": "Bảo mật cơ sở dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15003",
-        "course_name_vi": "Mã hóa ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15004",
-        "course_name_vi": "Học thống kê",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15005",
-        "course_name_vi": "Nhập môn mã hóa – mật mã",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15006",
-        "course_name_vi": "Nhập môn xử lý ngôn ngữ tự nhiên",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15007",
-        "course_name_vi": "Thống kê máy tính và ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
     },
     {
@@ -1261,29 +1635,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15011",
-        "course_name_vi": "Nhập môn ngôn ngữ học thống kê và ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15012",
-        "course_name_vi": "Ứng dụng xử lý ngôn ngữ tự nhiên trong doanh nghiệp",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
     },
     {
@@ -1294,19 +1646,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2.1. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15010",
-        "course_name_vi": "Blockchain và ứng dụng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
     },
     {
         "course_id": "CSC15102",
@@ -1316,18 +1657,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
-    },
-    {
-        "course_id": "CSC15107",
-        "course_name_vi": "Phân tích dữ liệu bảo toàn tính riêng tư",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
     },
     {
@@ -1338,7 +1668,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.2.2. CTĐT KHMT (CNTThức)"
     },
     {
@@ -1349,7 +1679,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
     },
     {
@@ -1360,40 +1690,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16003",
-        "course_name_vi": "Phân tích thống kê dữ liệu nhiều biến",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16004",
-        "course_name_vi": "Thị giác máy tính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16005",
-        "course_name_vi": "Xử lý ảnh số và video số",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.1 CTĐT KHMT (TGMT)"
     },
     {
@@ -1404,7 +1701,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
     },
     {
@@ -1415,7 +1712,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
     },
     {
@@ -1426,40 +1723,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16106",
-        "course_name_vi": "Nhập môn lập trình điều khiển thiết bị thông minh",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16107",
-        "course_name_vi": "Ứng dụng thị giác máy tính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
-    },
-    {
-        "course_id": "CSC16109",
-        "course_name_vi": "Ứng dụng xử lý ảnh số và video số",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
     },
     {
@@ -1470,7 +1734,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
     },
     {
@@ -1481,7 +1745,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.3.2. CTĐT KHMT (TGMT)"
     },
     {
@@ -1493,40 +1757,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
-    },
-    {
-        "course_id": "CSC14119",
-        "course_name_vi": "Nhập môn khoa học dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
-    },
-    {
-        "course_id": "CSC17001",
-        "course_name_vi": "Phân tích dữ liệu thông minh",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
-    },
-    {
-        "course_id": "CSC17104",
-        "course_name_vi": "Lập trình cho khoa học dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.5.1. CTĐT KHMT (KHDL)"
+        "description": "thuộc 7.2.2. CTĐT HTTT, thuộc 7.2.2. CTĐT KHMT (KHDL)"
     },
     {
         "course_id": "CSC17102",
@@ -1536,7 +1767,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.5.2. CTĐT KHMT (KHDL)"
     },
     {
@@ -1547,139 +1778,271 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
+        "category": "SPECIALIZED_NETWORK",
         "description": "thuộc 7.2.2.5.2. CTĐT KHMT (KHDL)"
     },
     {
-        "course_id": "CSC17106",
-        "course_name_vi": "Xử lý phân tích dữ liệu trực tuyến",
+        "course_id": "CSC12107",
+        "course_name_vi": "Hệ thống thông tin phục vụ trí tuệ kinh doanh",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.5.2. CTĐT KHMT (KHDL)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT HTTT"
     },
     {
-        "course_id": "CSC11002",
-        "course_name_vi": "Hệ thống viễn thông",
+        "course_id": "CSC12108",
+        "course_name_vi": "Ứng dụng phân tán",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT HTTT"
     },
     {
-        "course_id": "CSC11003",
-        "course_name_vi": "Lập trình mạng",
+        "course_id": "CSC12111",
+        "course_name_vi": "Quản trị cơ sở dữ liệu hiện đại",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT HTTT"
     },
     {
-        "course_id": "CSC11004",
-        "course_name_vi": "Mạng máy tính nâng cao",
+        "course_id": "CSC13114",
+        "course_name_vi": "Phát triển ứng dụng web nâng cao",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KTPM"
     },
     {
-        "course_id": "CSC11006",
-        "course_name_vi": "Nhập môn điện toán đám mây",
+        "course_id": "CSC13115",
+        "course_name_vi": "Các công nghệ mới trong phát triển phần mềm",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KTPM"
     },
     {
-        "course_id": "CSC11007",
-        "course_name_vi": "Nhập môn DevOps",
+        "course_id": "CSC13116",
+        "course_name_vi": "Đồ án Công nghệ phần mềm",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.1. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KTPM"
     },
     {
-        "course_id": "CSC11106",
-        "course_name_vi": "Truyền thông không dây",
+        "course_id": "CSC13118",
+        "course_name_vi": "Phát triển ứng dụng cho thiết bị di động nâng cao",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KTPM"
     },
     {
-        "course_id": "CSC11115",
-        "course_name_vi": "An ninh mạng",
+        "course_id": "CSC18105",
+        "course_name_vi": "Trí tuệ nhân tạo ứng dụng",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT TTNT"
     },
     {
-        "course_id": "CSC11116",
-        "course_name_vi": "DevOps nâng cao",
+        "course_id": "CSC14114",
+        "course_name_vi": "Ứng dụng dữ liệu lớn",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (KHMT)"
     },
     {
-        "course_id": "CSC11117",
-        "course_name_vi": "Hệ điều hành Linux và ứng dụng",
+        "course_id": "CSC14116",
+        "course_name_vi": "Lập trình song song ứng dụng",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (KHMT)"
     },
     {
-        "course_id": "CSC11118",
-        "course_name_vi": "Triển khai và vận hành điện toán đám mây",
+        "course_id": "CSC15104",
+        "course_name_vi": "An toàn và phục hồi dữ liệu",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (CNTThức)"
     },
     {
-        "course_id": "CSC11120",
-        "course_name_vi": "Bảo mật web và thiết bị di động",
+        "course_id": "CSC15105",
+        "course_name_vi": "Khai thác dữ liệu văn bản và ứng dụng",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED_IT",
-        "description": "thuộc 7.2.2.1.2. CTĐT CNTTin (MMT)"
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC15106",
+        "course_name_vi": "Seminar Công nghệ tri thức",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (CNTThức)"
+    },
+    {
+        "course_id": "CSC16110",
+        "course_name_vi": "Chuyên đề Đồ họa máy tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16111",
+        "course_name_vi": "Chuyên đề Thị giác máy tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC16112",
+        "course_name_vi": "Chuyên đề Xử lý ảnh số và video số",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (TGMT)"
+    },
+    {
+        "course_id": "CSC17107",
+        "course_name_vi": "Ứng dụng phân tích dữ liệu thông minh",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC14115",
+        "course_name_vi": "Khoa học dữ liệu ứng dụng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "thuộc 7.2.3. CTĐT KHMT (KHDL)"
+    },
+    {
+        "course_id": "CSC15201",
+        "course_name_vi": "Đồ án Mã hóa ứng dụng và an ninh thông tin",
+        "credits": 6,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 120,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": ""
+    },
+    {
+        "course_id": "CSC15202",
+        "course_name_vi": "Đồ án tốt nghiệp hướng ứng dụng xử lý ngôn ngữ tự nhiên",
+        "credits": 6,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 120,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH00056",
+        "course_name_vi": "Phương pháp toán cho trí tuệ nhân tạo",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": ""
+    },
+    {
+        "course_id": "CSC00009",
+        "course_name_vi": "Giới thiệu ngành Trí tuệ nhân tạo",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "GENERAL_IT",
+        "description": ""
+    },
+    {
+        "course_id": "CSC10013",
+        "course_name_vi": "Cơ sở lập trình cho trí tuệ nhân tạo",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "CSC10011",
+        "course_name_vi": "Công nghệ phần mềm cho hệ thống trí tuệ nhân tạo",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
     }
 ];

@@ -85,47 +85,48 @@ export const categories = {
                         ]
                     }
                 }
-            }
+            },
+
+            "GENERAL_IT": {
+                "name": "Tin học",
+                "credits": 4,
+                "mandatory": true,
+                "courses": [
+                    "CSC00004"
+                ]
+            },
+            "GENERAL_ENGLISH": {
+                "name": "Ngoại ngữ",
+                "credits": 12,
+                "mandatory": false,
+                "note": "Không tính vào điểm TB và TC tích lũy",
+                "courses": [
+                    "ADD00031",
+                    "ADD00032",
+                    "ADD00033",
+                    "ADD00034"
+                ]
+            },
+            "GENERAL_PE": {
+                "name": "Giáo dục thể chất",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm TB, tính vào TC tích lũy",
+                "courses": [
+                    "BAA00021",
+                    "BAA00022"
+                ]
+            },
+            "GENERAL_DEFENSE": {
+                "name": "Giáo dục quốc phòng - An ninh",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm TB, tính vào TC tích lũy",
+                "courses": [
+                    "BAA00030"
+                ]
+            },
         }
-    },
-    "GENERAL_IT": {
-        "name": "Tin học",
-        "credits": 4,
-        "mandatory": true,
-        "courses": [
-            "CSC00004"
-        ]
-    },
-    "GENERAL_ENGLISH": {
-        "name": "Ngoại ngữ",
-        "credits": 12,
-        "mandatory": false,
-        "note": "Không tính vào điểm TB và TC tích lũy. SV đạt chuẩn ngoại ngữ đầu ra thì không đăng ký học",
-        "courses": [
-            "ADD00031",
-            "ADD00032",
-            "ADD00033",
-            "ADD00034"
-        ]
-    },
-    "GENERAL_PE": {
-        "name": "Giáo dục thể chất",
-        "credits": 4,
-        "mandatory": true,
-        "note": "Không tính vào điểm TB, tính vào TC tích lũy",
-        "courses": [
-            "BAA00021",
-            "BAA00022"
-        ]
-    },
-    "GENERAL_DEFENSE": {
-        "name": "Giáo dục quốc phòng - An ninh",
-        "credits": 4,
-        "mandatory": true,
-        "note": "Không tính vào điểm TB, tính vào TC tích lũy",
-        "courses": [
-            "BAA00030"
-        ]
     },
     "FOUNDATION": {
         "name": "Kiến thức cơ sở ngành",
@@ -144,126 +145,51 @@ export const categories = {
             "CSC14003"
         ]
     },
-    "MAJOR_INFORMATION_SYSTEMS": {
-        "name": "Ngành/ Chuyên ngành Hệ thống thông tin",
+    "MAJOR_IS": {
+        "name": "Ngành Hệ thống thông tin",
         "total_credits_required": 34,
         "breakdown": {
             "MANDATORY": {
-                "credits": 16
+                "credits": 16,
+                "note": "Sinh viên tích lũy ít nhất 04 học phần (>= 16TC)",
+                "courses": [
+                    "CSC12002",
+                    "CSC12003",
+                    "CSC12004",
+                    "CSC12005"
+                ]
             },
             "ELECTIVE": {
                 "credits": 8,
-                "note": "Chọn tối thiểu 08 tín chỉ bằng cách chọn trong danh sách học phần 7.2.2.2"
+                "note": "Sinh viên tích lũy ít nhất 02 học phần (>= 08TC)",
+                "courses": [
+                    "CSC10121",
+                    "CSC10102",
+                    "CSC10103",
+                    "CSC10104",
+                    "CSC10105",
+                    "CSC10106",
+                    "CSC10107",
+                    "CSC10108",
+                    "CSC12001",
+                    "CSC12105",
+                    "CSC12106",
+                    "CSC17101",
+                    "CSC17106"
+                ]
             },
-            "FREE_ELECTIVE": {
+            "FREE_ELECTIVES": {
+                "name": "Các học phần tự chọn tự do (Danh sách đầy đủ Phụ lục 1)",
                 "credits": 10,
-                "note": "Sinh viên tiếp tục tích lũy đủ ít nhất 34 tín chỉ bằng các học phần từ Phụ lục 1"
+                "note": "Dùng để tích lũy đủ số tín chỉ chuyên ngành còn thiếu",
+                "courses": [
+                    "CSC12002", "CSC12003", "CSC12004", "CSC12005", "CSC10121", "CSC10102", "CSC10103", "CSC10104", "CSC10105", "CSC10106", "CSC10107", "CSC10108", "CSC12001", "CSC12105", "CSC12106", "CSC17101", "CSC12107", "CSC12108", "CSC12111", "CSC13003", "CSC13005", "CSC13006", "CSC13007", "CSC13008", "CSC13009", "CSC13010", "CSC13106", "CSC13112", "CSC13001", "CSC13101", "CSC13102", "CSC13103", "CSC13107", "CSC13117", "CSC18001", "CSC18101", "CSC18102", "CSC18103", "CSC18104", "CSC14001", "CSC14002", "CSC14004", "CSC14005", "CSC14006", "CSC14101", "CSC14111", "CSC14118", "CSC14120", "CSC14008", "CSC14105", "CSC14112", "CSC14113", "CSC14117", "CSC14007", "CSC15001", "CSC15002", "CSC15003", "CSC15004", "CSC15005", "CSC15006", "CSC15007", "CSC15009", "CSC15011", "CSC15012", "CSC15109", "CSC15010", "CSC15102", "CSC15107", "CSC15108", "CSC16001", "CSC16002", "CSC16003", "CSC16004", "CSC16005", "CSC16101", "CSC16102", "CSC16105", "CSC16106", "CSC16107", "CSC16109", "CSC16113", "CSC16114", "CSC14119", "CSC17001", "CSC17104", "CSC17102", "CSC17103", "CSC17106", "CSC11002", "CSC11003", "CSC11004", "CSC11006", "CSC11007", "CSC11106", "CSC11115", "CSC11116", "CSC11117", "CSC11118", "CSC11120"
+                ]
             }
         },
-        "courses": [
-            "CSC12002",
-            "CSC12003",
-            "CSC12004",
-            "CSC12005",
-            "CSC10121",
-            "CSC10102",
-            "CSC10103",
-            "CSC10104",
-            "CSC10105",
-            "CSC10106",
-            "CSC10107",
-            "CSC10108",
-            "CSC12001",
-            "CSC12105",
-            "CSC12106",
-            "CSC17101",
-            "CSC12107",
-            "CSC12108",
-            "CSC12111",
-            "CSC13003",
-            "CSC13005",
-            "CSC13006",
-            "CSC13007",
-            "CSC13008",
-            "CSC13009",
-            "CSC13010",
-            "CSC13106",
-            "CSC13112",
-            "CSC13001",
-            "CSC13101",
-            "CSC13102",
-            "CSC13103",
-            "CSC13107",
-            "CSC13117",
-            "CSC18001",
-            "CSC18101",
-            "CSC18102",
-            "CSC18103",
-            "CSC18104",
-            "CSC14001",
-            "CSC14002",
-            "CSC14004",
-            "CSC14005",
-            "CSC14006",
-            "CSC14101",
-            "CSC14111",
-            "CSC14118",
-            "CSC14120",
-            "CSC14008",
-            "CSC14105",
-            "CSC14112",
-            "CSC14113",
-            "CSC14117",
-            "CSC14007",
-            "CSC15001",
-            "CSC15002",
-            "CSC15003",
-            "CSC15004",
-            "CSC15005",
-            "CSC15006",
-            "CSC15007",
-            "CSC15009",
-            "CSC15011",
-            "CSC15012",
-            "CSC15109",
-            "CSC15010",
-            "CSC15102",
-            "CSC15107",
-            "CSC15108",
-            "CSC16001",
-            "CSC16002",
-            "CSC16003",
-            "CSC16004",
-            "CSC16005",
-            "CSC16101",
-            "CSC16102",
-            "CSC16105",
-            "CSC16106",
-            "CSC16107",
-            "CSC16109",
-            "CSC16113",
-            "CSC16114",
-            "CSC14119",
-            "CSC17001",
-            "CSC17104",
-            "CSC17102",
-            "CSC17103",
-            "CSC17106",
-            "CSC11002",
-            "CSC11003",
-            "CSC11004",
-            "CSC11006",
-            "CSC11007",
-            "CSC11106",
-            "CSC11115",
-            "CSC11116",
-            "CSC11117",
-            "CSC11118",
-            "CSC11120"
-        ]
     },
     "GRADUATION": {
-        "name": "Kiến thức tốt nghiệp",
+        "name": "Kiến thức Tốt nghiệp",
         "total_credits_required": 10,
         "options": [
             {
@@ -281,9 +207,9 @@ export const categories = {
                 ]
             },
             {
-                "type": "PROJECT",
+                "type": "PROJECT_AND_ELECTIVES",
                 "credits": 10,
-                "note": "Thực tập dự án (6TC) và chọn 01 học phần (4TC)",
+                "note": "Thực tập dự án tốt nghiệp (6TC) kết hợp 01 học phần (4TC) tương ứng",
                 "courses": [
                     "CSC10204",
                     "CSC12107",
@@ -291,6 +217,32 @@ export const categories = {
                     "CSC12111"
                 ]
             }
+        ]
+    },
+    "MASTER_TRANSITION": {
+        "name": "Danh sách học phần Chương trình liên thông Đại học - Thạc sỹ (Phụ lục 2)",
+        "courses": [
+            "CSC10006",
+            "CSC14003",
+            "CSC10108",
+            "CSC12004",
+            "CSC12107",
+            "CSC14005",
+            "CSC14008",
+            "CSC14118",
+            "CSC15005",
+            "CSC15006",
+            "CSC15010",
+            "CSC15102",
+            "CSC15105",
+            "CSC15107",
+            "CSC16002",
+            "CSC16004",
+            "CSC16005",
+            "CSC17001",
+            "CSC17103",
+            "CSC17107",
+            "CSC18001"
         ]
     }
 }

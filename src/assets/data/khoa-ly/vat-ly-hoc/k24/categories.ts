@@ -121,117 +121,123 @@ export const categories = {
       "PHY10016"
     ]
   },
-  "MAJOR_NUCLEAR": {
-    "name": "Chuyên ngành Vật lý hạt nhân",
+  "MAJOR": {
+    "name": "Chuyên ngành",
     "total_credits_required": 48,
     "breakdown": {
-      "MANDATORY": {
-        "credits": 28
+      "MAJOR_NUCLEAR": {
+        "name": "Chuyên ngành Vật lý hạt nhân",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 28
+          },
+          "ELECTIVE": {
+            "credits": 20
+          }
+        },
+        "courses": [
+          "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10302", "PHY10325", "PHY10326", "PHY10327", "PHY10328",
+          "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10307", "PHY10308", "PHY10310", "PHY10315", "PHY10329", "PHY10330"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 20
-      }
-    },
-    "courses": [
-      "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10302", "PHY10325", "PHY10326", "PHY10327", "PHY10328",
-      "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10307", "PHY10308", "PHY10310", "PHY10315", "PHY10329", "PHY10330"
-    ]
-  },
-  "MAJOR_GEOPHYSICS": {
-    "name": "Chuyên ngành Vật lý địa cầu",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 31
+      "MAJOR_GEOPHYSICS": {
+        "name": "Chuyên ngành Vật lý địa cầu",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 31
+          },
+          "ELECTIVE": {
+            "credits": 17
+          }
+        },
+        "courses": [
+          "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10413", "PHY10423", "PHY10431", "PHY10435", "PHY10436",
+          "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10425", "PHY10437"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 17
-      }
-    },
-    "courses": [
-      "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10413", "PHY10423", "PHY10431", "PHY10435", "PHY10436",
-      "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10425", "PHY10437"
-    ]
-  },
-  "MAJOR_THEORETICAL": {
-    "name": "Chuyên ngành Vật lý lý thuyết",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 28
+      "MAJOR_THEORETICAL": {
+        "name": "Chuyên ngành Vật lý lý thuyết",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 28
+          },
+          "ELECTIVE": {
+            "credits": 20
+          }
+        },
+        "courses": [
+          "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10533", "PHY10534", "PHY10535",
+          "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10507", "PHY10512", "PHY10527", "PHY10528"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 20
-      }
-    },
-    "courses": [
-      "PHY10625", "PHY10331", "PHY10517", "PHY10433", "PHY10529", "PHY10532", "PHY10533", "PHY10534", "PHY10535",
-      "PHY10438", "PHY10530", "PHY10316", "PHY10322", "PHY10323", "PHY10324", "PHY10426", "PHY10432", "PHY10434", "PHY10524", "PHY10531", "PHY10609", "PHY10628", "PHY10536", "PHY10439", "PHY10507", "PHY10512", "PHY10527", "PHY10528"
-    ]
-  },
-  "MAJOR_ELECTRONICS": {
-    "name": "Chuyên ngành Vật lý điện tử",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 31
+      "MAJOR_ELECTRONICS": {
+        "name": "Chuyên ngành Vật lý điện tử",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 31
+          },
+          "ELECTIVE": {
+            "credits": 17
+          }
+        },
+        "courses": [
+          "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10102", "PHY10128", "PHY10134", "PHY10622",
+          "PHY10625", "PHY10237", "PHY10530", "PHY10103", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10725", "PHY10726", "PHY10634", "PHY10635", "PHY10636", "PHY10105", "PHY10111", "PHY10115", "PHY10122", "PHY10126", "PHY10127", "PHY10130", "PHY10131"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 17
-      }
-    },
-    "courses": [
-      "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10102", "PHY10128", "PHY10134", "PHY10622",
-      "PHY10625", "PHY10237", "PHY10530", "PHY10103", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10725", "PHY10726", "PHY10634", "PHY10635", "PHY10636", "PHY10105", "PHY10111", "PHY10115", "PHY10122", "PHY10126", "PHY10127", "PHY10130", "PHY10131"
-    ]
-  },
-  "MAJOR_SOLID_STATE": {
-    "name": "Chuyên ngành Vật lý chất rắn",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 29
+      "MAJOR_SOLID_STATE": {
+        "name": "Chuyên ngành Vật lý chất rắn",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 29
+          },
+          "ELECTIVE": {
+            "credits": 19
+          }
+        },
+        "courses": [
+          "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10230", "PHY10231", "PHY10232",
+          "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726", "PHY10205", "PHY10207", "PHY10227", "PHY10233", "PHY10234", "PHY10235", "PHY10236"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 19
-      }
-    },
-    "courses": [
-      "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10230", "PHY10231", "PHY10232",
-      "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726", "PHY10205", "PHY10207", "PHY10227", "PHY10233", "PHY10234", "PHY10235", "PHY10236"
-    ]
-  },
-  "MAJOR_COMPUTATIONAL": {
-    "name": "Chuyên ngành Vật lý tin học",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 23
+      "MAJOR_COMPUTATIONAL": {
+        "name": "Chuyên ngành Vật lý tin học",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 23
+          },
+          "ELECTIVE": {
+            "credits": 25
+          }
+        },
+        "courses": [
+          "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10631",
+          "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726", "PHY10115", "PHY10610", "PHY10612", "PHY10613", "PHY10615", "PHY10616", "PHY10621", "PHY10623", "PHY10629", "PHY10632", "PHY10633"
+        ]
       },
-      "ELECTIVE": {
-        "credits": 25
+      "MAJOR_APPLIED": {
+        "name": "Chuyên ngành Vật lý ứng dụng",
+        "total_credits_required": 48,
+        "breakdown": {
+          "MANDATORY": {
+            "credits": 36
+          },
+          "ELECTIVE": {
+            "credits": 12
+          }
+        },
+        "courses": [
+          "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10703", "PHY10705", "PHY10715", "PHY10719", "PHY10720", "PHY10723", "PHY10727",
+          "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726"
+        ]
       }
-    },
-    "courses": [
-      "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10631",
-      "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726", "PHY10115", "PHY10610", "PHY10612", "PHY10613", "PHY10615", "PHY10616", "PHY10621", "PHY10623", "PHY10629", "PHY10632", "PHY10633"
-    ]
-  },
-  "MAJOR_APPLIED": {
-    "name": "Chuyên ngành Vật lý ứng dụng",
-    "total_credits_required": 48,
-    "breakdown": {
-      "MANDATORY": {
-        "credits": 36
-      },
-      "ELECTIVE": {
-        "credits": 12
-      }
-    },
-    "courses": [
-      "PHY10609", "PHY10626", "PHY10628", "PHY10228", "PHY10627", "PHY10724", "PHY10703", "PHY10705", "PHY10715", "PHY10719", "PHY10720", "PHY10723", "PHY10727",
-      "PHY10625", "PHY10237", "PHY10530", "PHY10124", "PHY10229", "PHY10611", "PHY10614", "PHY10618", "PHY10620", "PHY10630", "PHY10634", "PHY10635", "PHY10636", "PHY10725", "PHY10726"
-    ]
+    }
   },
   "GRADUATION": {
     "name": "Kiến thức tốt nghiệp",

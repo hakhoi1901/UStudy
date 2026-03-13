@@ -59,31 +59,32 @@ const RAW_FACULTIES = [
         majors: [
             { id: 'vat-ly-hoc', name: 'Vật lý học', dataSource: { 'k25': 'k24' } },
             { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa', dataSource: { 'k25': 'k24' } },
-            { id: 'vat-ly-ky-thuat', name: 'Vật lý kỹ thuật', dataSource: { 'k25': 'k24' } },
             { id: 'hai-duong-hoc', name: 'Hải dương học', dataSource: { 'k25': 'k24' } },
             { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân', dataSource: { 'k25': 'k24' } },
             { id: 'cn-vat-ly-dien-tu-va-tin-hoc', name: 'CN Vật lý điện tử và tin học', dataSource: { 'k25': 'k24' } },
             { id: 'cn-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
         ],
     },
-    // {
-    //     id: 'khoa-toan-tin',
-    //     name: 'Khoa Toán - Tin học',
-    //     majors: [
-    //         { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
-    //         { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
-    //         { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
-    //         { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
-    //         { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
-    //     ],
-    // },
-    // {
-    //     id: 'khoa-sinh-hoc',
-    //     name: 'Khoa Sinh học',
-    //     majors: [
-    //         { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
-    //     ],
-    // },
+
+    {
+        id: 'khoa-toan',
+        name: 'Khoa Toán - Tin học',
+        majors: [
+            // { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
+            // { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
+            // { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
+            { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
+            // { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+    {
+        id: 'khoa-sinh',
+        name: 'Khoa Sinh học',
+        majors: [
+            { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSource: { 'k25': 'k24' } },
+        ],
+    },
 ];
 
 export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({

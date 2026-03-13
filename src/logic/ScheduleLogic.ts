@@ -148,12 +148,11 @@ export const ScheduleLogic = {
             return { startPeriod, endPeriod, duration };
         }
 
-        // Lớp thực hành/bài tập hiển thị 2 tiết
-        const duration = 2;
-        let adjustedStart = startPeriod;
-        let adjustedEnd = startPeriod + duration - 1;
+        // Lớp thực hành/bài tập luôn được tính bằng 2.5 tiết để ra chính xác tổng số tuần, 
+        // nhưng tiết bắt đầu và kết thúc lưu lại ở dạng gốc (1-2, 1-3 v.v) để thông tin UI hiện chính xác nhất.
+        const duration = 2.5;
 
-        return { startPeriod: adjustedStart, endPeriod: adjustedEnd, duration };
+        return { startPeriod, endPeriod, duration };
     },
 
     /**

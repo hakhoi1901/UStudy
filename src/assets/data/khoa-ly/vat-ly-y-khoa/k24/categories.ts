@@ -62,48 +62,48 @@ export const categories = {
             ]
           }
         }
-      }
+      },
+      "GENERAL_IT": {
+        "name": "Tin học",
+        "credits": 3,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "CSC00003"
+        ]
+      },
+      "GENERAL_ENGLISH": {
+        "name": "Ngoại ngữ",
+        "credits": 12,
+        "mandatory": false,
+        "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký",
+        "courses": [
+          "ADD00031",
+          "ADD00032",
+          "ADD00033",
+          "ADD00034"
+        ]
+      },
+      "GENERAL_PE": {
+        "name": "Giáo dục thể chất",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "BAA00021",
+          "BAA00022"
+        ]
+      },
+      "GENERAL_DEFENSE": {
+        "name": "Giáo dục quốc phòng - An ninh",
+        "credits": 4,
+        "mandatory": true,
+        "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+        "courses": [
+          "BAA00030"
+        ]
+      },
     }
-  },
-  "GENERAL_IT": {
-    "name": "Tin học",
-    "credits": 3,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "CSC00003"
-    ]
-  },
-  "GENERAL_ENGLISH": {
-    "name": "Ngoại ngữ",
-    "credits": 12,
-    "mandatory": false,
-    "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký",
-    "courses": [
-      "ADD00031",
-      "ADD00032",
-      "ADD00033",
-      "ADD00034"
-    ]
-  },
-  "GENERAL_PE": {
-    "name": "Giáo dục thể chất",
-    "credits": 4,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "BAA00021",
-      "BAA00022"
-    ]
-  },
-  "GENERAL_DEFENSE": {
-    "name": "Giáo dục quốc phòng - An ninh",
-    "credits": 4,
-    "mandatory": true,
-    "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
-    "courses": [
-      "BAA00030"
-    ]
   },
   "FOUNDATION": {
     "name": "Cơ Sở Ngành",
