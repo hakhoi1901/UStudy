@@ -56,116 +56,104 @@
             modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI', sans-serif;";
 
             modal.innerHTML = `
-                <div style="background:#fff;width:550px;max-width:95%;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;animation:slideDown 0.3s ease-out;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="background:#fff;width:550px;max-width:95%;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;animation:slideDown 0.3s ease-out;display:flex;flex-direction:column;max-height:90vh;">
+        
+        <div style="background:#004A98;padding:16px 24px;color:white;flex-shrink:0;">
+            <h3 style="margin:0;font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px;">
+                <span>⚙️</span> Cấu hình lấy dữ liệu
+            </h3>
+        </div>
+        
+        <div style="padding:24px;overflow-y:auto;flex:1;">
+            
+            <div style="margin-bottom: 24px;">
+                <h4 style="margin: 0 0 12px; font-size: 14px; color: #004A98; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
+                    📌 LƯU Ý TRƯỚC KHI SỬ DỤNG
+                </h4>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; max-height: 180px; overflow-y: auto; font-size: 13px; color: #475569; line-height: 1.6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
                     
-                    <!-- Header -->
-                    <div style="background:#004A98;padding:16px 24px;color:white;flex-shrink:0;">
-                        <h3 style="margin:0;font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px;">
-                            <span>⚙️</span> Cấu hình lấy dữ liệu
-                        </h3>
-                    </div>
+                    <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">1. Bảo mật & Quyền riêng tư</p>
+                    <p style="margin-bottom: 12px; margin-top: 0;">Để đảm bảo an toàn tuyệt đối, mọi dữ liệu học tập của bạn chỉ được xử lý và lưu trữ trực tiếp trên thiết bị cá nhân. Công cụ hoàn toàn không thu thập, gửi đi hay lưu trữ bất kỳ thông tin nào của bạn trên máy chủ.</p>
                     
-                    <!-- Body (Scrollable) -->
-                    <div style="padding:24px;overflow-y:auto;flex:1;">
-                        
-                        <!-- [THAY ĐỔI]: Cập nhật nội dung Tuyên bố miễn trừ trách nhiệm & Điều khoản -->
-                        <div style="margin-bottom: 24px;">
-                            <h4 style="margin: 0 0 12px; font-size: 14px; color: #dc2626; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
-                                ⚠️ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM & ĐIỀU KHOẢN SỬ DỤNG
-                            </h4>
-                            <div style="background: #fffafa; border: 1px solid #fee2e2; border-radius: 8px; padding: 16px; max-height: 180px; overflow-y: auto; font-size: 13px; color: #475569; line-height: 1.6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                                
-                                <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">1. Minh bạch kỹ thuật (Transparency)</p>
-                                <p style="margin-bottom: 12px; margin-top: 0;">Công cụ này hoạt động dựa trên cơ chế <strong>Client-side</strong>. Mọi dữ liệu (điểm, lịch thi...) được xử lý trực tiếp trên trình duyệt và lưu trữ cục bộ (<code>localStorage</code>) tại thiết bị của bạn. Chúng tôi không sở hữu máy chủ lưu trữ và không thu thập dữ liệu về phía nhà phát triển.</p>
-                                
-                                <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">2. Tuyên bố miễn trừ trách nhiệm (Disclaimer)</p>
-                                <ul style="margin: 0 0 12px 20px; padding: 0; list-style-type: disc;">
-                                    <li>Phần mềm được cung cấp theo nguyên trạng <strong>"NHƯ LÀ" (AS-IS)</strong>, không có sự bảo đảm nào.</li>
-                                    <li>Nhóm phát triển <strong>KHÔNG</strong> chịu trách nhiệm cho bất kỳ thiệt hại nào (mất dữ liệu, lộ thông tin cá nhân do máy tính bị nhiễm virus, lỗi hiển thị...) phát sinh từ việc sử dụng công cụ.</li>
-                                    <li>Chúng tôi không cam kết phần mềm hoạt động không lỗi do các thay đổi khách quan từ phía Portal nhà trường.</li>
-                                </ul>
+                    <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">2. Tính chất của công cụ</p>
+                    <p style="margin-bottom: 12px; margin-top: 0;">Đây là tiện ích độc lập nhằm hỗ trợ sinh viên tối ưu hóa việc xếp lịch học, không phải là sản phẩm chính thức của nhà trường. Dữ liệu trích xuất mang tính chất tham khảo và có thể thay đổi phụ thuộc vào portal và các yếu tố khách quan.</p>
 
-                                <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">3. Chấp thuận của người dùng (Consent)</p>
-                                <p style="margin-bottom: 0; margin-top: 0;">Bằng việc tiếp tục, bạn xác nhận hiểu rõ dữ liệu nằm trên thiết bị của mình, chấp nhận mọi rủi ro tiềm ẩn khi dùng phần mềm thứ ba và đồng ý giải phóng nhóm phát triển khỏi mọi trách nhiệm pháp lý liên quan.</p>
-                            </div>
-                        </div>
-                        <!-- [KẾT THÚC THAY ĐỔI] -->
+                    <p style="margin-top: 0; font-weight: 700; color: #1e293b; margin-bottom: 4px;">3. Cam kết sử dụng</p>
+                    <p style="margin-bottom: 0; margin-top: 0;">Bằng việc tiếp tục, bạn đồng ý sử dụng công cụ cho mục đích học tập cá nhân, tự quản lý an toàn thông tin trên máy tính và hiểu rõ giới hạn kỹ thuật của ứng dụng tiện ích này.</p>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px;border-top: 1px solid #eee; padding-top: 20px;">
+                
+                <div style="display:flex;gap:20px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:not-allowed;font-weight:600;color:#64748b;">
+                        <input type="checkbox" id="opt-info" checked disabled style="width:16px;height:16px;accent-color:#004A98;"> Thông tin & Điểm
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#334155;">
+                        <input type="checkbox" id="opt-tuition" checked style="width:16px;height:16px;accent-color:#004A98;"> Học phí
+                    </label>
+                </div>
 
-                        <!-- Config Options -->
-                        <div style="display:flex;flex-direction:column;gap:16px;border-top: 1px solid #eee; padding-top: 20px;">
-                            
-                            <div style="display:flex;gap:20px;">
-                                <label style="display:flex;align-items:center;gap:8px;cursor:not-allowed;font-weight:600;color:#64748b;">
-                                    <input type="checkbox" id="opt-info" checked disabled style="width:16px;height:16px;accent-color:#004A98;"> Thông tin & Điểm
-                                </label>
-                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#334155;">
-                                    <input type="checkbox" id="opt-tuition" checked style="width:16px;height:16px;accent-color:#004A98;"> Học phí
-                                </label>
-                            </div>
+                <div style="background:#f1f5f9; height:1px;"></div>
 
-                            <div style="background:#f1f5f9; height:1px;"></div>
-
-                            <div>
-                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                                    <input type="checkbox" id="opt-exam" checked onchange="toggleGroup('grp-exam', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
-                                    Lấy Lịch Thi
-                                </label>
-                                <div id="grp-exam" style="display:flex;gap:10px;padding-left:28px;">
-                                    <input type="text" id="exam-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
-                                    <select id="exam-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                                        <option value="1">Học kỳ 1</option>
-                                        <option value="2">Học kỳ 2</option>
-                                        <option value="3">Học kỳ 3</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                                    <input type="checkbox" id="opt-class" checked onchange="toggleGroup('grp-class', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
-                                    Lấy Danh Sách Lớp Mở
-                                </label>
-                                <div id="grp-class" style="display:flex;gap:10px;padding-left:28px;">
-                                    <input type="text" id="class-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
-                                    <select id="class-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                                        <option value="1">Học kỳ 1</option>
-                                        <option value="2">Học kỳ 2</option>
-                                        <option value="3">Học kỳ 3</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                                    <input type="checkbox" id="opt-reg" checked onchange="toggleGroup('grp-reg', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
-                                    Lấy Kết Quả ĐKHP
-                                </label>
-                                <div id="grp-reg" style="display:flex;gap:10px;padding-left:28px;">
-                                    <input type="text" id="reg-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
-                                    <select id="reg-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                                        <option value="1">Học kỳ 1</option>
-                                        <option value="2" selected>Học kỳ 2</option>
-                                        <option value="3">Học kỳ 3</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div style="background:#f8fafc;padding:16px 24px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e2e8f0;flex-shrink:0;">
-                        <button id="btn-cancel" style="padding:8px 16px;border:1px solid #cbd5e1;background:white;color:#475569;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;">Hủy</button>
-                        
-                        <!-- [THAY ĐỔI]: Sửa text nút bấm để thể hiện sự đồng thuận pháp lý -->
-                        <button id="btn-agree" style="padding:8px 20px;border:none;background:#004A98;color:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;box-shadow:0 2px 4px rgba(0,74,152,0.2);transition:all 0.2s;">Tôi đã hiểu & Đồng ý</button>
+                <div>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
+                        <input type="checkbox" id="opt-exam" checked onchange="toggleGroup('grp-exam', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                        Lấy Lịch Thi
+                    </label>
+                    <div id="grp-exam" style="display:flex;gap:10px;padding-left:28px;">
+                        <input type="text" id="exam-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <select id="exam-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
+                            <option value="1">Học kỳ 1</option>
+                            <option value="2">Học kỳ 2</option>
+                            <option value="3">Học kỳ 3</option>
+                        </select>
                     </div>
                 </div>
-                <style>
-                    @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-                    #btn-cancel:hover { background: #f1f5f9; }
-                    #btn-agree:hover { background: #003875; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,74,152,0.3); }
-                </style>
-            `;
+
+                <div>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
+                        <input type="checkbox" id="opt-class" checked onchange="toggleGroup('grp-class', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                        Lấy Danh Sách Lớp Mở
+                    </label>
+                    <div id="grp-class" style="display:flex;gap:10px;padding-left:28px;">
+                        <input type="text" id="class-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <select id="class-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
+                            <option value="1">Học kỳ 1</option>
+                            <option value="2">Học kỳ 2</option>
+                            <option value="3">Học kỳ 3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
+                        <input type="checkbox" id="opt-reg" checked onchange="toggleGroup('grp-reg', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
+                        Lấy Kết Quả ĐKHP
+                    </label>
+                    <div id="grp-reg" style="display:flex;gap:10px;padding-left:28px;">
+                        <input type="text" id="reg-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <select id="reg-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
+                            <option value="1">Học kỳ 1</option>
+                            <option value="2" selected>Học kỳ 2</option>
+                            <option value="3">Học kỳ 3</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:#f8fafc;padding:16px 24px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e2e8f0;flex-shrink:0;">
+            <button id="btn-cancel" style="padding:8px 16px;border:1px solid #cbd5e1;background:white;color:#475569;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;">Hủy</button>
+            
+            <button id="btn-agree" style="padding:8px 20px;border:none;background:#004A98;color:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;box-shadow:0 2px 4px rgba(0,74,152,0.2);transition:all 0.2s;">Đồng ý & Tiếp tục</button>
+        </div>
+    </div>
+    <style>
+        @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+        #btn-cancel:hover { background: #f1f5f9; }
+        #btn-agree:hover { background: #003875; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,74,152,0.3); }
+    </style>
+`;
 
             document.body.appendChild(modal);
 

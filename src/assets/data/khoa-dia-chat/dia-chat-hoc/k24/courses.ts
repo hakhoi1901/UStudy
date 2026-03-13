@@ -176,6 +176,17 @@ export const courses = [
         "description": ""
     },
     {
+        "course_id": "GEO00009",
+        "course_name_vi": "Khoa học dữ liệu",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "BB",
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": ""
+    },
+    {
         "course_id": "PHY00001",
         "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
         "credits": 3,
@@ -209,19 +220,8 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO00009",
-        "course_name_vi": "Khoa học dữ liệu",
-        "credits": 2,
-        "theory_hours": 15,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "GENERAL_MATH_SCIENCE",
-        "description": ""
-    },
-    {
-        "course_id": "GEO00010",
-        "course_name_vi": "Giới thiệu ngành Kỹ thuật Địa chất",
+        "course_id": "GEO00011",
+        "course_name_vi": "Giới thiệu ngành Địa chất học",
         "credits": 2,
         "theory_hours": 15,
         "lab_hours": 30,
@@ -261,7 +261,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "GENERAL_IT",
-        "description": ""
+        "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
     },
     {
         "course_id": "ADD00031",
@@ -316,7 +316,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "GENERAL_PE",
-        "description": ""
+        "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
     },
     {
         "course_id": "BAA00022",
@@ -327,7 +327,7 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "GENERAL_PE",
-        "description": ""
+        "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
     },
     {
         "course_id": "BAA00030",
@@ -338,14 +338,14 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "GENERAL_DEFENSE",
-        "description": ""
+        "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
     },
     {
-        "course_id": "GEO10051",
-        "course_name_vi": "Địa chất cơ sở",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
+        "course_id": "GEO10001",
+        "course_name_vi": "Địa chất đại cương",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "FOUNDATION",
@@ -374,22 +374,44 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10053",
-        "course_name_vi": "Quang tinh - Khoáng vật",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
+        "course_id": "GEO10004",
+        "course_name_vi": "Tinh thể - Khoáng vật",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "GEO10054",
-        "course_name_vi": "Thạch học",
-        "credits": 3,
-        "theory_hours": 30,
+        "course_id": "GEO10005",
+        "course_name_vi": "Quang tinh - Khoáng vật tạo đá",
+        "credits": 2,
+        "theory_hours": 15,
         "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10015",
+        "course_name_vi": "Thạch học magma và biến chất",
+        "credits": 4,
+        "theory_hours": 37.5,
+        "lab_hours": 45,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10028",
+        "course_name_vi": "Địa tầng và Thạch học đá trầm tích",
+        "credits": 3,
+        "theory_hours": 37.5,
+        "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "BB",
         "category": "FOUNDATION",
@@ -430,7 +452,7 @@ export const courses = [
     },
     {
         "course_id": "GEO10057",
-        "course_name_vi": "Địa chất thủy văn",
+        "course_name_vi": "Địa chất thuỷ văn",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 15,
@@ -451,19 +473,19 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10058",
-        "course_name_vi": "Sức bền vật liệu",
+        "course_id": "GEO10059",
+        "course_name_vi": "Địa chất công trình",
         "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
         "course_type": "BB",
         "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "GEO10059",
-        "course_name_vi": "Địa chất công trình",
+        "course_id": "GEO10060",
+        "course_name_vi": "Địa chất môi trường",
         "credits": 2,
         "theory_hours": 15,
         "lab_hours": 30,
@@ -506,6 +528,17 @@ export const courses = [
         "description": ""
     },
     {
+        "course_id": "GEO10024",
+        "course_name_vi": "Viễn thám và giải đoán ảnh",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
         "course_id": "GEO10025",
         "course_name_vi": "Kỹ thuật khoan",
         "credits": 2,
@@ -517,30 +550,8 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO20201",
-        "course_name_vi": "Địa thống kê",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
-        "course_type": "BB",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "GEO10064",
-        "course_name_vi": "GIS và viễn thám",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "GEO10061",
-        "course_name_vi": "Kiến tạo",
+        "course_id": "GEO10030",
+        "course_name_vi": "Tiếng Anh ngành Địa chất",
         "credits": 2,
         "theory_hours": 30,
         "lab_hours": 0,
@@ -550,8 +561,8 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10066",
-        "course_name_vi": "Địa chất dầu khí",
+        "course_id": "GEO10031",
+        "course_name_vi": "Địa chất du lịch",
         "credits": 2,
         "theory_hours": 30,
         "lab_hours": 0,
@@ -572,8 +583,30 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10067",
-        "course_name_vi": "Tiếng Anh ngành Kỹ thuật Địa chất",
+        "course_id": "GEO20201",
+        "course_name_vi": "Địa thống kê",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 0,
+        "exercise_hours": 15,
+        "course_type": "TC",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10058",
+        "course_name_vi": "Sức bền vật liệu",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 0,
+        "exercise_hours": 15,
+        "course_type": "TC",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10066",
+        "course_name_vi": "Địa chất dầu khí",
         "credits": 2,
         "theory_hours": 30,
         "lab_hours": 0,
@@ -583,22 +616,44 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10068",
-        "course_name_vi": "Phòng chống tai biến và biến đổi khí hậu",
+        "course_id": "GEO10061",
+        "course_name_vi": "Kiến tạo",
         "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
+        "theory_hours": 30,
+        "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "GEO10069",
-        "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+        "course_id": "GEO10033",
+        "course_name_vi": "Hệ thống thông tin địa lý",
         "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10008",
+        "course_name_vi": "Cổ sinh vật học",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "GEO10034",
+        "course_name_vi": "Quản lý và khai thác tài nguyên đất đai",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "FOUNDATION",
@@ -616,114 +671,15 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "GEO10060",
-        "course_name_vi": "Địa chất môi trường",
+        "course_id": "GEO10069",
+        "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
         "credits": 2,
-        "theory_hours": 15,
-        "lab_hours": 30,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "FOUNDATION",
         "description": ""
-    },
-    {
-        "course_id": "GEO20101",
-        "course_name_vi": "Địa chất mỏ khoáng kim loại",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20102",
-        "course_name_vi": "Địa chất mỏ khoáng nhiên liệu rắn và không kim loại",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO10113",
-        "course_name_vi": "Phương pháp nghiên cứu thành phần vật chất quặng",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20117",
-        "course_name_vi": "Phương pháp điều tra tài nguyên khoáng sản",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20105",
-        "course_name_vi": "Cấu trúc địa chất mỏ khoáng",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20108",
-        "course_name_vi": "Kinh tế tài nguyên khoáng sản",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20109",
-        "course_name_vi": "Phương pháp thăm dò và tính trữ lượng khoáng sản rắn",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20110",
-        "course_name_vi": "Địa chất thủy văn – địa chất công trình mỏ",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20118",
-        "course_name_vi": "Tuyển khoáng",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 15,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
     },
     {
         "course_id": "GEO10114",
@@ -733,30 +689,30 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Học phần bắt buộc chuyên ngành"
+        "category": "MAJOR",
+        "description": "Bắt buộc cho tất cả các chuyên ngành"
     },
     {
-        "course_id": "GEO20106",
-        "course_name_vi": "Tài nguyên khoáng sản Việt Nam",
+        "course_id": "GEO10111",
+        "course_name_vi": "Phương pháp điều tra và đánh giá tài nguyên khoáng",
+        "credits": 3,
+        "theory_hours": 37.5,
+        "lab_hours": 0,
+        "exercise_hours": 15,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
+    },
+    {
+        "course_id": "GEO10102",
+        "course_name_vi": "Địa chất các mỏ khoáng kim loại",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
-    },
-    {
-        "course_id": "GEO20120",
-        "course_name_vi": "Đánh giá tác động môi trường trong thăm dò và khai thác khoáng sản",
-        "credits": 2,
-        "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
-        "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
         "course_id": "GEO10112",
@@ -766,41 +722,74 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
-        "course_id": "GEO20121",
-        "course_name_vi": "Địa chất khai thác mỏ",
+        "course_id": "GEO10104",
+        "course_name_vi": "Công nghệ khoáng",
         "credits": 2,
-        "theory_hours": 30,
-        "lab_hours": 0,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
-        "course_id": "GEO20119",
-        "course_name_vi": "Kỹ thuật công nghệ khoáng",
+        "course_id": "GEO10113",
+        "course_name_vi": "Phương pháp nghiên cứu thành phần vật chất quặng",
         "credits": 3,
         "theory_hours": 30,
-        "lab_hours": 15,
-        "exercise_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
-        "course_id": "GEO20114",
-        "course_name_vi": "Thạch học ứng dụng",
+        "course_id": "GEO10106",
+        "course_name_vi": "Tài nguyên khoáng sản Việt Nam",
         "credits": 2,
-        "theory_hours": 15,
+        "theory_hours": 22.5,
         "lab_hours": 15,
-        "exercise_hours": 15,
+        "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Tìm kiếm thăm dò Khoáng sản"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
+    },
+    {
+        "course_id": "GEO10108",
+        "course_name_vi": "Địa chất các mỏ khoáng không kim loại",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
+    },
+    {
+        "course_id": "GEO10115",
+        "course_name_vi": "Nhiên liệu khoáng và an ninh năng lượng",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
+    },
+    {
+        "course_id": "GEO10116",
+        "course_name_vi": "Phương pháp đánh giá kinh tế địa chất",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
         "course_id": "GEO10117",
@@ -810,8 +799,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
         "course_id": "GEO10118",
@@ -821,8 +810,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
         "course_id": "GEO10119",
@@ -832,8 +821,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
         "course_id": "GEO10120",
@@ -843,8 +832,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
         "course_id": "GEO10121",
@@ -854,8 +843,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
         "course_id": "GEO10122",
@@ -865,63 +854,305 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Học phần tự chọn chuyên ngành"
+        "category": "MAJOR",
+        "description": "Học phần tự chọn chung nhiều chuyên ngành"
     },
     {
-        "course_id": "GEO20202",
-        "course_name_vi": "Cơ học đất",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
-    },
-    {
-        "course_id": "GEO20204",
-        "course_name_vi": "Thủy địa hóa",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
-    },
-    {
-        "course_id": "GEO20205",
-        "course_name_vi": "Động lực nước dưới đất và ứng dụng",
-        "credits": 3,
-        "theory_hours": 30,
+        "course_id": "GEO10201",
+        "course_name_vi": "Các phương pháp giám định đá quý",
+        "credits": 2,
+        "theory_hours": 22.5,
         "lab_hours": 15,
-        "exercise_hours": 15,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
     },
     {
-        "course_id": "GEO20206",
-        "course_name_vi": "Phương pháp điều tra địa chất công trình",
-        "credits": 3,
-        "theory_hours": 30,
+        "course_id": "GEO10210",
+        "course_name_vi": "Kim cương, giám định và phân cấp",
+        "credits": 2,
+        "theory_hours": 15,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
     },
     {
-        "course_id": "GEO20207",
-        "course_name_vi": "Phương pháp điều tra địa chất thủy văn",
-        "credits": 3,
+        "course_id": "GEO10203",
+        "course_name_vi": "Ruby - sapphire - emerald và giám định",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10211",
+        "course_name_vi": "Ngọc trai, ngọc ốc và sản phẩm hữu cơ khác",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10212",
+        "course_name_vi": "Các phương pháp giám định kim loại quý",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10213",
+        "course_name_vi": "Đá bán quý và mỹ nghệ",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10214",
+        "course_name_vi": "Bao thể đá quý",
+        "credits": 2,
         "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10110",
+        "course_name_vi": "Nguồn gốc đá quý và bán quý",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10206",
+        "course_name_vi": "Đá quý tổng hợp và đá xử lý",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10215",
+        "course_name_vi": "Chế tác đá quý, đá bán quý và trang sức",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10205",
+        "course_name_vi": "Sa khoáng đá quý và bán quý",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10301",
+        "course_name_vi": "Địa hóa dầu khí",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10311",
+        "course_name_vi": "Minh giải tài liệu địa chấn",
+        "credits": 2,
+        "theory_hours": 15,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10303",
+        "course_name_vi": "Minh giải tài liệu địa vật lý giếng khoan",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10304",
+        "course_name_vi": "Các phương pháp tìm kiếm thăm dò dầu khí",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10305",
+        "course_name_vi": "Địa chất thủy văn các mỏ dầu khí",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10308",
+        "course_name_vi": "Công nghệ mỏ dầu khí",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10307",
+        "course_name_vi": "Phân tích bồn trầm tích dầu khí",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10309",
+        "course_name_vi": "Địa chất dầu khí khu vực",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10312",
+        "course_name_vi": "An toàn lao động trong dầu khí",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10313",
+        "course_name_vi": "Địa thống kê ứng dụng",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10314",
+        "course_name_vi": "Quản lý rủi ro trong dầu khí",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất dầu khí"
+    },
+    {
+        "course_id": "GEO10411",
+        "course_name_vi": "Phương pháp điều tra địa chất công trình - ĐCTV",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
+    },
+    {
+        "course_id": "GEO10404",
+        "course_name_vi": "Cơ học đất",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
+    },
+    {
+        "course_id": "GEO10409",
+        "course_name_vi": "Thủy địa hóa",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – ĐCCT và Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10412",
+        "course_name_vi": "Động lực nước dưới đất và ứng dụng",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
+    },
+    {
+        "course_id": "GEO10405",
+        "course_name_vi": "Địa chất công trình động lực",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
     },
     {
         "course_id": "GEO10413",
@@ -930,89 +1161,254 @@ export const courses = [
         "theory_hours": 22.5,
         "lab_hours": 0,
         "exercise_hours": 15,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
     },
     {
-        "course_id": "GEO20209",
-        "course_name_vi": "Thổ chất học và công trình đất",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
-    },
-    {
-        "course_id": "GEO20214",
-        "course_name_vi": "Cơ học đá",
+        "course_id": "GEO10414",
+        "course_name_vi": "Phương pháp xử lý nước",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – ĐCCT và Địa chất môi trường"
     },
     {
-        "course_id": "GEO20217",
-        "course_name_vi": "Trắc địa công trình",
+        "course_id": "GEO10403",
+        "course_name_vi": "Thổ chất học",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 15,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
     },
     {
-        "course_id": "GEO20211",
-        "course_name_vi": "Phương pháp tính toán trong Địa chất Thủy văn",
+        "course_id": "GEO10415",
+        "course_name_vi": "Khảo sát Địa kỹ thuật",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 0,
         "exercise_hours": 15,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
     },
     {
-        "course_id": "GEO20218",
-        "course_name_vi": "Quản lý chất lượng khảo sát xây dựng",
+        "course_id": "GEO10416",
+        "course_name_vi": "Khảo sát điều tra tài nguyên nước dưới đất",
         "credits": 2,
         "theory_hours": 22.5,
         "lab_hours": 0,
         "exercise_hours": 15,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất thủy văn – Địa chất công trình"
     },
     {
-        "course_id": "GEO20210",
-        "course_name_vi": "Địa chất công trình động lực",
+        "course_id": "GEO10503",
+        "course_name_vi": "Địa hóa môi trường",
         "credits": 2,
         "theory_hours": 22.5,
-        "lab_hours": 0,
-        "exercise_hours": 15,
+        "lab_hours": 15,
+        "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
     },
     {
-        "course_id": "GEO20212",
-        "course_name_vi": "Phương pháp quan trắc, xử lý nước",
-        "credits": 3,
-        "theory_hours": 30,
+        "course_id": "GEO10504",
+        "course_name_vi": "Viễn thám và địa mạo ứng dụng",
+        "credits": 2,
+        "theory_hours": 15,
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "SPECIALIZED",
-        "description": "Chuyên ngành Địa kỹ thuật"
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
     },
     {
-        "course_id": "GEO20115",
+        "course_id": "GEO10509",
+        "course_name_vi": "Đánh giá tác động môi trường",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 0,
+        "exercise_hours": 15,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10510",
+        "course_name_vi": "Biến đổi khí hậu và phòng chống thiên tai",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10501",
+        "course_name_vi": "Tài nguyên môi trường đất và sinh thái",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 0,
+        "exercise_hours": 15,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10505",
+        "course_name_vi": "Địa chất môi trường khu vực và tai biến địa chất",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10502",
+        "course_name_vi": "Tài nguyên khí hậu",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10511",
+        "course_name_vi": "Quản lý nhà nước về đất đai",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất môi trường"
+    },
+    {
+        "course_id": "GEO10613",
+        "course_name_vi": "Địa chất biển",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10602",
+        "course_name_vi": "Môi trường trầm tích biển",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10614",
+        "course_name_vi": "Địa hoá môi trường biển",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10606",
+        "course_name_vi": "Địa mạo đới ven biển và tân kiến tạo",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10607",
+        "course_name_vi": "Tài nguyên khoáng sản biển",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10608",
+        "course_name_vi": "Địa chất môi trường biển và tai biến địa chất đới ven bờ",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10609",
+        "course_name_vi": "Quản lý tổng hợp đới ven bờ",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10604",
+        "course_name_vi": "Hải dương học",
+        "credits": 2,
+        "theory_hours": 22.5,
+        "lab_hours": 15,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10611",
+        "course_name_vi": "Các phương pháp địa vật lý trong thăm dò địa chất biển",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10612",
+        "course_name_vi": "Quản lý và đầu tư xây dựng công trình biển",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "MAJOR",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10195",
         "course_name_vi": "Khoá luận tốt nghiệp",
         "credits": 10,
         "theory_hours": 0,
@@ -1020,10 +1416,10 @@ export const courses = [
         "exercise_hours": 300,
         "course_type": "TC",
         "category": "GRADUATION",
-        "description": "Phương án 1 - CN. Tìm kiếm thăm dò Khoáng sản"
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
-        "course_id": "GEO20215",
+        "course_id": "GEO10295",
         "course_name_vi": "Khoá luận tốt nghiệp",
         "credits": 10,
         "theory_hours": 0,
@@ -1031,10 +1427,54 @@ export const courses = [
         "exercise_hours": 300,
         "course_type": "TC",
         "category": "GRADUATION",
-        "description": "Phương án 1 - CN. Địa kỹ thuật"
+        "description": "Chuyên ngành Ngọc học"
     },
     {
-        "course_id": "GEO20116",
+        "course_id": "GEO10395",
+        "course_name_vi": "Khoá luận tốt nghiệp",
+        "credits": 10,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 300,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Dầu khí"
+    },
+    {
+        "course_id": "GEO10495",
+        "course_name_vi": "Khoá luận tốt nghiệp",
+        "credits": 10,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 300,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Thủy văn - Địa chất Công trình"
+    },
+    {
+        "course_id": "GEO10595",
+        "course_name_vi": "Khoá luận tốt nghiệp",
+        "credits": 10,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 300,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Môi trường"
+    },
+    {
+        "course_id": "GEO10695",
+        "course_name_vi": "Khoá luận tốt nghiệp",
+        "credits": 10,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 300,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Biển"
+    },
+    {
+        "course_id": "GEO10190",
         "course_name_vi": "Đồ án tốt nghiệp",
         "credits": 6,
         "theory_hours": 0,
@@ -1042,10 +1482,10 @@ export const courses = [
         "exercise_hours": 180,
         "course_type": "TC",
         "category": "GRADUATION",
-        "description": "Phương án 2 - CN. Tìm kiếm thăm dò Khoáng sản"
+        "description": "Chuyên ngành Địa chất Khoáng sản"
     },
     {
-        "course_id": "GEO20216",
+        "course_id": "GEO10290",
         "course_name_vi": "Đồ án tốt nghiệp",
         "credits": 6,
         "theory_hours": 0,
@@ -1053,6 +1493,50 @@ export const courses = [
         "exercise_hours": 180,
         "course_type": "TC",
         "category": "GRADUATION",
-        "description": "Phương án 2 - CN. Địa kỹ thuật"
+        "description": "Chuyên ngành Ngọc học"
+    },
+    {
+        "course_id": "GEO10390",
+        "course_name_vi": "Đồ án tốt nghiệp",
+        "credits": 6,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 180,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Dầu khí"
+    },
+    {
+        "course_id": "GEO10490",
+        "course_name_vi": "Đồ án tốt nghiệp",
+        "credits": 6,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 180,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Thủy văn - Địa chất Công trình"
+    },
+    {
+        "course_id": "GEO10590",
+        "course_name_vi": "Đồ án tốt nghiệp",
+        "credits": 6,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 180,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Môi trường"
+    },
+    {
+        "course_id": "GEO10690",
+        "course_name_vi": "Đồ án tốt nghiệp",
+        "credits": 6,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 180,
+        "course_type": "TC",
+        "category": "GRADUATION",
+        "description": "Chuyên ngành Địa chất Biển"
     }
 ];

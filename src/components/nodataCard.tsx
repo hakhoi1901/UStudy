@@ -29,7 +29,7 @@ export function NoDataCard() {
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
                         <div>
                             <p className="font-semibold text-gray-900">Đăng nhập</p>
-                            <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal.</p>
+                            <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal. Nhấn vào bookmark để lấy dữ liệu</p>
                         </div>
                     </div>
 
