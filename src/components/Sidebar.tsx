@@ -68,7 +68,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
         {navGroups.map((group) => (
           <div key={group.title} className="mb-6">
             {!isCollapsed && (

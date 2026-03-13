@@ -101,13 +101,8 @@ function AppContent() {
         {/* Giao diện chính/các trang*/}
         <main className="flex-1 overflow-y-auto">
           {!isConfigured ? (
-            <div className="p-6 h-full flex items-center justify-center">
+            <div className="p-6 h-full flex items-center justify-center" style={{ marginTop: '80px' }}>
               <div className="max-w-2xl w-full mx-auto">
-                <div className="text-center mb-8" style={{ marginTop: '100px' }}>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn đến với HCMUS Portal</h2>
-                  <p className="text-gray-500">Vui lòng thiết lập chương trình đào tạo của bạn để bắt đầu sử dụng hệ thống.</p>
-                </div>
-
                 <div className="w-1 flex flex-row w-full items-center justify-center">
                   <SettingUserProfile />
                 </div>
@@ -117,17 +112,13 @@ function AppContent() {
             <>
               {currentPage === 'dashboard' && (
                 <div className="p-6">
-                  <div className="max-w-7xl mx-auto">
-                    <DashboardWidgets />
-                  </div>
+                  <DashboardWidgets />
                 </div>
               )}
 
               {currentPage === 'courses' && (
                 <div className="p-6">
-                  <div className="max-w-[1600px] mx-auto">
-                    <IntegratedStudyRoadmap />
-                  </div>
+                  <IntegratedStudyRoadmap />
                 </div>
               )}
 
