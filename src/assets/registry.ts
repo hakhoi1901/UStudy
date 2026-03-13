@@ -28,7 +28,7 @@ export interface FacultyInfo {
 
 const COHORT: CohortInfo[] = [
     { id: 'k24', name: 'Khóa 2024 (K24)' },
-    { id: 'k25', name: 'Khóa 2025 (K25)' }
+    { id: 'k25', name: 'Khóa 2025 (Chưa cập nhật chương trình đào tạo, sử dụng dữ liệu k24)' }
 ];
 
 /**
@@ -51,6 +51,22 @@ const RAW_FACULTIES = [
             { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSource: { 'k25': 'k24' } },
             { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
             { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+    {
+        id: 'khoa-dia-chat',
+        name: 'Khoa Địa chất',
+        majors: [
+            { id: 'dia-chat-hoc', name: 'Địa chất học', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+    {
+        id: 'khoa-khvcnvl',
+        name: 'Khoa Khoa học và Công nghệ Vật liệu',
+        majors: [
+            { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
@@ -85,6 +101,16 @@ const RAW_FACULTIES = [
             { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSource: { 'k25': 'k24' } },
         ],
     },
+
+    {
+        id: 'khoa-moi-truong',
+        name: 'Khoa Môi trường',
+        majors: [
+            { id: 'cn-ky-thuat-moi-truong', name: 'Công nghệ kỹ thuật môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'khoa-hoc-moi-truong', name: 'Khoa học môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'quan-ly-tai-nguyen-moi-truong', name: 'Quản lý tài nguyên môi trường', dataSource: { 'k25': 'k24' } },
+        ],
+    }
 ];
 
 export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({

@@ -28,6 +28,8 @@ export const tuition_2025_2026 = {
         GEO: 639000,
         ENV: 639000,
         OMH: 639000,
+        MTS: 639000,
+        MSC: 639000,
         CSC0: 639000,
 
         // Tin học cơ sở
@@ -38,11 +40,17 @@ export const tuition_2025_2026 = {
     majors: {
         'nhom-nganh': { CSC1: 857000 },
         'cong-nghe-thong-tin': { CSC1: 857000 },
-        'he-thong-thong-tin': { CSC1: 857000 }, // done
+        'he-thong-thong-tin': { CSC1: 857000 },
         'ky-thuat-phan-mem': { CSC1: 857000 },
         'khoa-hoc-may-tinh': { CSC1: 857000 },
         'tri-tue-nhan-tao': { CSC1: 891000 },
         'cu-nhan-tai-nang-cntt': { CSC1: 857000 },
+
+        'dia-chat-hoc': { GEO1: 658950 },
+        'ky-thuat-dia-chat': { GEO1: 658950 },
+
+        'khoa-hoc-vat-lieu': { MSC1: 884000 },
+        'cong-nghe-vat-lieu': { MST1: 880000 },
 
         'cong nghe ban dan': { PHY1: 825000, SEM1: 820000 },
         'cn-vat-ly-dien-tu-va-tin-hoc': { PHY1: 782000, PET1: 782000 },
@@ -50,6 +58,10 @@ export const tuition_2025_2026 = {
         'ky-thuat-hat-nhan': { PHY1: 670000, NET1: 670000 },
         'vat-ly-hoc': { PHY1: 639000 },
         'vat-ly-y-khoa': { PHY1: 809000, MPH: 809000 },
+
+        'cn-ky-thuat-moi-truong': { ENE1: 681000 },
+        'khoa-hoc-moi-truong': { ENV1: 654000 },
+        'quan-ly-tai-nguyen-moi-truong': { ENM1: 680000 },
 
         'sinh-hoc': { BIO1: 854000 },
         'cong-nghe-sinh-hoc': { BIO1: 903000, BTE1: 903000 },
