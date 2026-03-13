@@ -154,46 +154,49 @@ export function IntegratedStudyRoadmap() {
                 {activeTab === 'prerequisiteTree' && (
                 <PrerequisiteTreeView />
                 )} */}
-                {/* Tab 2: Chọn môn học */}
-{activeTab === 'selection' && (
-    <div className="flex flex-row flex-nowrap gap-6 items-start w-full relative min-h-screen">
-        <div className="w-[calc(100%-374px)] min-w-0">
-            <SelectionView
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-                recommended={recommended}
-                all={all}
-                filteredCourses={filteredCourses}
-                selectedCourses={selectedCourses}
-                handleCourseToggle={handleCourseToggle}
-                handleShowFlowchart={handleShowFlowchart}
-            />
-        </div>
 
-        <div className="w-[350px] flex-shrink-0 relative">
-            <div 
-                className="fixed z-20 w-[350px] flex flex-col"
-                style={{ 
-                    top: '95px', 
-                    bottom: '25px' 
-                }}
-            >
-                <div className="overflow-y-auto custom-scrollbar bg-white rounded-xl shadow-lg border border-gray-200">
-                    <SelectionBasketVi
-                        selectedCourses={Array.from(selectedCourses)
-                            .map(id => globalAllCourses.find(c => c.id === id)!)
-                            .filter(Boolean)}
-                        onRemoveCourse={handleCourseToggle}
-                        allowedClassesMap={allowedClassesMap}
-                        setAllowedClassesMap={setAllowedClassesMap}
-                    />
-                </div>
-            </div>
-        </div>
-    </div>
-)}                {/* Tab 3: Lịch trực quan */}
+                {/* Tab 2: Chọn môn học */}
+                {activeTab === 'selection' && (
+                    <div className="flex flex-row flex-nowrap gap-6 items-start w-full relative min-h-screen">
+                        <div className="w-[calc(100%-374px)] min-w-0">
+                            <SelectionView
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                recommended={recommended}
+                                all={all}
+                                filteredCourses={filteredCourses}
+                                selectedCourses={selectedCourses}
+                                handleCourseToggle={handleCourseToggle}
+                                handleShowFlowchart={handleShowFlowchart}
+                            />
+                        </div>
+
+                        <div className="w-[350px] flex-shrink-0 relative">
+                            <div 
+                                className="fixed z-20 w-[350px] flex flex-col"
+                                style={{ 
+                                    top: '95px', 
+                                    bottom: '25px' 
+                                }}
+                            >
+                                <div className="overflow-y-auto custom-scrollbar bg-white rounded-xl shadow-lg border border-gray-200">
+                                    <SelectionBasketVi
+                                        selectedCourses={Array.from(selectedCourses)
+                                            .map(id => globalAllCourses.find(c => c.id === id)!)
+                                            .filter(Boolean)}
+                                        onRemoveCourse={handleCourseToggle}
+                                        allowedClassesMap={allowedClassesMap}
+                                        setAllowedClassesMap={setAllowedClassesMap}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Tab 3: Lịch trực quan */}
                 {activeTab === 'calendar' && (
                     <CalendarView
                         selectedCourses={selectedCourses}
