@@ -55,8 +55,12 @@ export function useCourseData() {
         const mappedRecommended = CourseDataMapper.mapCourseList(
             recommendedCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, false
         );
+        const validOpenCourses = courseDb.filter(c => 
+            allCoursesMeta.some(m => m.course_id === (c.id || c.course_id))
+        );
+
         const mappedAllOpen = CourseDataMapper.mapCourseList(
-            courseDb, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, true
+            validOpenCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, true
         );
 
         const recommendedGrouped = CourseDataMapper.groupCoursesByCategory(mappedRecommended);

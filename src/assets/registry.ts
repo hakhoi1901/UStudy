@@ -28,7 +28,7 @@ export interface FacultyInfo {
 
 const COHORT: CohortInfo[] = [
     { id: 'k24', name: 'Khóa 2024 (K24)' },
-    { id: 'k25', name: 'Khóa 2025 (K25)' }
+    { id: 'k25', name: 'Khóa 2025 (Chưa cập nhật chương trình đào tạo, sử dụng dữ liệu k24)' }
 ];
 
 /**
@@ -50,27 +50,67 @@ const RAW_FACULTIES = [
             { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSource: { 'k25': 'k24' } },
             { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSource: { 'k25': 'k24' } },
             { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSource: { 'k25': 'k24' } },
-            { id: 'cu-nhan-tai-nang-cntt', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
+            { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
-        id: 'khoa-toan-tin',
+        id: 'khoa-dia-chat',
+        name: 'Khoa Địa chất',
+        majors: [
+            { id: 'dia-chat-hoc', name: 'Địa chất học', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+    {
+        id: 'khoa-khvcnvl',
+        name: 'Khoa Khoa học và Công nghệ Vật liệu',
+        majors: [
+            { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+    {
+        id: 'khoa-ly',
+        name: 'Khoa Vật lý - Vật lý Kỹ thuật',
+        majors: [
+            { id: 'vat-ly-hoc', name: 'Vật lý học', dataSource: { 'k25': 'k24' } },
+            { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa', dataSource: { 'k25': 'k24' } },
+            { id: 'hai-duong-hoc', name: 'Hải dương học', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân', dataSource: { 'k25': 'k24' } },
+            { id: 'cn-vat-ly-dien-tu-va-tin-hoc', name: 'CN Vật lý điện tử và tin học', dataSource: { 'k25': 'k24' } },
+            { id: 'cn-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+
+    {
+        id: 'khoa-toan',
         name: 'Khoa Toán - Tin học',
         majors: [
-            { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
+            // { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
+            // { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
+            // { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
             { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
-            { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+            // { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
-        id: 'khoa-sinh-hoc',
+        id: 'khoa-sinh',
         name: 'Khoa Sinh học',
         majors: [
             { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSource: { 'k25': 'k24' } },
         ],
     },
+
+    {
+        id: 'khoa-moi-truong',
+        name: 'Khoa Môi trường',
+        majors: [
+            { id: 'cn-ky-thuat-moi-truong', name: 'Công nghệ kỹ thuật môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'khoa-hoc-moi-truong', name: 'Khoa học môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'quan-ly-tai-nguyen-moi-truong', name: 'Quản lý tài nguyên môi trường', dataSource: { 'k25': 'k24' } },
+        ],
+    }
 ];
 
 export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({
@@ -85,7 +125,7 @@ export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({
  * Giá trị mặc định khi người dùng chưa chọn.
  */
 export const DEFAULT_FACULTY_ID = 'khoa-cntt';
-export const DEFAULT_MAJOR_ID = 'khoa-hoc-may-tinh';
+export const DEFAULT_MAJOR_ID = 'cong-nghe-thong-tin';
 export const DEFAULT_COHORT_ID = 'k24';
 
 /**

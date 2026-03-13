@@ -102,16 +102,18 @@ function AppContent() {
         <main className="flex-1 overflow-y-auto">
           {!isConfigured ? (
             <div className="p-6 h-full flex items-center justify-center">
-                <div className="max-w-2xl w-full mx-auto">
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-[#004A98] mb-4">
-                            <Book size={32} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn đến với HCMUS Portal</h2>
-                        <p className="text-gray-500">Vui lòng thiết lập chương trình đào tạo của bạn để bắt đầu sử dụng hệ thống.</p>
-                    </div>
-                    <SettingUserProfile />
+              <div className="max-w-2xl w-full mx-auto">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn đến với HCMUS Portal</h2>
+                  <p className="text-gray-500">Vui lòng thiết lập chương trình đào tạo của bạn để bắt đầu sử dụng hệ thống.</p>
                 </div>
+
+                {/* Đã sửa dòng dưới đây */}
+                <div className="w-1 flex flex-row w-full items-center justify-center">
+
+                  <SettingUserProfile />
+                </div>
+              </div>
             </div>
           ) : (
             <>

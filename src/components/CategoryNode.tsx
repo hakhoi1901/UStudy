@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { CourseRowTrainingProgram } from './CourseRowTrainingProgram';
 
 export interface CourseData {
@@ -37,7 +37,6 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
         if (cat.coursesData) {
             coursesToRender = cat.coursesData;
             if (coursesToRender.length > 0) hasMatchingCourses = true;
-            // Use allCoursesData (unfiltered) for credit calculation if available
             const coursesForCredits = cat.allCoursesData || cat.coursesData;
             categoryEarnedCredits += coursesForCredits
                 .filter((c: CourseData) => c.status === 'passed')
@@ -50,9 +49,7 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
                 const { node, earnedCredits } = renderCategory(subCat, currentDepth + 1);
                 if (node) hasMatchingCourses = true;
 
-                // Add up child credits to parent
                 categoryEarnedCredits += earnedCredits;
-                // Subtract credits if the sub-category is excluded (e.g., Physical Education)
                 if (subCat.name && isCourseExcludedFromGPA(subCat.name)) {
                     categoryEarnedCredits -= earnedCredits;
                 }
@@ -65,13 +62,11 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
             optionsRendered = cat.options.map((opt: any, idx: number) => {
                 const optCourses = opt.coursesData || [];
                 if (optCourses.length > 0) hasMatchingCourses = true;
-                // Use allCoursesData (unfiltered) for credit calculation if available
                 const coursesForCredits = opt.allCoursesData || optCourses;
                 const optionEarnedCredits = coursesForCredits
                     .filter((c: CourseData) => c.status === 'passed')
                     .reduce((sum: number, c: CourseData) => sum + c.credits, 0);
 
-                // We'll count the max earned across options (assuming they choose one path)
                 if (optionEarnedCredits > categoryEarnedCredits) {
                     categoryEarnedCredits = optionEarnedCredits;
                 }
@@ -106,60 +101,72 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
         const requiredCredits = cat.total_credits_required || cat.credits || cat.credits_required || 0;
         const isCompleted = requiredCredits > 0 && categoryEarnedCredits >= requiredCredits;
 
-        const Node = (
-            <div className={`mb-4 ${currentDepth === 0 ? 'bg-white p-6 rounded-xl border border-gray-200 shadow-sm' : 'pl-4 border-l-2 mt-4 transition-colors ' + (isCompleted ? 'border-green-200 bg-green-50/20' : 'border-gray-100')}`}>
-                <div className="mb-4">
-                    <div className="flex items-center gap-3 flex-wrap">
-                        {currentDepth === 0 ? (
-                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                {cat.name || 'Danh mục chưa tên'}
-                                {isCompleted && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                            </h3>
-                        ) : currentDepth === 1 ? (
-                            <h4 className="text-base font-bold text-gray-800 flex items-center gap-1.5">
-                                {cat.name || 'Nhóm học phần'}
-                                {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                            </h4>
-                        ) : (
-                            <h5 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
-                                {cat.name || 'Nhóm con'}
-                                {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                            </h5>
-                        )}
+        // Bọc phần Node vào một component con để mỗi danh mục có state riêng
+        const CollapsibleNode = () => {
+            const [isExpanded, setIsExpanded] = useState(true);
 
-                        {requiredCredits > 0 && (
-                            <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium bg-[#004A98] text-white`}>
-                                {categoryEarnedCredits} / {requiredCredits} Tín chỉ
-                            </span>
-                        )}
+            return (
+                <div className={`mb-4 ${currentDepth === 0 ? 'bg-white p-6 rounded-xl border border-gray-200 shadow-sm' : 'pl-4 border-l-2 mt-4 transition-colors ' + (isCompleted ? 'border-green-200 bg-green-50/20' : 'border-gray-100')}`}>
+                    <div className="mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsExpanded(!isExpanded)}>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <div className="flex items-center gap-3">
+                                {isExpanded ? <ChevronDown className="w-5 h-5 text-gray-500" /> : <ChevronRight className="w-5 h-5 text-gray-500" />}
+                                {currentDepth === 0 ? (
+                                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                        {cat.name || 'Danh mục chưa tên'}
+                                        {isCompleted && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                    </h3>
+                                ) : currentDepth === 1 ? (
+                                    <h4 className="text-base font-bold text-gray-800 flex items-center gap-1.5">
+                                        {cat.name || 'Nhóm học phần'}
+                                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                                    </h4>
+                                ) : (
+                                    <h5 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                        {cat.name || 'Nhóm con'}
+                                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                                    </h5>
+                                )}
+                            </div>
+
+                            {requiredCredits > 0 && (
+                                <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium bg-[#004A98] text-white`}>
+                                    {categoryEarnedCredits} / {requiredCredits} Tín chỉ
+                                </span>
+                            )}
+                        </div>
+                        {cat.note && <p className="text-sm text-gray-500 mt-1 italic ml-8">{cat.note}</p>}
                     </div>
-                    {cat.note && <p className="text-sm text-gray-500 mt-1 italic">{cat.note}</p>}
+
+                    {isExpanded && (
+                        <div className={`transition-all duration-300 ${isExpanded ? 'opacity-100 mt-4' : 'opacity-0 h-0 overflow-hidden'}`}>
+                            {coursesToRender.length > 0 && (
+                                <div className="space-y-2 mb-4 ml-8">
+                                    {coursesToRender.map((c: CourseData) => (
+                                        <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} rootStatus={isCompleted ? 'passed' : 'none'} onShowFlowchart={onShowFlowchart} />
+                                    ))}
+                                </div>
+                            )}
+
+                            {optionsRendered.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 ml-8">
+                                    <p className="text-sm font-medium text-gray-700 mb-3">Tùy chọn hoàn thành:</p>
+                                    {optionsRendered}
+                                </div>
+                            )}
+
+                            {nestedCategories.length > 0 && (
+                                <div className="mt-2 text-gray-900 border-t border-dashed border-gray-200 pt-3 ml-8">
+                                    {nestedCategories}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
+            );
+        };
 
-                {coursesToRender.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                        {coursesToRender.map((c: CourseData) => (
-                            <CourseRowTrainingProgram key={c.course_id} course={c} status={c.status} rootStatus={isCompleted ? 'passed' : 'none'} onShowFlowchart={onShowFlowchart} />
-                        ))}
-                    </div>
-                )}
-
-                {optionsRendered.length > 0 && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-sm font-medium text-gray-700 mb-3">Tùy chọn hoàn thành:</p>
-                        {optionsRendered}
-                    </div>
-                )}
-
-                {nestedCategories.length > 0 && (
-                    <div className="mt-2 text-gray-900 border-t border-dashed border-gray-200 pt-3">
-                        {nestedCategories}
-                    </div>
-                )}
-            </div>
-        );
-
-        return { node: Node, earnedCredits: categoryEarnedCredits };
+        return { node: <CollapsibleNode />, earnedCredits: categoryEarnedCredits };
     };
 
     return <>{renderCategory(category, depth).node}</>;

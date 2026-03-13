@@ -27,22 +27,6 @@ export function SelectionView({
     handleCourseToggle,
     handleShowFlowchart,
 }: SelectionViewProps) {
-    const isAllEmpty = all.core.length === 0 && all.major.length === 0 && all.electives.length === 0;
-
-    if (isAllEmpty) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center">
-                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-5 border border-blue-100 shadow-sm">
-                    <DatabaseBackup className="w-10 h-10 text-blue-500" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3">Đang cập nhật dữ liệu</h2>
-                <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-                    Dữ liệu môn học gợi ý cho chuyên ngành và khóa học này hiện đang được xử lý và cập nhật. Vui lòng quay lại kiểm tra sau.
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div>
             {/* Tìm kiếm và lọc */}

@@ -87,7 +87,7 @@ export function TrainingProgramView() {
                 );
             };
 
-            if (processedCat.courses) {
+            if (processedCat.courses && Array.isArray(processedCat.courses)) {
                 const allCourses = getAllCoursesWithStatus(processedCat.courses);
                 processedCat.allCoursesData = allCourses;
                 processedCat.coursesData = filterBySearch(allCourses);
@@ -100,14 +100,17 @@ export function TrainingProgramView() {
                 }, {});
             }
 
-            if (processedCat.options) {
+            if (processedCat.options && Array.isArray(processedCat.options)) {
                 processedCat.options = processedCat.options.map((opt: any) => {
-                    const allCourses = getAllCoursesWithStatus(opt.courses);
-                    return {
-                        ...opt,
-                        allCoursesData: allCourses,
-                        coursesData: filterBySearch(allCourses),
-                    };
+                    if (opt.courses && Array.isArray(opt.courses)) {
+                        const allCourses = getAllCoursesWithStatus(opt.courses);
+                        return {
+                            ...opt,
+                            allCoursesData: allCourses,
+                            coursesData: filterBySearch(allCourses),
+                        };
+                    }
+                    return opt;
                 });
             }
 
@@ -119,7 +122,7 @@ export function TrainingProgramView() {
             return acc;
         }, {});
 
-    }, [searchTerm, getCourseStatus]);
+    }, [searchTerm, getCourseStatus, courses, categories]);
 
 
     return (

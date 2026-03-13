@@ -13,7 +13,6 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
-import { PrerequisiteTreeView } from './PrerequisiteTreeView';
 import type { Course } from '../../types';
 
 
