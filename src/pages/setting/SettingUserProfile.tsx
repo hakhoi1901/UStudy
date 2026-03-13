@@ -15,8 +15,9 @@ export function SettingUserProfile() {
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
             {!isConfigured &&
                 <div className="mb-6 w-full flex flex-col items-center justify-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn đến với HCMUS Portal</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn</h2>
                     <p className="text-gray-500">Vui lòng thiết lập chương trình đào tạo của bạn để bắt đầu sử dụng hệ thống.</p>
+                    <div className="p-2"></div>
                 </div>
             }
             <h2 className="text-gray-900 flex items-center gap-2 font-semibold mb-4"><GraduationCap className="w-7 h-7" />Chương trình đào tạo</h2>
