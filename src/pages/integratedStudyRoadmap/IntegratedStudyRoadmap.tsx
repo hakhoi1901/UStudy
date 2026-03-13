@@ -124,7 +124,7 @@ export function IntegratedStudyRoadmap() {
 
     // Giao diện chính
     return (
-        <div className="flex gap-6 min-h-screen pb-10">
+        <div className="flex gap-6 min-h-screen pb-10" style={{ isolation: 'isolate' }}>
             {/* Nội dung chính */}
             <div className="flex-1 w-full">
                 <div className="mb-6">
@@ -155,40 +155,45 @@ export function IntegratedStudyRoadmap() {
                 <PrerequisiteTreeView />
                 )} */}
                 {/* Tab 2: Chọn môn học */}
-                {activeTab === 'selection' && (
-                    <div className="flex flex-row lg:flex-row gap-6 items-start w-full relative">
+{activeTab === 'selection' && (
+    <div className="flex flex-row flex-nowrap gap-6 items-start w-full relative min-h-screen">
+        <div className="w-[calc(100%-374px)] min-w-0">
+            <SelectionView
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                recommended={recommended}
+                all={all}
+                filteredCourses={filteredCourses}
+                selectedCourses={selectedCourses}
+                handleCourseToggle={handleCourseToggle}
+                handleShowFlowchart={handleShowFlowchart}
+            />
+        </div>
 
-                        {/* CỘT TRÁI: Thêm chiều cao cố định và cho phép cuộn riêng biệt nếu cần */}
-                        <div className="flex-1 min-w-0">
-                            <SelectionView
-                                searchTerm={searchTerm}
-                                setSearchTerm={setSearchTerm}
-                                viewMode={viewMode}
-                                setViewMode={setViewMode}
-                                recommended={recommended}
-                                all={all}
-                                filteredCourses={filteredCourses}
-                                selectedCourses={selectedCourses}
-                                handleCourseToggle={handleCourseToggle}
-                                handleShowFlowchart={handleShowFlowchart}
-                            />
-                        </div>
-
-                        {/* CỘT PHẢI: Giỏ hàng */}
-                        <div className="lg:block sticky top-6 w-[350px] flex-shrink-0">
-                            <SelectionBasketVi
-                                selectedCourses={Array.from(selectedCourses)
-                                    .map(id => globalAllCourses.find(c => c.id === id)!)
-                                    .filter(Boolean)}
-                                onRemoveCourse={handleCourseToggle}
-                                allowedClassesMap={allowedClassesMap}
-                                setAllowedClassesMap={setAllowedClassesMap}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* Tab 3: Lịch trực quan */}
+        <div className="w-[350px] flex-shrink-0 relative">
+            <div 
+                className="fixed z-20 w-[350px] flex flex-col"
+                style={{ 
+                    top: '95px', 
+                    bottom: '25px' 
+                }}
+            >
+                <div className="overflow-y-auto custom-scrollbar bg-white rounded-xl shadow-lg border border-gray-200">
+                    <SelectionBasketVi
+                        selectedCourses={Array.from(selectedCourses)
+                            .map(id => globalAllCourses.find(c => c.id === id)!)
+                            .filter(Boolean)}
+                        onRemoveCourse={handleCourseToggle}
+                        allowedClassesMap={allowedClassesMap}
+                        setAllowedClassesMap={setAllowedClassesMap}
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+)}                {/* Tab 3: Lịch trực quan */}
                 {activeTab === 'calendar' && (
                     <CalendarView
                         selectedCourses={selectedCourses}

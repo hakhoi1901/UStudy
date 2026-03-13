@@ -96,7 +96,7 @@ function AppContent() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-visible">
         <Header selectedSemester={selectedSemester} />
         {/* Giao diện chính/các trang*/}
         <main className="flex-1 overflow-y-auto">
