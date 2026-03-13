@@ -62,7 +62,7 @@ const RAW_FACULTIES = [
         ],
     },
     {
-        id: 'khoa-khvcnvl',
+        id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
         name: 'Khoa Khoa học và Công nghệ Vật liệu',
         majors: [
             { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSource: { 'k25': 'k24' } },
@@ -77,8 +77,8 @@ const RAW_FACULTIES = [
             { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa', dataSource: { 'k25': 'k24' } },
             { id: 'hai-duong-hoc', name: 'Hải dương học', dataSource: { 'k25': 'k24' } },
             { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân', dataSource: { 'k25': 'k24' } },
-            { id: 'cn-vat-ly-dien-tu-va-tin-hoc', name: 'CN Vật lý điện tử và tin học', dataSource: { 'k25': 'k24' } },
-            { id: 'cn-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-vat-ly-dien-tu-va-tin-hoc', name: 'CN Vật lý điện tử và tin học', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
         ],
     },
 
@@ -106,9 +106,9 @@ const RAW_FACULTIES = [
         id: 'khoa-moi-truong',
         name: 'Khoa Môi trường',
         majors: [
-            { id: 'cn-ky-thuat-moi-truong', name: 'Công nghệ kỹ thuật môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-ky-thuat-moi-truong', name: 'Công nghệ kỹ thuật môi trường', dataSource: { 'k25': 'k24' } },
             { id: 'khoa-hoc-moi-truong', name: 'Khoa học môi trường', dataSource: { 'k25': 'k24' } },
-            { id: 'quan-ly-tai-nguyen-moi-truong', name: 'Quản lý tài nguyên môi trường', dataSource: { 'k25': 'k24' } },
+            { id: 'quan-ly-tai-nguyen-va-moi-truong', name: 'Quản lý tài nguyên và môi trường', dataSource: { 'k25': 'k24' } },
         ],
     }
 ];
