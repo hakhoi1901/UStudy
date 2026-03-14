@@ -140,6 +140,13 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             const billingCr = meta ? FinancialLogic.calculateBillingCredits(meta, credits) : 0;
             const periods = billingCr * 15;
 
+            // Debug logic tính học phí từng môn
+            // console.log(`[TuitionLog] Course: ${cid} - ${reg.name || meta?.name}`);
+            // console.log(` - Credits: ${credits}, Billing Credits: ${billingCredits}`);
+            // console.log(` - Price/Credit: ${FinancialLogic.lookupPricePerCredit(cid, tuitionRates)}`);
+            // console.log(` - Course Fee: ${courseFee}`);
+            if (missingMeta) console.log(` - WARNING: Missing metadata from CTĐT`);
+
             calculatedCourses.push({
                 stt: stt++,
                 semester: targetSemester,
