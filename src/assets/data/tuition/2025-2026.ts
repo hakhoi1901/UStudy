@@ -15,7 +15,7 @@ export const tuition_2025_2026 = {
         // LLCT - KT - XH - PL
         BAA: 425000,
         ADD: 425000,
-
+        CSC00003: 425000,
         // GDQPAN - TC
         BAA0002: 425000,
         BAA0003: 425000,
@@ -32,8 +32,6 @@ export const tuition_2025_2026 = {
         MSC: 639000,
         CSC0: 639000,
 
-        // Tin học cơ sở
-        CSC00003: 425000,
     },
 
     // Đơn giá riêng theo ngành
