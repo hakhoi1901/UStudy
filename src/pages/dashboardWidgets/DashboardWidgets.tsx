@@ -72,7 +72,7 @@ export function DashboardWidgets() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* GPA */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-xl min-w-[200px] p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-[#004A98] flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-white" />
@@ -118,7 +118,7 @@ export function DashboardWidgets() {
           </div>
 
           {/* Xếp loại GPA */}
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t min-w-[200px] border-gray-100">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Xếp loại</span>
               <span className="text-[#004A98] font-semibold">
@@ -129,7 +129,7 @@ export function DashboardWidgets() {
         </div>
 
         {/* Tín chỉ tích lũy */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-xl min-w-[200px] p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-white" />
@@ -207,7 +207,7 @@ export function DashboardWidgets() {
         </div>
       </div>
 
-      <CardFooter/>
+      <CardFooter />
     </div>
   );
 }

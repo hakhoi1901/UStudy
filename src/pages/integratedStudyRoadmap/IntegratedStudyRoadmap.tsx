@@ -13,6 +13,7 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
+import { PrerequisiteTreeView } from './PrerequisiteTreeView';
 import type { Course } from '../../types';
 
 
@@ -156,7 +157,9 @@ export function IntegratedStudyRoadmap() {
                 {/* Tab 2: Chọn môn học */}
                 {activeTab === 'selection' && (
                     <div className="flex flex-row flex-nowrap gap-6 items-start w-full relative min-h-screen">
-                        <div className="w-[calc(100%-374px)] min-w-0">
+
+                        {/* CỘT TRÁI */}
+                        <div className="flex-1 min-w-0">
                             <SelectionView
                                 searchTerm={searchTerm}
                                 setSearchTerm={setSearchTerm}
@@ -171,15 +174,15 @@ export function IntegratedStudyRoadmap() {
                             />
                         </div>
 
-                        <div className="w-[350px] flex-shrink-0 relative">
-                            <div
-                                className="fixed z-20 w-[350px] flex flex-col"
-                                style={{
-                                    top: '95px',
-                                    bottom: '25px'
-                                }}
-                            >
-                                <div className="overflow-y-auto custom-scrollbar bg-white rounded-xl shadow-lg border border-gray-200">
+                        {/* CỘT PHẢI: Áp dụng trực tiếp sticky lên thẻ định tuyến kích thước */}
+                        <div
+                            className="w-1/4 max-w-[400px] min-w-[280px] sticky self-start flex-shrink-0"
+                            style={{ top: '24px', height: 'calc(100vh - 120px)' }}
+                        >
+
+                            {/* Khối giao diện bên trong chiếm trọn chiều cao và tự quản lý thanh cuộn */}
+                            <div className="h-full flex flex-col overflow-hidden">
+                                <div className="flex-1 overflow-y-auto custom-scrollbar">
                                     <SelectionBasketVi
                                         selectedCourses={Array.from(selectedCourses)
                                             .map(id => globalAllCourses.find(c => c.id === id)!)
@@ -190,6 +193,7 @@ export function IntegratedStudyRoadmap() {
                                     />
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 )}
