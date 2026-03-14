@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { MailWarning } from "lucide-react";
+import { APP_CONFIG } from "../../config/appConfig";
 
 export function ReportError() {
     const [errorTitle, setErrorTitle] = useState("");
     const [errorText, setErrorText] = useState("");
 
-    // Thay đổi thông tin này thành của bạn
-    const myEmail = "unopia.contact@gmail.com";
-    const fixedSubject = "[Báo cáo] - ";
-
-
+    // Sử dụng thông tin từ cấu hình chung
+    const myEmail = APP_CONFIG.CONTACT.GROUP_EMAIL;
+    const fixedSubject = APP_CONFIG.CONTACT.REPORT_SUBJECT_PREFIX;
 
     return (
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">

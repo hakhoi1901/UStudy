@@ -28,5 +28,14 @@ export const APP_CONFIG = {
      * Năm/Học kỳ mặc định cho Bookmarklet
      */
     DEFAULT_TARGET_YEAR: "25-26",
-    DEFAULT_TARGET_SEM: "2"
+    DEFAULT_TARGET_SEM: "2",
+
+    /**
+     * Thông tin liên hệ và báo cáo
+     */
+    CONTACT: {
+        GROUP_EMAIL: 'unopia.contact@gmail.com',
+        REPORT_SUBJECT_PREFIX: '[Báo cáo] - ',
+        DOCUMENT_CONTRIBUTION_SUBJECT_PREFIX: '[Đóng góp tài liệu] - ',
+    }
 };

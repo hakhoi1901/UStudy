@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Send, Info } from 'lucide-react';
+import { APP_CONFIG } from '../config';
 
 // định nghĩa props cho DocumentContributionModal
 interface DocumentContributionModalProps {
@@ -41,8 +42,8 @@ export function DocumentContributionModal({
     };
 
     const handleSendEmail = () => {
-        const email = 'hakhoi.contact@gmail.com';
-        const subject = `[Đóng góp tài liệu] ${courseId} - ${courseName}`;
+        const email = APP_CONFIG.CONTACT.GROUP_EMAIL;
+        const subject = APP_CONFIG.CONTACT.DOCUMENT_CONTRIBUTION_SUBJECT_PREFIX + courseId + ' - ' + courseName;
 
         const includedDocs = [];
         if (selectedTypes.exams) includedDocs.push('- Đề thi');
