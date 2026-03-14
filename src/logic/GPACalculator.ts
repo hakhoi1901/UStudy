@@ -12,7 +12,7 @@ export const GPACalculator = {
      */
     calculateProjectedGPA: (
         gradesHistory: StudentCourseGrade[],
-        projectedCourses: { credits: number; projectedGrade: number }[]
+        projectedCourses: { code: string; credits: number; projectedGrade: number }[]
     ): number => {
         // ── Phần 1: Tính điểm lịch sử (reuse AcademicRulesEngine) ────────
         // [TN-FIX] Code cũ chỉ filter status === 'passed', không loại
@@ -27,9 +27,15 @@ export const GPACalculator = {
         let currentTotalPoints = 0;
         let currentCredits = 0;
 
+        // 1. Tạo Set mã môn được dự đoán để thực hiện thay thế điểm (Grade Replacement)
+        const projectedIds = new Set(projectedCourses.map(c => c.code));
+
         for (const c of gradesHistory) {
             // Chỉ tính môn có điểm số hợp lệ (passed hoặc retake)
             if (c.status === 'ongoing') continue;
+
+            // BỎ QUA nếu môn này đang được dự đoán (cơ chế thay thế thẻ điểm)
+            if (projectedIds.has(c.code)) continue;
 
             const result = AcademicRulesEngine.calculateAccumulationParams(
                 c.code, c.credits, c.grade, c.status
