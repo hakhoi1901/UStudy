@@ -13,21 +13,21 @@ export const tuition_2024_2025 = {
     // Đơn giá chung toàn trường
     shared: {
         // LLCT - KT - XH - PL
-        BAA: 425000,
-        ADD: 425000,
+        BAA: 370000,
+        ADD: 370000,
 
         // GDQPAN - TC
-        BAA0002: 424000,
-        BAA0003: 424000,
+        BAA0002: 370000,
+        BAA0003: 370000,
 
         // Toán - Khoa học tự nhiên - Môi trường
-        MTH: 639000,
-        PHY: 639000,
-        CHE: 639000,
-        BIO: 639000,
-        GEO: 639000,
-        ENV: 639000,
-        CSC0: 639000,
+        MTH: 556000,
+        PHY: 556000,
+        CHE: 556000,
+        BIO: 556000,
+        GEO: 556000,
+        ENV: 556000,
+        CSC0: 556000,
         BAA00100: 0,
     },
 
