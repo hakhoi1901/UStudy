@@ -1,49 +1,5 @@
 export const courses = [
     {
-        "course_id": "BAA00101",
-        "course_name_vi": "Triết học Mác - Lênin",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
-        "description": ""
-    },
-    {
-        "course_id": "BAA00102",
-        "course_name_vi": "Kinh tế chính trị Mác - Lênin",
-        "credits": 2,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
-        "description": ""
-    },
-    {
-        "course_id": "BAA00103",
-        "course_name_vi": "Chủ nghĩa xã hội khoa học",
-        "credits": 2,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
-        "description": ""
-    },
-    {
-        "course_id": "BAA00104",
-        "course_name_vi": "Lịch sử Đảng Cộng sản Việt Nam",
-        "credits": 2,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
-        "description": ""
-    },
-    {
         "course_id": "BAA00003",
         "course_name_vi": "Tư tưởng Hồ Chí Minh",
         "credits": 2,
@@ -51,7 +7,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
+        "category": "GENERAL_POLITICAL_LAW",
         "description": ""
     },
     {
@@ -62,7 +18,51 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_POLITICAL",
+        "category": "GENERAL_POLITICAL_LAW",
+        "description": ""
+    },
+    {
+        "course_id": "BAA00101",
+        "course_name_vi": "Triết học Mác - Lênin",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "GENERAL_POLITICAL_LAW",
+        "description": ""
+    },
+    {
+        "course_id": "BAA00102",
+        "course_name_vi": "Kinh tế chính trị Mác - Lênin",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "GENERAL_POLITICAL_LAW",
+        "description": ""
+    },
+    {
+        "course_id": "BAA00103",
+        "course_name_vi": "Chủ nghĩa xã hội khoa học",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "GENERAL_POLITICAL_LAW",
+        "description": ""
+    },
+    {
+        "course_id": "BAA00104",
+        "course_name_vi": "Lịch sử Đảng Cộng sản Việt Nam",
+        "credits": 2,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "GENERAL_POLITICAL_LAW",
         "description": ""
     },
     {
@@ -73,8 +73,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SOCIAL",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 1 trong 3 học phần"
     },
     {
         "course_id": "BAA00006",
@@ -84,8 +84,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SOCIAL",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 1 trong 3 học phần"
     },
     {
         "course_id": "BAA00008",
@@ -95,8 +95,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SOCIAL",
-        "description": ""
+        "category": "GENERAL_SOCIAL_ECONOMICS",
+        "description": "Chọn 1 trong 3 học phần"
     },
     {
         "course_id": "MTH00010",
@@ -106,7 +106,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -117,7 +117,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -128,7 +128,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -139,7 +139,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -150,7 +150,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -161,7 +161,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -172,7 +172,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -183,7 +183,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -194,7 +194,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -205,7 +205,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -216,7 +216,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -227,7 +227,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -238,7 +238,7 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -249,7 +249,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_SCIENCE",
+        "category": "GENERAL_MATH_SCIENCE",
         "description": ""
     },
     {
@@ -260,8 +260,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 1 học phần trong nhóm TC2"
     },
     {
         "course_id": "ENV00003",
@@ -271,19 +271,19 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 1 học phần trong nhóm TC2"
     },
     {
         "course_id": "GEO00002",
-        "course_name_vi": "Khoa học trái đất",
+        "course_name_vi": "Khoa học Trái đất",
         "credits": 2,
         "theory_hours": 30,
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 1 học phần trong nhóm TC2"
     },
     {
         "course_id": "CHE00001",
@@ -293,8 +293,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "CHE00002",
@@ -304,8 +304,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "CHE00081",
@@ -315,8 +315,8 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "CHE00082",
@@ -326,8 +326,8 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "BIO00001",
@@ -337,8 +337,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "BIO00002",
@@ -348,8 +348,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "BIO00081",
@@ -359,8 +359,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "BIO00082",
@@ -370,8 +370,8 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "PHY00001",
@@ -381,8 +381,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "PHY00002",
@@ -392,8 +392,8 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "PHY00081",
@@ -403,8 +403,8 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "GENERAL_SCIENCE",
-        "description": ""
+        "category": "GENERAL_MATH_SCIENCE",
+        "description": "Chọn 02 tín chỉ trong nhóm TC3"
     },
     {
         "course_id": "CSC00003",
@@ -424,9 +424,9 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_LANGUAGE",
-        "description": ""
+        "course_type": "TC",
+        "category": "GENERAL_ENGLISH",
+        "description": "SV chỉ đăng ký học nếu chưa có chứng chỉ đạt chuẩn ngoại ngữ đầu ra"
     },
     {
         "course_id": "ADD00032",
@@ -435,8 +435,8 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_LANGUAGE",
+        "course_type": "TC",
+        "category": "GENERAL_ENGLISH",
         "description": ""
     },
     {
@@ -446,8 +446,8 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_LANGUAGE",
+        "course_type": "TC",
+        "category": "GENERAL_ENGLISH",
         "description": ""
     },
     {
@@ -457,8 +457,8 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GENERAL_LANGUAGE",
+        "course_type": "TC",
+        "category": "GENERAL_ENGLISH",
         "description": ""
     },
     {
@@ -469,7 +469,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_PHYSICAL",
+        "category": "GENERAL_PE",
         "description": ""
     },
     {
@@ -480,12 +480,12 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "BB",
-        "category": "GENERAL_PHYSICAL",
+        "category": "GENERAL_PE",
         "description": ""
     },
     {
         "course_id": "BAA00030",
-        "course_name_vi": "Giáo dục quốc phòng – An ninh",
+        "course_name_vi": "Giáo dục quốc phòng - An ninh",
         "credits": 4,
         "theory_hours": 0,
         "lab_hours": 0,
@@ -495,34 +495,12 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "MTH10109",
-        "course_name_vi": "Thực hành thống kê",
-        "credits": 1,
-        "theory_hours": 0,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10131",
-        "course_name_vi": "Lý thuyết thống kê",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10201",
-        "course_name_vi": "Toán tài chính căn bản",
+        "course_id": "MTH10441",
+        "course_name_vi": "Đại số tuyến tính 2A",
         "credits": 4,
         "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
         "course_type": "BB",
         "category": "FOUNDATION",
         "description": ""
@@ -539,8 +517,52 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "MTH10441",
-        "course_name_vi": "Đại số tuyến tính 2A",
+        "course_id": "MTH10131",
+        "course_name_vi": "Lý thuyết thống kê",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10109",
+        "course_name_vi": "Thực hành thống kê",
+        "credits": 1,
+        "theory_hours": 0,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10412",
+        "course_name_vi": "Hàm biến phức",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10426",
+        "course_name_vi": "Quá trình ngẫu nhiên",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10433",
+        "course_name_vi": "Giải tích số",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
@@ -550,13 +572,24 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "MTH10449",
-        "course_name_vi": "Quy hoạch tuyến tính",
-        "credits": 4,
-        "theory_hours": 45,
+        "course_id": "MTH10001",
+        "course_name_vi": "Lý luận dạy học",
+        "credits": 2,
+        "theory_hours": 15,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
+        "course_type": "TC",
+        "category": "FOUNDATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10002",
+        "course_name_vi": "Dạy toán bằng tiếng Anh",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
         "category": "FOUNDATION",
         "description": ""
     },
@@ -567,18 +600,18 @@ export const courses = [
         "theory_hours": 30,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
+        "course_type": "TC",
         "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "MTH10004",
-        "course_name_vi": "Tính toán mô phỏng",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
+        "course_id": "MTH10201",
+        "course_name_vi": "Toán tài chính căn bản",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
         "category": "FOUNDATION",
         "description": ""
     },
@@ -605,696 +638,36 @@ export const courses = [
         "description": ""
     },
     {
-        "course_id": "MTH10405",
-        "course_name_vi": "Cấu trúc dữ liệu và giải thuật",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10413",
-        "course_name_vi": "Phương trình toán lý",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10414",
-        "course_name_vi": "Phương trình đạo hàm riêng",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10421",
-        "course_name_vi": "Đại số hiện đại",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10426",
-        "course_name_vi": "Quá trình ngẫu nhiên",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10605",
-        "course_name_vi": "Python cho khoa học dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10619",
-        "course_name_vi": "Thống kê nhiều chiều",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10433",
-        "course_name_vi": "Giải tích số",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10427",
-        "course_name_vi": "Cơ học lý thuyết",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
         "course_id": "MTH10428",
         "course_name_vi": "Cơ học môi trường liên tục",
         "credits": 4,
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10429",
-        "course_name_vi": "Phương pháp phần tử hữu hạn",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10434",
-        "course_name_vi": "Cơ học vật rắn biến dạng",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10435",
-        "course_name_vi": "Cơ học chất lỏng",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10520",
-        "course_name_vi": "Seminar cơ học",
-        "credits": 4,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MECHANICS",
+        "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "MTH10560",
-        "course_name_vi": "Động lực học hệ nhiều vật và Robotics",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10561",
-        "course_name_vi": "Dao động ngẫu nhiên",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10562",
-        "course_name_vi": "Học máy cho cơ học",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10563",
-        "course_name_vi": "Cơ học tính toán",
-        "credits": 3,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MECHANICS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10104",
-        "course_name_vi": "Giáo dục học",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10132",
-        "course_name_vi": "Cơ sở hình học",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10133",
-        "course_name_vi": "Tâm lý học giáo dục",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10001",
-        "course_name_vi": "Lý luận dạy học",
-        "credits": 2,
-        "theory_hours": 15,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10134",
-        "course_name_vi": "Phương pháp dạy học môn Toán",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10102",
-        "course_name_vi": "Phương pháp dạy học tối ưu",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10002",
-        "course_name_vi": "Dạy Toán bằng tiếng Anh",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10135",
-        "course_name_vi": "Giải toán sơ cấp",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10123",
-        "course_name_vi": "Ứng dụng toán cao cấp để giải toán sơ cấp",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10136",
-        "course_name_vi": "Tổ chức và quản lý lớp học",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10137",
-        "course_name_vi": "Kỹ thuật đánh giá lớp học",
-        "credits": 2,
-        "theory_hours": 15,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10138",
-        "course_name_vi": "Chất lượng và quản lý chất lượng",
-        "credits": 2,
-        "theory_hours": 15,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10126",
-        "course_name_vi": "Seminar sư phạm",
-        "credits": 4,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10139",
-        "course_name_vi": "Tiếp cận tích hợp STEM trong giảng dạy Toán",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10140",
-        "course_name_vi": "Ứng dụng CNTT trong dạy học",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10112",
-        "course_name_vi": "Thực tập sư phạm",
-        "credits": 4,
-        "theory_hours": 0,
-        "lab_hours": 120,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_MATH_EDUCATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10214",
-        "course_name_vi": "Vi mô định lượng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10202",
-        "course_name_vi": "Dự báo",
+        "course_id": "MTH10442",
+        "course_name_vi": "Toán rời rạc 2A",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
+        "course_type": "TC",
+        "category": "FOUNDATION",
         "description": ""
     },
     {
-        "course_id": "MTH10203",
-        "course_name_vi": "Mô hình toán tài chính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10209",
-        "course_name_vi": "Toán tài chính nâng cao",
+        "course_id": "MTH10449",
+        "course_name_vi": "Quy hoạch tuyến tính",
         "credits": 4,
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10204",
-        "course_name_vi": "Lý thuyết tài chính tiền tệ",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
         "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10215",
-        "course_name_vi": "Vĩ mô định lượng",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10216",
-        "course_name_vi": "Quản trị rủi ro",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10217",
-        "course_name_vi": "Tài chính doanh nghiệp",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10218",
-        "course_name_vi": "Seminar toán tài chính",
-        "credits": 4,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10219",
-        "course_name_vi": "Phân tích tài chính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10220",
-        "course_name_vi": "Toán bảo hiểm cơ bản",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10221",
-        "course_name_vi": "Toán bảo hiểm nâng cao",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10558",
-        "course_name_vi": "Máy học thống kê",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10519",
-        "course_name_vi": "Xác suất cho bảo hiểm",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_QUANTITATIVE_FINANCE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10446",
-        "course_name_vi": "Vận trù học",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10447",
-        "course_name_vi": "Lý thuyết quy hoạch phi tuyến",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10615",
-        "course_name_vi": "Mô hình tối ưu trong kinh tế",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10450",
-        "course_name_vi": "Thuật toán tối ưu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "BB",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10543",
-        "course_name_vi": "Cơ sở giải tích lồi và quy hoạch lồi",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10616",
-        "course_name_vi": "Seminar tối ưu",
-        "credits": 4,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10553",
-        "course_name_vi": "Tối ưu đa mục tiêu",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10538",
-        "course_name_vi": "Tối ưu hóa ứng dụng",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10539",
-        "course_name_vi": "Quy hoạch tuyến tính nâng cao",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10540",
-        "course_name_vi": "Lý thuyết và thuật toán tối ưu không trơn",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10541",
-        "course_name_vi": "Lý thuyết trò chơi",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10544",
-        "course_name_vi": "Điều kiện tối ưu không trơn",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10545",
-        "course_name_vi": "Điều khiển tối ưu",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10614",
-        "course_name_vi": "Phương pháp biến phân trong tối ưu",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_OPTIMIZATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10412",
-        "course_name_vi": "Hàm biến phức",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "FOUNDATION_MATH",
+        "category": "FOUNDATION",
         "description": ""
     },
     {
@@ -1304,7 +677,7 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_ALGEBRA",
         "description": ""
     },
@@ -1315,7 +688,18 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
+        "category": "MAJOR_ALGEBRA",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10421",
+        "course_name_vi": "Đại số hiện đại",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
         "category": "MAJOR_ALGEBRA",
         "description": ""
     },
@@ -1326,128 +710,18 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_ALGEBRA",
         "description": ""
     },
     {
-        "course_id": "MTH10418",
-        "course_name_vi": "Đại số đồng điều",
+        "course_id": "MTH10501",
+        "course_name_vi": "Seminar Đại số",
         "credits": 4,
-        "theory_hours": 60,
+        "theory_hours": 0,
         "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10492",
-        "course_name_vi": "Tôpô Đại số",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10596",
-        "course_name_vi": "Lý thuyết nhóm",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10497",
-        "course_name_vi": "Lý thuyết biểu diễn nhóm hữu hạn",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10498",
-        "course_name_vi": "Lý thuyết số",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10503",
-        "course_name_vi": "Đại số máy tính",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10505",
-        "course_name_vi": "Đại số phân bậc",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10507",
-        "course_name_vi": "Lý thuyết tổ hợp",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10601",
-        "course_name_vi": "Lược sử tư duy số và đại số",
-        "credits": 3,
-        "theory_hours": 30,
-        "lab_hours": 0,
-        "exercise_hours": 30,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10525",
-        "course_name_vi": "Nhóm tuyến tính",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ALGEBRA",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10603",
-        "course_name_vi": "Đại số nhóm",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
+        "exercise_hours": 60,
+        "course_type": "BB",
         "category": "MAJOR_ALGEBRA",
         "description": ""
     },
@@ -1458,7 +732,7 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_ANALYSIS",
         "description": ""
     },
@@ -1469,7 +743,18 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
+        "category": "MAJOR_ANALYSIS",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10413",
+        "course_name_vi": "Phương trình toán lý",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "BB",
         "category": "MAJOR_ANALYSIS",
         "description": ""
     },
@@ -1480,106 +765,18 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_ANALYSIS",
         "description": ""
     },
     {
-        "course_id": "MTH10461",
-        "course_name_vi": "Bài toán không chỉnh",
+        "course_id": "MTH10451",
+        "course_name_vi": "Seminar giải tích",
         "credits": 4,
-        "theory_hours": 60,
+        "theory_hours": 0,
         "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10409",
-        "course_name_vi": "Giải tích phi tuyến",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10480",
-        "course_name_vi": "Hình học vi phân",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10478",
-        "course_name_vi": "Tôpô vi phân",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10439",
-        "course_name_vi": "Phương pháp số trong đại số tuyến tính",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10473",
-        "course_name_vi": "Phương trình vi phân ngẫu nhiên",
-        "credits": 4,
-        "theory_hours": 60,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10607",
-        "course_name_vi": "Phương pháp số cho Khoa học dữ liệu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10604",
-        "course_name_vi": "Phương pháp số trong tối ưu",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_ANALYSIS",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10444",
-        "course_name_vi": "Hệ phương trình đạo hàm riêng hyperbolic của định luật bảo toàn",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "TC",
+        "exercise_hours": 60,
+        "course_type": "BB",
         "category": "MAJOR_ANALYSIS",
         "description": ""
     },
@@ -1590,7 +787,7 @@ export const courses = [
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_NUMERICAL_ANALYSIS",
         "description": ""
     },
@@ -1601,7 +798,7 @@ export const courses = [
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
         "category": "MAJOR_NUMERICAL_ANALYSIS",
         "description": ""
     },
@@ -1612,7 +809,18 @@ export const courses = [
         "theory_hours": 45,
         "lab_hours": 30,
         "exercise_hours": 0,
-        "course_type": "TC",
+        "course_type": "BB",
+        "category": "MAJOR_NUMERICAL_ANALYSIS",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10532",
+        "course_name_vi": "Seminar giải tích số",
+        "credits": 4,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 60,
+        "course_type": "BB",
         "category": "MAJOR_NUMERICAL_ANALYSIS",
         "description": ""
     },
@@ -1623,8 +831,8 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "course_type": "BB",
+        "category": "MAJOR_STATISTICS",
         "description": ""
     },
     {
@@ -1634,8 +842,19 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
-        "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "course_type": "BB",
+        "category": "MAJOR_STATISTICS",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10619",
+        "course_name_vi": "Thống kê nhiều chiều",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "MAJOR_STATISTICS",
         "description": ""
     },
     {
@@ -1645,8 +864,261 @@ export const courses = [
         "theory_hours": 60,
         "lab_hours": 0,
         "exercise_hours": 0,
+        "course_type": "BB",
+        "category": "MAJOR_STATISTICS",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10508",
+        "course_name_vi": "Seminar xác suất thống kê",
+        "credits": 4,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 60,
+        "course_type": "BB",
+        "category": "MAJOR_STATISTICS",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10595",
+        "course_name_vi": "Khóa luận tốt nghiệp",
+        "credits": 10,
+        "theory_hours": 0,
+        "lab_hours": 0,
+        "exercise_hours": 300,
+        "course_type": "BB",
+        "category": "GRADUATION",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10418",
+        "course_name_vi": "Đại số đồng điều",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10492",
+        "course_name_vi": "Tôpô Đại số",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10596",
+        "course_name_vi": "Lý thuyết nhóm",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10497",
+        "course_name_vi": "Lý thuyết biểu diễn nhóm hữu hạn",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10498",
+        "course_name_vi": "Lý thuyết số",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10503",
+        "course_name_vi": "Đại số máy tính",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10505",
+        "course_name_vi": "Đại số phân bậc",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10507",
+        "course_name_vi": "Lý thuyết tổ hợp",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10601",
+        "course_name_vi": "Lược sử tư duy Số và Đại số",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10525",
+        "course_name_vi": "Nhóm tuyến tính",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10603",
+        "course_name_vi": "Đại số nhóm",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10414",
+        "course_name_vi": "Phương trình đạo hàm riêng",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10461",
+        "course_name_vi": "Bài toán không chỉnh",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10409",
+        "course_name_vi": "Giải tích phi tuyến",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10480",
+        "course_name_vi": "Hình học vi phân",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10478",
+        "course_name_vi": "Tôpô vi phân",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10439",
+        "course_name_vi": "Phương pháp số trong đại số tuyến tính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10473",
+        "course_name_vi": "Phương trình vi phân ngẫu nhiên",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10607",
+        "course_name_vi": "Phương pháp số cho Khoa học dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10604",
+        "course_name_vi": "Phương pháp số trong tối ưu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10444",
+        "course_name_vi": "Hệ phương trình đạo hàm riêng hyperbolic của định luật bảo toàn",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1657,7 +1129,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1668,7 +1140,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1679,7 +1151,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1690,7 +1162,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1701,7 +1173,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1712,7 +1184,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1723,7 +1195,18 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10519",
+        "course_name_vi": "Xác suất cho bảo hiểm",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1734,7 +1217,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1745,7 +1228,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1756,7 +1239,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1767,7 +1250,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1778,7 +1261,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1789,7 +1272,18 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10558",
+        "course_name_vi": "Máy học thống kê",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1800,7 +1294,513 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_PROBABILITY_STATISTICS",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10004",
+        "course_name_vi": "Tính toán mô phỏng",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10427",
+        "course_name_vi": "Cơ học lý thuyết",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10429",
+        "course_name_vi": "Phương pháp phần tử hữu hạn",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10434",
+        "course_name_vi": "Cơ học vật rắn biến dạng",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10435",
+        "course_name_vi": "Cơ học chất lỏng",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10560",
+        "course_name_vi": "Động lực học hệ nhiều vật và Robotics",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10561",
+        "course_name_vi": "Dao động ngẫu nhiên",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10562",
+        "course_name_vi": "Học máy cho cơ học",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10563",
+        "course_name_vi": "Cơ học tính toán",
+        "credits": 3,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10104",
+        "course_name_vi": "Giáo dục học",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10132",
+        "course_name_vi": "Cơ sở hình học",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10133",
+        "course_name_vi": "Tâm lý học giáo dục",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10134",
+        "course_name_vi": "Phương pháp dạy học môn Toán",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10102",
+        "course_name_vi": "Phương pháp dạy học tối ưu",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10135",
+        "course_name_vi": "Giải toán sơ cấp",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10123",
+        "course_name_vi": "Ứng dụng toán cao cấp để giải toán sơ cấp",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10136",
+        "course_name_vi": "Tổ chức và quản lý lớp học",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10137",
+        "course_name_vi": "Kỹ thuật đánh giá lớp học",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10138",
+        "course_name_vi": "Chất lượng và quản lý chất lượng",
+        "credits": 2,
+        "theory_hours": 15,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10139",
+        "course_name_vi": "Tiếp cận tích hợp STEM trong giảng dạy Toán",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10140",
+        "course_name_vi": "Ứng dụng CNTT trong dạy học",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10214",
+        "course_name_vi": "Vi mô định lượng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10202",
+        "course_name_vi": "Dự báo",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10203",
+        "course_name_vi": "Mô hình toán tài chính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10209",
+        "course_name_vi": "Toán tài chính nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10204",
+        "course_name_vi": "Lý thuyết tài chính tiền tệ",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10215",
+        "course_name_vi": "Vĩ mô định lượng",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10216",
+        "course_name_vi": "Quản trị rủi ro",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10217",
+        "course_name_vi": "Tài chính doanh nghiệp",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10219",
+        "course_name_vi": "Phân tích tài chính",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10220",
+        "course_name_vi": "Toán bảo hiểm cơ bản",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10221",
+        "course_name_vi": "Toán bảo hiểm nâng cao",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10446",
+        "course_name_vi": "Vận trù học",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10447",
+        "course_name_vi": "Lý thuyết quy hoạch phi tuyến",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10615",
+        "course_name_vi": "Mô hình tối ưu trong kinh tế",
+        "credits": 3,
+        "theory_hours": 30,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10450",
+        "course_name_vi": "Thuật toán tối ưu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 0,
+        "exercise_hours": 30,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10543",
+        "course_name_vi": "Cơ sở giải tích lồi và quy hoạch lồi",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10553",
+        "course_name_vi": "Tối ưu đa mục tiêu",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10538",
+        "course_name_vi": "Tối ưu hóa ứng dụng",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10539",
+        "course_name_vi": "Quy hoạch tuyến tính nâng cao",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10540",
+        "course_name_vi": "Lý thuyết và thuật toán tối ưu không trơn",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10541",
+        "course_name_vi": "Lý thuyết trò chơi",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10544",
+        "course_name_vi": "Điều kiện tối ưu không trơn",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10545",
+        "course_name_vi": "Điều khiển tối ưu",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10614",
+        "course_name_vi": "Phương pháp biến phân trong tối ưu",
+        "credits": 4,
+        "theory_hours": 60,
+        "lab_hours": 0,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10405",
+        "course_name_vi": "Cấu trúc dữ liệu và Giải thuật",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1811,7 +1811,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "FOUNDATION_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1822,7 +1822,18 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
+        "description": ""
+    },
+    {
+        "course_id": "MTH10605",
+        "course_name_vi": "Python cho khoa học dữ liệu",
+        "credits": 4,
+        "theory_hours": 45,
+        "lab_hours": 30,
+        "exercise_hours": 0,
+        "course_type": "TC",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1833,7 +1844,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1844,7 +1855,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1855,7 +1866,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1866,7 +1877,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1877,7 +1888,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1888,7 +1899,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1899,7 +1910,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1910,7 +1921,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1921,7 +1932,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1932,7 +1943,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1943,7 +1954,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1954,7 +1965,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1965,7 +1976,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1976,7 +1987,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_DATA_SCIENCE",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1987,7 +1998,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -1998,7 +2009,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2009,7 +2020,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2020,7 +2031,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2031,7 +2042,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2042,7 +2053,7 @@ export const courses = [
         "lab_hours": 0,
         "exercise_hours": 30,
         "course_type": "TC",
-        "category": "MAJOR_MATH_METHODS_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2053,7 +2064,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2064,7 +2075,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2075,7 +2086,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2086,7 +2097,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2097,7 +2108,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2108,7 +2119,7 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2119,7 +2130,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2130,7 +2141,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2141,7 +2152,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2152,7 +2163,7 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2163,7 +2174,7 @@ export const courses = [
         "lab_hours": 60,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2174,7 +2185,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2185,7 +2196,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2196,7 +2207,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2207,7 +2218,7 @@ export const courses = [
         "lab_hours": 30,
         "exercise_hours": 0,
         "course_type": "TC",
-        "category": "MAJOR_APPLIED_MATH_CS",
+        "category": "FREE_ELECTIVE",
         "description": ""
     },
     {
@@ -2216,7 +2227,7 @@ export const courses = [
         "credits": 4,
         "theory_hours": 0,
         "lab_hours": 0,
-        "exercise_hours": 0,
+        "exercise_hours": 60,
         "course_type": "TC",
         "category": "FREE_ELECTIVE",
         "description": ""
@@ -2230,28 +2241,6 @@ export const courses = [
         "exercise_hours": 0,
         "course_type": "TC",
         "category": "FREE_ELECTIVE",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10595",
-        "course_name_vi": "Khóa luận tốt nghiệp",
-        "credits": 10,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GRADUATION",
-        "description": ""
-    },
-    {
-        "course_id": "MTH10597",
-        "course_name_vi": "Đồ án tốt nghiệp",
-        "credits": 6,
-        "theory_hours": 0,
-        "lab_hours": 0,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "GRADUATION",
         "description": ""
     }
 ];

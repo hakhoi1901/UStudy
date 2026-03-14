@@ -33,47 +33,47 @@ export const tuition_2024_2025 = {
 
     // Đơn giá riêng theo ngành
     majors: {
-        'nhom-nganh': { CSC1: 857000 },
-        'cong-nghe-thong-tin': { CSC1: 857000 },
-        'he-thong-thong-tin': { CSC1: 857000 },
-        'ky-thuat-phan-mem': { CSC1: 857000 },
-        'khoa-hoc-may-tinh': { CSC1: 857000 },
-        'tri-tue-nhan-tao': { CSC1: 891000 },
-        'cu-nhan-tai-nang-cntt': { CSC1: 857000 },
+        'nhom-nganh': { CSC1: 773000 },
+        'cong-nghe-thong-tin': { CSC1: 773000 },
+        'he-thong-thong-tin': { CSC1: 773000 },
+        'ky-thuat-phan-mem': { CSC1: 773000 },
+        'khoa-hoc-may-tinh': { CSC1: 773000 },
+        'tri-tue-nhan-tao': { CSC1: 780000 },
+        'cu-nhan-tai-nang-cntt': { CSC1: 773000 },
         'mang-may-tinh': { CSC1: 857000 },
 
-        'sinh-hoc': { BIO1: 854000, BTE1: 854000 },
-        'cong-nghe-sinh-hoc': { BIO1: 903000, BTE1: 903000 },
+        'sinh-hoc': { BIO1: 788000, BTE1: 788000 },
+        'cong-nghe-sinh-hoc': { BIO1: 818000, BTE1: 818000 },
 
-        'vat-ly-hoc': { PHY1: 639000 },
-        'ky-thuat-dien-tu-vien-thong': { ETC1: 962000 },
-        'cong-nghe-vat-ly-dien-tu-va-tin-hoc': { PHY1: 782000, PET1: 782000 }, // đã chốt
-        'ky-thuat-hat-nhan': { MPH1: 670000, NTE1: 670000, PHY1: 670000 },
-        'cong-nghe-ban-dan': { PHY1: 820000, SEM1: 820000 },
-        'thiet-ke-vi-mach': { PHY1: 869000, ICD1: 869000, ETC1: 869000 },
-        'vat-ly-y-khoa': { PHY1: 809000, MPH1: 809000 },
+        'vat-ly-hoc': { PHY1: 556000 },
+        'ky-thuat-dien-tu-vien-thong': { ETC1: 841000 },
+        'cong-nghe-vat-ly-dien-tu-va-tin-hoc': { PHY1: 700000, PET1: 700000 }, // đã chốt
+        'ky-thuat-hat-nhan': { MPH1: 586000, NTE1: 586000, PHY1: 586000 },
+        'cong-nghe-ban-dan': { PHY1: 735000, SEM1: 735000 },
+        'thiet-ke-vi-mach': { PHY1: 773000, ICD1: 773000, ETC1: 773000 },
+        'vat-ly-y-khoa': { PHY1: 706000, MPH1: 706000 },
 
-        'hoa-hoc': { CHE1: 746000 },
+        'hoa-hoc': { CHE1: 677000 },
 
-        'khoa-hoc-vat-lieu': { MSC1: 884000, MST1: 884000 },
-        'cong-nghe-vat-lieu': { MST1: 880000, MSC1: 880000 },
+        'khoa-hoc-vat-lieu': { MSC1: 831000, MST1: 831000 },
+        'cong-nghe-vat-lieu': { MST1: 785000, MSC1: 785000 },
 
-        'cong-nghe-ky-thuat-moi-truong': { ENE1: 681000 },
-        'quan-ly-tai-nguyen-va-moi-truong': { ENM1: 680000 },
-        'khoa-hoc-moi-truong': { ENV1: 654000 },
+        'cong-nghe-ky-thuat-moi-truong': { ENE1: 598000 },
+        'quan-ly-tai-nguyen-va-moi-truong': { ENM1: 590000 },
+        'khoa-hoc-moi-truong': { ENV1: 587000 },
 
-        'dia-chat-hoc': { GEO1: 658950 },
-        'ky-thuat-dia-chat': { GEO1: 641700 },
+        'dia-chat-hoc': { GEO1: 573000 },
+        'ky-thuat-dia-chat': { GEO1: 558000 },
         'kinh-te-dat-dai': { GEO1: 891000 },
 
-        'hai-duong-hoc': { OMH1: 639000 },
+        'hai-duong-hoc': { OMH1: 556000 },
 
         'cong-nghe-giao-duc': { EDT1: 681000, EDT2: 681000 },
 
-        'toan-hoc': { MTH1: 965000 },
-        'toan-tin': { MTH1: 898000 },
-        'toan-ung-dung': { MTH1: 902000 },
-        'khoa-hoc-du-lieu': { MTH1: 899000 },
+        'toan-hoc': { MTH1: 844000 },
+        'toan-tin': { MTH1: 786000 },
+        'toan-ung-dung': { MTH1: 789000 },
+        'khoa-hoc-du-lieu': { MTH1: 841000 },
         'thong-ke': { MTH1: 843000 },
     } as Record<string, Record<string, number>>,
 };  
