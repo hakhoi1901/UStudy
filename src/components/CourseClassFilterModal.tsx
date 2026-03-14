@@ -3,6 +3,8 @@ import { X, Check } from 'lucide-react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
 
+
+// định nghĩa props cho modal lọc lớp
 interface CourseClassFilterModalProps {
     courseCode: string;
     courseNameVi: string;
@@ -12,21 +14,38 @@ interface CourseClassFilterModalProps {
     setAllowedClassesMap: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
 }
 
+/**
+ * 
+ * @param courseCode mã môn học
+ * @param courseNameVi tên môn học
+ * @param isOpen trạng thái mở/đóng modal
+ * @param onClose hàm đóng modal
+ * @param allowedClassesMap map chứa các lớp được phép
+ * @param setAllowedClassesMap hàm set các lớp được phép
+ * @returns trả về modal lọc lớp chứa danh sách các lớp và trạng thái được phép/không được phép
+ * 
+ * render modal lọc lớp 
+ */
 export function CourseClassFilterModal({
-    courseCode,
-    courseNameVi,
-    isOpen,
-    onClose,
-    allowedClassesMap,
-    setAllowedClassesMap,
+    courseCode, // mã môn học
+    courseNameVi, // tên môn học
+    isOpen, // trạng thái mở/đóng modal
+    onClose, // hàm đóng modal
+    allowedClassesMap, // map chứa các lớp được phép
+    setAllowedClassesMap, // hàm set các lớp được phép
 }: CourseClassFilterModalProps) {
+    // state chứa danh sách các lớp có sẵn (mặc định là tất cả các lớp)
     const [availableClasses, setAvailableClasses] = useState<{ id: string, schedule?: string[] }[]>([]);
 
+    // effect xử lý khi mở modal
     useEffect(() => {
         if (!isOpen) return;
+
+        // đọc dữ liệu từ storage
         const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
         const courseData = courseDb.find((c: any) => c.id === courseCode);
 
+        // set danh sách các lớp có sẵn
         if (courseData && courseData.classes) {
             setAvailableClasses(courseData.classes);
         } else {
@@ -34,12 +53,15 @@ export function CourseClassFilterModal({
         }
     }, [isOpen, courseCode]);
 
+    // nếu modal không mở thì return null
     if (!isOpen) return null;
 
+    // set các lớp được phép
     const activeClasses = allowedClassesMap[courseCode]
         ? new Set(allowedClassesMap[courseCode])
         : new Set(availableClasses.map(c => c.id));
 
+    // hàm xử lý khi click vào checkbox
     const handleToggle = (classId: string) => {
         setAllowedClassesMap(prev => {
             const currentSelected = prev[courseCode] ? [...prev[courseCode]] : availableClasses.map(c => c.id);
@@ -53,6 +75,7 @@ export function CourseClassFilterModal({
         });
     };
 
+    // hàm xử lý khi click vào chọn tất cả/bỏ chọn tất cả
     const handleSelectAll = (selectAll: boolean) => {
         setAllowedClassesMap(prev => ({
             ...prev,
@@ -64,10 +87,14 @@ export function CourseClassFilterModal({
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-xl shadow-xl w-05 max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+
+                    {/* tiêu đề modal */}
                     <div>
                         <h3 className="font-semibold text-gray-900 leading-tight">Lọc lớp: {courseCode}</h3>
                         <p className="text-xs text-gray-500 mt-0.5">{courseNameVi}</p>
                     </div>
+
+                    {/* nút đóng modal */}
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 cursor-pointer"
@@ -77,6 +104,8 @@ export function CourseClassFilterModal({
                 </div>
 
                 <div className="p-4 flex-1 overflow-y-auto">
+
+                    {/* hiển thị danh sách các lớp */}
                     {availableClasses.length === 0 ? (
                         <div className="text-center text-sm py-4 text-gray-500">
                             Không tìm thấy dữ liệu lớp học cho môn này.
@@ -102,7 +131,9 @@ export function CourseClassFilterModal({
                                 </div>
                             </div>
 
+                            {/* hiển thị danh sách các lớp */}
                             {availableClasses.sort((a, b) => a.id.localeCompare(b.id)).map((ac) => {
+                                // kiểm tra xem lớp có được phép không
                                 const isChecked = activeClasses.has(ac.id);
                                 return (
                                     <label
@@ -121,9 +152,13 @@ export function CourseClassFilterModal({
                                             {isChecked && <Check className="w-3 h-3 text-white" />}
                                         </div>
                                         <div className="flex-1 min-w-0">
+
+                                            {/* hiển thị tên lớp */}
                                             <p className={`text-sm font-medium ${isChecked ? 'text-blue-900' : 'text-gray-700'}`}>
                                                 {ac.id.replace(/_/g, ' ')}
                                             </p>
+
+                                            {/* hiển thị lịch học */}
                                             {ac.schedule && ac.schedule.length > 0 && (
                                                 <div className="mt-1 flex flex-col gap-0.5">
                                                     {ac.schedule && ac.schedule.length > 0 && (

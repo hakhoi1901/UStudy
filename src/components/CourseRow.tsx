@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { STORAGE_KEYS } from '../config';
 import { readFromStorage } from '../helpers/localStorage/save';
 
+// định nghĩa props cho CourseRow
 interface CourseRowProps {
   course: Course;
   isSelected: boolean;
@@ -13,11 +14,22 @@ interface CourseRowProps {
   onShowFlowchart: (course: Course) => void;
 }
 
+// định nghĩa interface CourseSchedule
 export interface CourseSchedule {
   id: string;
   schedule: string[];
 }
 
+/**
+ * 
+ * @param course môn học
+ * @param isSelected trạng thái được chọn
+ * @param onToggle hàm toggle chọn môn học
+ * @param onShowFlowchart hàm hiển thị flowchart
+ * @returns trả về component CourseRow hiển thị thông tin môn học ở trang
+ * 
+ * render component CourseRow
+ */
 export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: CourseRowProps) {
   const [showDescription, setShowDescription] = useState(false);
   const { data: { courses: allCoursesMeta } } = useDepartmentData();

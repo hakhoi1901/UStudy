@@ -1,4 +1,6 @@
-// Time periods (Tiết 1-10) - HCMUS Standard
+/**
+ * Time periods (Tiết 1-10) - HCMUS Standard
+ */
 export const timePeriods = [
     { period: 1, time: '07:30 - 08:20', label: 'Sáng' },
     { period: 2, time: '08:20 - 09:10', label: 'Sáng' },

@@ -2,12 +2,14 @@ import { type Course } from '../types';
 import { X, ArrowRight, CheckCircle } from 'lucide-react';
 import { useDepartmentData } from '../context/DepartmentContext';
 
+// định nghĩa props cho PrerequisiteFlowchart
 interface PrerequisiteFlowchartProps {
   course: Course;
   allCourses: Course[];
   onClose: () => void;
 }
 
+// định nghĩa cấu trúc cây
 interface TreeNode {
   id: string;
   name: string;
@@ -17,16 +19,23 @@ interface TreeNode {
   prerequisites: TreeNode[];
 }
 
+/**
+ * 
+ * @param course - môn học
+ * @param allCourses - tất cả các môn học
+ * @param onClose - đóng modal
+ * @returns hiển thị sơ đồ môn tiên quyết
+ */
 export function PrerequisiteFlowchart({ course, allCourses, onClose }: PrerequisiteFlowchartProps) {
   const { data: { courses: allCoursesMeta, prerequisites: prereqData } } = useDepartmentData();
 
-  // Build prerequisite tree using the full prerequisite data from DepartmentContext
+  // xây dựng cây môn tiên quyết sử dụng dữ liệu môn tiên quyết đầy đủ từ DepartmentContext
   const buildPrerequisiteTree = (courseId: string, level = 0, visited = new Set<string>()): TreeNode | null => {
-    // Prevent infinite recursion
+    // ngăn chặn đệ quy vô hạn
     if (visited.has(courseId)) return null;
     visited.add(courseId);
 
-    // Look up course info: first try allCourses (mapped Course[]), then fall back to raw metadata
+    // tìm kiếm thông tin môn học: đầu tiên thử allCourses (mapped Course[]), sau đó quay lại dữ liệu thô
     const mappedCourse = allCourses.find(c => c.id === courseId);
     const metaCourse = allCoursesMeta.find(m => m.course_id === courseId);
 
@@ -34,7 +43,7 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
     const credits = mappedCourse?.credits || metaCourse?.credits || 0;
     const isAvailable = mappedCourse?.isAvailable ?? false;
 
-    // Find prerequisite IDs from the prerequisites data
+    // tìm kiếm ID môn tiên quyết từ dữ liệu môn tiên quyết
     const prereqIds = prereqData
       .filter(p => p.course_id === courseId)
       .map(p => p.prereq_id)
@@ -56,7 +65,7 @@ export function PrerequisiteFlowchart({ course, allCourses, onClose }: Prerequis
 
   const tree = buildPrerequisiteTree(course.id);
 
-  // Render tree node
+  // render cây môn tiên quyết
   const renderNode = (node: TreeNode, isRoot = false) => {
     if (!node) return null;
 

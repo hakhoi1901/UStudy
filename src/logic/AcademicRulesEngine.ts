@@ -302,7 +302,7 @@ export const AcademicRulesEngine = {
             const hasValidScore = typeof score === 'number' && !isNaN(score);
             if (hasValidScore) {
                 const result = AcademicRulesEngine.calculateAccumulationParams(code, credits, score, status);
-                
+
                 // Môn rớt sẽ có creditsForGPA = 0, nên cũng sẽ không được tính vào
                 if (result.creditsForGPA > 0) {
                     const sem = g.semester || 'Không rõ';

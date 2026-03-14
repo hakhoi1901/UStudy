@@ -3,6 +3,10 @@ import { Bell, CheckCircle2, AlertTriangle, Info, XCircle, Trash2, CheckCircle }
 import { useAppNotification } from '../context/NotificationContext';
 import type { AppNotification } from '../context/NotificationContext';
 
+/**
+ * 
+ * @returns hiển thị danh sách thông báo
+ */
 export function NotificationMenu() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useAppNotification();
     const [isOpen, setIsOpen] = useState(false);

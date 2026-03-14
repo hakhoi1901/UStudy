@@ -162,8 +162,6 @@ function processTuition(rawTuition: RawData['tuition']) {
     };
 }
 
-
-
 /**
  * Xử lý lớp mở: group by courseId → build courseMap với classes + parsed schedule
  */
@@ -177,10 +175,10 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
 
     // Group rows by SubjectID -> ClassID
     // To handle edge cases where the university splits a single class LT into multiple rows
-    const groupedData: Record<string, Record<string, { 
-        lt: string[], 
-        th: Record<string, string[]>, 
-        bt: Record<string, string[]> 
+    const groupedData: Record<string, Record<string, {
+        lt: string[],
+        th: Record<string, string[]>,
+        bt: Record<string, string[]>
     }>> = {};
 
     for (const row of rawClasses) {
@@ -236,7 +234,7 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
     for (const subjID in groupedData) {
         for (const classID in groupedData[subjID]) {
             const classData = groupedData[subjID][classID];
-            
+
             // Lọc unique các ca LT
             const combinedLTSchedule = [...new Set(classData.lt)];
 
@@ -249,13 +247,13 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
 
             for (const [thNhom, thSched] of thMultiplier) {
                 for (const [btNhom, btSched] of btMultiplier) {
-                    
+
                     const combinedSchedule = [...new Set([
-                        ...combinedLTSchedule, 
-                        ...thSched, 
+                        ...combinedLTSchedule,
+                        ...thSched,
                         ...btSched
                     ])];
-                    
+
                     if (combinedSchedule.length > 0) {
                         let newClassID = classID;
                         if (thNhom) {

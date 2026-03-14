@@ -1,6 +1,7 @@
 import { Home, Map, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles } from 'lucide-react';
 import { useState } from 'react';
 
+// định nghĩa các nhóm điều hướng
 const navGroups = [
   {
     title: 'Chính',
@@ -25,12 +26,20 @@ const navGroups = [
   },
 ];
 
+// định nghĩa props cho Sidebar
 interface SidebarProps {
   currentPage: string;
   onPageChange: (page: string) => void;
 }
 
+/**
+ * Sidebar component
+ * @param currentPage - trang hiện tại
+ * @param onPageChange - hàm callback khi trang thay đổi
+ * @returns sidebar
+ */
 export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
+  // state để quản lý trạng thái thu gọn của sidebar
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (

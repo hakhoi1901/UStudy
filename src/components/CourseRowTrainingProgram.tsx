@@ -3,12 +3,8 @@ import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch, Extern
 import { courseLinks } from '../assets/data/courseLinks';
 import { DocumentContributionModal } from './DocumentContributionModal';
 
-export function CourseRowTrainingProgram({
-  course,
-  status = 'none',
-  rootStatus = 'none',
-  onShowFlowchart
-}: {
+// định nghĩa props cho CourseRowTrainingProgram
+interface CourseRowTrainingProgramProps {
   course: {
     course_id: string;
     course_name_vi: string;
@@ -23,11 +19,41 @@ export function CourseRowTrainingProgram({
   status?: 'passed' | 'studying' | 'failed' | 'none';
   rootStatus?: 'passed' | 'none';
   onShowFlowchart?: (courseId: string) => void;
+}
+
+/**
+ * 
+ * @param course môn học
+ * @param status trạng thái môn học
+ * @param rootStatus trạng thái môn học gốc
+ * @param onShowFlowchart hàm hiển thị flowchart
+ * @returns trả về component CourseRowTrainingProgram hiển thị thông tin môn học
+ */
+export function CourseRowTrainingProgram({
+  course,
+  status = 'none',
+  rootStatus = 'none',
+  onShowFlowchart
+}: {
+  course: {
+    course_id: string;    // mã môn học
+    course_name_vi: string; // tên môn học
+    credits: number;        // số tín chỉ
+    theory_hours: number;   // số tiết lý thuyết
+    lab_hours: number;      // số tiết thực hành
+    exercise_hours: number; // số tiết bài tập
+    course_type: string;    // loại môn học
+    category: string;       // danh mục môn học
+    description: string;    // mô tả môn học
+  };
+  status?: 'passed' | 'studying' | 'failed' | 'none';
+  rootStatus?: 'passed' | 'none';
+  onShowFlowchart?: (courseId: string) => void;
 }) {
   const [showDescription, setShowDescription] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Background and border colors based on status
+  // hàm trả về màu nền và màu viền dựa trên trạng thái môn học
   const getContainerStyle = () => {
     switch (status) {
       case 'passed':
@@ -41,7 +67,7 @@ export function CourseRowTrainingProgram({
     }
   };
 
-  // Status Badge Component
+  // component hiển thị trạng thái môn học
   const renderStatusBadge = () => {
     switch (status) {
       case 'passed':

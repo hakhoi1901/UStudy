@@ -1,3 +1,8 @@
+
+/**
+ * 
+ * @returns hiển thị thông báo khi không có dữ liệu
+ */
 export function NoDataCard() {
     return (
         <div className="flex border rounded-xl h-[calc(100vh-100px)] items-center justify-center p-4">

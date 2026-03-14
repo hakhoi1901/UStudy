@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Send, Info } from 'lucide-react';
 
+// định nghĩa props cho DocumentContributionModal
 interface DocumentContributionModalProps {
     courseId: string;
     courseName: string;
@@ -8,6 +9,14 @@ interface DocumentContributionModalProps {
     onClose: () => void;
 }
 
+/**
+ * 
+ * @param courseId mã môn học
+ * @param courseName tên môn học
+ * @param isOpen trạng thái mở modal
+ * @param onClose hàm đóng modal
+ * @returns trả về component DocumentContributionModal hiển thị thông tin môn học
+ */
 export function DocumentContributionModal({
     courseId,
     courseName,

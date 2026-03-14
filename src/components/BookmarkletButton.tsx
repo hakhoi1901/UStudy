@@ -10,19 +10,29 @@ interface Props {
     hideInstructions?: boolean;
 }
 
+/**
+ * 
+ * @param className 
+ * @param variant 
+ * @param withLabel 
+ * @param hideInstructions 
+ * @returns 
+ * 
+ * render thẻ a có href là bookmarklet
+ */
 export function BookmarkletButton({ className = '', variant = 'primary', withLabel = true, hideInstructions = false }: Props) {
     const linkRef = useRef<HTMLAnchorElement>(null);
 
     const bookmarkletHref = useMemo(() => {
         if (!bookmarkletSource) return '#';
 
-        // Inject the config object dynamically into the bookmarklet
         let processedSource = bookmarkletSource;
 
-        // Tính toán hạn sử dụng: Hiện tại + 30 ngày (tính bằng milliseconds)
-        const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+        // Tính toán hạn sử dụng: Hiện tại + 30 ngày
+        const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;  // tính theo mili giây
         const expirationTime = Date.now() + THIRTY_DAYS_IN_MS;
 
+        // Inject config vào bookmarklet
         const configToInject = {
             URL_DIEM: "/SinhVien.aspx?pid=211",
             URL_LICHTHI: "/SinhVien.aspx?pid=180",
@@ -34,11 +44,13 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
             EXPIRES_AT: expirationTime
         };
 
+        // thay thế chuỗi window.__HCMUS_PORTAL_CONFIG__ bằng chuỗi configToInject
         processedSource = processedSource.replace(
             `window.__HCMUS_PORTAL_CONFIG__`,
             JSON.stringify(configToInject)
         );
 
+        // encodeURIComponent để xử lý các ký tự đặc biệt
         const encodedCode = encodeURIComponent(processedSource)
             .replace(/'/g, '%27')
             .replace(/\(/g, '%28')
@@ -46,12 +58,14 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
         return `javascript:${encodedCode}`;
     }, []);
 
+    // set href cho thẻ a
     useEffect(() => {
         if (linkRef.current && bookmarkletHref !== '#') {
             linkRef.current.setAttribute('href', bookmarkletHref);
         }
     }, [bookmarkletHref]);
 
+    // xử lý khi click vào nút, nhắc nhở cách sử dụng đúng
     const handleDragWarning = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         alert("Đừng bấm! Hãy KÉO nút này thả lên thanh dấu trang (Bookmark Bar) của trình duyệt.\n\n Ctrl + Shift + B: để hiện Bookmark bar");
@@ -60,6 +74,7 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
     return (
         <div className={`flex flex-col items-center justify-center gap-3 w-full ${className}`}>
 
+            {/* Hiển thị hướng dẫn sử dụng */}
             {!hideInstructions && (
                 <span className="text-xs text-gray-500 flex items-center justify-center gap-1.5 font-medium bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 text-center max-w-full flex-wrap">
                     <MousePointerClick className="w-3.5 h-3.5 shrink-0" />
@@ -67,6 +82,7 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
                 </span>
             )}
 
+            {/* Nút bookmarklet */}
             <a
                 ref={linkRef}
                 href="#"
@@ -80,8 +96,10 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
                     `}
                 title="Kéo tôi lên Bookmark Bar"
             >
+                {/* Icon bookmark */}
                 <Bookmark className="w-4 h-4 shrink-0" strokeWidth={2.5} />
 
+                {/* Nhãn nút */}
                 {withLabel && (
                     <span className="whitespace-nowrap overflow-hidden text-ellipsis pt-[1px]">
                         HCMUS Portal Tool

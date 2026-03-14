@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Book, ShoppingCart, GitBranch } from 'lucide-react';
-import { SelectionBasketVi } from '../../components/SelectionBasketVi';
+import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
 import { useScheduleSolver } from '../../hooks/useScheduleSolver';
@@ -13,7 +13,6 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
-import { PrerequisiteTreeView } from './PrerequisiteTreeView';
 import type { Course } from '../../types';
 
 
@@ -183,17 +182,18 @@ export function IntegratedStudyRoadmap() {
                             {/* Khối giao diện bên trong chiếm trọn chiều cao và tự quản lý thanh cuộn */}
                             <div className="h-full flex flex-col overflow-hidden">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    <SelectionBasketVi
+                                    <SelectionBasket
                                         selectedCourses={Array.from(selectedCourses)
                                             .map(id => globalAllCourses.find(c => c.id === id)!)
                                             .filter(Boolean)}
+                                        setActiveTab={setActiveTab}
                                         onRemoveCourse={handleCourseToggle}
                                         allowedClassesMap={allowedClassesMap}
                                         setAllowedClassesMap={setAllowedClassesMap}
+                                        solve={solve}
                                     />
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 )}

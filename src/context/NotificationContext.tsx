@@ -13,22 +13,64 @@ addNotification({
 });
 */
 
+/**
+ * Interface cho NotificationType
+ */
 export type NotificationType = 'success' | 'warning' | 'info' | 'error';
 
+/**
+ * Interface cho AppNotification
+ */
 export interface AppNotification {
+    /**
+     * ID
+     */
     id: string;
+    /**
+     * Tiêu đề
+     */
     title: string;
+    /**
+     * Nội dung
+     */
     message: string;
+    /**
+     * Loại
+     */
     type: NotificationType;
+    /**
+     * Đã đọc
+     */
     isRead: boolean;
+    /**
+     * Thời gian
+     */
     timestamp: Date;
+    /**
+     * Dữ liệu
+     */
     data?: any;
 }
 
+/**
+ * Interface cho NotificationContextType
+ */
 interface NotificationContextType {
+    /**
+     * Danh sách thông báo
+     */
     notifications: AppNotification[];
+    /**
+     * Số thông báo chưa đọc
+     */
     unreadCount: number;
+    /**
+     * Thêm thông báo
+     */
     addNotification: (notification: Omit<AppNotification, 'id' | 'isRead' | 'timestamp'>) => void;
+    /**
+     * Đánh dấu đã đọc
+     */
     markAsRead: (id: string) => void;
     markAllAsRead: () => void;
     clearAll: () => void;

@@ -19,19 +19,36 @@ import { courses as defaultCourses } from '../assets/data/khoa-cntt/cong-nghe-th
 import { prerequisites as defaultPrerequisites } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/prerequisites';
 import { categories as defaultCategories } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/categories';
 
+/**
+ * Interface cho DepartmentData
+ */
 interface DepartmentData {
+    /** Danh sách môn học */
     courses: any[];
+    /** Điều kiện tiên quyết */
     prerequisites: any[];
+    /** Học phí */
     tuitionRates: any;
+    /** Danh mục môn học */
     categories: any;
 }
 
+/**
+ * Interface cho DepartmentContextType
+ */
 interface DepartmentContextType {
-    // Data
+    /**
+     * Data
+     */
     data: DepartmentData;
+    /**
+     * Loading state
+     */
     isLoading: boolean;
 
-    // Selection
+    /**
+     * Selection
+     */
     facultyId: string;
     majorId: string;
     cohortId: string;
@@ -45,16 +62,40 @@ interface DepartmentContextType {
     isConfigured: boolean;
 
     // Actions
+    /**
+     * Set khoa
+     */
     setFaculty: (facultyId: string) => void;
+    /**
+     * Set ngành
+     */
     setMajor: (majorId: string) => void;
+    /**
+     * Set khóa tuyển
+     */
     setCohort: (cohortId: string) => void;
+    /**
+     * Set năm học
+     */
     setAcademicYear: (year: string) => void;
+    /**
+     * Set học kỳ
+     */
     setSemesterNumber: (semesterNumber: number) => void;
+    /**
+     * Set cấu hình
+     */
     setIsConfigured: (isConfigured: boolean) => void;
 }
 
+/**
+ * Default tuition rates
+ */
 const defaultTuitionRates = getTuitionRates(DEFAULT_ACADEMIC_YEAR, DEFAULT_MAJOR_ID);
 
+/**
+ * Default data
+ */
 const defaultData: DepartmentData = {
     courses: defaultCourses,
     prerequisites: defaultPrerequisites,
@@ -62,28 +103,91 @@ const defaultData: DepartmentData = {
     categories: defaultCategories,
 };
 
+/**
+ * DepartmentContext
+ */
 const DepartmentContext = createContext<DepartmentContextType>({
+    /**
+     * Data
+     */
     data: defaultData,
+    /**
+     * Loading state
+     */
     isLoading: false,
+    /**
+     * Khoa
+     */
     facultyId: DEFAULT_FACULTY_ID,
+    /**
+     * Ngành
+     */
     majorId: DEFAULT_MAJOR_ID,
+    /**
+     * Khóa tuyển
+     */
     cohortId: DEFAULT_COHORT_ID,
+    /**
+     * Năm học
+     */
     academicYear: APP_CONFIG.DEFAULT_ACADEMIC_YEAR,
+    /**
+     * Học kỳ
+     */
     semesterNumber: APP_CONFIG.DEFAULT_SEMESTER,
+    /**
+     * Khoa hiện tại
+     */
     currentFaculty: FACULTIES[0],
+    /**
+     * Ngành hiện tại
+     */
     currentMajor: FACULTIES[0]?.majors[0],
+    /**
+     * Khóa tuyển hiện tại
+     */
     currentCohort: FACULTIES[0]?.majors[0]?.cohorts[0],
+    /**
+     * Danh sách khoa
+     */
     faculties: FACULTIES,
+    /**
+     * Danh sách năm học
+     */
     academicYears: ACADEMIC_YEARS,
+    /**
+     * Cấu hình
+     */
     isConfigured: false,
+    /**
+     * Set khoa
+     */
     setFaculty: () => { },
+    /**
+     * Set ngành
+     */
     setMajor: () => { },
+    /**
+     * Set khóa tuyển
+     */
     setCohort: () => { },
+    /**
+     * Set năm học
+     */
     setAcademicYear: () => { },
+    /**
+     * Set học kỳ
+     */
     setSemesterNumber: () => { },
+    /**
+     * Set cấu hình
+     */
     setIsConfigured: () => { },
 });
 
+/**
+ * DepartmentProvider
+ */
 export function DepartmentProvider({ children }: { children: React.ReactNode }) {
     const [facultyId, setFacultyIdState] = useState<string>(() => {
         return localStorage.getItem(STORAGE_KEYS.FACULTY_ID) || DEFAULT_FACULTY_ID;

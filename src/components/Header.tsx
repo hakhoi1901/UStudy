@@ -20,10 +20,12 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
   const { academicYear, setAcademicYear, semesterNumber, setSemesterNumber } = useDepartmentData();
 
-
+  // lấy dữ liệu sinh viên
   const { hasData } = useStudentGradeData();
+  // lấy thông báo
   const { addNotification } = useAppNotification();
 
+  // lấy tên sinh viên từ local storage
   useEffect(() => {
     const studentData = localStorage.getItem(STORAGE_KEYS.STUDENT_DB);
     if (studentData) {
@@ -32,13 +34,14 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
     }
   }, [hasData]);
 
-  // Generate semesters using the predefined academic years (3 semesters per year)
+  // tạo danh sách các học kỳ sử dụng các năm học đã định nghĩa (3 học kỳ mỗi năm)
   const semesters = ACADEMIC_YEARS.flatMap(year => [
     `Học kỳ 3, ${year.id}`,
     `Học kỳ 2, ${year.id}`,
     `Học kỳ 1, ${year.id}`,
   ]);
 
+  // xử lý chọn học kỳ
   const handleSemesterSelect = (semesterStr: string) => {
     const match = semesterStr.match(/Học kỳ (\d+),\s+(.+)/);
     if (match) {
@@ -54,24 +57,24 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
     setShowSemesterDropdown(false);
   };
 
+  // xử lý đăng xuất
   const handleLogOut = () => {
-    // Clear local storage
+    // xóa local storage
     localStorage.clear();
     addNotification({
       title: 'Đăng xuất thành công',
       message: 'Tất cả dữ liệu học tập đã được xóa khỏi trình duyệt.',
       type: 'info'
     });
-    // Give state a moment to update before reloading so the user can theoretically see the toast
-    // However, since it reloads immediately, we might not even see it. 
-    // We will keep it here for completeness based on user request.
+    // tải lại trang sau 100ms
     setTimeout(() => {
       window.location.reload();
     }, 100);
   };
 
+  // xử lý đăng nhập
   const handleLogin = () => {
-    // Open portal in popup window to allow the bookmarklet access
+    // mở portal trong cửa sổ popup để cho phép bookmarklet truy cập
     const PORTAL_URL = APP_CONFIG.PORTAL_LOGIN_URL;
     window.open(PORTAL_URL, '_blank');
   };
@@ -80,7 +83,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
     <header className="bg-white border-b border-gray-200 shadow-sm" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div className="px-8 py-4">
         <div className="flex items-center justify-between">
-          {/* Left Side - Title and Semester Selector */}
+          {/* phần bên trái - tiêu đề và bộ chọn học kỳ */}
           <div className="flex items-center gap-4">
             <h2 className="text-gray-900" style={{ fontWeight: 600 }}>Hệ thống quản lý học tập</h2>
             <div className="relative">
@@ -123,7 +126,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
             </div>
           </div>
 
-          {/* Right Side - Notifications, User, and Actions */}
+          {/* phần bên phải - thông báo, người dùng và hành động */}
           <div className="flex items-center gap-3">
             {/* Notification Menu */}
             <NotificationMenu />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CourseRow } from './CourseRow';
-import { SelectionBasketVi } from './SelectionBasketVi';
+import { SelectionBasket } from './SelectionBasket';
 import { PrerequisiteFlowchart } from './PrerequisiteFlowchart';
 import type { Course } from '../types';
 import { useCourseData } from '../hooks/useCourseData';
@@ -8,14 +8,15 @@ import { Filter, Search, Database } from 'lucide-react';
 import { BookmarkletButton } from './BookmarkletButton';
 
 export function CourseRecommendations() {
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFlowchart, setShowFlowchart] = useState(false);
-  const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
+  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());   // set chứa các môn học được chọn
+  const [searchTerm, setSearchTerm] = useState('');   // search term
+  const [showFlowchart, setShowFlowchart] = useState(false);   // trạng thái hiển thị flowchart
+  const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);   // môn học được chọn để hiển thị flowchart
 
   // Lấy data động từ localStorage qua Recommender
   const { core, major, electives, isReady, hasData } = useCourseData();
 
+  // hàm xử lý khi click vào checkbox chọn môn học
   const handleCourseToggle = (courseId: string) => {
     setSelectedCourses(prev => {
       const newSet = new Set(prev);
@@ -28,26 +29,32 @@ export function CourseRecommendations() {
     });
   };
 
+  // hàm xử lý khi click vào nút hiển thị flowchart
   const handleShowFlowchart = (course: Course) => {
     setFlowchartCourse(course);
     setShowFlowchart(true);
   };
 
+  // lọc danh sách các môn học
   const filteredCourses = {
+    // lọc môn học cơ sở ngành
     core: core.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
     ),
+    // lọc môn học chuyên ngành
     major: major.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
     ),
+    // lọc môn học tự chọn
     electives: electives.filter(c =>
       c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.code.toLowerCase().includes(searchTerm.toLowerCase())
     ),
   };
 
+  // nếu chưa sẵn sàng thì hiển thị loading
   if (!isReady) {
     return (
       <div className="flex h-[calc(100vh-100px)] items-center justify-center">
@@ -56,6 +63,7 @@ export function CourseRecommendations() {
     );
   }
 
+  // nếu chưa có dữ liệu thì hiển thị thông báo
   if (!hasData) {
     return (
       <div className="flex h-[calc(100vh-100px)] items-center justify-center">
@@ -98,7 +106,7 @@ export function CourseRecommendations() {
           </button>
         </div>
 
-        {/* Core IT Subjects */}
+        {/* Môn học cơ sở ngành */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <h3 className="text-gray-900">Môn học cơ sở ngành</h3>
@@ -119,7 +127,7 @@ export function CourseRecommendations() {
           </div>
         </div>
 
-        {/* Major-Specific Courses */}
+        {/* Môn học chuyên ngành */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <h3 className="text-gray-900">Môn học chuyên ngành</h3>
@@ -140,7 +148,7 @@ export function CourseRecommendations() {
           </div>
         </div>
 
-        {/* Electives */}
+        {/* Môn học tự chọn */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <h3 className="text-gray-900">Môn học tự chọn</h3>
@@ -162,15 +170,15 @@ export function CourseRecommendations() {
         </div>
       </div>
 
-      {/* Selection Basket Sidebar */}
-      <SelectionBasketVi
+      {/* Sidebar giỏ hàng */}
+      <SelectionBasket
         selectedCourses={Array.from(selectedCourses).map(id =>
           [...core, ...major, ...electives].find(c => c.id === id)!
         ).filter(Boolean)}
         onRemoveCourse={handleCourseToggle}
       />
 
-      {/* Prerequisite Flowchart Modal */}
+      {/* Modal hiển thị flowchart */}
       {showFlowchart && flowchartCourse && (
         <PrerequisiteFlowchart
           course={flowchartCourse}
