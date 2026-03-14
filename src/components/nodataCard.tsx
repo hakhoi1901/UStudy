@@ -29,7 +29,7 @@ export function NoDataCard() {
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
                         <div>
                             <p className="font-semibold text-gray-900">Đăng nhập</p>
-                            <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal. Nhấn vào bookmark để lấy dữ liệu</p>
+                            <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal.</p>
                         </div>
                     </div>
 
@@ -37,7 +37,7 @@ export function NoDataCard() {
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">4</div>
                         <div>
                             <p className="font-semibold text-gray-900">Lấy dữ liệu</p>
-                            <p className="text-sm text-gray-600 mt-1">Đợi trang web tải xong, nhấn vào mục vừa kéo về thanh dấu trang để tự động cào dữ liệu.</p>
+                            <p className="text-sm text-gray-600 mt-1">Đợi trang web tải xong, đăng nhập và nhấn vào <span className="font-medium text-[#004A98] px-1.5 py-0.5 bg-blue-50 rounded-md">HCMUS Portal tool</span> vừa kéo về thanh dấu trang để tự động cào dữ liệu.</p>
                         </div>
                     </div>
                 </div>

@@ -28,6 +28,7 @@ export const tuition_2024_2025 = {
         GEO: 639000,
         ENV: 639000,
         CSC0: 639000,
+        BAA00100: 0,
     },
 
     // Đơn giá riêng theo ngành

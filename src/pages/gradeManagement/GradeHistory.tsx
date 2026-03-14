@@ -58,7 +58,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
 
                     {/* Danh sách các môn học */}
                     <tbody className="divide-y divide-gray-200">
-                        {filteredHistory.map((course) => (
+                        {filteredHistory.filter(course => course.code !== 'BAA00100').map((course) => (
                             <tr key={course.id} className={`hover:bg-gray-50 ${course.needsRetake ? 'bg-red-50/30' : ''}`}>
                                 {/* Mã môn */}
                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">

@@ -83,8 +83,25 @@ export class CourseRecommender {
 
         grades.forEach((g: any) => {
             const cid = String(g.id).trim();
+            console.log("cid")
+            console.log(cid);
             let scoreRaw = g.score;
             const credits = parseInt(g.credits) || 0;
+
+            // ── Xử lý môn BAA00100 ──
+            if (cid == "BAA00100") {
+                const exemptedEnglishCourses = [
+                    { id: 'ADD00031', credits: 3 },
+                    { id: 'ADD00032', credits: 3 },
+                    { id: 'ADD00033', credits: 3 },
+                    { id: 'ADD00034', credits: 3 }
+                ];
+
+                exemptedEnglishCourses.forEach(course => {
+                    passed.add(course.id);
+                    passedCreditsMap.set(course.id, course.credits);
+                });
+            }
 
             // Đang học hoặc chưa có điểm
             if (scoreRaw === "" || scoreRaw === "(*)" || scoreRaw == null || scoreRaw === undefined) {
@@ -265,7 +282,6 @@ export class CourseRecommender {
             }
         });
 
-        console.log(`Recommender: Đề xuất ${finalOutput.length} môn học.`);
         return finalOutput;
     }
 }

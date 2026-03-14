@@ -58,7 +58,6 @@ export function IntegratedStudyRoadmap() {
     // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
     const currentSource = viewMode === 'recommend' ? recommended : all;
 
-
     const globalAllCourses = [...all.core, ...all.major, ...all.electives];
 
     // Xử lý chọn môn học
@@ -173,11 +172,11 @@ export function IntegratedStudyRoadmap() {
                         </div>
 
                         <div className="w-[350px] flex-shrink-0 relative">
-                            <div 
+                            <div
                                 className="fixed z-20 w-[350px] flex flex-col"
-                                style={{ 
-                                    top: '95px', 
-                                    bottom: '25px' 
+                                style={{
+                                    top: '95px',
+                                    bottom: '25px'
                                 }}
                             >
                                 <div className="overflow-y-auto custom-scrollbar bg-white rounded-xl shadow-lg border border-gray-200">
@@ -194,7 +193,7 @@ export function IntegratedStudyRoadmap() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* Tab 3: Lịch trực quan */}
                 {activeTab === 'calendar' && (
                     <CalendarView

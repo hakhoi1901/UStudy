@@ -224,6 +224,7 @@ export const AcademicRulesEngine = {
      * Trích xuất từ useStudentGradeData.ts L44-141.
      */
     calculateGPASummary: (
+        rawGrades: any[],
         effectiveGrades: any[],
         hasBLMExemption: boolean
     ): {
@@ -266,18 +267,6 @@ export const AcademicRulesEngine = {
                 totalPoints += pointsForGPA;
                 totalCreditsForGPA += creditsForGPA;
 
-                // Tích lũy GPA theo kỳ
-                if (creditsForGPA > 0) {
-                    const sem = g.semester || 'Không rõ';
-                    if (!semesterMap.has(sem)) {
-                        semesterMap.set(sem, { points: 0, credits: 0, earnedCredits: 0 });
-                    }
-                    const s = semesterMap.get(sem)!;
-                    s.points += pointsForGPA;
-                    s.credits += creditsForGPA;
-                    s.earnedCredits += earnedCredits;
-                }
-
                 // Tích lũy điểm cơ sở ngành
                 const isMajor = MAJOR_PREFIXES.some(prefix => code.startsWith(prefix));
                 if (isMajor && creditsForGPA > 0) {
@@ -296,6 +285,36 @@ export const AcademicRulesEngine = {
                 needsRetake,
                 status,
             });
+        });
+
+        // ── Tính GPA từng kỳ dựa trên dữ liệu gốc (không lấy điểm cải thiện) ──
+        rawGrades.forEach((g: any) => {
+            const type = String(g.type).trim();
+            // Không tính môn học cải thiện (CT) trong GPA của kỳ hiện tại
+            if (type === 'CT') return;
+
+            const code = String(g.id).trim();
+            const credits = parseInt(g.credits) || 0;
+            const isExemptedEnglish = hasBLMExemption && ENGLISH_COURSE_IDS.includes(code);
+            const score: number | null = isExemptedEnglish ? 10 : AcademicRulesEngine.parseRawScore(g.score);
+            const status = isExemptedEnglish ? 'passed' as const : AcademicRulesEngine.evaluateCourseStatus(score);
+
+            const hasValidScore = typeof score === 'number' && !isNaN(score);
+            if (hasValidScore) {
+                const result = AcademicRulesEngine.calculateAccumulationParams(code, credits, score, status);
+                
+                // Môn rớt sẽ có creditsForGPA = 0, nên cũng sẽ không được tính vào
+                if (result.creditsForGPA > 0) {
+                    const sem = g.semester || 'Không rõ';
+                    if (!semesterMap.has(sem)) {
+                        semesterMap.set(sem, { points: 0, credits: 0, earnedCredits: 0 });
+                    }
+                    const s = semesterMap.get(sem)!;
+                    s.points += result.pointsForGPA;
+                    s.credits += result.creditsForGPA;
+                    s.earnedCredits += result.earnedCredits;
+                }
+            }
         });
 
         const gpaPerSemester = Array.from(semesterMap.entries())

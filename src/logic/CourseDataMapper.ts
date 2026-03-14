@@ -7,6 +7,7 @@
 
 import { FinancialLogic, type TuitionRates, type CourseMeta } from './FinancialLogic';
 import type { Course } from '../types';
+import { useStudentDb } from '../hooks/useStudentDb';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ export interface CourseGroupState {
 }
 
 // ─── Core Functions ──────────────────────────────────────────────────
+
 
 export const CourseDataMapper = {
 
@@ -108,7 +110,7 @@ export const CourseDataMapper = {
         const grouped: CourseGroupState = { core: [], major: [], electives: [] };
         courseList.forEach(c => {
             const cat = c.category || 'OTHER';
-            if (cat === 'FOUNDATION' || cat === 'GENERAL_IT') {
+            if (cat === 'FOUNDATION') {
                 grouped.core.push(c);
             } else if (cat.startsWith('MAJOR_') || cat === 'GRADUATION' || cat.startsWith('SPECIALIZED_')) {
                 grouped.major.push(c);
@@ -116,6 +118,7 @@ export const CourseDataMapper = {
                 grouped.electives.push(c);
             }
         });
+        // Lọc các môn học cần học lại
         return grouped;
     },
 };

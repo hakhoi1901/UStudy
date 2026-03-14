@@ -50,6 +50,7 @@ export function useGPASimulator(
         // Nguyên nhân ongoing: AcademicRulesEngine.parseRawScore trả về null
         //                      khi score = '(*)', '', hoặc undefined
         const ongoingCourses: SimulatorCourseGrade[] = gradesHistory
+            .filter(g => g.code !== 'BAA00100')
             .filter(g => g.status === 'ongoing')
             .map(g => ({
                 id: g.code,
