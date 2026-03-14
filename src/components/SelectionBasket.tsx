@@ -37,7 +37,7 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
     const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
     return (
-        <div className="w-80 bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col max-h-[calc(100vh-140px)]">
+        <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
             {/* Header - Fixed */}
             <div className="p-4 border-b border-gray-200 flex-shrink-0">
                 <h3 className="text-gray-900 font-semibold">Giỏ môn học</h3>
@@ -51,7 +51,7 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
             </div>
 
             {/* Course List - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-gray-100">
                 {selectedCourses.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">

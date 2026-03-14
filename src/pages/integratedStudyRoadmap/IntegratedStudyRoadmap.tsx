@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Book, ShoppingCart, GitBranch } from 'lucide-react';
+import { Calendar, Book, ShoppingCart } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -155,10 +155,10 @@ export function IntegratedStudyRoadmap() {
 
                 {/* Tab 2: Chọn môn học */}
                 {activeTab === 'selection' && (
-                    <div className="flex flex-row flex-nowrap gap-6 items-start w-full relative min-h-screen">
+                    <div className="flex flex-row flex-nowrap gap-6 items-start w-full">
 
-                        {/* CỘT TRÁI */}
-                        <div className="flex-1 min-w-0">
+                        {/* CỘT TRÁI: tự scroll độc lập */}
+                        <div className="flex-1 min-w-0 overflow-y-auto" style={{ height: 'calc(100vh - 11rem)' }}>
                             <SelectionView
                                 searchTerm={searchTerm}
                                 setSearchTerm={setSearchTerm}
@@ -173,27 +173,21 @@ export function IntegratedStudyRoadmap() {
                             />
                         </div>
 
-                        {/* CỘT PHẢI: Áp dụng trực tiếp sticky lên thẻ định tuyến kích thước */}
+                        {/* CỘT PHẢI: cùng chiều cao cột trái, nằm im */}
                         <div
-                            className="w-1/4 max-w-[400px] min-w-[280px] sticky self-start flex-shrink-0"
-                            style={{ top: '24px', height: 'calc(100vh - 120px)' }}
+                            className="w-[26vw] xl:w-[24vw] 2xl:w-[22vw] flex-shrink-0"
+                            style={{ height: 'calc(100vh - 11rem)' }}
                         >
-
-                            {/* Khối giao diện bên trong chiếm trọn chiều cao và tự quản lý thanh cuộn */}
-                            <div className="h-full flex flex-col overflow-hidden">
-                                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    <SelectionBasket
-                                        selectedCourses={Array.from(selectedCourses)
-                                            .map(id => globalAllCourses.find(c => c.id === id)!)
-                                            .filter(Boolean)}
-                                        setActiveTab={setActiveTab}
-                                        onRemoveCourse={handleCourseToggle}
-                                        allowedClassesMap={allowedClassesMap}
-                                        setAllowedClassesMap={setAllowedClassesMap}
-                                        solve={solve}
-                                    />
-                                </div>
-                            </div>
+                            <SelectionBasket
+                                selectedCourses={Array.from(selectedCourses)
+                                    .map(id => globalAllCourses.find(c => c.id === id)!)
+                                    .filter(Boolean)}
+                                setActiveTab={setActiveTab}
+                                onRemoveCourse={handleCourseToggle}
+                                allowedClassesMap={allowedClassesMap}
+                                setAllowedClassesMap={setAllowedClassesMap}
+                                solve={solve}
+                            />
                         </div>
                     </div>
                 )}
