@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { X, Send, Info } from 'lucide-react';
+import { X, Send, Info, Book, FileText, Presentation, FileCode, ClipboardList, Plus } from 'lucide-react';
 import { APP_CONFIG } from '../config';
 
-// định nghĩa props cho DocumentContributionModal
 interface DocumentContributionModalProps {
     courseId: string;
     courseName: string;
@@ -11,12 +10,7 @@ interface DocumentContributionModalProps {
 }
 
 /**
- * 
- * @param courseId mã môn học
- * @param courseName tên môn học
- * @param isOpen trạng thái mở modal
- * @param onClose hàm đóng modal
- * @returns trả về component DocumentContributionModal hiển thị thông tin môn học
+ * Modal đóng góp tài liệu với giao diện cao cấp
  */
 export function DocumentContributionModal({
     courseId,
@@ -60,104 +54,154 @@ export function DocumentContributionModal({
         const body = `Chào admin,\n\nMình muốn đóng góp tài liệu cho môn:\n- Mã môn: ${courseId}\n- Tên môn: ${courseName}\n\nLink thư mục Drive của mình:\n${driveLink}${docsString}`;
 
         const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.open(mailtoLink, '_blank');
+        window.open(mailtoLink, '_blank', 'noopener,noreferrer');
     };
 
+    const docTypes = [
+        { id: 'exams', label: 'Đề thi', icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
+        { id: 'slides', label: 'Slide bài giảng', icon: Presentation, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { id: 'books', label: 'Giáo trình', icon: Book, color: 'text-green-600', bg: 'bg-green-50' },
+        { id: 'theory', label: 'BT Lý thuyết', icon: ClipboardList, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { id: 'practice', label: 'BT Thực hành', icon: FileCode, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    ];
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
             <div
-                className="w-06 max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+                className="w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden animate-in zoom-in-95 duration-300"
                 onClick={(e) => e.stopPropagation()}
+                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
             >
-                {/* Header: Đặt flex-none để không bị bóp méo khi thu hẹp không gian */}
-                <div className="flex-none flex items-center justify-between p-3 border-b border-gray-100 bg-gray-50/80">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900 px-1">Đóng góp tài liệu</h2>
-                        <p className="text-sm font-medium text-[#004A98] px-1">{courseId} - {courseName}</p>
+                {/* Header với HCMUS Gradient */}
+                <div className="flex-none bg-gradient-to-r from-[#004A98] to-[#0066CC] p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                    <div className="relative flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-1">Đóng góp tài liệu</h2>
+                            <div className="flex items-center gap-2 text-blue-100/90 text-sm font-medium">
+                                <span className="px-2 py-0.5 bg-white/20 rounded-md backdrop-blur-sm">{courseId}</span>
+                                <span>{courseName}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
                 </div>
 
-                {/* Content: Đặt flex-1 và overflow-y-auto để phần này cuộn được nếu nội dung quá dài */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-                    {/* Instructions & Checkboxes */}
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                        <h4 className="flex items-center gap-2 text-sm font-bold text-blue-900 mb-2">
-                            <Info className="w-4 h-4 text-blue-600" />
-                            Phân loại tài liệu trong Drive
-                        </h4>
-                        <p className="text-sm text-blue-800 mb-1.5">Đầu tiên admin xin cảm ơn bạn đã đóng góp tài liệu cho cộng đồng!</p>
-                        <p className="text-sm text-blue-800 mb-3">Để dễ dàng phân loại, bạn vui lòng tạo các thư mục tương ứng trong Drive và tích vào ô bên dưới:</p>
-
-                        <div className="grid grid-cols-1 gap-1.5 text-sm font-medium text-blue-800">
-                            {[
-                                { id: 'exams', label: '1. Đề thi' },
-                                { id: 'slides', label: '2. Slide bài giảng' },
-                                { id: 'books', label: '3. Giáo trình / Tham khảo' },
-                                { id: 'theory', label: '4. Bài tập Lý thuyết' },
-                                { id: 'practice', label: '5. Bài tập Thực hành' },
-                            ].map((item) => (
-                                <label key={item.id} className="flex items-center gap-2 bg-white/60 p-2 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                    <input type="checkbox" checked={selectedTypes[item.id as keyof typeof selectedTypes]} onChange={() => handleCheckboxChange(item.id as keyof typeof selectedTypes)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                    <span>{item.label}</span>
-                                </label>
-                            ))}
-
-                            <label className="flex items-center flex-wrap gap-2 bg-white/60 p-2 rounded border border-blue-200/50 cursor-pointer hover:bg-white/80 transition-colors">
-                                <div className="flex items-center gap-2">
-                                    <input type="checkbox" checked={selectedTypes.other} onChange={() => handleCheckboxChange('other')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                    <span>6. Khác</span>
-                                </div>
-                                <input
-                                    type="text"
-                                    onChange={(e) => setOtherType(e.target.value)}
-                                    value={otherType}
-                                    placeholder="Ghi rõ loại tài liệu..."
-                                    // Chú ý: w-085 là class không tồn tại trong Tailwind chuẩn, đã đổi thành flex-1 để tự động điền đầy không gian
-                                    className="flex-1 min-w-[200px] px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-sm"
-                                />
-                            </label>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {/* Welcome Section */}
+                    <div className="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-5 flex gap-4">
+                        <div className="flex-none w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div className="flex items-center justify-center w-full h-full">
+                                <Info className="w-5 h-5 text-[#004A98]" />
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-sm text-blue-900 font-medium leading-relaxed">
+                                Cảm ơn bạn đã đóng góp cho cộng đồng! Bạn vui lòng chia sẻ link Drive và chọn các loại tài liệu có sẵn trong thư mục nhé.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <div className='p-2'>
-                        <label htmlFor="driveLink" className="block p-1 text-sm font-medium text-gray-700 mb-1.5">
-                            Liên kết thư mục Google Drive (Vui lòng mở quyền truy cập)
-                        </label>
-                        <input
-                            type="url"
-                            id="driveLink"
-                            value={driveLink}
-                            onChange={(e) => setDriveLink(e.target.value)}
-                            placeholder="https://drive.google.com/drive/folders/..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] shadow-sm outline-none transition-all text-sm"
-                        />
+                    {/* Document Type Grid */}
+                    <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-gray-700 ml-1">Phân loại tài liệu</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {docTypes.map((item) => {
+                                const Icon = item.icon;
+                                const isSelected = selectedTypes[item.id as keyof typeof selectedTypes];
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => handleCheckboxChange(item.id as keyof typeof selectedTypes)}
+                                        className={`group relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${isSelected
+                                            ? 'border-[#004A98] bg-blue-50/50 shadow-sm'
+                                            : 'border-gray-100 bg-white hover:border-blue-200 hover:bg-gray-50/50'
+                                            }`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110 ${isSelected ? 'bg-[#004A98] text-white' : `${item.bg} ${item.color}`}`}>
+                                            <Icon className="w-5 h-5" />
+                                        </div>
+                                        <span className={`text-xs font-bold text-center ${isSelected ? 'text-[#004A98]' : 'text-gray-600'}`}>
+                                            {item.label}
+                                        </span>
+                                        {isSelected && (
+                                            <div className="absolute top-2 right-2 w-4 h-4 bg-[#004A98] rounded-full flex items-center justify-center">
+                                                <div className="w-2 h-1 border-l-2 border-b-2 border-white -rotate-45 mb-0.5"></div>
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+
+                            {/* Nút Khác */}
+                            <div className={`col-span-full group flex flex-col gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${selectedTypes.other
+                                ? 'border-[#004A98] bg-blue-50/50'
+                                : 'border-gray-100 bg-white hover:border-blue-200'
+                                }`}>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => handleCheckboxChange('other')}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${selectedTypes.other ? 'bg-[#004A98] text-white' : 'bg-gray-100 text-gray-500'}`}
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                    </button>
+                                    <span className={`text-sm font-bold ${selectedTypes.other ? 'text-[#004A98]' : 'text-gray-600'}`}>Tài liệu khác</span>
+                                    {selectedTypes.other && (
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            value={otherType}
+                                            onChange={(e) => setOtherType(e.target.value)}
+                                            placeholder="VD: Lab, Đề thi mẫu..."
+                                            className="flex-1 bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#004A98] outline-none shadow-sm"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
+                    {/* Drive Link Section */}
+                    <div className="space-y-3">
+                        <label htmlFor="driveLink" className="block text-sm font-semibold text-gray-700 ml-1">
+                            Link Google Drive <span className="text-gray-400 font-normal">(Hãy mở quyền truy cập nhé)</span>
+                        </label>
+                        <div className="relative group">
+                            <input
+                                type="url"
+                                id="driveLink"
+                                value={driveLink}
+                                onChange={(e) => setDriveLink(e.target.value)}
+                                placeholder="https://drive.google.com/drive/folders/..."
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#004A98] focus:border-[#004A98] outline-none transition-all shadow-sm group-hover:border-blue-200"
+                            />
+                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                                <Info className="w-4 h-4" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Footer: Đặt flex-none tương tự Header */}
-                <div className="flex-none flex items-center justify-end gap-3 p-3 border-t border-gray-100 bg-gray-50/80">
+                {/* Footer */}
+                <div className="flex-none flex items-center justify-end gap-3 p-6 bg-gray-50/80 border-t border-gray-100">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-900 border border-transparent rounded-xl hover:bg-gray-200/50 transition-all"
                     >
-                        Hủy
+                        Bỏ qua
                     </button>
                     <button
                         onClick={handleSendEmail}
                         disabled={!driveLink.trim()}
-                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-[#004A98] rounded hover:bg-[#003d7a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="flex items-center gap-2 px-8 py-2.5 bg-[#004A98] text-white text-sm font-bold rounded-xl hover:bg-[#003d7a] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 shadow-[0_4px_12px_rgba(0,74,152,0.3)]"
                     >
                         <Send className="w-4 h-4" />
-                        Gửi email đóng góp
+                        Gửi đóng góp
                     </button>
                 </div>
             </div>

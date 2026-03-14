@@ -5,7 +5,7 @@ export const APP_CONFIG = {
     /**
      * Đường dẫn đăng nhập Portal
      */
-    PORTAL_LOGIN_URL: 'https://new-portal.hcmus.edu.vn/Login.aspx?ReturnUrl=%2fSinhVien.aspx%3fpid%3d211&pid=211',
+    PORTAL_LOGIN_URL: 'https://portal.hcmus.edu.vn/',
 
     /**
      * Danh sách học kỳ hiển thị trên dropdown

@@ -241,7 +241,6 @@ export const AcademicRulesEngine = {
 
         const semesterMap = new Map<string, { points: number; credits: number; earnedCredits: number }>();
 
-        const MAJOR_PREFIXES = ['CSC1'];
         let majorPoints = 0;
         let majorCreditsForGPA = 0;
 
@@ -267,8 +266,8 @@ export const AcademicRulesEngine = {
                 totalPoints += pointsForGPA;
                 totalCreditsForGPA += creditsForGPA;
 
-                // Tích lũy điểm cơ sở ngành
-                const isMajor = MAJOR_PREFIXES.some(prefix => code.startsWith(prefix));
+                // Tích lũy điểm cơ sở ngành: Ký tự thứ 4 (index 3) là số '1'
+                const isMajor = code.length >= 4 && code[3] === '1';
                 if (isMajor && creditsForGPA > 0) {
                     majorPoints += pointsForGPA;
                     majorCreditsForGPA += creditsForGPA;

@@ -76,7 +76,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   const handleLogin = () => {
     // mở portal trong cửa sổ popup để cho phép bookmarklet truy cập
     const PORTAL_URL = APP_CONFIG.PORTAL_LOGIN_URL;
-    window.open(PORTAL_URL, '_blank');
+    window.open(PORTAL_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
