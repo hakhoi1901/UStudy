@@ -17,8 +17,8 @@ export const tuition_2025_2026 = {
         ADD: 425000,
 
         // GDQPAN - TC
-        BAA0002: 424000,
-        BAA0003: 424000,
+        BAA0002: 425000,
+        BAA0003: 425000,
 
         // Toán - Khoa học tự nhiên - Môi trường
         MTH: 639000,
