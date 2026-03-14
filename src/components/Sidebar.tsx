@@ -44,7 +44,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 
   return (
     <aside
-      className={`bg-[#004A98] text-white flex flex-col transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'
+      className={`bg-[#004A98] text-white flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'
         }`}
       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
     >

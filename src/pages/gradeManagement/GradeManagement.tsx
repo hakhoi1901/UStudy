@@ -99,7 +99,7 @@ export function GradeManagement() {
 
   // Render giao diện quản lý điểm
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-gray-900 mb-2">Quản lý điểm</h1>

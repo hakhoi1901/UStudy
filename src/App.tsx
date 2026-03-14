@@ -12,7 +12,6 @@ import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
-import { Book } from 'lucide-react';
 import { STORAGE_KEYS } from './config/storageKeys';
 
 
@@ -68,13 +67,15 @@ function AppContent() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isSmallScreen = window.innerWidth <= 700;
+      setIsMobile(isMobileDevice || isSmallScreen);
+    };
 
-    const isSmallScreen = window.innerWidth <= 768;
-
-    if (checkMobile || isSmallScreen) {
-      setIsMobile(true);
-    }
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   if (isMobile) {
@@ -100,53 +101,26 @@ function AppContent() {
         <Header selectedSemester={selectedSemester} />
         {/* Giao diện chính/các trang*/}
         <main className="flex-1 overflow-y-auto">
-          {!isConfigured ? (
-            <div className="p-6 h-full flex items-center justify-center" style={{ marginTop: '80px' }}>
-              <div className="max-w-2xl w-full mx-auto">
-                <div className="w-1 flex flex-row w-full items-center justify-center">
-                  <SettingUserProfile />
+          <div className="p-6 max-w-[1600px] mx-auto w-full">
+            {!isConfigured ? (
+              <div className="h-full flex items-center justify-center" style={{ marginTop: '40px' }}>
+                <div className="max-w-2xl w-full mx-auto">
+                  <div className="w-1 flex flex-row w-full items-center justify-center">
+                    <SettingUserProfile />
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <>
-              {currentPage === 'dashboard' && (
-                <div className="p-6">
-                  <DashboardWidgets />
-                </div>
-              )}
-
-              {currentPage === 'courses' && (
-                <div className="p-6">
-                  <IntegratedStudyRoadmap />
-                </div>
-              )}
-
-              {currentPage === 'grades' && (
-                <div className="p-6">
-                  <GradeManagement />
-                </div>
-              )}
-
-              {currentPage === 'tuition' && (
-                <div className="p-6">
-                  <TuitionManagement selectedSemester={selectedSemester} />
-                </div>
-              )}
-
-              {currentPage === 'schedule' && (
-                <div className="p-6">
-                  <VisualSchedule selectedSemester={selectedSemester} />
-                </div>
-              )}
-
-              {currentPage === 'settings' && (
-                <div className="p-6">
-                  <Setting />
-                </div>
-              )}
-            </>
-          )}
+            ) : (
+              <>
+                {currentPage === 'dashboard' && <DashboardWidgets />}
+                {currentPage === 'courses' && <IntegratedStudyRoadmap />}
+                {currentPage === 'grades' && <GradeManagement />}
+                {currentPage === 'tuition' && <TuitionManagement selectedSemester={selectedSemester} />}
+                {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
+                {currentPage === 'settings' && <Setting />}
+              </>
+            )}
+          </div>
         </main>
       </div>
     </div>

@@ -19,8 +19,8 @@ export function Setting() {
                     <p className="text-gray-600 mb-8">Quản lý tài khoản và tùy chọn của bạn.</p>
                 </div>
 
-                <div className="w-08 mx-auto">
-                    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
+                <div className="flex flex-col items-center">
+                    <div className="bg-white w-06 rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
                         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
                             <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                 <User className="w-7 h-7" />Thông tin cá nhân

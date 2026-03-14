@@ -333,7 +333,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto">
+    <div>
       {/* Header with Export Button */}
       <div className="mb-8 flex items-start justify-between">
         <div>

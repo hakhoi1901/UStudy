@@ -515,7 +515,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
   return (
     <TooltipProvider>
-      <div className="max-w-[1800px] mx-auto">
+      <div>
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
