@@ -27,14 +27,14 @@ export function SettingUserProfile() {
                 <Select
                     label="Khoa"
                     value={facultyId}
-                    options={faculties}
+                    options={faculties.sort((a, b) => a.name.localeCompare(b.name))}
                     onChange={setFaculty}
                 />
 
                 <Select
                     label="Ngành"
                     value={majorId}
-                    options={currentFaculty?.majors || []}
+                    options={currentFaculty?.majors.sort((a, b) => a.name.localeCompare(b.name)) || []}
                     onChange={setMajor}
                 />
 

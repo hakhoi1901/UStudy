@@ -54,19 +54,33 @@ const RAW_FACULTIES = [
         ],
     },
     {
-        id: 'khoa-dia-chat',
-        name: 'Khoa Địa chất',
-        majors: [
-            { id: 'dia-chat-hoc', name: 'Địa chất học', dataSource: { 'k25': 'k24' } },
-            { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất', dataSource: { 'k25': 'k24' } },
-        ],
-    },
-    {
         id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
         name: 'Khoa Khoa học và Công nghệ Vật liệu',
         majors: [
             { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSource: { 'k25': 'k24' } },
             { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+
+    {
+        id: 'khoa-toan',
+        name: 'Khoa Toán - Tin học',
+        majors: [
+            { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
+            { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
+            { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
+            { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
+            { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
+            // { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+
+    {
+        id: 'khoa-dia-chat',
+        name: 'Khoa Địa chất',
+        majors: [
+            { id: 'dia-chat-hoc', name: 'Địa chất học', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
@@ -81,17 +95,12 @@ const RAW_FACULTIES = [
             { id: 'cong-nghe-ban-dan', name: 'CN Bán dẫn', dataSource: { 'k25': 'k24' } },
         ],
     },
-
     {
-        id: 'khoa-toan',
-        name: 'Khoa Toán - Tin học',
+        id: 'khoa-hoa',
+        name: 'Khoa Hóa học',
         majors: [
-            { id: 'toan-hoc', name: 'Toán học', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-tin', name: 'Toán - Tin', dataSource: { 'k25': 'k24' } },
-            { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSource: { 'k25': 'k24' } },
-            { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSource: { 'k25': 'k24' } },
-            { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSource: { 'k25': 'k24' } },
-            // { id: 'thong-ke', name: 'Thống kê', dataSource: { 'k25': 'k24' } },
+            { id: 'hoa-hoc', name: 'Hóa học', dataSource: { 'k25': 'k24' } },
+            { id: 'hoa-hoc-cntn', name: 'Cử nhân tài năng ngành hóa học', dataSource: { 'k25': 'k24' } },
         ],
     },
     {
@@ -111,7 +120,19 @@ const RAW_FACULTIES = [
             { id: 'khoa-hoc-moi-truong', name: 'Khoa học môi trường', dataSource: { 'k25': 'k24' } },
             { id: 'quan-ly-tai-nguyen-va-moi-truong', name: 'Quản lý tài nguyên và môi trường', dataSource: { 'k25': 'k24' } },
         ],
-    }
+    },
+
+    {
+        id: 'khoa-dien-tu-vien-thong',
+        name: 'Khoa Điện tử - Viễn thông',
+        majors: [
+            { id: 'ky-thuat-dien-dien-tu', name: 'Kỹ thuật Điện - Điện tử', dataSource: { 'k25': 'k24' } },
+            { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông', dataSource: { 'k25': 'k24' } },
+            { id: 'cong-nghe-ban-dan', name: 'Công nghệ Bán dẫn', dataSource: { 'k25': 'k24' } },
+            { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch', dataSource: { 'k25': 'k24' } },
+        ],
+    },
+
 ];
 
 export const FACULTIES: FacultyInfo[] = RAW_FACULTIES.map(faculty => ({
