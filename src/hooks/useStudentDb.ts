@@ -66,7 +66,6 @@ export function useStudentDb() {
     return {
         ...db,
         isReady,
-        // Helper: Nếu bạn cần truy cập trực tiếp object gốc
         rawObject: readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null)
     };
 }
