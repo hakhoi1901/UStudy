@@ -105,10 +105,6 @@ export function GPAPullTool({
 
             {expanded && (
                 <div className="px-6 py-4 border-t border-gray-100 space-y-6">
-                    <p className="text-sm text-gray-600">
-                        Ngược với GPA dự kiến: bạn nhập mức GPA mong muốn lúc tốt nghiệp (ví dụ 8.0 để đạt loại Giỏi).
-                        Hệ thống tính điểm TB tối thiểu cần đạt và đề xuất điểm từng môn trong học kỳ tiếp theo.
-                    </p>
 
                     {/* Nhập GPA mục tiêu */}
                     <div className="flex flex-wrap items-end gap-3">
@@ -146,15 +142,14 @@ export function GPAPullTool({
                     {baseResult && (
                         <>
                             <div
-                                className={`rounded-lg border p-4 ${
-                                    baseResult.success && !baseResult.impossible && !baseResult.alreadyAchieved
-                                        ? 'bg-blue-50 border-blue-200'
-                                        : baseResult.alreadyAchieved
-                                            ? 'bg-green-50 border-green-200'
-                                            : baseResult.impossible
-                                                ? 'bg-amber-50 border-amber-200'
-                                                : 'bg-gray-50 border-gray-200'
-                                }`}
+                                className={`rounded-lg border p-4 ${baseResult.success && !baseResult.impossible && !baseResult.alreadyAchieved
+                                    ? 'bg-blue-50 border-blue-200'
+                                    : baseResult.alreadyAchieved
+                                        ? 'bg-green-50 border-green-200'
+                                        : baseResult.impossible
+                                            ? 'bg-amber-50 border-amber-200'
+                                            : 'bg-gray-50 border-gray-200'
+                                    }`}
                             >
                                 <p className="text-sm font-medium text-gray-800 mb-1">{baseResult.message}</p>
                                 {baseResult.remainingCredits != null && (
@@ -176,7 +171,7 @@ export function GPAPullTool({
 
                             {/* GPA tổng + GPA theo kỳ (chỉ khi có kết quả hợp lệ) */}
                             {baseResult.success && !baseResult.impossible && baseResult.requiredAverage != null && (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
                                         <TrendingUp className="w-8 h-8 text-[#004A98] flex-shrink-0" />
                                         <div>
@@ -249,7 +244,7 @@ export function GPAPullTool({
                                                                         max={10}
                                                                         step={0.1}
                                                                         value={course.projectedGrade ?? ''}
-                                                                        placeholder={course.suggestedGrade != null ? String(course.suggestedGrade.toFixed(decimals)) : '—'}
+                                                                        placeholder={course.suggestedGrade != null ? String(course.suggestedGrade.toFixed(decimals > 2 ? 2 : decimals)) : '—'}
                                                                         onChange={(e) => {
                                                                             const val = e.target.value;
                                                                             handleGradeChange(course.code, val === '' ? null : (parseFloat(val) || 0));
@@ -259,12 +254,11 @@ export function GPAPullTool({
                                                                 )}
                                                             </td>
                                                             <td className="px-4 py-2 text-center">
-                                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                                                    displayGrade >= 9 ? 'bg-green-100 text-green-700' :
+                                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${displayGrade >= 9 ? 'bg-green-100 text-green-700' :
                                                                     displayGrade >= 8 ? 'bg-blue-100 text-blue-700' :
-                                                                    displayGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
-                                                                    'bg-gray-100 text-gray-700'
-                                                                }`}>
+                                                                        displayGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
+                                                                            'bg-gray-100 text-gray-700'
+                                                                    }`}>
                                                                     {getClassification(displayGrade)}
                                                                 </span>
                                                             </td>
