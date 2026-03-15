@@ -185,54 +185,6 @@ export const FinancialLogic = {
     },
 
     /**
-     * Kiểm tra xem môn ADD00002 (Nhập môn đầu khóa) có nên được thêm vào học phí hay không.
-     * ADD00002 được thêm vào nếu:
-     * - Học kỳ cần tính là học kỳ 1 (sem = 1) của năm nhất (first year)
-     * 
-     * @param targetSemester - Mã học kỳ dạng "24-25/1"
-     * @param allSemesters - Danh sách tất cả các học kỳ từ registration/grades của sinh viên
-     * @returns true nếu nên thêm ADD00002, false nếu không
-     */
-    shouldAddIntroductoryCourse: (targetSemester: string, allSemesters: string[]): boolean => {
-        if (!targetSemester || !allSemesters || allSemesters.length === 0) {
-            return false;
-        }
-
-        // Kiểm tra xem mã học kỳ có kết thúc bằng "/1" (học kỳ 1)
-        if (!targetSemester.endsWith('/1')) {
-            return false;
-        }
-
-        // Sắp xếp tất cả các học kỳ để tìm học kỳ sớm nhất (first year)
-        const uniqueSemesters = [...new Set(allSemesters)].sort();
-        const earliestSemester = uniqueSemesters[0];
-
-        // Nếu target semester == earliest semester → đây là năm nhất
-        return targetSemester === earliestSemester;
-    },
-
-    /**
-     * Lấy thông tin môn ADD00002 (Nhập môn đầu khóa).
-     * Môn này có tín chỉ cố định = 2, không có metadata trong CTĐT.
-     */
-    getIntroductoryCourse: (tuitionRates: TuitionRates | null): { id: string; name: string; credits: number; billingCredits: number; fee: number } => {
-        const courseId = 'ADD00002';
-        const courseName = 'Nhập môn đầu khóa';
-        const credits = 2;
-        const defaultPrice = tuitionRates?.default_price || 0;
-        const billingCredits = credits;
-        const fee = billingCredits * defaultPrice;
-
-        return {
-            id: courseId,
-            name: courseName,
-            credits,
-            billingCredits,
-            fee
-        };
-    },
-
-    /**
      * Xác định trạng thái thanh toán học phí.
      * Trích xuất từ useTuitionCalculator.ts L192-223.
      */
