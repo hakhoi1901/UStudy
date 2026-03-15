@@ -41,7 +41,8 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
             URL_DKHP: "/SinhVien.aspx?pid=212",
             TARGET_YEAR: APP_CONFIG.DEFAULT_TARGET_YEAR,
             TARGET_SEM: APP_CONFIG.DEFAULT_TARGET_SEM,
-            EXPIRES_AT: expirationTime
+            EXPIRES_AT: expirationTime,
+            VERSION: APP_CONFIG.BOOKMARKLET_VERSION
         };
 
         // thay thế chuỗi window.__HCMUS_PORTAL_CONFIG__ bằng chuỗi configToInject

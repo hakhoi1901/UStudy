@@ -829,6 +829,7 @@
         };
 
         const metaData = {
+            version: CONFIG.VERSION,
             scrapedAt: new Date().toISOString(),
             params: {
                 tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
@@ -840,7 +841,8 @@
 
         const fullDataPacket = {
             raw: rawData,
-            meta: metaData
+            meta: metaData,
+            version: CONFIG.VERSION
         };
 
         console.log("🔥 FULL DATA PACKET:", fullDataPacket);
