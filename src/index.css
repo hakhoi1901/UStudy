@@ -2396,6 +2396,12 @@
     }
   }
 
+
+  .w-\[10px\] {
+    width: 10px;
+  }
+
+
   .peer-checked\:bg-\[\#004A98\]:is(:where(.peer):checked ~ *) {
     background-color: #004a98;
   }
