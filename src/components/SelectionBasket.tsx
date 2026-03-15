@@ -76,7 +76,7 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                                 <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
                                 {course.price !== 0
                                     ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number) + ' đ'}</p>
-                                    : <p className="text-xs text-red-600 truncate">Hệ thống không tìm thấy học phí</p>
+                                    : <p className="text-xs text-red-600 truncate">Môn này không nằm trong CTĐT của bạn.</p>
                                 }
 
                                 <div className="flex items-center gap-2 mt-1.5">
@@ -141,6 +141,7 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
 
                 {/* Tuition Summary */}
                 <div className="mb-4">
+{/*                     
                     {missingMetaCourses.length > 0 && (
                         <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700">
                             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -150,7 +151,8 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                                 <p className="mt-1 text-red-600">Đang tạm tính: 0₫</p>
                             </div>
                         </div>
-                    )}
+                    )} */}
+
                     <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
                         <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
                         <p className="text-2xl font-bold text-[#004A98]">
