@@ -9,6 +9,7 @@ const navGroups = [
       { icon: Home, label: 'Tổng quan', active: false, subtitle: "Điểm & tín chỉ tích lũy", page: 'dashboard' },
       { icon: Map, label: 'Lộ trình học tập', active: true, subtitle: 'Chọn môn & Lịch', page: 'courses' },
       { icon: BarChart3, label: 'Quản lý điểm', active: false, subtitle: 'GPA & Môn học lại', page: 'grades' },
+      { icon: Subtitles, label: 'Lịch thi', active: false, subtitle: 'Lịch thi học kỳ', page: 'examSchedule' },
     ],
   },
   {

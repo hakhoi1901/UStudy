@@ -13,6 +13,7 @@ import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
 import { STORAGE_KEYS } from './config/storageKeys';
+import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
 
 
 function AppContent() {
@@ -117,6 +118,7 @@ function AppContent() {
                 {currentPage === 'grades' && <GradeManagement />}
                 {currentPage === 'tuition' && <TuitionManagement selectedSemester={selectedSemester} />}
                 {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
+                {currentPage === 'examSchedule' && <ExamScheduleVi />}
                 {currentPage === 'settings' && <Setting />}
               </>
             )}

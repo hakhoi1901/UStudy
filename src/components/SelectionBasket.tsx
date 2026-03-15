@@ -16,10 +16,13 @@ interface SelectionBasketProps {
     setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
 }
 
+const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034', 'BAA00100', 'BAA00021',];
+const MAX_CREDITS = 25; // Tối đa 25 tín chỉ mỗi học kỳ
+
 export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemoveCourse, allowedClassesMap, setAllowedClassesMap }: SelectionBasketProps) {
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
     const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
-    const totalCredits = selectedCourses.reduce((sum, course) => sum + course.credits, 0);
+    const totalCredits = selectedCourses.filter(course => !ENGLISH_COURSE_IDS.includes(course.id)).reduce((sum, course) => sum + course.credits, 0);
     const missingMetaCourses: string[] = [];
 
     const estimatedTuition = selectedCourses.reduce((sum, course) => {
@@ -39,15 +42,15 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
     return (
         <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
             {/* Header - Fixed */}
-            <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <div className="w-full p-4 border-b border-gray-200 flex-shrink-0">
                 <h3 className="text-gray-900 font-semibold">Giỏ môn học</h3>
                 <p className="text-sm text-gray-600 mt-1">
                     {selectedCourses.length} môn học đã chọn
                 </p>
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600">
+                {/* <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Dữ liệu được lấy từ Portal</span>
-                </div>
+                </div> */}
             </div>
 
             {/* Course List - Scrollable */}
@@ -120,13 +123,13 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                         <div
                             className={`h-2.5 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'
                                 }`}
-                            style={{ width: `${Math.min((totalCredits / 24) * 100, 100)}%` }}
+                            style={{ width: `${Math.min((totalCredits / 25) * 100, 100)}%` }}
                         ></div>
                     </div>
                     {totalCredits > 24 && (
                         <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
                             <span>⚠️</span>
-                            <span>Vượt quá 24 tín chỉ tối đa mỗi học kỳ</span>
+                            <span>Vượt quá 25 tín chỉ tối đa mỗi học kỳ</span>
                         </p>
                     )}
                     {totalCredits > 0 && totalCredits <= 24 && (
@@ -151,9 +154,9 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                     <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
                         <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
                         <p className="text-2xl font-bold text-[#004A98]">
-                            {formatCurrency(estimatedTuition)}
+                            {formatCurrency(estimatedTuition)} VNĐ
                         </p>
-                        <p className="text-[10px] text-gray-500 mt-1">VNĐ (đã bao gồm các khoản phí)</p>
+                        {/* <p className="text-[10px] text-gray-500 mt-1">VNĐ (đã bao gồm các khoản phí)</p> */}
                     </div>
                 </div>
 

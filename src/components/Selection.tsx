@@ -50,11 +50,10 @@ export function Select({ label, value, options, onChange, subLabel, disabled }: 
             {/* Nút bấm giả lập Select */}
             <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg text-sm transition-all flex justify-between items-center ${
-                    disabled 
-                        ? "border-gray-200 text-gray-400 cursor-not-allowed" 
-                        : `text-gray-900 cursor-pointer ${isOpen ? "border-[#004A98] ring-2 ring-[#004A98] ring-opacity-20" : "border-gray-200"}`
-                }`}
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg text-sm transition-all flex justify-between items-center ${disabled
+                    ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                    : `text-gray-900 cursor-pointer ${isOpen ? "border-[#004A98] ring-2 ring-[#004A98] ring-opacity-20" : "border-gray-200"}`
+                    }`}
             >
                 <span className="truncate">{selectedOption ? selectedOption.name : "Chọn..."}</span>
                 {/* Icon mũi tên */}

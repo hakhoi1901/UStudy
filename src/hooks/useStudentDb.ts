@@ -56,7 +56,7 @@ export function useStudentDb() {
         return {
             name: studentDb.name || "Chưa cập nhật",
             grades: studentDb.grades || [],
-            exams: studentDb.exams || { midterm: [], final: [] },
+            exams: studentDb.exams || {},
             tuition: studentDb.tuition || { details: [], year: "", sem: "", total: "0" },
             registrations: studentDb.registrations || [],
             program: studentDb.program || []

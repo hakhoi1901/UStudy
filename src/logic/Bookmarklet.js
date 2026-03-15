@@ -576,30 +576,110 @@
             tuitionData = scrapeBackgroundData(docHocPhi, 'TUITION');
         }
 
-        // 3. Xử lý Lịch thi
+        // 3. Xử lý Lịch thi (BẢN VÉT LƯỚI TOÀN DIỆN - ĐA TẦNG NĂM-KỲ)
         if (config.getExam) {
-            showLoading(`Đang lấy Lịch thi HK${config.examSem}/${config.examYear}...`);
+            showLoading(`Đang khởi động tiến trình quét Lịch Thi toàn diện...`);
+            let docThiBase = await fetchVirtualPage(URLS.LICHTHI);
 
-            let docThi = await fetchVirtualPage(URLS.LICHTHI);
+            // B1: Đào list Năm học
+            const yearOptions = [];
+            const yearListEl = docThiBase.querySelector('.ob_iCboICBC');
+            if (yearListEl) {
+                yearListEl.querySelectorAll('li').forEach(li => {
+                    const matchObj = li.textContent.match(/\d{2}-\d{2}/);
+                    if (matchObj && matchObj[0] && !yearOptions.includes(matchObj[0])) {
+                        yearOptions.push(matchObj[0]);
+                    }
+                });
+            }
+            if (yearOptions.length === 0) yearOptions.push("25-26", "24-25", "23-24", "22-23");
 
-            const examPageIds = {
-                year: "ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi",
-                sem: "ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi",
-                btn: "ctl00$ContentPlaceHolder1$ctl00$btnXemLichThi",
-                btnValue: "Xem Lịch Thi"
-            };
+            const semOptions = ["1", "2", "3"];
+            const allExams = {};
 
-            const curExamYear = docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_gvDKHPLichThi_ob_CbocboNamHoc_gvDKHPLichThiTB")?.value
-                || docThi.querySelector("input[name$='cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB']")?.value;
-            const curExamSem = docThi.getElementById("ctl00_ContentPlaceHolder1_ctl00_cboHocKy_gvDKHPLichThi_ob_CbocboHocKy_gvDKHPLichThiTB")?.value
-                || docThi.querySelector("input[name$='cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB']")?.value;
+            let count = 0;
+            const totalScans = yearOptions.length * semOptions.length;
 
-            if (curExamYear !== config.examYear || curExamSem !== config.examSem) {
-                showLoading(`Đang chuyển Lịch thi sang HK${config.examSem}/${config.examYear}...`);
-                docThi = await postToGetSemester(URLS.LICHTHI, docThi, examPageIds, config.examYear, config.examSem);
+            // B2: Vòng lặp Brute-force
+            for (const year of yearOptions) {
+                for (const sem of semOptions) {
+                    count++;
+                    showLoading(`Đang dò tìm Lịch thi [Năm ${year} - HK ${sem}] (${count}/${totalScans})...`);
+
+                    try {
+                        // NHỊP 1: Dọn đường (GET request)
+                        const targetUrl = `${URLS.LICHTHI}&nh=${year}&hk=${sem}`;
+                        const getRes = await fetch(targetUrl);
+                        const prefilledDoc = parseHTML(await getRes.text());
+
+                        // Lấy mớ ViewState mới nhất
+                        const viewState = prefilledDoc.getElementById('__VIEWSTATE')?.value;
+                        const viewStateGen = prefilledDoc.getElementById('__VIEWSTATEGENERATOR')?.value;
+                        const eventValidation = prefilledDoc.getElementById('__EVENTVALIDATION')?.value;
+
+                        if (!viewState) continue; // Nếu lỡ đứt mạng thì bỏ qua kỳ này
+
+                        // NHỊP 2: Đóng gói Payload CHUẨN XÁC
+                        const formData = new URLSearchParams();
+
+                        // Core ASP.NET
+                        formData.append('__EVENTTARGET', '');
+                        formData.append('__EVENTARGUMENT', '');
+                        formData.append('__VIEWSTATE', viewState);
+                        if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+                        if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+
+                        // Móc nối toàn bộ các thẻ input râu ria khác (trừ Obout)
+                        prefilledDoc.querySelectorAll('input[type="hidden"]').forEach(el => {
+                            if (el.name && !el.name.includes('cboNamHoc') && !el.name.includes('cboHocKy') && !el.name.startsWith('__')) {
+                                formData.append(el.name, el.value);
+                            }
+                        });
+
+                        // Ghi đè bằng tay bộ parameter của Obout (Đã kiểm chứng từ Network Tab)
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB', year);
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiSIS', '1');
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi', year);
+
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB', sem);
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiSIS', '1');
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi', sem);
+
+                        formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXemLichThi', 'Xem Lịch Thi');
+
+                        // NHỊP 3: Bắn POST
+                        const postRes = await fetch(targetUrl, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                        });
+
+                        const finalDoc = parseHTML(await postRes.text());
+
+                        // Bóc tách bảng dữ liệu
+                        const partialData = scrapeBackgroundData(finalDoc, 'EXAM');
+
+                        // CHỈ LƯU VÀO DATA NẾU CÓ THỰC SỰ CÓ LỊCH THI
+                        if (partialData.midterm.length > 0 || partialData.final.length > 0) {
+                            const key = `${year}-${sem}`; // Tạo key đa tầng, vd: "24-25-2"
+
+                            // Gắn nhãn năm/kỳ
+                            partialData.midterm.forEach(item => { item.year = year; item.semester = sem; });
+                            partialData.final.forEach(item => { item.year = year; item.semester = sem; });
+
+                            allExams[key] = {
+                                midterm: partialData.midterm,
+                                final: partialData.final
+                            };
+                        }
+
+                    } catch (err) {
+                        console.warn(`Lỗi lịch thi ${year} HK${sem}:`, err);
+                    }
+                }
             }
 
-            examData = scrapeBackgroundData(docThi, 'EXAM');
+            examData = allExams;
         }
 
         // 4. Xử lý Lớp Mở
