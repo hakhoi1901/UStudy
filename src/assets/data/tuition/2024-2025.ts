@@ -15,7 +15,7 @@ export const tuition_2024_2025 = {
                 // LLCT - KT - XH - PL
                 BAA: 370000,
                 ADD: 370000,
-
+                CSC00003: 370000,
                 // GDQPAN - TC
                 BAA0002: 370000,
                 BAA0003: 370000,
@@ -40,7 +40,7 @@ export const tuition_2024_2025 = {
                 'khoa-hoc-may-tinh': { CSC1: 773000 },
                 'tri-tue-nhan-tao': { CSC1: 780000 },
                 'cu-nhan-tai-nang-cntt': { CSC1: 773000 },
-                'mang-may-tinh': { CSC1: 857000 },
+                'mang-may-tinh': { CSC1: 773000 },
 
                 'sinh-hoc': { BIO1: 788000, BTE1: 788000 },
                 'cong-nghe-sinh-hoc': { BIO1: 818000, BTE1: 818000 },
@@ -59,21 +59,17 @@ export const tuition_2024_2025 = {
                 'cong-nghe-vat-lieu': { MST1: 785000, MSC1: 785000 },
 
                 'cong-nghe-ky-thuat-moi-truong': { ENE1: 598000 },
-                'quan-ly-tai-nguyen-va-moi-truong': { ENM1: 590000 },
+                'quan-ly-tai-nguyen-va-moi-truong': { ENM1: 592000 },
                 'khoa-hoc-moi-truong': { ENV1: 587000 },
 
                 'dia-chat-hoc': { GEO1: 573000 },
                 'ky-thuat-dia-chat': { GEO1: 558000 },
-                'kinh-te-dat-dai': { GEO1: 891000 },
 
                 'hai-duong-hoc': { OMH1: 556000 },
-
-                'cong-nghe-giao-duc': { EDT1: 681000, EDT2: 681000 },
 
                 'toan-hoc': { MTH1: 844000 },
                 'toan-tin': { MTH1: 786000 },
                 'toan-ung-dung': { MTH1: 789000 },
                 'khoa-hoc-du-lieu': { MTH1: 841000 },
-                'thong-ke': { MTH1: 843000 },
         } as Record<string, Record<string, number>>,
-};
+};  
