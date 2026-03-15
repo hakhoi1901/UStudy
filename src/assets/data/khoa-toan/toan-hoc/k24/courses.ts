@@ -1,6 +1,3 @@
-Dưới đây là danh sách các môn học của ** ngành Toán học ** được trích xuất từ chương trình đào tạo Khóa 2024, tuân thủ nghiêm ngặt theo cấu trúc của file`courses.txt`.Danh sách đã được kiểm tra kỹ lưỡng, đảm bảo đầy đủ các học phần từ đại cương đến chuyên ngành(không thêm các mã môn của ngành Toán ứng dụng hay Toán tin).
-
-```javascript
 export const courses = [
   {
     "course_id": "BAA00101",
@@ -1334,4 +1331,3 @@ export const courses = [
     "description": ""
   }
 ];
-```
