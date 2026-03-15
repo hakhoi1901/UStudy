@@ -73,37 +73,92 @@ function getCurrentDayAndTime(): { dayOfWeek: number; currentPeriod: number | nu
   };
 }
 
-// Export calendar to text format
+// Export weekly schedule to iCalendar (.ics) format
 function exportCalendar(schedule: WeeklySchedule) {
-  let content = `THỜI KHÓA BIỂU - ${schedule.semesterName}\n`;
-  content += `Tuần ${schedule.weekNumber}/17 (${schedule.weekRange})\n`;
-  content += `Tổng: ${schedule.totalCourses} môn | ${schedule.totalCredits} tín chỉ | ${schedule.totalPeriodsPerWeek} tiết/tuần\n`;
-  content += `\n${'='.repeat(80)}\n\n`;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const toIcsDateTime = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  const escapeIcsText = (text: string) => text
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
 
-  DAYS.forEach(day => {
-    const daySessions = schedule.sessions
-      .filter(s => s.dayOfWeek === day.value)
-      .sort((a, b) => a.startPeriod - b.startPeriod);
+  // Anchor all events to week 1 (semester start Monday), then repeat by number of teaching weeks.
+  const semesterStart = schedule.semesterStartDate ? new Date(schedule.semesterStartDate) : null;
 
-    if (daySessions.length > 0) {
-      content += `${day.label.toUpperCase()}\n`;
-      content += `${'-'.repeat(80)}\n`;
+  const nowStamp = toIcsDateTime(new Date());
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//HCMUS Portal Tool//Visual Schedule//VI',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeIcsText(`Thoi khoa bieu - ${schedule.semesterName}`)}`,
+    'X-WR-TIMEZONE:Asia/Ho_Chi_Minh',
+  ];
 
-      daySessions.forEach(session => {
-        const typeLabel = session.type === 'LT' ? 'Lý thuyết' : session.type === 'TH' ? 'Thực hành' : 'Bài tập';
-        content += `• ${session.startTime}-${session.endTime} | Tiết ${session.startPeriod}-${Math.floor(session.endPeriod)}\n`;
-        content += `  ${session.courseCode} - ${session.courseName}\n`;
-        content += `  ${typeLabel} | Phòng: ${session.room} | GV: ${session.instructor}\n`;
-        content += `  Lớp: ${session.classCode} | ${session.credits} TC\n\n`;
-      });
+  schedule.sessions.forEach((session, idx) => {
+    const [startHour, startMinute] = session.startTime.split(':').map(Number);
+    const [endHour, endMinute] = session.endTime.split(':').map(Number);
+
+    let eventDate: Date | null = null;
+
+    if (semesterStart) {
+      // dayOfWeek: 2..7 => offset 0..5 from week-1 Monday
+      const dayOffset = session.dayOfWeek - 2;
+      eventDate = new Date(
+        semesterStart.getFullYear(),
+        semesterStart.getMonth(),
+        semesterStart.getDate() + dayOffset
+      );
+    } else if (session.startDateParsed) {
+      eventDate = new Date(session.startDateParsed);
     }
+
+    if (!eventDate || Number.isNaN(startHour) || Number.isNaN(startMinute) || Number.isNaN(endHour) || Number.isNaN(endMinute)) {
+      return;
+    }
+
+    const dtStart = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), startHour, startMinute, 0);
+    const dtEnd = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), endHour, endMinute, 0);
+
+    const typeLabel = session.type === 'LT' ? 'Ly thuyet' : session.type === 'TH' ? 'Thuc hanh' : 'Bai tap';
+    const recurrenceWeeks = Math.max(1, session.totalWeeks || 1);
+    const endDate = new Date(dtStart);
+    endDate.setDate(endDate.getDate() + recurrenceWeeks * 7);
+    const description = [
+      `Mon: ${session.courseName} (${session.courseCode})`,
+      `Lop: ${session.classCode}`,
+      `Loai: ${typeLabel}`,
+      `Giang vien: ${session.instructor || 'Dang cap nhat'}`,
+      `Tin chi: ${session.credits}`,
+      `Bat dau: ${session.startTime} - Tuan 1`,
+      `Ket thuc du kien: +${recurrenceWeeks} tuan`,
+    ].join('\\n');
+
+    lines.push('BEGIN:VEVENT');
+    lines.push(`UID:${session.id}-${schedule.weekNumber}-${idx}@hcmus-portal-tool`);
+    lines.push(`DTSTAMP:${nowStamp}`);
+    lines.push(`DTSTART;TZID=Asia/Ho_Chi_Minh:${toIcsDateTime(dtStart)}`);
+    lines.push(`DTEND;TZID=Asia/Ho_Chi_Minh:${toIcsDateTime(dtEnd)}`);
+    lines.push(`RRULE:FREQ=WEEKLY;COUNT=${recurrenceWeeks}`);
+    lines.push(`X-HCMUS-END-ESTIMATE:${toIcsDateTime(endDate)}`);
+    lines.push(`SUMMARY:${escapeIcsText(`${session.courseCode} - ${session.courseName}`)}`);
+    lines.push(`LOCATION:${escapeIcsText(session.room || 'Chua co phong')}`);
+    lines.push(`DESCRIPTION:${escapeIcsText(description)}`);
+    lines.push('STATUS:CONFIRMED');
+    lines.push('TRANSP:OPAQUE');
+    lines.push('END:VEVENT');
   });
 
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  lines.push('END:VCALENDAR');
+
+  const content = `${lines.join('\r\n')}\r\n`;
+  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `TKB_${schedule.semester.replace(/\//g, '-')}_Tuan${schedule.weekNumber}.txt`;
+  link.download = `TKB_${schedule.semester.replace(/\//g, '-')}_FullSemester.ics`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -492,7 +547,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   };
 
   const handleExport = () => {
-    exportCalendar(displaySchedule);
+    exportCalendar(schedule);
   };
 
   // Tải dữ liệu
