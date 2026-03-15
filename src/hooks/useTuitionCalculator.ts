@@ -111,6 +111,51 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             }
         });
 
+        // Xác định danh sách tất cả các học kỳ từ registrations và grades để kiểm tra năm nhất
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+        const allSemestersSet = new Set<string>();
+        
+        if (registrations && registrations.length > 0) {
+            registrations.forEach((r: any) => {
+                if (r.semester) {
+                    const sem = FinancialLogic.parseSemesterName(r.semester);
+                    if (sem) allSemestersSet.add(sem);
+                }
+            });
+        }
+        
+        if (studentDb && studentDb.grades && Array.isArray(studentDb.grades)) {
+            studentDb.grades.forEach((g: any) => {
+                if (g.semester) {
+                    allSemestersSet.add(g.semester);
+                }
+            });
+        }
+        
+        if (studentDb && studentDb.registrations && Array.isArray(studentDb.registrations)) {
+            studentDb.registrations.forEach((r: any) => {
+                if (r.semester) {
+                    allSemestersSet.add(r.semester);
+                }
+            });
+        }
+
+        // Kiểm tra xem có nên thêm môn ADD00002 (Nhập môn đầu khóa) không
+        const shouldAddIntro = FinancialLogic.shouldAddIntroductoryCourse(targetSemester, Array.from(allSemestersSet));
+        
+        if (shouldAddIntro) {
+            const intro = FinancialLogic.getIntroductoryCourse(tuitionRates);
+            // Thêm nhưng kiểm tra không bị trùng
+            if (!uniqueCourses.has(intro.id)) {
+                uniqueCourses.set(intro.id, {
+                    id: intro.id,
+                    name: intro.name,
+                    credits: intro.credits,
+                    classGroup: 'N/A'
+                });
+            }
+        }
+
         const calculatedCourses: TuitionCourse[] = [];
         const missingMetaCourses: string[] = [];
         let totalCredits = 0;
@@ -122,22 +167,38 @@ export function useTuitionCalculator(selectedSemesterName: string) {
         uniqueCourses.forEach((reg, courseId) => {
             const cid = String(courseId).trim().toUpperCase();
 
-            const { billingCredits, courseFee, missingMeta } = FinancialLogic.calculateCourseFee(
-                cid,
-                parseInt(reg.credits || 3),
-                tuitionRates,
-                allCoursesMeta
-            );
+            // Xử lý đặc biệt cho môn ADD00002
+            let billingCredits = 0;
+            let courseFee = 0;
+            let missingMeta = false;
 
-            if (missingMeta) {
+            if (cid === 'ADD00002') {
+                // Môn ADD00002 không có metadata, sử dụng tín chỉ mặc định = 2
+                billingCredits = 2;
+                const pricePerCredit = tuitionRates?.default_price || 0;
+                courseFee = billingCredits * pricePerCredit;
+                missingMeta = false; // Không phải "missing" vì chúng ta biết cách tính
+            } else {
+                const result = FinancialLogic.calculateCourseFee(
+                    cid,
+                    parseInt(reg.credits || 3),
+                    tuitionRates,
+                    allCoursesMeta
+                );
+                billingCredits = result.billingCredits;
+                courseFee = result.courseFee;
+                missingMeta = result.missingMeta;
+            }
+
+            if (missingMeta && cid !== 'ADD00002') {
                 missingMetaCourses.push(cid);
             }
 
             const meta = allCoursesMeta ? allCoursesMeta.find((m: any) => m.course_id === cid) : null;
-            const credits = parseInt(reg.credits || meta?.credits || 3);
+            const credits = cid === 'ADD00002' ? 2 : parseInt(reg.credits || meta?.credits || 3);
 
             // Dùng FinancialLogic.calculateBillingCredits để tính periods
-            const billingCr = meta ? FinancialLogic.calculateBillingCredits(meta, credits) : 0;
+            const billingCr = cid === 'ADD00002' ? 2 : (meta ? FinancialLogic.calculateBillingCredits(meta, credits) : 0);
             const periods = billingCr * 15;
 
             // Debug logic tính học phí từng môn
@@ -145,7 +206,8 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             // console.log(` - Credits: ${credits}, Billing Credits: ${billingCredits}`);
             // console.log(` - Price/Credit: ${FinancialLogic.lookupPricePerCredit(cid, tuitionRates)}`);
             // console.log(` - Course Fee: ${courseFee}`);
-            if (missingMeta) console.log(` - WARNING: Missing metadata from CTĐT`);
+            if (missingMeta && cid !== 'ADD00002') console.log(` - WARNING: Missing metadata from CTĐT`);
+            if (cid === 'ADD00002') console.log(`[TuitionLog] Special course ADD00002 added for first-year first-semester`);
 
             calculatedCourses.push({
                 stt: stt++,
@@ -161,7 +223,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 support: 0,
                 actualFee: courseFee,
                 otherFees: 0,
-                note: missingMeta ? 'Thiếu dữ liệu CTĐT' : ''
+                note: cid === 'ADD00002' ? 'Nhập môn đầu khóa' : (missingMeta ? 'Thiếu dữ liệu CTĐT' : '')
             });
 
             totalCredits += credits;
