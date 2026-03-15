@@ -1011,6 +1011,10 @@
     width: 1px;
   }
 
+  .w-\[10px\] {
+    width: 10px;
+  }
+
   .max-w-5xl {
     max-width: var(--container-5xl);
   }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../hooks/useStudentDb';
 import { useDepartmentData } from '../../context/DepartmentContext';
@@ -29,7 +29,6 @@ export function ExamScheduleVi() {
     const currentGlobalSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
     const [selectedSemester, setSelectedSemester] = useState<string>(currentGlobalSemester);
 
-    // Mapped exam data from all semesters in studentDb
     const examData: ExamData[] = useMemo(() => {
         if (!exams || typeof exams !== 'object') return [];
 
@@ -81,8 +80,33 @@ export function ExamScheduleVi() {
     // Unique semesters for the filter dropdown
     const availableSemesters = useMemo(() => {
         const semesters = Array.from(new Set(examData.map(e => e.semester)));
-        return semesters.sort((a, b) => b.localeCompare(a)); // Sort descending (newer first)
+        return semesters.sort((a, b) => {
+            // "Học kỳ 2, 2024-2025" or similar format
+            const matchA = a.match(/Học kỳ (\d+), (\d+)-/);
+            const matchB = b.match(/Học kỳ (\d+), (\d+)-/);
+
+            if (matchA && matchB) {
+                const semA = parseInt(matchA[1]);
+                const yearA = parseInt(matchA[2]);
+                const semB = parseInt(matchB[1]);
+                const yearB = parseInt(matchB[2]);
+
+                // Compare Year first (descending)
+                if (yearA !== yearB) return yearB - yearA;
+                // Then compare Semester (descending)
+                return semB - semA;
+            }
+            return b.localeCompare(a);
+        });
     }, [examData]);
+
+    // Sync selectedSemester with available data
+    useEffect(() => {
+        if (availableSemesters.length > 0) {
+            // Default to the latest semester available in data
+            setSelectedSemester(availableSemesters[0]);
+        }
+    }, [availableSemesters]);
 
     // Filter data
     const filteredData = useMemo(() => {
@@ -100,20 +124,13 @@ export function ExamScheduleVi() {
 
     // Calculate days until exam
     const getDaysUntilExam = (examDate: string) => {
-        const today = new Date(); // Mock current date
+        const today = new Date();
         const exam = new Date(examDate);
         const diffTime = exam.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays;
     };
 
-    // Find upcoming exam
-    const upcomingExam = useMemo(() => {
-        const upcoming = filteredData
-            .filter(exam => getDaysUntilExam(exam.examDate) > 0)
-            .sort((a, b) => new Date(a.examDate).getTime() - new Date(b.examDate).getTime())[0];
-        return upcoming;
-    }, [filteredData]);
 
     // Find all upcoming exams (for the new card design)
     const upcomingExams = useMemo(() => {
@@ -390,19 +407,31 @@ export function ExamScheduleVi() {
             {/* Exam Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[1100px]">
+                        <colgroup>
+                            <col className="w-[45px]" />
+                            <col className="w-[100px]" />
+                            <col className="w-[280px]" />
+                            <col className="w-[80px]" />
+                            <col className="w-[120px]" />
+                            <col className="w-[120px]" />
+                            <col className="w-[80px]" />
+                            <col className="w-[150px]" />
+                            <col className="w-[90px]" />
+                            <col className="w-[150px]" />
+                        </colgroup>
                         <thead className="bg-gradient-to-r from-[#004A98] to-[#0066CC] text-white sticky top-0 z-10">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">STT</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider min-w-[200px]">Tên môn học</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Lớp</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ngày thi</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Giờ thi</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phòng</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider min-w-[150px]">Địa điểm</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Loại</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider min-w-[180px]">Ghi chú</th>
+                                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tên môn học</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Lớp</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ngày thi</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Giờ thi</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phòng</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Địa điểm</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Loại</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -419,30 +448,34 @@ export function ExamScheduleVi() {
                       ${isUpcoming ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
                     `}
                                     >
-                                        <td className="px-4 py-3 text-sm text-gray-900">{index + 1}</td>
-                                        <td className="px-4 py-3 text-sm font-mono font-semibold text-[#004A98]">{exam.courseCode}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">{exam.courseName}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">{exam.className}</td>
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                        <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
+                                        <td className="px-3 py-3 text-sm font-mono font-semibold text-[#004A98] break-all">{exam.courseCode}</td>
+                                        <td className="px-3 py-3 text-sm text-gray-900">
+                                            <div className="line-clamp-2 leading-relaxed" title={exam.courseName}>
+                                                {exam.courseName}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-3 text-sm text-gray-600">{exam.className}</td>
+                                        <td className="px-3 py-3 text-sm font-medium text-gray-900">
                                             <div className="flex items-center gap-1">
                                                 <Calendar className="w-4 h-4 text-gray-400" />
                                                 {formatDate(exam.examDate)}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                        <td className="px-3 py-3 text-sm text-gray-600">
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4 text-gray-400" />
                                                 {exam.examTime}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{exam.room}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                        <td className="px-3 py-3 text-sm font-medium text-gray-900">{exam.room}</td>
+                                        <td className="px-3 py-3 text-sm text-gray-600">
                                             <div className="flex items-center gap-1">
                                                 <MapPin className="w-4 h-4 text-gray-400" />
                                                 {exam.location.replace('Cơ sở ', '')}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-3 py-3">
                                             <span
                                                 className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${exam.examType === 'Giữa kỳ'
                                                     ? 'bg-amber-100 text-amber-800'
@@ -452,11 +485,10 @@ export function ExamScheduleVi() {
                                                 {exam.examType}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                        <td className="px-3 py-3 text-sm text-gray-600">
                                             {exam.notes && (
                                                 <div className="flex items-center gap-1">
                                                     <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
-
                                                 </div>
                                             )}
                                         </td>
