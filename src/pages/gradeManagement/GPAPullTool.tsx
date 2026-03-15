@@ -232,7 +232,7 @@ export function GPAPullTool({
                                                             <td className="px-4 py-2 text-gray-700">{course.name}</td>
                                                             <td className="px-4 py-2 text-center">{course.credits}</td>
                                                             <td className="px-4 py-2 text-center text-[#004A98] font-medium">
-                                                                {(course.suggestedGrade ?? 0).toFixed(decimals)}
+                                                                {course.projectedGrade ? course.projectedGrade.toFixed(decimals) : (course.suggestedGrade ?? 0).toFixed(decimals)}
                                                             </td>
                                                             <td className="px-4 py-2 text-center">
                                                                 {course.isLocked ? (
