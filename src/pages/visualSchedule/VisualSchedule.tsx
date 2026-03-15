@@ -595,7 +595,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
         {/* Weekly Calendar Grid */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-6">
-          <table className="w-full border-collapse table-fixed min-w-[1200px]">
+          <table className="w-full border-collapse table-fixed min-w-[1000px]">
             <thead>
               <tr className="bg-[#004A98]">
                 <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-1 text-white text-xs font-semibold w-16 min-w-[64px]">
