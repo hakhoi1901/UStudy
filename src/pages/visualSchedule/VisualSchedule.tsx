@@ -277,7 +277,7 @@ function CourseCard({ session }: { session: ScheduleSession }) {
             }}
           >
             {/* Course Name - Max 2 lines with ellipsis */}
-            <div className="text-[13px] font-bold text-gray-700 leading-tight mb-0.5 line-clamp-2">
+            <div className="text-sm font-medium text-gray-900 leading-tight mb-0.5 line-clamp-2">
               {session.courseName}
             </div>
 
@@ -293,9 +293,9 @@ function CourseCard({ session }: { session: ScheduleSession }) {
           </div>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="right" align="start" className="z-[100] w-64 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
+      <TooltipContent side="right" align="start" className="z-[100] w-64 bg-white opacity-100 border-gray-300 text-gray-900 rounded-lg shadow-xl p-3 text-sm pointer-events-none animate-in fade-in zoom-in-95 duration-200 border">
         <div className="relative">
-          <div className="font-bold text-sm mb-2 text-blue-800">
+          <div className="text-sm font-medium text-gray-900 mb-2">
             {session.courseCode} - {session.courseName}
           </div>
           <div className="space-y-1 text-gray-600">
