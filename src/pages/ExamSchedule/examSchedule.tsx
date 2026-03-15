@@ -326,6 +326,19 @@ export function ExamScheduleVi() {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     {/* Left: Filters */}
                     <div className="flex flex-col sm:flex-row gap-4 flex-1">
+
+                        {/* Semester Filter */}
+                        <select
+                            value={selectedSemester}
+                            onChange={(e) => setSelectedSemester(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
+                        >
+                            <option value="all">Tất cả học kỳ</option>
+                            {availableSemesters.map(sem => (
+                                <option key={sem} value={sem}>{sem}</option>
+                            ))}
+                        </select>
+
                         {/* Exam Type Tabs */}
                         <div className="flex bg-gray-100 rounded-lg p-1">
                             <button
@@ -356,18 +369,6 @@ export function ExamScheduleVi() {
                                 Cuối kỳ
                             </button>
                         </div>
-
-                        {/* Semester Filter */}
-                        <select
-                            value={selectedSemester}
-                            onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
-                        >
-                            <option value="all">📚 Tất cả học kỳ</option>
-                            {availableSemesters.map(sem => (
-                                <option key={sem} value={sem}>{sem}</option>
-                            ))}
-                        </select>
 
                         {/* Search */}
                         <div className="relative flex-1 max-w-xs">
