@@ -1,7 +1,51 @@
-import { Filter, History } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Filter, History, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { StudentCourseGrade } from "../../types";
 
 export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemesters, setSelectedSemester }: { filteredHistory: StudentCourseGrade[], selectedSemester: string, uniqueSemesters: string[], setSelectedSemester: (semester: string) => void }) {
+    const [sortConfig, setSortConfig] = useState<{ key: keyof StudentCourseGrade, direction: 'asc' | 'desc' } | null>(null);
+
+    const sortedHistory = useMemo(() => {
+        let sortableItems = [...filteredHistory];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue: any = a[sortConfig.key];
+                let bValue: any = b[sortConfig.key];
+
+                if (sortConfig.key === 'status') {
+                    aValue = a.needsRetake ? 1 : 0;
+                    bValue = b.needsRetake ? 1 : 0;
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredHistory, sortConfig]);
+
+    const requestSort = (key: keyof StudentCourseGrade) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key: keyof StudentCourseGrade) => {
+        if (!sortConfig || sortConfig.key !== key) {
+            return <ArrowUpDown className="w-4 h-4 ml-1 inline-block text-gray-400 group-hover:text-gray-600 transition-colors" />;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <ArrowUp className="w-4 h-4 ml-1 inline-block text-[#004A98]" />;
+        }
+        return <ArrowDown className="w-4 h-4 ml-1 inline-block text-[#004A98]" />;
+    };
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -34,23 +78,53 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
-                                Mã môn
+                            <th
+                                className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('code')}
+                            >
+                                <div className="flex items-center">
+                                    Mã môn {getSortIcon('code')}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
-                                Tên môn học
+                            <th
+                                className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('nameVi')}
+                            >
+                                <div className="flex items-center">
+                                    Tên môn học {getSortIcon('nameVi')}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
-                                Học kỳ
+                            <th
+                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('semester')}
+                            >
+                                <div className="flex items-center justify-center">
+                                    Học kỳ {getSortIcon('semester')}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
-                                Tín chỉ
+                            <th
+                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('credits')}
+                            >
+                                <div className="flex items-center justify-center">
+                                    Tín chỉ {getSortIcon('credits')}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
-                                Điểm
+                            <th
+                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('grade')}
+                            >
+                                <div className="flex items-center justify-center">
+                                    Điểm {getSortIcon('grade')}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
-                                Trạng thái
+                            <th
+                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
+                                onClick={() => requestSort('status')}
+                            >
+                                <div className="flex items-center justify-center">
+                                    Trạng thái {getSortIcon('status')}
+                                </div>
                             </th>
                         </tr>
                     </thead>
@@ -58,7 +132,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
 
                     {/* Danh sách các môn học */}
                     <tbody className="divide-y divide-gray-200">
-                        {filteredHistory.map((course) => (
+                        {sortedHistory.map((course) => (
                             <tr key={course.id} className={`hover:bg-gray-50 ${course.needsRetake ? 'bg-red-50/30' : ''}`}>
                                 {/* Mã môn */}
                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
