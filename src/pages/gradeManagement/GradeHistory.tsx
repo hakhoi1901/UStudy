@@ -82,7 +82,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                                 className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('code')}
                             >
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-2">
                                     Mã môn {getSortIcon('code')}
                                 </div>
                             </th>
@@ -90,7 +90,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                                 className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('nameVi')}
                             >
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-2">
                                     Tên môn học {getSortIcon('nameVi')}
                                 </div>
                             </th>
@@ -98,31 +98,34 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                                 className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('semester')}
                             >
-                                <div className="flex items-center justify-center">
-                                    Học kỳ {getSortIcon('semester')}
+                                <div className="relative flex items-center justify-center w-full">
+                                    <span>Học kỳ</span>
+                                    <span className="absolute right-0">{getSortIcon('semester')}</span>
                                 </div>
                             </th>
                             <th
                                 className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('credits')}
                             >
-                                <div className="flex items-center justify-center">
-                                    Tín chỉ {getSortIcon('credits')}
+                                <div className="relative flex items-center justify-center w-full">
+                                    <span>Tín chỉ</span>
+                                    <span className="absolute right-0">{getSortIcon('credits')}</span>
                                 </div>
                             </th>
                             <th
                                 className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('grade')}
                             >
-                                <div className="flex items-center justify-center">
-                                    Điểm {getSortIcon('grade')}
+                                <div className="relative flex items-center justify-center w-full">
+                                    <span>Điểm</span>
+                                    <span className="absolute right-0">{getSortIcon('grade')}</span>
                                 </div>
                             </th>
                             <th
                                 className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
                                 onClick={() => requestSort('status')}
                             >
-                                <div className="flex items-center justify-center">
+                                <div className="flex items-center justify-center gap-2">
                                     Trạng thái {getSortIcon('status')}
                                 </div>
                             </th>
