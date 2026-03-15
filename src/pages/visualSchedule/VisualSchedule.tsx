@@ -701,7 +701,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
         <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-[#004A98]" />
-            📚 Chi tiết môn học đã đăng ký
+            Chi tiết môn học đã đăng ký
           </h3>
           <div className="space-y-0">
             {uniqueCourses.map((session) => (

@@ -59,6 +59,63 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             hasAdvancePayment: false,
         };
 
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+        const importMeta = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
+        const { registrationSemesterName: regSemName, regTarget } = FinancialLogic.buildSemesterTarget(importMeta);
+
+        const isCurrentRegMatch = regTarget === targetSemester;
+        const tuitionInDb = studentDb?.tuition?.[targetSemester];
+
+        /** 
+         * LOGIC LỰA CHỌN NGUỒN DỮ LIỆU:
+         * 1. Nếu không phải học kỳ hiện tại (regTarget) VÀ có dữ liệu portal -> Dùng portal.
+         * 2. Nếu là học kỳ hiện tại HOẶC không có dữ liệu portal -> Dùng logic tính toán.
+         */
+        const usePortalData = !isCurrentRegMatch && tuitionInDb && tuitionInDb.details && tuitionInDb.details.length > 0;
+
+        if (usePortalData) {
+            const portalCourses: TuitionCourse[] = tuitionInDb.details.map((d: any, idx: number) => ({
+                stt: idx + 1,
+                semester: targetSemester,
+                courseCode: d.code,
+                classCode: d.classId || 'N/A',
+                courseName: d.name,
+                credits: d.credits,
+                periods: d.periods,
+                tuitionCredits: d.tuitionCredits,
+                tuitionFee: d.fee,
+                discount: 0,
+                support: 0,
+                actualFee: d.actualFee || d.fee,
+                otherFees: 0,
+                note: ""
+            }));
+
+            const portalSummary: TuitionSummary = {
+                ...emptySummary,
+                totalCredits: portalCourses.reduce((sum, c) => sum + c.credits, 0),
+                totalPeriods: portalCourses.reduce((sum, c) => sum + c.periods, 0),
+                totalTuitionCredits: portalCourses.reduce((sum, c) => sum + c.tuitionCredits, 0),
+                totalFee: parseFloat(String(tuitionInDb.fee || "0").replace(/,/g, '')) || portalCourses.reduce((sum, c) => sum + c.tuitionFee, 0),
+                lastUpdated: tuitionInDb.updatedDate || new Date().toLocaleString('vi-VN'),
+            };
+
+            const paymentStatus = FinancialLogic.detectPaymentStatus(studentDb, portalSummary.totalFee, false, targetSemester, true);
+            portalSummary.amountDue = paymentStatus.amountDue;
+            portalSummary.advancePayment = paymentStatus.advancePayment;
+            portalSummary.status = paymentStatus.status;
+            portalSummary.hasAdvancePayment = paymentStatus.hasAdvancePayment;
+
+            return {
+                courses: portalCourses,
+                summary: portalSummary,
+                isDataAvailable: true,
+                registrationSemesterName: regSemName,
+                missingMetaCourses: []
+            };
+        }
+
+        // --- FALLBACK: LOGIC TÍNH TOÁN ---
         if (!registrations || registrations.length === 0) {
             return {
                 courses: [],
@@ -67,12 +124,6 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             };
         }
 
-        // Sử dụng readFromStorage thay vì localStorage.getItem trực tiếp
-        const importMeta = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
-        const { registrationSemesterName, regTarget } = FinancialLogic.buildSemesterTarget(importMeta);
-
-        const isCurrentRegMatch = !regTarget || regTarget === targetSemester;
-
         // Cố gắng tìm danh sách môn học cho học kỳ mục tiêu
         let matchingCourses: any[] = [];
         let isFromHistory = false;
@@ -80,8 +131,6 @@ export function useTuitionCalculator(selectedSemesterName: string) {
         if (isCurrentRegMatch && registrations && registrations.length > 0) {
             matchingCourses = registrations.filter((r: any) => r.courseType === 'LT' || r.courseType === undefined);
         } else {
-            // Retrieve grades from storage (thay vì localStorage trực tiếp)
-            const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
             if (studentDb && studentDb.grades) {
                 matchingCourses = studentDb.grades.filter((g: any) => g.semester === targetSemester).map((g: any) => ({
                     id: g.id,
@@ -99,7 +148,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
                 courses: [],
                 summary: emptySummary,
                 isDataAvailable: false,
-                registrationSemesterName
+                registrationSemesterName: regSemName
             };
         }
 
@@ -111,48 +160,17 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             }
         });
 
-        // Xác định danh sách tất cả các học kỳ từ registrations và grades để kiểm tra năm nhất
-        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+        // Xác định danh sách tất cả các học kỳ để kiểm tra năm nhất
         const allSemestersSet = new Set<string>();
-        
-        if (registrations && registrations.length > 0) {
-            registrations.forEach((r: any) => {
-                if (r.semester) {
-                    const sem = FinancialLogic.parseSemesterName(r.semester);
-                    if (sem) allSemestersSet.add(sem);
-                }
-            });
-        }
-        
-        if (studentDb && studentDb.grades && Array.isArray(studentDb.grades)) {
-            studentDb.grades.forEach((g: any) => {
-                if (g.semester) {
-                    allSemestersSet.add(g.semester);
-                }
-            });
-        }
-        
-        if (studentDb && studentDb.registrations && Array.isArray(studentDb.registrations)) {
-            studentDb.registrations.forEach((r: any) => {
-                if (r.semester) {
-                    allSemestersSet.add(r.semester);
-                }
-            });
-        }
+        if (registrations) registrations.forEach((r: any) => r.semester && allSemestersSet.add(FinancialLogic.parseSemesterName(r.semester)));
+        if (studentDb?.grades) studentDb.grades.forEach((g: any) => g.semester && allSemestersSet.add(g.semester));
+        if (studentDb?.registrations) studentDb.registrations.forEach((r: any) => r.semester && allSemestersSet.add(r.semester));
 
-        // Kiểm tra xem có nên thêm môn ADD00002 (Nhập môn đầu khóa) không
         const shouldAddIntro = FinancialLogic.shouldAddIntroductoryCourse(targetSemester, Array.from(allSemestersSet));
-        
         if (shouldAddIntro) {
             const intro = FinancialLogic.getIntroductoryCourse(tuitionRates);
-            // Thêm nhưng kiểm tra không bị trùng
             if (!uniqueCourses.has(intro.id)) {
-                uniqueCourses.set(intro.id, {
-                    id: intro.id,
-                    name: intro.name,
-                    credits: intro.credits,
-                    classGroup: 'N/A'
-                });
+                uniqueCourses.set(intro.id, { id: intro.id, name: intro.name, credits: intro.credits, classGroup: 'N/A' });
             }
         }
 
@@ -166,63 +184,33 @@ export function useTuitionCalculator(selectedSemesterName: string) {
 
         uniqueCourses.forEach((reg, courseId) => {
             const cid = String(courseId).trim().toUpperCase();
-
-            // Xử lý đặc biệt cho môn ADD00002
-            let billingCredits = 0;
-            let courseFee = 0;
-            let missingMeta = false;
+            let billingCredits = 0, courseFee = 0, missingMeta = false;
 
             if (cid === 'ADD00002') {
-                // Môn ADD00002 không có metadata, sử dụng tín chỉ mặc định = 2
                 billingCredits = 2;
-                const pricePerCredit = tuitionRates?.default_price || 0;
-                courseFee = billingCredits * pricePerCredit;
-                missingMeta = false; // Không phải "missing" vì chúng ta biết cách tính
+                courseFee = billingCredits * (tuitionRates?.default_price || 0);
             } else {
-                const result = FinancialLogic.calculateCourseFee(
-                    cid,
-                    parseInt(reg.credits || 3),
-                    tuitionRates,
-                    allCoursesMeta
-                );
+                const result = FinancialLogic.calculateCourseFee(cid, parseInt(reg.credits || 3), tuitionRates, allCoursesMeta);
                 billingCredits = result.billingCredits;
                 courseFee = result.courseFee;
                 missingMeta = result.missingMeta;
             }
 
-            if (missingMeta && cid !== 'ADD00002') {
-                missingMetaCourses.push(cid);
-            }
+            if (missingMeta && cid !== 'ADD00002') missingMetaCourses.push(cid);
 
             const meta = allCoursesMeta ? allCoursesMeta.find((m: any) => m.course_id === cid) : null;
             const credits = cid === 'ADD00002' ? 2 : parseInt(reg.credits || meta?.credits || 3);
-
-            // Dùng FinancialLogic.calculateBillingCredits để tính periods
             const billingCr = cid === 'ADD00002' ? 2 : (meta ? FinancialLogic.calculateBillingCredits(meta, credits) : 0);
             const periods = billingCr * 15;
-
-            // Debug logic tính học phí từng môn
-            // console.log(`[TuitionLog] Course: ${cid} - ${reg.name || meta?.name}`);
-            // console.log(` - Credits: ${credits}, Billing Credits: ${billingCredits}`);
-            // console.log(` - Price/Credit: ${FinancialLogic.lookupPricePerCredit(cid, tuitionRates)}`);
-            // console.log(` - Course Fee: ${courseFee}`);
-            if (missingMeta && cid !== 'ADD00002') console.log(` - WARNING: Missing metadata from CTĐT`);
-            if (cid === 'ADD00002') console.log(`[TuitionLog] Special course ADD00002 added for first-year first-semester`);
 
             calculatedCourses.push({
                 stt: stt++,
                 semester: targetSemester,
                 courseCode: cid,
-                classCode: reg.classGroup || 'N/A',
+                classCode: reg.classGroup || reg.classId || 'N/A',
                 courseName: reg.name || meta?.name || 'Môn học',
-                credits: credits,
-                periods: periods,
-                tuitionCredits: billingCredits,
-                tuitionFee: courseFee,
-                discount: 0,
-                support: 0,
-                actualFee: courseFee,
-                otherFees: 0,
+                credits, periods, tuitionCredits: billingCredits, tuitionFee: courseFee,
+                discount: 0, support: 0, actualFee: courseFee, otherFees: 0,
                 note: cid === 'ADD00002' ? 'Nhập môn đầu khóa' : (missingMeta ? 'Thiếu dữ liệu CTĐT' : '')
             });
 
@@ -236,22 +224,19 @@ export function useTuitionCalculator(selectedSemesterName: string) {
         emptySummary.totalPeriods = totalPeriods;
         emptySummary.totalTuitionCredits = totalTuitionCredits;
         emptySummary.totalFee = totalFee;
+        emptySummary.lastUpdated = new Date().toLocaleString('vi-VN');
 
-        // Xử lý thanh toán - delegate cho FinancialLogic
-        const studentDbForPayment = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
-        const paymentStatus = FinancialLogic.detectPaymentStatus(studentDbForPayment, totalFee, isFromHistory);
+        const paymentStatus = FinancialLogic.detectPaymentStatus(studentDb, totalFee, isFromHistory, targetSemester, !isCurrentRegMatch);
         emptySummary.amountDue = paymentStatus.amountDue;
         emptySummary.advancePayment = paymentStatus.advancePayment;
         emptySummary.status = paymentStatus.status;
         emptySummary.hasAdvancePayment = paymentStatus.hasAdvancePayment;
 
-        emptySummary.lastUpdated = new Date().toLocaleString('vi-VN');
-
         return {
             courses: calculatedCourses,
             summary: emptySummary,
             isDataAvailable: calculatedCourses.length > 0,
-            registrationSemesterName,
+            registrationSemesterName: regSemName,
             missingMetaCourses
         };
     }, [selectedSemesterName, registrations, tuitionRates, allCoursesMeta]);

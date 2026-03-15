@@ -369,7 +369,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
 
       {/* Enhanced Summary Cards - CONDITIONAL RENDERING */}
       {currentSemesterSummary.hasAdvancePayment ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className={`grid gap-6 mb-6 ${currentSemesterSummary.status === 'partial' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
           <EnhancedSummaryCard
             icon={DollarSign}
             title="Tổng học phí"
@@ -392,16 +392,18 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
             progress={paymentProgress}
           />
 
-          <EnhancedSummaryCard
-            icon={AlertCircle}
-            title="Tổng phải đóng"
-            subtitle="Còn thiếu"
-            value={`${formatCurrency(currentSemesterSummary.amountDue)} ₫`}
-            detail={`${((currentSemesterSummary.amountDue / currentSemesterSummary.totalFee) * 100).toFixed(1)}% còn lại`}
-            bgColor="bg-orange-600"
-            textColor="text-orange-600"
-            progress={100 - paymentProgress}
-          />
+          {currentSemesterSummary.status === 'partial' && (
+            <EnhancedSummaryCard
+              icon={AlertCircle}
+              title="Tổng phải đóng"
+              subtitle="Còn thiếu"
+              value={`${formatCurrency(currentSemesterSummary.amountDue)} ₫`}
+              detail={`${((currentSemesterSummary.amountDue / currentSemesterSummary.totalFee) * 100).toFixed(1)}% còn lại`}
+              bgColor="bg-orange-600"
+              textColor="text-orange-600"
+              progress={100 - paymentProgress}
+            />
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
