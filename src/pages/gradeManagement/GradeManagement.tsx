@@ -11,6 +11,7 @@ import { ACADEMIC_RULES } from '../../config';
 // import type { Course } from '../../types';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { GPAInformation } from './GPAInformation';
+import { GPAPullTool } from './GPAPullTool';
 import { GPASimulation } from './GPASimulation';
 import { RetakeCourses } from './RetakeCourses';
 import { GradeHistory } from './GradeHistory';
@@ -26,7 +27,7 @@ export function GradeManagement() {
   const hasAlertedRef = useRef(false);
 
   const { data } = useDepartmentData();
-  const { gradesHistory, currentGPA, isReady, hasData, gpaPerSemester, majorGPA } = useStudentGradeData();
+  const { gradesHistory, currentGPA, accumulatedCredits, totalCredits, isReady, hasData, gpaPerSemester, majorGPA } = useStudentGradeData();
   // [TN] Truyền data.courses để hook lookup tín chỉ.
   // semesterGPA: GPA của học kỳ hiện tại
   // cumulativeGPA: GPA tích lũy
@@ -111,6 +112,17 @@ export function GradeManagement() {
 
       {/* GPA theo học kỳ */}
       <GPAsem currentGPA={currentGPA} projectedGPA={cumulativeGPA} getClassification={getClassification} gpaPerSemester={gpaPerSemester} majorGPA={majorGPA} />
+
+      {/* Công cụ "Kéo" GPA: nhập GPA mục tiêu → điểm TB tối thiểu + bảng môn theo kỳ */}
+      <GPAPullTool
+        gradesHistory={gradesHistory}
+        getClassification={getClassification}
+        simulatorCourses={simulatorCourses}
+        handleGradeChange={handleGradeChange}
+        currentGPA={currentGPA}
+        accumulatedCredits={accumulatedCredits}
+        totalCredits={totalCredits}
+      />
 
       {/* Mô phỏng GPA - Học kỳ tiếp theo */}
       <GPASimulation courses={simulatorCourses} expandedSection={expandedSection} setExpandedSection={setExpandedSection} semesterGPA={semesterGPA} cumulativeGPA={cumulativeGPA} getClassification={getClassification} handleGradeChange={handleGradeChange} />

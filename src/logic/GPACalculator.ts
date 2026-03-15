@@ -85,6 +85,85 @@ export const GPACalculator = {
     },
 
     /**
+     * Công cụ "Kéo" GPA: Tính điểm trung bình tối thiểu cần đạt trong các tín chỉ còn lại
+     * để đạt GPA mục tiêu lúc tốt nghiệp.
+     * @param gradesHistory - Lịch sử điểm đã tích lũy (cùng cách tính như currentGPA)
+     * @param targetGPA - GPA mong muốn lúc ra trường (hệ 10, ví dụ 8.0 cho loại Giỏi)
+     * @param totalCredits - Tổng tín chỉ yêu cầu tốt nghiệp (ví dụ 137)
+     */
+    calculateRequiredAverageForTargetGPA: (
+        gradesHistory: StudentCourseGrade[],
+        targetGPA: number,
+        totalCredits: number
+    ): {
+        success: boolean;
+        remainingCredits?: number;
+        requiredAverage?: number;
+        currentPoints?: number;
+        currentCredits?: number;
+        alreadyAchieved?: boolean;
+        impossible?: boolean;
+        message: string;
+    } => {
+        const projectedIds = new Set<string>();
+        let currentTotalPoints = 0;
+        let currentCredits = 0;
+
+        for (const c of gradesHistory) {
+            if (c.status === 'ongoing') continue;
+            if (projectedIds.has(c.code)) continue;
+            const result = AcademicRulesEngine.calculateAccumulationParams(
+                c.code, c.credits, c.grade, c.status
+            );
+            currentTotalPoints += result.pointsForGPA;
+            currentCredits += result.creditsForGPA;
+        }
+
+        const remainingCredits = totalCredits - currentCredits;
+        if (remainingCredits <= 0) {
+            return {
+                success: false,
+                message: 'Bạn đã đủ hoặc vượt số tín chỉ tốt nghiệp. Không cần tính thêm.',
+            };
+        }
+
+        const totalPointsAtTarget = targetGPA * totalCredits;
+        const futurePointsNeeded = totalPointsAtTarget - currentTotalPoints;
+        if (futurePointsNeeded <= 0) {
+            return {
+                success: true,
+                alreadyAchieved: true,
+                remainingCredits,
+                currentPoints: currentTotalPoints,
+                currentCredits,
+                message: `Bạn đã đạt/ vượt mục tiêu GPA ${targetGPA.toFixed(2)}. Chỉ cần duy trì.`,
+            };
+        }
+
+        const requiredAverage = futurePointsNeeded / remainingCredits;
+        if (requiredAverage > 10) {
+            return {
+                success: false,
+                impossible: true,
+                remainingCredits,
+                requiredAverage,
+                currentPoints: currentTotalPoints,
+                currentCredits,
+                message: `Để đạt GPA ${targetGPA.toFixed(2)} lúc tốt nghiệp, trung bình các tín chỉ còn lại cần > 10, không khả thi.`,
+            };
+        }
+
+        return {
+            success: true,
+            remainingCredits,
+            requiredAverage,
+            currentPoints: currentTotalPoints,
+            currentCredits,
+            message: `Trong ${remainingCredits} tín chỉ còn lại, cần đạt trung bình tối thiểu ${requiredAverage.toFixed(2)} điểm để tốt nghiệp với GPA ${targetGPA.toFixed(2)}.`,
+        };
+    },
+
+    /**
      * Chuyển đổi điểm số sang chữ cái (Hệ 4 → Letter Grade)
      */
     gradeToLetter: (gradePoint: number): string => {
