@@ -49,6 +49,7 @@ export function Setting() {
                         <ReportError />
                     </div>
 
+                    {/* Footer */}
                     <PrivacyFooter />
                 </div>
             </div>

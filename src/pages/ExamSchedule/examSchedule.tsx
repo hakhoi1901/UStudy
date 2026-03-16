@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../hooks/useStudentDb';
 import { useDepartmentData } from '../../context/DepartmentContext';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 interface ExamData {
     id: string;
@@ -523,6 +524,8 @@ export function ExamScheduleVi() {
                     </div>
                 </div>
             </div>
+            {/* Footer */}
+            <PrivacyFooter />
         </div>
     );
 }

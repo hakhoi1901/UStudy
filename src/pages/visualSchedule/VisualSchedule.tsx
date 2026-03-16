@@ -10,6 +10,7 @@ import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Sch
 import { useSchedule } from '../../hooks/useSchedule';
 import { useCourseData } from '../../hooks/useCourseData';
 import { NoDataCard } from '../../components/nodataCard';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 const COLOR_LEGEND = [
   { color: 'green', label: 'Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
@@ -712,8 +713,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
         {/* Privacy Footer */}
         <div className="py-3 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-[10px] text-gray-500 text-center">
+          <p className="text-[10px] text-gray-500">
             Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
+          </p>
+          <p className="text-[10px] text-gray-500">
+            Copyright © 2026 Unopia. All rights reserved.
           </p>
         </div>
       </div>
