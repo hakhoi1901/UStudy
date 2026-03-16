@@ -57,7 +57,7 @@ export function GPAPullTool({
 }: GPAPullToolProps) {
     const [targetGPAInput, setTargetGPAInput] = useState<string>('');
     const [expanded, setExpanded] = useState(true);
-    const [mode, setMode] = useState<'all' | 'foundationMajor'>('all');
+    const [mode] = useState<'all' | 'foundationMajor'>('all');
     const [draftProjectedGrades, setDraftProjectedGrades] = useState<Record<string, string>>({});
     const [draftProjectedGradeErrors, setDraftProjectedGradeErrors] = useState<Record<string, string>>({});
 
@@ -146,6 +146,73 @@ export function GPAPullTool({
         return (baseResult.currentPoints + 10 * remainingCredits) / (ACADEMIC_RULES.TOTAL_CREDITS ?? totalCredits);
     }, [baseResult, totalCredits]);
 
+    const semesterStats = useMemo(() => {
+        if (
+            !baseResult ||
+            !baseResult.success ||
+            baseResult.impossible ||
+            baseResult.alreadyAchieved ||
+            baseResult.requiredAverage == null ||
+            baseResult.remainingCredits == null ||
+            !nextSemester
+        ) {
+            return null;
+        }
+
+        const epsilon = 0.05;
+
+        let usedCredits = 0;
+        let usedPoints = 0;
+
+        nextSemester.courses.forEach((c) => {
+            const grade =
+                c.isLocked && c.lockedGrade != null
+                    ? c.lockedGrade
+                    : c.projectedGrade != null
+                        ? c.projectedGrade
+                        : c.suggestedGrade ?? null;
+
+            if (grade == null || Number.isNaN(grade)) return;
+
+            usedCredits += c.credits;
+            usedPoints += grade * c.credits;
+        });
+
+        if (usedCredits <= 0) return null;
+
+        const semesterGpa = usedPoints / usedCredits;
+
+        const totalRemainingCredits = baseResult.remainingCredits;
+        const futurePointsNeeded = baseResult.requiredAverage * totalRemainingCredits;
+        const remainingCreditsAfter = totalRemainingCredits - usedCredits;
+
+        let newRequiredAvgAfter: number | null = null;
+        if (remainingCreditsAfter > 0) {
+            newRequiredAvgAfter = (futurePointsNeeded - usedPoints) / remainingCreditsAfter;
+        }
+
+        let trend: 'ahead' | 'behind' | 'onTrack' | null = null;
+        if (semesterGpa >= baseResult.requiredAverage + epsilon) {
+            trend = 'ahead';
+        } else if (
+            semesterGpa <= baseResult.requiredAverage - epsilon &&
+            newRequiredAvgAfter != null &&
+            newRequiredAvgAfter >= ACADEMIC_RULES.PASS_GRADE_DECIMAL &&
+            newRequiredAvgAfter <= 10
+        ) {
+            trend = 'behind';
+        } else {
+            trend = 'onTrack';
+        }
+
+        return {
+            semesterGpa,
+            usedCredits,
+            newRequiredAvgAfter,
+            trend,
+        };
+    }, [baseResult, nextSemester]);
+
     const shouldShowRetakeSuggestions = useMemo(() => {
         if (!targetGPA || !baseResult) return false;
         if (baseResult.impossible) return true;
@@ -191,86 +258,55 @@ export function GPAPullTool({
             </button>
 
             {expanded && (
-                <div className="px-6 py-4 border-t border-gray-100 space-y-6">
-                    <p className="text-sm text-gray-600">
-                        Ngược với GPA dự kiến: bạn nhập mức GPA mong muốn lúc tốt nghiệp (Xuất sắc: 9.0–10.0; Giỏi: 8.0–&lt;9.0; Khá: 7.0–&lt;8.0).
-                        Hệ thống tính điểm TB tối thiểu cần đạt và đề xuất điểm từng môn trong học kỳ tiếp theo.
-                    </p>
+                <div className="px-6 py-5 border-t border-gray-100 space-y-5">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                        <p className="text-base leading-relaxed text-gray-700 max-w-3xl">
+                            Nhập GPA mong muốn lúc tốt nghiệp, hệ thống sẽ ước tính điểm trung bình cần đạt và gợi ý điểm từng môn cho các học kỳ còn lại.
+                        </p>
 
-                    {/* Mode tabs */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setMode('all')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                                mode === 'all'
-                                    ? 'bg-[#004A98] text-white border-[#004A98]'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                            }`}
-                        >
-                            Tất cả các môn
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setMode('foundationMajor')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                                mode === 'foundationMajor'
-                                    ? 'bg-[#004A98] text-white border-[#004A98]'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                            }`}
-                            title="Chỉ hiển thị môn thuộc khối Kiến thức cơ sở ngành + Kiến thức chuyên ngành (nếu dữ liệu CTĐT có category)."
-                        >
-                            Cơ sở ngành + Chuyên ngành
-                        </button>
-                        {mode === 'foundationMajor' && courseCategoryByCode.size === 0 && (
-                            <span className="text-xs text-amber-700">
-                                Chưa có dữ liệu category để lọc (tạm thời hiển thị như “Tất cả”).
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Nhập GPA mục tiêu */}
-                    <div className="flex flex-wrap items-end gap-3">
-                        <div>
-                            <label htmlFor="gpa-pull-target" className="block text-xs font-medium text-gray-600 mb-1">
-                                GPA mong muốn lúc ra trường (0–10)
+                        <div className="flex items-start gap-3 lg:flex-shrink-0">
+                            <label htmlFor="gpa-pull-target" className="mt-2 text-sm font-medium text-gray-700 whitespace-nowrap">
+                                GPA mục tiêu
                             </label>
-                            <input
-                                id="gpa-pull-target"
-                                type="number"
-                                min={minTargetGpa}
-                                max={ACADEMIC_RULES.MAX_GPA}
-                                step={0.1}
-                                value={targetGPAInput}
-                                onChange={(e) => setTargetGPAInput(e.target.value)}
-                                placeholder="VD: 8.0"
-                                aria-label="GPA mong muốn lúc ra trường (0 đến 10)"
-                                className={`w-28 px-3 py-2 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-                                    targetGpaError
-                                        ? 'border-red-300 focus:ring-red-300'
-                                        : 'border-gray-200 focus:ring-[#004A98]'
-                                }`}
-                            />
-                            <div className="min-h-[1.25rem] mt-1">
-                                {targetGpaError && (
-                                    <p className="text-xs text-red-600" role="alert" aria-live="polite">
-                                        {targetGpaError}
-                                    </p>
-                                )}
+                            <div>
+                                <input
+                                    id="gpa-pull-target"
+                                    type="number"
+                                    min={minTargetGpa}
+                                    max={ACADEMIC_RULES.MAX_GPA}
+                                    step={0.1}
+                                    value={targetGPAInput}
+                                    onChange={(e) => setTargetGPAInput(e.target.value)}
+                                    placeholder="VD: 8.0"
+                                    aria-label="GPA mong muốn lúc ra trường"
+                                    className={`w-28 sm:w-32 px-3 py-2 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                                        targetGpaError
+                                            ? 'border-red-300 focus:ring-red-300'
+                                            : 'border-gray-200 focus:ring-[#004A98]'
+                                    }`}
+                                />
+                                <div className="min-h-[1.25rem] mt-1">
+                                    {targetGpaError && (
+                                        <p className="text-sm text-red-600" role="alert" aria-live="polite">
+                                            {targetGpaError}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div className="flex gap-2 flex-wrap">
-                            {GPA_CONFIG.slice(0, 4).map((config) => (
-                                <button
-                                    key={config.value}
-                                    type="button"
-                                    onClick={() => setTargetGPAInput(String(config.value))}
-                                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-[#004A98] hover:text-white hover:border-[#004A98] transition-colors"
-                                >
-                                    {config.lable} ({config.value})
-                                </button>
-                            ))}
-                        </div>
+                    </div>
+
+                    <div className="flex gap-2 sm:gap-3 flex-wrap items-center">
+                        {GPA_CONFIG.slice(0, 4).map((config) => (
+                            <button
+                                key={config.value}
+                                type="button"
+                                onClick={() => setTargetGPAInput(String(config.value))}
+                                className="px-5 py-1.5 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-[#004A98] hover:text-white hover:border-[#004A98] transition-colors"
+                            >
+                                {config.lable} ({config.value})
+                            </button>
+                        ))}
                     </div>
 
                     {/* Kết quả tổng + GPA tổng / GPA theo kỳ */}
@@ -307,7 +343,7 @@ export function GPAPullTool({
 
                             {/* GPA tổng + GPA theo kỳ (chỉ khi có kết quả hợp lệ) */}
                             {baseResult.success && !baseResult.impossible && baseResult.requiredAverage != null && (
-                                <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mt-2">
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
                                         <TrendingUp className="w-8 h-8 text-[#004A98] flex-shrink-0" />
                                         <div>
@@ -341,6 +377,22 @@ export function GPAPullTool({
                                             </p>
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {semesterStats && semesterStats.trend === 'ahead' && semesterStats.newRequiredAvgAfter != null && (
+                                <div className="mt-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                                    <p className="text-base font-semibold text-green-800">
+                                        Nếu GPA kỳ này khoảng {semesterStats.semesterGpa.toFixed(decimals)} điểm thì các kỳ còn lại chỉ cần trung bình khoảng {semesterStats.newRequiredAvgAfter.toFixed(decimals)} điểm là đủ để đạt GPA mục tiêu.
+                                    </p>
+                                </div>
+                            )}
+
+                            {semesterStats && semesterStats.trend === 'behind' && semesterStats.newRequiredAvgAfter != null && (
+                                <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                                    <p className="text-base font-semibold text-amber-800">
+                                        Nếu GPA kỳ này khoảng {semesterStats.semesterGpa.toFixed(decimals)} điểm thì các kỳ sau cần trung bình khoảng {semesterStats.newRequiredAvgAfter.toFixed(decimals)} điểm để kịp GPA mục tiêu lúc ra trường.
+                                    </p>
                                 </div>
                             )}
 

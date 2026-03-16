@@ -87,9 +87,11 @@ export function getSemesterWarning(
 
     if (editableCredits <= 0) {
         const diff = fixedPoints - pointsNeededForSemester;
-        if (Math.abs(diff) > 0.001) {
+        // Nếu tổng điểm đã nhập *thấp hơn* mức cần → không thể đạt GPA kỳ yêu cầu.
+        if (diff < -0.001) {
             return `Với điểm đã nhập, không thể đạt GPA kỳ ${requiredAverage.toFixed(2)}. Tổng điểm đã nhập: ${fixedPoints.toFixed(2)}; cần: ${pointsNeededForSemester.toFixed(2)}.`;
         }
+        // Nếu bằng hoặc cao hơn (diff >= 0) → coi là hợp lệ, không cảnh báo.
         return null;
     }
 
