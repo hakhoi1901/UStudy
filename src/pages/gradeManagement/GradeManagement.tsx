@@ -122,7 +122,6 @@ export function GradeManagement() {
         currentGPA={currentGPA}
         accumulatedCredits={accumulatedCredits}
         totalCredits={totalCredits}
-        allCoursesMeta={data.courses}
       />
 
       {/* Mô phỏng GPA - Học kỳ tiếp theo */}

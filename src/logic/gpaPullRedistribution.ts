@@ -19,6 +19,8 @@ export function redistributeSuggestedGrades(
     if (totalCreditsInSemester <= 0) return courses;
 
     const pointsNeededForSemester = requiredAverage * totalCreditsInSemester;
+    const decimals = ACADEMIC_RULES.GPA_POINT_DECIMAL;
+    const roundToDisplay = (n: number) => Math.round(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
     let fixedPoints = 0;
     let fixedCredits = 0;
@@ -37,18 +39,25 @@ export function redistributeSuggestedGrades(
     const remainingPoints = pointsNeededForSemester - fixedPoints;
 
     if (editableCredits <= 0) {
-        return courses.map((c, i) =>
-            fixedSet.has(i) ? c : { ...c, suggestedGrade: c.suggestedGrade }
-        );
+        return courses.map((c, i) => {
+            if (!fixedSet.has(i)) return { ...c, suggestedGrade: c.suggestedGrade };
+            if (c.isLocked && c.lockedGrade != null) return { ...c, suggestedGrade: roundToDisplay(c.lockedGrade) };
+            if (!c.isLocked && c.projectedGrade != null) return { ...c, suggestedGrade: roundToDisplay(c.projectedGrade) };
+            return c;
+        });
     }
 
     const suggestedGrade = Math.min(MAX_GRADE, Math.max(MIN_GRADE, remainingPoints / editableCredits));
-    const decimals = ACADEMIC_RULES.GPA_POINT_DECIMAL;
-    const rounded = Math.round(suggestedGrade * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    const rounded = roundToDisplay(suggestedGrade);
 
-    return courses.map((c, i) =>
-        fixedSet.has(i) ? c : { ...c, suggestedGrade: rounded }
-    );
+    return courses.map((c, i) => {
+        if (fixedSet.has(i)) {
+            if (c.isLocked && c.lockedGrade != null) return { ...c, suggestedGrade: roundToDisplay(c.lockedGrade) };
+            if (!c.isLocked && c.projectedGrade != null) return { ...c, suggestedGrade: roundToDisplay(c.projectedGrade) };
+            return c;
+        }
+        return { ...c, suggestedGrade: rounded };
+    });
 }
 
 /**
