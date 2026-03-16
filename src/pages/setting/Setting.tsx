@@ -2,12 +2,13 @@
 ** Trang Cài đặt
 */
 
-import { Bookmark, Download, User } from 'lucide-react';
+import { Bookmark, User } from 'lucide-react';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SettingUserProfile } from './SettingUserProfile';
 import { useStudentDb } from '../../hooks/useStudentDb';
 import { BookmarkletButton } from '../../components/BookmarkletButton';
 import { ReportError } from './reportError';
+import { GeminiConfig } from './GeminiConfig';
 
 export function Setting() {
     const { name } = useStudentDb();
@@ -20,7 +21,7 @@ export function Setting() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                    <div className="bg-white w-06 rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
+                    <div className="bg-white w-full rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
                         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
                             <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                 <User className="w-7 h-7" />Thông tin cá nhân
@@ -32,6 +33,8 @@ export function Setting() {
                         </div>
 
                         <SettingUserProfile />
+
+                        <GeminiConfig />
 
                         {/* Phần: Công cụ đồng bộ */}
                         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">

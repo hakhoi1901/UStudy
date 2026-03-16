@@ -1,4 +1,4 @@
-/*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
+﻿/*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
 
@@ -77,7 +77,7 @@
 
 @layer components {
 
-  /* Tui đổi sang các mã màu mượt hơn của Tailwind (sky, emerald, amber, violet) */
+  /* Tui Ä‘á»•i sang cÃ¡c mÃ£ mÃ u mÆ°á»£t hÆ¡n cá»§a Tailwind (sky, emerald, amber, violet) */
   .card-pastel-blue {
     @apply bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-colors duration-200;
   }
@@ -94,7 +94,7 @@
     @apply bg-violet-50 border border-violet-200 text-violet-800 hover:bg-violet-100 transition-colors duration-200;
   }
 
-  /* Tặng thêm ông màu hường nhẹ nhàng nếu có xài */
+  /* Táº·ng thÃªm Ã´ng mÃ u hÆ°á»ng nháº¹ nhÃ ng náº¿u cÃ³ xÃ i */
   .card-pastel-rose {
     @apply bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 transition-colors duration-200;
   }
@@ -2203,6 +2203,10 @@
     color: var(--color-blue-100);
   }
 
+  .text-black {
+    color: var(--color-black);
+  }
+
   .text-blue-100\/80 {
     color: color-mix(in srgb, oklch(.932 .032 255.585) 80%, transparent);
   }
@@ -3559,34 +3563,50 @@ html {
     }
   }
 
-  /* --- Lớp dành cho WebKit (Chrome, Edge, Safari) --- */
+  /* --- Lá»›p dÃ nh cho WebKit (Chrome, Edge, Safari) --- */
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
-    /* Làm thanh cuộn cực mỏng */
+    /* LÃ m thanh cuá»™n cá»±c má»ng */
   }
 
-  /* Phần nền dưới thanh cuộn (Track) */
+  /* Pháº§n ná»n dÆ°á»›i thanh cuá»™n (Track) */
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
-    /* Trong suốt để tiệp màu nền xanh của Sidebar */
+    /* Trong suá»‘t Ä‘á»ƒ tiá»‡p mÃ u ná»n xanh cá»§a Sidebar */
   }
 
-  /* Cục nắm kéo (Thumb) */
+  /* Cá»¥c náº¯m kÃ©o (Thumb) */
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.2);
-    /* Trắng mờ */
+    /* Tráº¯ng má» */
     border-radius: 10px;
-    /* Bo góc tròn mềm mại */
+    /* Bo gÃ³c trÃ²n má»m máº¡i */
   }
 
-  /* Khi hover chuột vào cục nắm kéo */
+  /* Khi hover chuá»™t vÃ o cá»¥c náº¯m kÃ©o */
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.4);
   }
 
-  /* --- Lớp dành cho Firefox (chuẩn mới) --- */
+  /* --- Lá»›p dÃ nh cho Firefox (chuáº©n má»›i) --- */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 }
+
+/* Custom Scrollbar for Chat */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+

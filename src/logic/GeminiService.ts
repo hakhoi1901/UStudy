@@ -1,11 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import { RagAdvisor } from "./RagAdvisor";
 
 // Tự động load tất cả các file .txt trong folder ai-context
 const contextFiles = import.meta.glob('../assets/data/ai-context/*.txt', { as: 'raw', eager: true });
 
 // Gộp nội dung tất cả các file lại thành 1 chuỗi Context duy nhất
-const CONTEXT = Object.values(contextFiles).join('\n\n');
-export { CONTEXT };
+const FILE_CONTEXT = Object.values(contextFiles).join('\n\n');
 
 export class GeminiService {
   private static instance: GeminiService;
@@ -57,9 +57,12 @@ export class GeminiService {
           }
         ],
         config: {
-          systemInstruction: CONTEXT
+          systemInstruction: FILE_CONTEXT
         }
       });
+
+      console.log("context:", context);
+      console.log("FILE_CONTEXT:", FILE_CONTEXT);
 
       return response.text;
     } catch (error: any) {

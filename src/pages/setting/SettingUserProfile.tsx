@@ -1,6 +1,7 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
 import { CheckCircle, GraduationCap } from "lucide-react";
+import { GeminiConfig } from "./GeminiConfig";
 
 export function SettingUserProfile() {
     const {
@@ -54,6 +55,8 @@ export function SettingUserProfile() {
                     disabled={true}
                 />
             </div>
+
+            <GeminiConfig />
 
             {/* Current selection badges */}
             <div className="mt-6 p-5 flex items-center justify-between flex-wrap gap-4">
