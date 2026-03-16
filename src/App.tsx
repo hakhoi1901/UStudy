@@ -15,7 +15,7 @@ import { processRawData } from './logic/dataProcessor';
 import { STORAGE_KEYS } from './config/storageKeys';
 import { APP_CONFIG } from './config';
 import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
-
+import { ChatAssistant } from './components/ChatAssistant';
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
@@ -139,6 +139,7 @@ function AppContent() {
           </div>
         </main>
       </div>
+      <ChatAssistant />
     </div>
   );
 }

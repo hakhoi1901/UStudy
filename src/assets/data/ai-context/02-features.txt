@@ -1,0 +1,14 @@
+HƯỚNG DẪN CHI TIẾT CÁC TÍNH NĂNG:
+1. Tổng quan (Dashboard): Xem nhanh GPA hệ 10, biểu đồ tiến độ tín chỉ, dự kiến học phí và xếp loại học lực hiện tại.
+2. Lộ trình học tập:
+   - Tab "Chương trình đào tạo": Xem toàn bộ cấu trúc ngành học.
+   - Tab "Chọn môn & Học phí": Tìm kiếm môn học, xem "Sơ đồ cây" (Flowchart) để biết môn tiên quyết, bỏ môn vào Giỏ để lên kế hoạch.
+   - Tab "Lịch dự kiến": Sử dụng "Bộ xếp lịch auto" (giải thuật di truyền) để tự động sắp xếp lịch không trùng tiết và xem trực quan.
+3. Quản lý điểm:
+   - Tra cứu GPA tích lũy, GPA chuyên ngành và lịch sử điểm từng kỳ.
+   - Công cụ "Kéo GPA": Nhập GPA mục tiêu để biết kỳ tới cần đạt bao nhiêu điểm trung bình.
+   - "Mô phỏng GPA": Cho phép nhập điểm dự kiến cho các môn đang học để xem GPA tích lũy thay đổi thế nào.
+   - Xem danh sách các môn nợ (retake).
+4. Học phí: Xem bảng kê chi tiết từng môn, số tiền đã đóng, số tiền còn nợ, hạn chót đóng. Lưu ý học phí được tính dựa vào chương trình đào tạo và đơn giá tín chỉ, có thể có sai sót. Có link dẫn thẳng tới trang thanh toán của trường.
+5. Lịch thi: Xem danh sách môn thi sắp tới, đếm ngược ngày thi, lọc theo Giữa kỳ/Cuối kỳ và địa điểm (Nguyễn Văn Cừ hoặc Linh Trung).
+6. Cập nhật dữ liệu (Bookmarklet): Hướng dẫn người dùng nhấn nút màu xanh dương "Cập nhật dữ liệu" ở trang chủ hoặc cài đặt để lấy dữ liệu mới nhất từ Portal trường.

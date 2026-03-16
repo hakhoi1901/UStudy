@@ -1,0 +1,22 @@
+HƯỚNG DẪN SỬ DỤNG BOOKMARKLET (CẬP NHẬT DỮ LIỆU):
+Bookmarklet là công cụ giúp "cào" dữ liệu từ Portal trường về ứng dụng này.
+
+CÁC BƯỚC CÀI ĐẶT & SỬ DỤNG:
+1. Cài đặt (Chỉ làm 1 lần):
+   - Nhấn vào nút "Cập nhật dữ liệu" (màu xanh dương) ở Trang chủ hoặc trang Cài đặt.
+   - Nhấn giữ và KÉO nút đó lên thanh Dấu trang (Bookmarks bar) của trình duyệt.
+   - Nếu thanh dấu trang bị ẩn, nhấn Ctrl+Shift+B (Windows) hoặc Cmd+Shift+B (Mac) để hiện lên.
+
+2. Đăng nhập Portal:
+   - Truy cập vào website: portal.hcmus.edu.vn
+   - Tiến hành đăng nhập bằng tài khoản sinh viên của bạn.
+
+3. Chạy công cụ:
+   - Khi đã đăng nhập vào Portal thành công, hãy nhấn vào cái Bookmark vừa kéo ở Bước 1.
+   - Một bảng thông báo sẽ hiện ra, hãy đợi thanh tiến trình chạy xong 100%.
+   - Công cụ sẽ tự động đưa bạn quay trở lại trang này với dữ liệu mới nhất.
+
+LƯU Ý: 
+- Nếu bạn đổi Ngành hoặc Khóa trên trang này, hãy dùng Bookmarklet để cập nhật lại dữ liệu cho chính xác với Ngành/Khóa mới.
+- Dữ liệu hoàn toàn được xử lý dưới máy của bạn, cực kỳ bảo mật. 
+- Nếu Bookmarklet báo lỗi "Vui lòng mở Portal", hãy đảm bảo bạn đang ở đúng tab portal.hcmus.edu.vn và đã đăng nhập.
