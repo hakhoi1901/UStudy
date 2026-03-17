@@ -109,6 +109,13 @@ export function ExamScheduleVi() {
         }
     }, [availableSemesters]);
 
+    // When "All Semesters" is selected, automatically set exam type to "all" and lock it
+    useEffect(() => {
+        if (selectedSemester === 'all') {
+            setSelectedType('all');
+        }
+    }, [selectedSemester]);
+
     // Filter data
     const filteredData = useMemo(() => {
         return examData.filter(exam => {
@@ -361,28 +368,31 @@ export function ExamScheduleVi() {
                         <div className="flex bg-gray-100 rounded-lg p-1">
                             <button
                                 onClick={() => setSelectedType('all')}
+                                disabled={selectedSemester === 'all'}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'all'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
-                                    }`}
+                                    } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Tất cả
                             </button>
                             <button
                                 onClick={() => setSelectedType('Giữa kỳ')}
+                                disabled={selectedSemester === 'all'}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
-                                    }`}
+                                    } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Giữa kỳ
                             </button>
                             <button
                                 onClick={() => setSelectedType('Cuối kỳ')}
+                                disabled={selectedSemester === 'all'}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
-                                    }`}
+                                    } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Cuối kỳ
                             </button>
