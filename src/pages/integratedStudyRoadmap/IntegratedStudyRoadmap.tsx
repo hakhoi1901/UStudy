@@ -226,8 +226,6 @@ export function IntegratedStudyRoadmap() {
                     onClose={() => setShowFlowchart(false)}
                 />
             )}
-            {/* Footer */}
-            <PrivacyFooter />
         </div>
     );
 }
