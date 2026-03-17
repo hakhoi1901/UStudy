@@ -20,8 +20,7 @@ export interface ScheduleOption {
 }
 
 export interface SolverPreferences {
-    daysOff?: number[];   // 0=T2, 1=T3, ... 5=T7
-    session?: string;     // '1'=Sáng, '2'=Chiều, '0'=Không quan trọng
+    sessionConstraints?: Record<string, number>;
     strategy?: string;    // 'compress'=Dồn ngày, 'spread'=Trải đều
     noGaps?: boolean;
 }
@@ -48,8 +47,7 @@ export function useScheduleSolver() {
                 const userWants = selectedCourses.map(c => c.code);
 
                 const results = runScheduleSolver(dbData, userWants, selectedClassMap, {
-                    daysOff: prefs.daysOff || [],
-                    session: prefs.session || '0',
+                    sessionConstraints: prefs.sessionConstraints || {},
                     strategy: prefs.strategy || 'compress',
                     noGaps: prefs.noGaps ?? false,
                 });

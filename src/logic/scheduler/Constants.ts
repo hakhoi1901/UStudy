@@ -35,18 +35,6 @@ interface WEIGHTS {
      */
     PENALTY_HARD: number;
     /**
-     * Trọng số vi phạm ngày nghỉ
-     */
-    PENALTY_DAY_OFF: number;
-    /**
-     * Trọng số buổi học
-     */
-    BONUS_SESSION: number;
-    /**
-     * Trọng số buổi học sai
-     */
-    PENALTY_WRONG_SESSION: number;
-    /**
      * Trọng số chiến thuật
      */
     BONUS_COMPRESS: number;
@@ -58,6 +46,14 @@ interface WEIGHTS {
      * Trọng số trống tiết
      */
     PENALTY_GAP: number;
+    /**
+     * Trọng số hạn chế buổi học
+     */
+    PENALTY_RESTRICTED: number;
+    /**
+     * Trọng số tuyệt đối không học
+     */
+    PENALTY_ABSOLUTE_NO: number;
 }
 /**
  * Cấu hình
@@ -94,18 +90,6 @@ export const WEIGHTS: WEIGHTS = {
      */
     PENALTY_HARD: 99999.0,         // Trùng lịch 
     /**
-     * Trọng số vi phạm ngày nghỉ
-     */
-    PENALTY_DAY_OFF: 80000.0,       // Vi phạm ngày nghỉ
-    /**
-     * Trọng số buổi học
-     */
-    BONUS_SESSION: 50.0,          // Đúng buổi ưu tiên 
-    /**
-     * Trọng số buổi học sai
-     */
-    PENALTY_WRONG_SESSION: 100.0,  // Trái buổi 
-    /**
      * Trọng số chiến thuật
      */
     BONUS_COMPRESS: 1000.0,        // Thưởng mỗi ngày trống (Compress strategy)
@@ -116,5 +100,13 @@ export const WEIGHTS: WEIGHTS = {
     /**
      * Trọng số trống tiết
      */
-    PENALTY_GAP: 50.0             // Phạt trống tiết
+    PENALTY_GAP: 50.0,             // Phạt trống tiết
+    /**
+     * Trọng số hạn chế buổi học (Vàng)
+     */
+    PENALTY_RESTRICTED: 500.0,
+    /**
+     * Trọng số tuyệt đối không học (Đỏ)
+     */
+    PENALTY_ABSOLUTE_NO: 10000.0
 };

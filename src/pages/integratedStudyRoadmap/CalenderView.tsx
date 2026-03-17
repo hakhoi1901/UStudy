@@ -36,12 +36,26 @@ export function CalendarView({
     allowedClassesMap,
 }: CalendarViewProps) {
     const [prefs, setPrefs] = useState<SolverPreferences>({
-        daysOff: [],
-        session: '0',
+        sessionConstraints: {},
         strategy: 'compress',
         noGaps: false
     });
     const [isConfigOpen, setIsConfigOpen] = useState(false);
+
+    const toggleConstraint = (day: number, session: number) => {
+        const key = `${day}-${session}`;
+        setPrefs(prev => {
+            const current = (prev.sessionConstraints || {})[key] || 0;
+            const next = (current + 1) % 3;
+            const newConstraints = { ...(prev.sessionConstraints || {}) };
+            if (next === 0) {
+                delete newConstraints[key];
+            } else {
+                newConstraints[key] = next;
+            }
+            return { ...prev, sessionConstraints: newConstraints };
+        });
+    };
 
     if (selectedCourses.size === 0) {
         return (
@@ -115,97 +129,100 @@ export function CalendarView({
                             </button>
                         </div>
 
-                        <div className="p-6 grid grid-cols-1 gap-8">
-                            {/* Buổi học */}
+                        <div className="p-6 space-y-6">
+                            {/* Ràng buộc Buổi học (Lưới 2x7) */}
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Buổi ưu tiên</label>
-                                <div className="flex bg-gray-100 p-1 rounded-xl">
-                                    {[
-                                        { id: '0', label: 'Tự do', icon: Zap },
-                                        { id: '1', label: 'Sáng', icon: Sun },
-                                        { id: '2', label: 'Chiều', icon: Moon },
-                                    ].map(s => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => setPrefs(prev => ({ ...prev, session: s.id }))}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${prefs.session === s.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            <s.icon className="w-4 h-4" />
-                                            {s.label}
-                                        </button>
-                                    ))}
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 block">Ràng buộc buổi học (3 trạng thái)</label>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border-separate border-spacing-1">
+                                        <thead>
+                                            <tr>
+                                                <th className="w-16"></th>
+                                                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, i) => (
+                                                    <th key={i} className="p-1 text-[10px] font-bold text-gray-400 uppercase">{day}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {[
+                                                { id: 1, label: 'Sáng', icon: Sun },
+                                                { id: 2, label: 'Chiều', icon: Moon },
+                                            ].map(session => (
+                                                <tr key={session.id}>
+                                                    <td className="pr-2 text-[11px] font-bold text-gray-500">
+                                                        <div className="flex items-center gap-1.5 justify-end">
+                                                            <session.icon className="w-3 h-3" />
+                                                            {session.label}
+                                                        </div>
+                                                    </td>
+                                                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
+                                                        const key = `${day}-${session.id}`;
+                                                        const level = (prefs.sessionConstraints || {})[key] || 0;
+                                                        return (
+                                                            <td key={day} style={{ padding: '1px' }}>
+                                                                <button
+                                                                    onClick={() => toggleConstraint(day, session.id)}
+                                                                    className={`w-full h-10 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${level === 0 ? 'bg-slate-50 border-slate-100 text-slate-300 hover:border-blue-200 hover:bg-blue-50' :
+                                                                        level === 1 ? 'bg-amber-50 border-amber-200 text-amber-600' :
+                                                                            'bg-red-50 border-red-200 text-red-600 shadow-sm'
+                                                                        }`}
+                                                                >
+                                                                    {level === 0 ? <Zap className="w-3.5 h-3.5" /> :
+                                                                        level === 1 ? <AlertTriangle className="w-3.5 h-3.5" /> :
+                                                                            <X className="w-3.5 h-3.5" />}
+                                                                    <span className="text-[7px] font-black uppercase">
+                                                                        {level === 0 ? 'Ok' : level === 1 ? 'Tránh' : 'Cấm'}
+                                                                    </span>
+                                                                </button>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Sinh viên nên chọn "Tự do" nếu không quá cần thiết để thuật toán dễ tìm phương án hơn.</p>
-                            </div>
-
-                            {/* Chiến thuật */}
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Chiến thuật dồn lịch</label>
-                                <div className="flex bg-gray-100 p-1 rounded-xl">
-                                    {[
-                                        { id: 'compress', label: 'Dồn lịch', title: 'Học nhiều trong 1 ngày để nghỉ ngày khác' },
-                                        { id: 'spread', label: 'Trải đều', title: 'Học rải rác để giảm tải mỗi ngày' },
-                                    ].map(s => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => setPrefs(prev => ({ ...prev, strategy: s.id }))}
-                                            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${prefs.strategy === s.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                            title={s.title}
-                                        >
-                                            {s.label}
-                                        </button>
-                                    ))}
+                                <div className="mt-4 flex flex-wrap gap-4 text-[9px] text-gray-400 font-medium italic">
+                                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-slate-100 border border-slate-200 rounded-sm" /> Bình thường</div>
+                                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-amber-50 border border-amber-200 rounded-sm" /> Hạn chế học (trừ điểm)</div>
+                                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-red-50 border border-red-200 rounded-sm" /> Tuyệt đối không (loại bỏ)</div>
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* "Dồn lịch" sẽ ưu tiên các phương án có nhiều ngày nghỉ trống trong tuần.</p>
                             </div>
 
-                            {/* Tiết trống */}
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Tiết trống (Gap)</label>
-                                <button
-                                    onClick={() => setPrefs(prev => ({ ...prev, noGaps: !prev.noGaps }))}
-                                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${prefs.noGaps
-                                        ? 'bg-blue-50 border-blue-200 text-[#004A98]'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                                        }`}
-                                >
-                                    {prefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
-                                </button>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Hạn chế tiết trống giúp bạn không phải chờ đợi lâu giữa các tiết học trong cùng 1 ngày.</p>
-                            </div>
-
-                            {/* Ngày nghỉ */}
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Ngày muốn nghỉ</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
-                                        const isOff = prefs.daysOff?.includes(day);
-                                        return (
+                            <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-gray-100">
+                                {/* Chiến thuật */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Chiến thuật dồn lịch</label>
+                                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                                        {[
+                                            { id: 'compress', label: 'Dồn lịch', title: 'Học nhiều trong 1 ngày để nghỉ ngày khác' },
+                                            { id: 'spread', label: 'Trải đều', title: 'Học rải rác để giảm tải mỗi ngày' },
+                                        ].map(s => (
                                             <button
-                                                key={day}
-                                                onClick={() => {
-                                                    setPrefs(prev => {
-                                                        const current = prev.daysOff || [];
-                                                        if (current.includes(day)) {
-                                                            return { ...prev, daysOff: current.filter(d => d !== day) };
-                                                        } else {
-                                                            return { ...prev, daysOff: [...current, day] };
-                                                        }
-                                                    });
-                                                }}
-                                                className={`w-10 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border ${isOff
-                                                    ? 'bg-red-500 border-red-500 text-white shadow-md'
-                                                    : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'
-                                                    }`}
+                                                key={s.id}
+                                                onClick={() => setPrefs(prev => ({ ...prev, strategy: s.id }))}
+                                                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${prefs.strategy === s.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                title={s.title}
                                             >
-                                                {day === 6 ? 'CN' : `T${day + 2}`}
+                                                {s.label}
                                             </button>
-                                        );
-                                    })}
+                                        ))}
+                                    </div>
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Thuật toán sẽ phạt điểm cực nặng các phương án bị dính vào ngày đỏ.</p>
+
+                                {/* Tiết trống */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Tiết trống (Gap)</label>
+                                    <button
+                                        onClick={() => setPrefs(prev => ({ ...prev, noGaps: !prev.noGaps }))}
+                                        className={`w-full flex items-center justify-center gap-3 py-2 px-4 rounded-xl border text-sm font-medium transition-all ${prefs.noGaps
+                                            ? 'bg-blue-50 border-blue-200 text-[#004A98]'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        {prefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

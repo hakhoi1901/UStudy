@@ -2,8 +2,7 @@ import { Bitset } from './Bitset';
 import { WEIGHTS } from './Constants';
 
 export interface Preferences {
-    daysOff?: (number | string)[];
-    session?: string;
+    sessionConstraints?: Record<string, number>; // e.g., "0-1": 2 (T2-Sáng: Tuyệt đối không)
     strategy?: string;
     noGaps?: boolean;
 }
@@ -30,11 +29,8 @@ export class FitnessEvaluator {
 
     constructor(preferences: any) {
         this.prefs = { ...preferences };
-        // Chuẩn hóa daysOff thành số nguyên (0=T2, 6=CN)
-        if (this.prefs.daysOff && Array.isArray(this.prefs.daysOff)) {
-            this.prefs.daysOff = this.prefs.daysOff.map((d: any) => parseInt(d));
-        } else {
-            this.prefs.daysOff = [];
+        if (!this.prefs.sessionConstraints) {
+            this.prefs.sessionConstraints = {};
         }
     }
 
@@ -67,37 +63,39 @@ export class FitnessEvaluator {
 
         // 2. SOFT CONSTRAINTS
 
-        // A. Ngày nghỉ (Dùng Mask quét Bit)
-        if (this.prefs.daysOff.length > 0) {
+        // A. Ràng buộc buổi học (Mới)
+        if (Object.keys(this.prefs.sessionConstraints).length > 0) {
             genes.forEach((classIdx, idx) => {
                 if (classIdx === -1) return;
                 const currentMask = subjects[idx].classes[classIdx].scheduleMask;
+                if (!currentMask) return;
 
-                if (currentMask) {
-                    this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 20;
-                        const endBit = startBit + 19;
-                        for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k) || currentMask.test(k + 140)) {
-                                score -= WEIGHTS.PENALTY_DAY_OFF;
-                                break; // Dính 1 tiết là phạt, không cần check tiếp
+                // Kiểm tra 7 ngày, mỗi ngày 2 buổi
+                for (let d = 0; d < 7; d++) {
+                    const morningKey = `${d}-1`;
+                    const afternoonKey = `${d}-2`;
+
+                    // Check Sáng
+                    const morningLevel = this.prefs.sessionConstraints[morningKey];
+                    if (morningLevel > 0) {
+                        for (let p = 0; p < 10; p++) {
+                            if (currentMask.test(d * 20 + p) || currentMask.test(140 + d * 20 + p)) {
+                                score -= (morningLevel === 2 ? WEIGHTS.PENALTY_ABSOLUTE_NO : WEIGHTS.PENALTY_RESTRICTED);
+                                break;
                             }
                         }
-                    });
-                }
-            });
-        }
+                    }
 
-        // B. Buổi ưu tiên
-        if (this.prefs.session && this.prefs.session !== '0') {
-            const targetSession = parseInt(this.prefs.session);
-            genes.forEach((classIdx, idx) => {
-                if (classIdx === -1) return;
-                const currentMask = subjects[idx].classes[classIdx].scheduleMask;
-                if (currentMask) {
-                    const session = this.getSessionFromMask(currentMask);
-                    if (session === targetSession) score += WEIGHTS.BONUS_SESSION;
-                    else if (session !== 3 && session !== 0) score -= WEIGHTS.PENALTY_WRONG_SESSION;
+                    // Check Chiều
+                    const afternoonLevel = this.prefs.sessionConstraints[afternoonKey];
+                    if (afternoonLevel > 0) {
+                        for (let p = 10; p < 20; p++) {
+                            if (currentMask.test(d * 20 + p) || currentMask.test(140 + d * 20 + p)) {
+                                score -= (afternoonLevel === 2 ? WEIGHTS.PENALTY_ABSOLUTE_NO : WEIGHTS.PENALTY_RESTRICTED);
+                                break;
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -149,24 +147,35 @@ export class FitnessEvaluator {
             }
         }
 
-        // 2. Re-check Ngày nghỉ
-        if (this.prefs.daysOff.length > 0) {
+        // 2. Re-check Ràng buộc buổi
+        if (Object.keys(this.prefs.sessionConstraints).length > 0) {
             genes.forEach((classIdx, idx) => {
                 if (classIdx === -1) return;
                 const cls = subjects[idx].classes[classIdx];
                 const currentMask = cls.scheduleMask;
+                if (!currentMask) return;
 
-                if (currentMask) {
-                    this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 20;
-                        const endBit = startBit + 19;
-                        for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k) || currentMask.test(k + 140)) {
-                                report.penalties.push(`Học ngày nghỉ (Thứ ${dayForbidden + 2}): ${subjects[idx].id} (${cls.id})`);
+                for (let d = 0; d < 7; d++) {
+                    const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+                    const morningLevel = this.prefs.sessionConstraints[`${d}-1`];
+                    const afternoonLevel = this.prefs.sessionConstraints[`${d}-2`];
+
+                    if (morningLevel > 0) {
+                        for (let p = 0; p < 10; p++) {
+                            if (currentMask.test(d * 20 + p) || currentMask.test(140 + d * 20 + p)) {
+                                report.penalties.push(`${morningLevel === 2 ? "Tuyệt đối không" : "Hạn chế"} học Sáng ${days[d]}: ${subjects[idx].id}`);
                                 break;
                             }
                         }
-                    });
+                    }
+                    if (afternoonLevel > 0) {
+                        for (let p = 10; p < 20; p++) {
+                            if (currentMask.test(d * 20 + p) || currentMask.test(140 + d * 20 + p)) {
+                                report.penalties.push(`${afternoonLevel === 2 ? "Tuyệt đối không" : "Hạn chế"} học Chiều ${days[d]}: ${subjects[idx].id}`);
+                                break;
+                            }
+                        }
+                    }
                 }
             });
         }
