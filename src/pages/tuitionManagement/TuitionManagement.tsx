@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useTuitionCalculator } from '../../hooks/useTuitionCalculator';
 import { useCourseData } from '../../hooks/useCourseData';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 import {
   DollarSign,
@@ -709,12 +710,8 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
         </div>
       </div>
 
-      {/* Privacy Footer */}
-      <div className="py-3 bg-gray-50 border border-gray-200 rounded-lg">
-        <p className="text-[10px] text-gray-500 text-center">
-          Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
-        </p>
-      </div>
+      {/* Footer */}
+      <PrivacyFooter />
     </div>
   );
 }

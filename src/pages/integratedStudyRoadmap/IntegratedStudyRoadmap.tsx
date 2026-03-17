@@ -13,6 +13,7 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 import type { Course } from '../../types';
 
 
@@ -218,6 +219,8 @@ export function IntegratedStudyRoadmap() {
                     onClose={() => setShowFlowchart(false)}
                 />
             )}
+            {/* Footer */}
+            <PrivacyFooter />
         </div>
     );
 }
