@@ -62,7 +62,7 @@ export function NotificationMenu() {
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col max-h-[85vh]">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col max-h-[380px]">
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
                         <h3 className="font-semibold text-gray-900">Thông báo</h3>
@@ -89,7 +89,7 @@ export function NotificationMenu() {
                     </div>
 
                     {/* List */}
-                    <div className="overflow-y-auto flex-1 custom-scrollbar">
+                    <div className="overflow-y-auto flex-1 custom-scrollbar max-h-80" style={{ maxHeight: '380px' }}>
                         {notifications.length === 0 ? (
                             <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
                                 <Bell className="w-12 h-12 text-gray-200 mb-3" />
