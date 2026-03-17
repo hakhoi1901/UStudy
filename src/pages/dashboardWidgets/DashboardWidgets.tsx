@@ -6,6 +6,7 @@ import { ACADEMIC_RULES } from '../../config';
 import { CardFooter } from '../../components/ui/card';
 import { FinancialLogic } from '../../logic/FinancialLogic';
 import { GPACalculator } from '../../logic/GPACalculator';
+import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
@@ -207,7 +208,8 @@ export function DashboardWidgets() {
         </div>
       </div>
 
-      <CardFooter />
+      {/* Footer */}
+      <PrivacyFooter />
     </div>
   );
 }

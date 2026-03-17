@@ -31,6 +31,11 @@ export const APP_CONFIG = {
     DEFAULT_TARGET_SEM: "2",
 
     /**
+     * Phiên bản hiện tại của Bookmarklet
+     */
+    BOOKMARKLET_VERSION: '1.2.0',
+
+    /**
      * Thông tin liên hệ và báo cáo
      */
     CONTACT: {

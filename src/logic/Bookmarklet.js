@@ -91,24 +91,13 @@
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#334155;">
                         <input type="checkbox" id="opt-tuition" checked style="width:16px;height:16px;accent-color:#004A98;"> Học phí
                     </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#334155;">
+                        <input type="checkbox" id="opt-exam" checked style="width:16px;height:16px;accent-color:#004A98;"> Lịch thi
+                    </label>
                 </div>
 
                 <div style="background:#f1f5f9; height:1px;"></div>
 
-                <div>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
-                        <input type="checkbox" id="opt-exam" checked onchange="toggleGroup('grp-exam', this.checked)" style="width:16px;height:16px;accent-color:#004A98;"> 
-                        Lấy Lịch Thi
-                    </label>
-                    <div id="grp-exam" style="display:flex;gap:10px;padding-left:28px;">
-                        <input type="text" id="exam-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
-                        <select id="exam-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                            <option value="1">Học kỳ 1</option>
-                            <option value="2">Học kỳ 2</option>
-                            <option value="3">Học kỳ 3</option>
-                        </select>
-                    </div>
-                </div>
 
                 <div>
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;margin-bottom:10px;color:#004A98;">
@@ -182,8 +171,6 @@
                 const config = {
                     getTuition: document.getElementById('opt-tuition').checked,
                     getExam: document.getElementById('opt-exam').checked,
-                    examYear: document.getElementById('exam-year').value,
-                    examSem: document.getElementById('exam-sem').value,
                     getClass: document.getElementById('opt-class').checked,
                     classYear: document.getElementById('class-year').value,
                     classSem: document.getElementById('class-sem').value,
@@ -319,10 +306,10 @@
                 let tuitionSem = "";
 
                 if (nhHkInput && nhHkInput.value) {
-                    const parts = nhHkInput.value.split('/');
-                    if (parts.length === 2) {
-                        tuitionYear = parts[0].trim();
-                        tuitionSem = parts[1].trim();
+                    const match = nhHkInput.value.trim().match(/(\d{2}-\d{2})\/(\d)/);
+                    if (match) {
+                        tuitionYear = match[1];
+                        tuitionSem = match[2];
                     }
                 }
 
@@ -571,9 +558,81 @@
         showLoading("Đang tải Bảng điểm đầy đủ...");
         // Lấy Học phí
         if (config.getTuition) {
-            showLoading("Đang tải Học phí...");
-            const docHocPhi = await fetchVirtualPage(URLS.HOCPHI);
-            tuitionData = scrapeBackgroundData(docHocPhi, 'TUITION');
+            showLoading("Bắt đầu quét Học phí toàn diện...");
+            let docHocPhiBase = await fetchVirtualPage(URLS.HOCPHI);
+
+            // B1: Đào danh sách NH/HK học phí
+            const tuitionPeriods = [];
+            const tuitionListEl = docHocPhiBase.querySelector('.ob_iCboICBC');
+            if (tuitionListEl) {
+                tuitionListEl.querySelectorAll('li').forEach(li => {
+                    const match = li.textContent.trim().match(/\d{2}-\d{2}\/\d/);
+                    if (match && !tuitionPeriods.includes(match[0])) {
+                        tuitionPeriods.push(match[0]);
+                    }
+                });
+            }
+
+            // Nếu không quét được, dự phòng lấy kỳ hiện tại
+            if (tuitionPeriods.length === 0) {
+                const currentPeriodInput = docHocPhiBase.getElementById('ctl00_ContentPlaceHolder1_ctl00_cboNamHoc_ob_CbocboNamHocTB');
+                if (currentPeriodInput && currentPeriodInput.value) {
+                    tuitionPeriods.push(currentPeriodInput.value);
+                }
+            }
+
+            const allTuition = {};
+            let tCount = 0;
+
+            for (const period of tuitionPeriods) {
+                tCount++;
+                showLoading(`Đang tải Học phí [Kỳ ${period}] (${tCount}/${tuitionPeriods.length})...`);
+
+                try {
+                    // Nhịp 1: Lấy ViewState
+                    const viewState = docHocPhiBase.getElementById('__VIEWSTATE')?.value;
+                    const viewStateGen = docHocPhiBase.getElementById('__VIEWSTATEGENERATOR')?.value;
+                    const eventValidation = docHocPhiBase.getElementById('__EVENTVALIDATION')?.value;
+
+                    if (!viewState) {
+                        // Nếu chưa có docHocPhiBase hoàn chỉnh (ví dụ do cache), fetch lại layout
+                        docHocPhiBase = await fetchVirtualPage(URLS.HOCPHI);
+                        continue;
+                    }
+
+                    const formData = new URLSearchParams();
+                    formData.append('__EVENTTARGET', '');
+                    formData.append('__EVENTARGUMENT', '');
+                    formData.append('__VIEWSTATE', viewState);
+                    if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+                    if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+
+                    // Payload cho Obout ComboBox học phí
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc$ob_CbocboNamHocTB', period);
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc', period);
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$ctl04', 'Xem Học Phí');
+
+                    const postRes = await fetch(URLS.HOCPHI, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+
+                    const finalTuitionDoc = parseHTML(await postRes.text());
+                    const periodData = scrapeBackgroundData(finalTuitionDoc, 'TUITION');
+
+                    if (periodData && periodData.details.length > 0) {
+                        allTuition[period] = periodData;
+                    }
+
+                    // Cập nhật docHocPhiBase cho nhịp sau nếu cần (tùy portal có xoay ViewState không)
+                    docHocPhiBase = finalTuitionDoc;
+
+                } catch (err) {
+                    console.warn(`Lỗi tải học phí kỳ ${period}:`, err);
+                }
+            }
+            tuitionData = allTuition;
         }
 
         // 3. Xử lý Lịch thi (BẢN VÉT LƯỚI TOÀN DIỆN - ĐA TẦNG NĂM-KỲ)
@@ -770,6 +829,7 @@
         };
 
         const metaData = {
+            version: CONFIG.VERSION,
             scrapedAt: new Date().toISOString(),
             params: {
                 tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
@@ -781,7 +841,8 @@
 
         const fullDataPacket = {
             raw: rawData,
-            meta: metaData
+            meta: metaData,
+            version: CONFIG.VERSION
         };
 
         console.log("🔥 FULL DATA PACKET:", fullDataPacket);

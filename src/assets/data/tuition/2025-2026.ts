@@ -42,7 +42,7 @@ export const tuition_2025_2026 = {
         'ky-thuat-phan-mem': { CSC1: 857000 },
         'khoa-hoc-may-tinh': { CSC1: 857000 },
         'tri-tue-nhan-tao': { CSC1: 891000 },
-        'cu-nhan-tai-nang-cntt': { CSC1: 857000 },
+        'cu-nhan-tai-nang': { CSC1: 857000 },
 
         'cong nghe ban dan': { PHY1: 825000, SEM1: 820000 },
         'mang-may-tinh': { CSC1: 857000 },

@@ -191,9 +191,12 @@ export const FinancialLogic = {
     detectPaymentStatus: (
         studentDb: any,
         totalFee: number,
-        isFromHistory: boolean
+        isFromHistory: boolean,
+        targetSemester?: string,
+        forcePaid?: boolean
     ): { status: 'paid' | 'partial' | 'unpaid'; amountDue: number; advancePayment: number; hasAdvancePayment: boolean } => {
-        if (isFromHistory) {
+        // Ưu tiên 1: Nếu user yêu cầu force (ví dụ cho kỳ cũ)
+        if (isFromHistory || forcePaid) {
             return {
                 status: 'paid',
                 amountDue: 0,
@@ -203,8 +206,27 @@ export const FinancialLogic = {
         }
 
         let isPaid = false;
+        let amountPaidFromPortal = 0;
+
         try {
-            if (studentDb?.tuition?.totals?.totalDue !== undefined) {
+            // Hỗ trợ map học phí mới
+            const tuitionMap = studentDb?.tuition;
+            const tuitionForSem = targetSemester ? tuitionMap?.[targetSemester] : null;
+
+            if (tuitionForSem) {
+                const totalDueStr = String(tuitionForSem.total || "0").replace(/,/g, '');
+                const dueNum = parseFloat(totalDueStr) || 0;
+                const totalFeeStr = String(tuitionForSem.fee || "0").replace(/,/g, '');
+                const totalFeeNum = parseFloat(totalFeeStr) || 0;
+
+                if (dueNum === 0 && totalFeeNum > 0) {
+                    isPaid = true;
+                    amountPaidFromPortal = totalFeeNum;
+                } else if (dueNum > 0) {
+                    amountPaidFromPortal = Math.max(0, totalFeeNum - dueNum);
+                }
+            } else if (studentDb?.tuition?.totals?.totalDue !== undefined) {
+                // Fallback cho cấu trúc cũ nếu chưa cào lại
                 const totalDueStr = String(studentDb.tuition.totals.totalDue).replace(/,/g, '');
                 const dueNum = parseFloat(totalDueStr) || 0;
                 if (dueNum === 0 && totalFee > 0) {
@@ -217,7 +239,16 @@ export const FinancialLogic = {
             return {
                 status: 'paid',
                 amountDue: 0,
-                advancePayment: totalFee,
+                advancePayment: amountPaidFromPortal || totalFee,
+                hasAdvancePayment: true
+            };
+        }
+
+        if (amountPaidFromPortal > 0) {
+            return {
+                status: 'partial',
+                amountDue: Math.max(0, totalFee - amountPaidFromPortal),
+                advancePayment: amountPaidFromPortal,
                 hasAdvancePayment: true
             };
         }
@@ -293,9 +324,24 @@ export const FinancialLogic = {
         const regMeta = importMeta?.params?.registration;
 
         // Parse tuition from tuition page
-        const tuitionPageTotal = studentDb?.tuition?.total
-            ? parseFloat(String(studentDb.tuition.total).replace(/,/g, '')) || 0
-            : 0;
+        // Parse tuition from tuition page
+        let tuitionPageTotal = 0;
+        const tuitionMap = studentDb?.tuition;
+        
+        if (tuitionMap && typeof tuitionMap === 'object' && !tuitionMap.total) {
+             const periods = Object.keys(tuitionMap);
+             if (periods.length > 0) {
+                 const regTarget = regMeta ? `${String(regMeta.year).substring(2, 4)}-${String(regMeta.year).substring(7, 9)}/${regMeta.sem}` : null;
+                 const match = regTarget ? tuitionMap[regTarget] : null;
+                 const latest = tuitionMap[periods.sort().reverse()[0]];
+                 const target = match || latest;
+                 tuitionPageTotal = parseFloat(String(target.total || "0").replace(/,/g, '')) || 0;
+             }
+        } else {
+            tuitionPageTotal = studentDb?.tuition?.total
+                ? parseFloat(String(studentDb.tuition.total).replace(/,/g, '')) || 0
+                : 0;
+        }
 
         // So sánh năm/HK của trang học phí vs kết quả ĐKHP
         const isTuitionFresh = (() => {

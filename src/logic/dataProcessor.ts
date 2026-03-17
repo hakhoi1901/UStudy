@@ -96,7 +96,7 @@ interface RawData {
         midterm: RawExamEntry[];
         final: RawExamEntry[];
     };
-    tuition: {
+    tuition: Record<string, {
         details: RawTuitionDetail[];
         totals: {
             credits: string;
@@ -109,7 +109,7 @@ interface RawData {
         updatedDate: string;
         year: string;
         sem: string;
-    };
+    }>;
     registrations: RawRegistration[];
     courses: RawOpenClass[];
 }
@@ -139,27 +139,45 @@ function processGrades(rawGrades: RawGrade[]) {
 /**
  * Xử lý học phí: parse code/name từ subject raw string
  */
-function processTuition(rawTuition: RawData['tuition']) {
-    const details = rawTuition.details.map(d => {
-        // Parse "[CODE/CLASS]Name" format
-        const codeMatch = d.subject.match(/\[(.*?)\]/);
-        const code = codeMatch ? codeMatch[1] : "";
-        const name = d.subject.replace(/\[.*?\]/g, '').trim();
+/**
+ * Xử lý học phí: parse map các học kỳ
+ */
+function processTuition(rawTuitionMap: RawData['tuition']) {
+    if (!rawTuitionMap) return {};
 
-        return {
-            code,
-            name,
-            credits: d.credits,
-            fee: d.fee
+    const processedMap: Record<string, any> = {};
+
+    for (const [period, rawTuition] of Object.entries(rawTuitionMap)) {
+        const details = rawTuition.details.map(d => {
+            // Parse "[CODE/CLASS]Name" format
+            const codeMatch = d.subject.match(/\[(.*?)\]/);
+            const code = codeMatch ? codeMatch[1]?.split('/')[0] : ""; // Lấy mã môn, bỏ lớp
+            const name = d.subject.replace(/\[.*?\]/g, '').trim();
+
+            return {
+                code,
+                name,
+                credits: parseFloat(d.credits) || 0,
+                fee: parseFloat(d.fee?.replace(/,/g, '')) || 0,
+                actualFee: parseFloat(d.cost?.replace(/,/g, '')) || 0,
+                periods: parseFloat(d.periods) || 0,
+                tuitionCredits: parseFloat(d.tuitionCredits) || 0,
+                classId: codeMatch ? codeMatch[1]?.split('/')[1] : ""
+            };
+        });
+
+        processedMap[period] = {
+            total: rawTuition.totals.totalDue || "0",
+            fee: rawTuition.totals.fee || "0",
+            actualFee: rawTuition.totals.actualFee || "0",
+            details,
+            year: rawTuition.year,
+            sem: rawTuition.sem,
+            updatedDate: rawTuition.updatedDate
         };
-    });
+    }
 
-    return {
-        total: rawTuition.totals.totalDue || "0",
-        details,
-        year: rawTuition.year,
-        sem: rawTuition.sem
-    };
+    return processedMap;
 }
 
 /**

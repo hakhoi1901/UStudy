@@ -13,6 +13,7 @@ import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
 import { processRawData } from './logic/dataProcessor';
 import { STORAGE_KEYS } from './config/storageKeys';
+import { APP_CONFIG } from './config';
 import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
 
 
@@ -36,6 +37,19 @@ function AppContent() {
       // Listen for data from the Bookmarklet
       if (event.data && event.data.type === 'IMPORT_FULL_DATA') {
         const payload = event.data.payload;
+
+        // Kiểm tra version bookmarklet
+        const incomingVersion = payload.version || payload.meta?.version;
+        if (incomingVersion && incomingVersion !== APP_CONFIG.BOOKMARKLET_VERSION) {
+          alert(`⚠️ BOOKMARKLET CŨ!\n\nPhiên bản bookmarklet của bạn (${incomingVersion}) đã cũ hơn so với hệ thống (${APP_CONFIG.BOOKMARKLET_VERSION}).\n\nVui lòng XÓA bookmark cũ và KÉO LẠI nút mới từ trang chủ để đảm bảo lấy dữ liệu chính xác nhé!`);
+
+          addNotification({
+            title: 'Cần cập nhật Bookmarklet',
+            message: `Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.`,
+            type: 'warning'
+          });
+        }
+
         if (payload && payload.raw) {
           // 1. Lưu bản RAW nguyên vẹn
           localStorage.setItem('raw_student_db', JSON.stringify(payload.raw));
