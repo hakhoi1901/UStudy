@@ -210,8 +210,6 @@ export function IntegratedStudyRoadmap() {
                         allowedClassesMap={allowedClassesMap}
                     />
                 )}
-                {/* Footer */}
-                <PrivacyFooter />
             </div>
 
             {showFlowchart && flowchartCourse && (
