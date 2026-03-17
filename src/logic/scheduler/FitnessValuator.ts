@@ -75,10 +75,10 @@ export class FitnessEvaluator {
 
                 if (currentMask) {
                     this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 10;
-                        const endBit = startBit + 9;
+                        const startBit = dayForbidden * 20;
+                        const endBit = startBit + 19;
                         for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k) || currentMask.test(k + 70)) {
+                            if (currentMask.test(k) || currentMask.test(k + 140)) {
                                 score -= WEIGHTS.PENALTY_DAY_OFF;
                                 break; // Dính 1 tiết là phạt, không cần check tiếp
                             }
@@ -158,10 +158,10 @@ export class FitnessEvaluator {
 
                 if (currentMask) {
                     this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 10;
-                        const endBit = startBit + 9;
+                        const startBit = dayForbidden * 20;
+                        const endBit = startBit + 19;
                         for (let k = startBit; k <= endBit; k++) {
-                            if (currentMask.test(k) || currentMask.test(k + 70)) {
+                            if (currentMask.test(k) || currentMask.test(k + 140)) {
                                 report.penalties.push(`Học ngày nghỉ (Thứ ${dayForbidden + 2}): ${subjects[idx].id} (${cls.id})`);
                                 break;
                             }
@@ -189,13 +189,13 @@ export class FitnessEvaluator {
         let hasAfternoon = false;
 
         for (let d = 0; d < 7; d++) {
-            // Sáng: bit 0-4
-            for (let p = 0; p < 5; p++) {
-                if (mask.test(d * 10 + p) || mask.test(70 + d * 10 + p)) hasMorning = true;
+            // Sáng: bit 0-9 (Tiết 1-5)
+            for (let p = 0; p < 10; p++) {
+                if (mask.test(d * 20 + p) || mask.test(140 + d * 20 + p)) hasMorning = true;
             }
-            // Chiều: bit 5-9
-            for (let p = 5; p < 10; p++) {
-                if (mask.test(d * 10 + p) || mask.test(70 + d * 10 + p)) hasAfternoon = true;
+            // Chiều: bit 10-19 (Tiết 6-10)
+            for (let p = 10; p < 20; p++) {
+                if (mask.test(d * 20 + p) || mask.test(140 + d * 20 + p)) hasAfternoon = true;
             }
         }
 
@@ -210,9 +210,9 @@ export class FitnessEvaluator {
         for (let d = 0; d < 7; d++) {
             let loadP1 = 0;
             let loadP2 = 0;
-            for (let p = 0; p < 10; p++) {
-                if (combinedMask.test(d * 10 + p)) loadP1++;
-                if (combinedMask.test(70 + d * 10 + p)) loadP2++;
+            for (let p = 0; p < 20; p++) {
+                if (combinedMask.test(d * 20 + p)) loadP1 += 0.5;
+                if (combinedMask.test(140 + d * 20 + p)) loadP2 += 0.5;
             }
             // Một ngày chỉ có tối đa load lớn nhất giữa Phase 1 và Phase 2 vì chúng không diễn ra cùng tuần
             load[d] = Math.max(loadP1, loadP2);
@@ -223,14 +223,14 @@ export class FitnessEvaluator {
     calculateGaps(combinedMask: Bitset) {
         let totalGaps = 0;
         
-        // Tính gap cho Phase 1 (0-69)
+        // Tính gap cho Phase 1 (0-139)
         for (let d = 0; d < 7; d++) {
             let first = -1;
             let last = -1;
             let learningBits = 0;
 
-            for (let p = 0; p < 10; p++) {
-                if (combinedMask.test(d * 10 + p)) {
+            for (let p = 0; p < 20; p++) {
+                if (combinedMask.test(d * 20 + p)) {
                     if (first === -1) first = p;
                     last = p;
                     learningBits++;
@@ -242,14 +242,14 @@ export class FitnessEvaluator {
             }
         }
         
-        // Tính gap cho Phase 2 (70-139)
+        // Tính gap cho Phase 2 (140-279)
         for (let d = 0; d < 7; d++) {
             let first = -1;
             let last = -1;
             let learningBits = 0;
 
-            for (let p = 0; p < 10; p++) {
-                if (combinedMask.test(70 + d * 10 + p)) {
+            for (let p = 0; p < 20; p++) {
+                if (combinedMask.test(140 + d * 20 + p)) {
                     if (first === -1) first = p;
                     last = p;
                     learningBits++;
@@ -260,7 +260,8 @@ export class FitnessEvaluator {
                 totalGaps += (last - first + 1 - learningBits);
             }
         }
-        return totalGaps;
+        // totalGaps hiện tại là số lượng "nửa tiết" trống, ta có thể chia 2 để về đơn vị tiết nếu muốn
+        return totalGaps / 2;
     }
 
     // --- HELPER QUAN TRỌNG: XỬ LÝ MẢNG LỊCH ---

@@ -45,14 +45,14 @@ export function maskToSections(
     const bs = new Bitset();
     bs.loadFromData(maskArr);
 
-    for (let d = 0; d < 6; d++) { // T2..T7
+    for (let d = 0; d < 7; d++) { // T2..CN (0..6)
         let runStart = -1;
         let runEnd = -1;
         let runPhase = 0; // 0: None, 1: Phase 1, 2: Phase 2, 3: Full
 
-        for (let p = 0; p < 10; p++) {
-            const bitP1 = d * 10 + p;
-            const bitP2 = 70 + d * 10 + p;
+        for (let p = 0; p < 20; p++) { // 20 half-periods per day
+            const bitP1 = d * 20 + p;
+            const bitP2 = 140 + d * 20 + p;
             const hasP1 = bs.test(bitP1);
             const hasP2 = bs.test(bitP2);
             
@@ -63,7 +63,8 @@ export function maskToSections(
                 if (runStart === -1) {
                     runStart = p;
                     runPhase = currentPhase;
-                } else if (currentPhase !== runPhase || p === 5) { 
+                } else if (currentPhase !== runPhase || p === 10) { 
+                    // Tách đoạn nếu đổi Phase hoặc qua giờ trưa (p=10 là bắt đầu tiết 6)
                     const viName = courseName + 
                                    thGroupText + 
                                    (runPhase === 1 ? ' (Gđ 1)' : (runPhase === 2 ? ' (Gđ 2)' : ''));
@@ -77,8 +78,8 @@ export function maskToSections(
                         lecturer: 'Chưa cập nhật',
                         room: '---',
                         day: d + 2,
-                        startPeriod: runStart + 1,
-                        endPeriod: runEnd + 1,
+                        startPeriod: runStart * 0.5 + 1.0,
+                        endPeriod: (runEnd + 1) * 0.5,
                         color,
                         isConfirmed: true,
                         credits,
@@ -102,9 +103,9 @@ export function maskToSections(
                         sectionNumber: pureClassId,
                         lecturer: 'Chưa cập nhật',
                         room: '---',
-                        day: d + 2,         // d+2: 0→T2, 1→T3, ...5→T7
-                        startPeriod: runStart + 1,  // 0-indexed → 1-indexed (P1..P10)
-                        endPeriod: runEnd + 1,
+                        day: d + 2,         // d+2: 0→T2, 1→T3, ...5→T7, 6→CN
+                        startPeriod: runStart * 0.5 + 1.0,
+                        endPeriod: (runEnd + 1) * 0.5,
                         color,
                         isConfirmed: true,
                         credits,
@@ -127,8 +128,8 @@ export function maskToSections(
                 lecturer: 'Chưa cập nhật',
                 room: '---',
                 day: d + 2,
-                startPeriod: runStart + 1,
-                endPeriod: runEnd + 1,
+                startPeriod: runStart * 0.5 + 1.0,
+                endPeriod: (runEnd + 1) * 0.5,
                 color,
                 isConfirmed: true,
                 credits,

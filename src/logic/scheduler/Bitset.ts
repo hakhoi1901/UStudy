@@ -2,8 +2,8 @@ export class Bitset {
     parts: number[];
 
     constructor() {
-        // Tăng lên 6 phần (6 * 32 = 192 bit) để chứa đủ 2 Phase (140 bit)
-        this.parts = [0, 0, 0, 0, 0, 0];
+        // Tăng lên 10 phần (10 * 32 = 320 bit) để chứa đủ 2 Phase (140 * 2 = 280 bit)
+        this.parts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
 
     // Set bit tại vị trí pos lên 1
@@ -22,14 +22,14 @@ export class Bitset {
 
     // Reset toàn bộ về 0
     reset() {
-        this.parts = [0, 0, 0, 0, 0, 0];
+        this.parts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
 
     // Phép OR với Bitset khác (Dùng để gộp lịch)
     or(other: Bitset) {
         const res = new Bitset();
-        // Duyệt 6 phần
-        for (let i = 0; i < 6; i++) {
+        // Duyệt 10 phần
+        for (let i = 0; i < 10; i++) {
             res.parts[i] = this.parts[i] | other.parts[i];
         }
         return res;
@@ -38,7 +38,7 @@ export class Bitset {
     // Phép AND (Kiểm tra trùng lịch)
     // Trả về true nếu có bất kỳ bit nào chung = 1
     anyCommon(other: Bitset) {
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 10; i++) {
             if ((this.parts[i] & other.parts[i]) !== 0) return true;
         }
         return false;
@@ -46,8 +46,8 @@ export class Bitset {
 
     // Load từ mảng số nguyên
     loadFromData(data: number[]) {
-        // Load tối đa độ dài data hoặc 6 phần
-        for (let i = 0; i < 6 && i < data.length; i++) {
+        // Load tối đa độ dài data hoặc 10 phần
+        for (let i = 0; i < 10 && i < data.length; i++) {
             this.parts[i] = data[i];
         }
     }
