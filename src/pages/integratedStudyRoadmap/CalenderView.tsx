@@ -1,5 +1,7 @@
-import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X } from 'lucide-react';
 import { type ClassSection } from '../../types';
+import { type SolverPreferences } from '../../hooks/useScheduleSolver';
 import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
@@ -11,7 +13,7 @@ interface CalendarViewProps {
     activeOption: number;
     options: any[]; // Or define the Option type if it exists in useScheduleSolver
     allCurrentCourses: Course[];
-    solve: (courses: Course[], allowedClassesMap: Record<string, string[]>) => void;
+    solve: (courses: Course[], allowedClassesMap: Record<string, string[]>, prefs?: SolverPreferences) => void;
     solving: boolean;
     solverError: string | null;
     setActiveOption: (option: number) => void;
@@ -33,6 +35,14 @@ export function CalendarView({
     getConflicts,
     allowedClassesMap,
 }: CalendarViewProps) {
+    const [prefs, setPrefs] = useState<SolverPreferences>({
+        daysOff: [],
+        session: '0',
+        strategy: 'compress',
+        noGaps: false
+    });
+    const [isConfigOpen, setIsConfigOpen] = useState(false);
+
     if (selectedCourses.size === 0) {
         return (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-12 text-center">
@@ -66,11 +76,19 @@ export function CalendarView({
                     </p>
                 </div>
                 <button
+                    onClick={() => setIsConfigOpen(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm"
+                    title="Cấu hình ưu tiên"
+                >
+                    <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+                    <span className="text-sm font-semibold pr-1">Cấu hình</span>
+                </button>
+                <button
                     onClick={() => {
                         const coursesToSchedule = Array.from(selectedCourses)
                             .map(id => allCurrentCourses.find(c => c.id === id))
                             .filter((c): c is NonNullable<typeof c> => !!c);
-                        solve(coursesToSchedule, allowedClassesMap);
+                        solve(coursesToSchedule, allowedClassesMap, prefs);
                     }}
                     disabled={solving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm"
@@ -79,6 +97,141 @@ export function CalendarView({
                     {solving ? 'Đang xếp lịch...' : 'Xếp lịch tự động'}
                 </button>
             </div>
+
+            {/* ScheduleConfigModal */}
+            {isConfigOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div style={{ maxWidth: '700px' }} className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-4 bg-[#004A98] flex items-center justify-between text-white">
+                            <div className="flex items-center gap-2">
+                                <Settings className="w-5 h-5" />
+                                <h3 className="font-semibold text-lg">Cấu hình thuật toán xếp lịch</h3>
+                            </div>
+                            <button
+                                onClick={() => setIsConfigOpen(false)}
+                                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 grid grid-cols-1 gap-8">
+                            {/* Buổi học */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Buổi ưu tiên</label>
+                                <div className="flex bg-gray-100 p-1 rounded-xl">
+                                    {[
+                                        { id: '0', label: 'Tự do', icon: Zap },
+                                        { id: '1', label: 'Sáng', icon: Sun },
+                                        { id: '2', label: 'Chiều', icon: Moon },
+                                    ].map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => setPrefs(prev => ({ ...prev, session: s.id }))}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${prefs.session === s.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            <s.icon className="w-4 h-4" />
+                                            {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* Sinh viên nên chọn "Tự do" nếu không quá cần thiết để thuật toán dễ tìm phương án hơn.</p>
+                            </div>
+
+                            {/* Chiến thuật */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Chiến thuật dồn lịch</label>
+                                <div className="flex bg-gray-100 p-1 rounded-xl">
+                                    {[
+                                        { id: 'compress', label: 'Dồn lịch', title: 'Học nhiều trong 1 ngày để nghỉ ngày khác' },
+                                        { id: 'spread', label: 'Trải đều', title: 'Học rải rác để giảm tải mỗi ngày' },
+                                    ].map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => setPrefs(prev => ({ ...prev, strategy: s.id }))}
+                                            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${prefs.strategy === s.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                            title={s.title}
+                                        >
+                                            {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* "Dồn lịch" sẽ ưu tiên các phương án có nhiều ngày nghỉ trống trong tuần.</p>
+                            </div>
+
+                            {/* Tiết trống */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Tiết trống (Gap)</label>
+                                <button
+                                    onClick={() => setPrefs(prev => ({ ...prev, noGaps: !prev.noGaps }))}
+                                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${prefs.noGaps
+                                        ? 'bg-blue-50 border-blue-200 text-[#004A98]'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                        }`}
+                                >
+                                    {prefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
+                                </button>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* Hạn chế tiết trống giúp bạn không phải chờ đợi lâu giữa các tiết học trong cùng 1 ngày.</p>
+                            </div>
+
+                            {/* Ngày nghỉ */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Ngày muốn nghỉ</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
+                                        const isOff = prefs.daysOff?.includes(day);
+                                        return (
+                                            <button
+                                                key={day}
+                                                onClick={() => {
+                                                    setPrefs(prev => {
+                                                        const current = prev.daysOff || [];
+                                                        if (current.includes(day)) {
+                                                            return { ...prev, daysOff: current.filter(d => d !== day) };
+                                                        } else {
+                                                            return { ...prev, daysOff: [...current, day] };
+                                                        }
+                                                    });
+                                                }}
+                                                className={`w-10 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border ${isOff
+                                                    ? 'bg-red-500 border-red-500 text-white shadow-md'
+                                                    : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                {day === 6 ? 'CN' : `T${day + 2}`}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* Thuật toán sẽ phạt điểm cực nặng các phương án bị dính vào ngày đỏ.</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                            <button
+                                onClick={() => setIsConfigOpen(false)}
+                                className="px-6 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsConfigOpen(false);
+                                    const coursesToSchedule = Array.from(selectedCourses)
+                                        .map(id => allCurrentCourses.find(c => c.id === id))
+                                        .filter((c): c is NonNullable<typeof c> => !!c);
+                                    solve(coursesToSchedule, allowedClassesMap, prefs);
+                                }}
+                                className="px-8 py-2.5 bg-[#004A98] text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-blue-200 hover:-translate-y-0.5 transition-all"
+                            >
+                                Lưu & Xếp lịch lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Hiển thị lỗi */}
             {solverError && (
@@ -120,6 +273,8 @@ export function CalendarView({
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>
+
+                        <div className="w-[1px] h-6 bg-slate-200 mx-1" />
                     </div>
                 </div>
             )}
