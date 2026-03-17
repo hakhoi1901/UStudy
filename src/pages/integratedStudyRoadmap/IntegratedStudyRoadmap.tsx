@@ -38,7 +38,14 @@ export function IntegratedStudyRoadmap() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFlowchart, setShowFlowchart] = useState(false);
     const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
-    const [allowedClassesMap, setAllowedClassesMap] = useState<Record<string, string[]>>({});
+    const [allowedClassesMap, setAllowedClassesMap] = useState<Record<string, string[]>>(() => {
+        return readFromStorage<Record<string, string[]>>(STORAGE_KEYS.ALLOWED_CLASSES_MAP, {});
+    });
+
+    // Lưu allowed classes filter vào localStorage
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.ALLOWED_CLASSES_MAP, JSON.stringify(allowedClassesMap));
+    }, [allowedClassesMap]);
 
     // Lưu selected courses vào localStorage
     useEffect(() => {

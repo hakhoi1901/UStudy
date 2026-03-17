@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { STORAGE_KEYS } from '../../config';
+import { readFromStorage } from '../../helpers/localStorage/save';
 import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X } from 'lucide-react';
 import { type ClassSection } from '../../types';
 import { type SolverPreferences } from '../../hooks/useScheduleSolver';
@@ -35,12 +37,19 @@ export function CalendarView({
     getConflicts,
     allowedClassesMap,
 }: CalendarViewProps) {
-    const [prefs, setPrefs] = useState<SolverPreferences>({
-        daysOff: [],
-        session: '0',
-        strategy: 'compress',
-        noGaps: false
+    const [prefs, setPrefs] = useState<SolverPreferences>(() => {
+        return readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, {
+            daysOff: [],
+            session: '0',
+            strategy: 'compress',
+            noGaps: false
+        });
     });
+
+    // Lưu cấu hình xếp lịch vào localStorage
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.SOLVER_PREFERENCES, JSON.stringify(prefs));
+    }, [prefs]);
     const [isConfigOpen, setIsConfigOpen] = useState(false);
 
     if (selectedCourses.size === 0) {
