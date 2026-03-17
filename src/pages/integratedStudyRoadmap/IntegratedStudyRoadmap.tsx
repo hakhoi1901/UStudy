@@ -210,6 +210,8 @@ export function IntegratedStudyRoadmap() {
                         allowedClassesMap={allowedClassesMap}
                     />
                 )}
+                {/* Footer */}
+                <PrivacyFooter />
             </div>
 
             {showFlowchart && flowchartCourse && (
@@ -219,8 +221,6 @@ export function IntegratedStudyRoadmap() {
                     onClose={() => setShowFlowchart(false)}
                 />
             )}
-            {/* Footer */}
-            <PrivacyFooter />
         </div>
     );
 }
