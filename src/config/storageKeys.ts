@@ -37,4 +37,6 @@ export const STORAGE_KEYS = {
     IMPORT_META: 'import_meta',
     /** Điểm dự đoán do người dùng nhập cho GPA Simulator */
     PROJECTED_GRADES: 'gpa_projected_grades',
+    /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
+    GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
 };
