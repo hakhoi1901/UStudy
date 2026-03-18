@@ -45,7 +45,7 @@ function shouldRenderCell(session: ScheduleSession, period: number): boolean {
 // Get current day of week (2-7) and time
 function getCurrentDayAndTime(): { dayOfWeek: number; currentPeriod: number | null; isToday: (day: number) => boolean } {
   const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, etc.
+  const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, etc.q          
   const hours = now.getHours();
   const minutes = now.getMinutes();
 
@@ -481,6 +481,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const totalFilteredCourses = new Set(displaySessions.map(s => s.courseCode)).size;
   const totalPeriods = displaySessions.reduce((acc, s) => acc + s.duration, 0);
 
+  const totalMinutes = totalPeriods * 50;
+  const formattedHours = totalMinutes % 60 === 0 
+    ? `${Math.floor(totalMinutes / 60)} giờ` 
+    : `${Math.floor(totalMinutes / 60)} giờ ${totalMinutes % 60} phút`;
+
   // Update schedule data based on current week
   const displaySchedule = {
     ...schedule,
@@ -490,7 +495,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
     totalCourses: totalFilteredCourses,
     totalCredits: totalFilteredCredits,
     totalPeriodsPerWeek: totalPeriods,
-    totalHoursPerWeek: totalPeriods, // Using periods directly for hours per requirements
+    totalHoursPerWeek: totalPeriods * 50 / 60,
   };
 
   // Tính trend so với tuần trước
@@ -605,11 +610,11 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
             icon={Clock}
             title="Tiết học / tuần"
             value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
-            subtitle={`${displaySchedule.totalPeriodsPerWeek} giờ`}
+            subtitle={formattedHours}
             bgColor="bg-green-600"
             trend={periodsTrend}
           />
-          <QuickStatsCard
+          <QuickStatsCard   
             icon={Calendar}
             title="Tuần hiện tại"
             value={`Tuần ${displaySchedule.weekNumber}/17`}
