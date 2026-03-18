@@ -13,7 +13,17 @@ export function ImportData() {
                     store[key] = localStorage.getItem(key) || "";
                 }
             }
-            const data = JSON.stringify(store);
+
+            const exportData = {
+                metadata: {
+                    version: "2.0",
+                    exportedAt: new Date().toISOString(),
+                    source: "hcmus-portal-tool"
+                },
+                data: store
+            };
+
+            const data = JSON.stringify(exportData, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -44,22 +54,28 @@ export function ImportData() {
                 const result = e.target?.result as string;
                 if (!result) return;
 
-                const data = JSON.parse(result);
+                const importedContent = JSON.parse(result);
+                
+                // Hỗ trợ cả định dạng mới (có metadata) và định dạng cũ (flat object)
+                let dataToImport = importedContent;
+                if (importedContent.metadata && importedContent.data && importedContent.metadata.source === "hcmus-portal-tool") {
+                    dataToImport = importedContent.data;
+                }
 
                 // Kiểm tra xem file có chứa các key đúng hay ko
-                const hasValidPortalData = Object.keys(data).some(key =>
-                    key.startsWith('db_') || key.startsWith('app_') || key.includes('semester')
+                const hasValidPortalData = Object.keys(dataToImport).some(key =>
+                    key.startsWith('db_') || key.startsWith('app_') || key.includes('semester') || key === 'raw_student_db'
                 );
 
-                if (!hasValidPortalData || typeof data !== 'object' || Array.isArray(data)) {
+                if (!hasValidPortalData || typeof dataToImport !== 'object' || Array.isArray(dataToImport)) {
                     alert('Lỗi: File này không chứa dữ liệu hợp lệ của hệ thống!');
-                    return; // Chặn ng dùng nhập file ko liên quan
+                    return;
                 }
 
                 // Xác nhận với người dùng
                 if (window.confirm("Hành động này sẽ ghi đè dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?")) {
-                    Object.keys(data).forEach(key => {
-                        localStorage.setItem(key, data[key]);
+                    Object.keys(dataToImport).forEach(key => {
+                        localStorage.setItem(key, dataToImport[key]);
                     });
 
                     alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
