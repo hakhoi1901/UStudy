@@ -9,15 +9,9 @@ import type { StudentCourseGrade, SimulatorCourseGrade, GPAPullCourse, GPAPullSe
 
 const normalizeCourseCode = (code: unknown): string => (code ?? '').toString().trim().toUpperCase();
 
-const isFoundationMajorCategory = (categoryRaw: unknown): boolean => {
+const isFoundationCategory = (categoryRaw: unknown): boolean => {
     const category = (categoryRaw ?? '').toString().trim().toUpperCase();
-    if (!category) return false;
-    return (
-        category === 'FOUNDATION' ||
-        category === 'GENERAL_IT' ||
-        category.startsWith('MAJOR_') ||
-        category.startsWith('SPECIALIZED_')
-    );
+    return category === 'FOUNDATION';
 };
 
 function calculateRequiredAverageForTargetGPAInScope(
@@ -195,7 +189,7 @@ export function GPAPullTool({
             const category = (course?.category ?? '').toString().trim().toUpperCase();
             const credits = Number(course?.credits) || 0;
             if (!code || credits <= 0) return sum;
-            if (!isFoundationMajorCategory(category)) return sum;
+            if (!isFoundationCategory(category)) return sum;
             if (AcademicRulesEngine.isCourseExcludedFromGPA(code)) return sum;
             return sum + credits;
         }, 0);
@@ -204,7 +198,7 @@ export function GPAPullTool({
     const hasCategoryDataForSimulator = useMemo(() => {
         return simulatorCourses.some((course) => {
             const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationMajorCategory(category);
+            return isFoundationCategory(category);
         });
     }, [simulatorCourses, courseCategoryByCode]);
 
@@ -215,7 +209,7 @@ export function GPAPullTool({
         if (!isFoundationMajorScopeActive) return gradesHistory;
         return gradesHistory.filter((course) => {
             const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationMajorCategory(category);
+            return isFoundationCategory(category);
         });
     }, [gradesHistory, isFoundationMajorScopeActive, courseCategoryByCode]);
 
@@ -248,8 +242,8 @@ export function GPAPullTool({
     const scopedTotalCredits = isFoundationMajorScopeActive ? foundationMajorTotalCredits : (ACADEMIC_RULES.TOTAL_CREDITS ?? totalCredits);
     const displayCurrentGPA = isFoundationMajorScopeActive ? scopedCurrentSnapshot.gpa : currentGPA;
     const displayAccumulatedCredits = isFoundationMajorScopeActive ? scopedCurrentSnapshot.earnedCredits : accumulatedCredits;
-    const scopeLabelSuffix = isFoundationMajorScopeActive ? ' (Cơ sở/Chuyên ngành)' : '';
-    const scopeName = isFoundationMajorScopeActive ? 'Cơ sở/Chuyên ngành' : 'Toàn khóa';
+    const scopeLabelSuffix = isFoundationMajorScopeActive ? ' (Cơ sở ngành)' : '';
+    const scopeName = isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
 
     const baseResult = useMemo(() => {
         if (targetGPA === null) return null;
@@ -268,7 +262,7 @@ export function GPAPullTool({
             isFoundationMajorScopeActive
                 ? simulatorCourses.filter((c) => {
                     const category = courseCategoryByCode.get(normalizeCourseCode(c.code));
-                    return isFoundationMajorCategory(category);
+                    return isFoundationCategory(category);
                 })
                 : simulatorCourses;
         const raw = buildNextSemesterFromSimulator(filteredSimulator, baseResult.requiredAverage);
@@ -484,18 +478,18 @@ export function GPAPullTool({
                                             : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
-                                    Cơ sở + chuyên ngành
+                                    Cơ sở ngành
                                 </button>
                             </div>
                         </div>
                         {isFoundationMajorScopeActive && (
                             <p className="text-xs text-blue-700">
-                                Đang tính toán GPA và mục tiêu theo nhóm môn Cơ sở/Chuyên ngành.
+                                Đang tính toán GPA và mục tiêu theo nhóm môn Cơ sở ngành.
                             </p>
                         )}
                         {isFoundationMajorModeUnavailable && (
                             <p className="text-xs text-amber-700">
-                                CTĐT hiện tại chưa có môn thuộc nhóm Cơ sở/Chuyên ngành trong danh sách gợi ý, hệ thống tạm hiển thị theo tất cả môn.
+                                CTĐT hiện tại chưa có môn thuộc nhóm Cơ sở ngành trong danh sách gợi ý, hệ thống tạm hiển thị theo tất cả môn.
                             </p>
                         )}
                     </div>
