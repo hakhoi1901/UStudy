@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage } from '../../helpers/localStorage/save';
-import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X } from 'lucide-react';
-import { type ClassSection } from '../../types';
-import { type SolverPreferences } from '../../hooks/useScheduleSolver';
+import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check } from 'lucide-react';
+import { type ClassSection, type SavedSchedule } from '../../types';
+import { type SolverPreferences, type ScheduleOption } from '../../hooks/useScheduleSolver';
 import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
@@ -21,6 +21,9 @@ interface CalendarViewProps {
     setActiveOption: (option: number) => void;
     getConflicts: (section: ClassSection) => ClassSection[];
     allowedClassesMap: Record<string, string[]>;
+    setSelectedCourses: (courses: Set<string>) => void;
+    setAllowedClassesMap: (map: Record<string, string[]>) => void;
+    setOptions: (options: ScheduleOption[]) => void;
 }
 
 export function CalendarView({
@@ -36,6 +39,9 @@ export function CalendarView({
     setActiveOption,
     getConflicts,
     allowedClassesMap,
+    setSelectedCourses,
+    setAllowedClassesMap,
+    setOptions,
 }: CalendarViewProps) {
     const [prefs, setPrefs] = useState<SolverPreferences>(() => {
         return readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, {
@@ -51,8 +57,56 @@ export function CalendarView({
         localStorage.setItem(STORAGE_KEYS.SOLVER_PREFERENCES, JSON.stringify(prefs));
     }, [prefs]);
     const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const [savedSchedules, setSavedSchedules] = useState<SavedSchedule[]>(() => {
+        return readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []);
+    });
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showListModal, setShowListModal] = useState(false);
+    const [newScheduleName, setNewScheduleName] = useState('');
 
-    if (selectedCourses.size === 0) {
+    const handleSaveSchedule = () => {
+        if (!newScheduleName.trim()) return;
+
+        const newSaved: SavedSchedule = {
+            id: crypto.randomUUID(),
+            name: newScheduleName.trim(),
+            createdAt: new Date().toISOString(),
+            sessions: currentSections,
+            selectedCourses: Array.from(selectedCourses),
+            allowedClassesMap: allowedClassesMap
+        };
+
+        const updated = [newSaved, ...savedSchedules];
+        setSavedSchedules(updated);
+        localStorage.setItem(STORAGE_KEYS.SAVED_SCHEDULES, JSON.stringify(updated));
+        setShowSaveModal(false);
+        setNewScheduleName('');
+    };
+
+    const handleLoadSchedule = (saved: SavedSchedule) => {
+        setSelectedCourses(new Set(saved.selectedCourses));
+        setAllowedClassesMap(saved.allowedClassesMap);
+
+        // Inject exactly the saved sessions into the solver state
+        const restoredOption: ScheduleOption = {
+            option: 1,
+            fitness: 1000, // Arbitrary high fitness for restored schedule
+            classSections: saved.sessions
+        };
+
+        setOptions([restoredOption]);
+        setActiveOption(0);
+
+        setShowListModal(false);
+    };
+
+    const handleDeleteSchedule = (id: string) => {
+        const updated = savedSchedules.filter(s => s.id !== id);
+        setSavedSchedules(updated);
+        localStorage.setItem(STORAGE_KEYS.SAVED_SCHEDULES, JSON.stringify(updated));
+    };
+
+    if (selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-12 text-center">
                 <Calendar className="w-16 h-16 text-blue-400 mx-auto mb-4" />
@@ -60,12 +114,23 @@ export function CalendarView({
                 <p className="text-gray-600 mb-4">
                     Vui lòng chuyển sang tab "Chọn môn & Học phí" để chọn các môn học bạn muốn đăng ký.
                 </p>
-                <button
-                    onClick={() => setActiveTab('selection')}
-                    className="px-6 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors"
-                >
-                    Đi đến Chọn môn
-                </button>
+                <div className="flex flex-col gap-3 items-center">
+                    <button
+                        onClick={() => setActiveTab('selection')}
+                        className="px-6 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors w-full sm:w-auto"
+                    >
+                        Đi đến Chọn môn
+                    </button>
+                    {savedSchedules.length > 0 && (
+                        <button
+                            onClick={() => setShowListModal(true)}
+                            className="flex items-center justify-center gap-2 px-6 py-2 bg-white text-[#004A98] border border-[#004A98] rounded-lg hover:bg-blue-50 transition-colors w-full sm:w-auto"
+                        >
+                            <List className="w-4 h-4" />
+                            Xem lịch đã lưu ({savedSchedules.length})
+                        </button>
+                    )}
+                </div>
             </div>
         );
     }
@@ -86,12 +151,23 @@ export function CalendarView({
                 </div>
                 <button
                     onClick={() => setIsConfigOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98]/10 text-[#004A98] rounded-lg hover:bg-[#004A98]/20 transition-colors shrink-0 font-medium text-sm border border-[#004A98]/20"
                     title="Cấu hình ưu tiên"
                 >
                     <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
                     <span className="text-sm font-semibold pr-1">Cấu hình</span>
                 </button>
+
+                <div className="h-8 w-[1px] bg-blue-200 mx-1" />
+
+                <button
+                    onClick={() => setShowListModal(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#004A98] border border-[#004A98] rounded-lg hover:bg-blue-50 transition-colors shrink-0 font-medium text-sm shadow-sm"
+                >
+                    <List className="w-4 h-4" />
+                    <span>Lịch đã lưu ({savedSchedules.length})</span>
+                </button>
+
                 <button
                     onClick={() => {
                         const coursesToSchedule = Array.from(selectedCourses)
@@ -100,7 +176,7 @@ export function CalendarView({
                         solve(coursesToSchedule, allowedClassesMap, prefs);
                     }}
                     disabled={solving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 font-medium text-sm shadow-md"
                 >
                     <Cpu className="w-4 h-4" />
                     {solving ? 'Đang xếp lịch...' : 'Xếp lịch tự động'}
@@ -251,7 +327,7 @@ export function CalendarView({
 
             {/* Điều hướng phương án */}
             {options.length > 1 && (
-                <div className="mb-4 flex items-center gap-2">
+                <div className="mb-4 flex items-center gap-2 justify-between">
                     <div className="mb-4 flex items-center gap-3 bg-white p-2 border border-slate-200 rounded-xl w-fit shadow-sm">
                         <span className="text-sm text-gray-600 font-medium p-2">Phương án:</span>
                         <button
@@ -285,15 +361,26 @@ export function CalendarView({
 
                         <div className="w-[1px] h-6 bg-slate-200 mx-1" />
                     </div>
+
+                    <button
+                        onClick={() => setShowSaveModal(true)}
+                        disabled={currentSections.length === 0}
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 font-medium text-sm shadow-sm"
+                    >
+                        <Save className="w-4 h-4" />
+                        <span>Lưu phương án</span>
+                    </button>
                 </div>
             )}
+
+
 
             {/* Lịch học */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-auto shadow-sm">
                 <div className="min-w-[860px]">
                     {/* Hàng tiêu đề */}
                     <div
-                        className="grid sticky top-0 z-10"
+                        className="grid sticky top-0 z-5"
                         style={{ gridTemplateColumns: '76px repeat(6, 1fr)' }}
                     >
                         <div className="bg-[#004A98] rounded-tl-2xl h-12 flex items-end pb-1 justify-center">
@@ -471,6 +558,123 @@ export function CalendarView({
 
             {/* Chú thích */}
             <Note />
+
+            {/* Modal Lưu phương án */}
+            {showSaveModal && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div style={{ maxWidth: '600px', minWidth: '500px', maxHeight: '600px' }} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                                <Save className="w-5 h-5 text-green-600" />
+                                Lưu phương án lịch
+                            </h3>
+                            <button onClick={() => setShowSaveModal(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Tên gợi nhớ cho lịch này</label>
+                            <input
+                                autoFocus
+                                type="text"
+                                value={newScheduleName}
+                                onChange={(e) => setNewScheduleName(e.target.value)}
+                                placeholder="VD: Lịch học kỳ 2 - Option 1"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                                onKeyDown={(e) => e.key === 'Enter' && handleSaveSchedule()}
+                            />
+                            <p className="mt-4 text-xs text-gray-400 italic">
+                                * Hệ thống sẽ lưu lại danh sách môn học và các lớp học cụ thể đang hiển thị.
+                            </p>
+                        </div>
+                        <div className="p-5 bg-gray-50 flex gap-3 justify-end">
+                            <button onClick={() => setShowSaveModal(false)} className="px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleSaveSchedule}
+                                disabled={!newScheduleName.trim()}
+                                className="px-8 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-green-100 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                            >
+                                Xác nhận lưu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Danh sách lịch đã lưu */}
+            {showListModal && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200" style={{ maxWidth: '600px', minWidth: '500px', maxHeight: '600px' }}>
+                        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-blue-50/50">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                                <List className="w-5 h-5 text-blue-600" />
+                                Danh sách lịch học đã lưu
+                            </h3>
+                            <button onClick={() => setShowListModal(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto p-4 overflow-hidden custom-scrollbar" style={{ maxHeight: '400px' }}>
+                            {savedSchedules.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Clock className="w-8 h-8 text-gray-300" />
+                                    </div>
+                                    <p className="text-gray-500">Chưa có phương án nào được lưu.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-3">
+                                    {savedSchedules.map((saved) => (
+                                        <div key={saved.id} className="group p-4 bg-white border border-gray-100 rounded-2xl hover:border-blue-200 hover:bg-blue-50/30 transition-all flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div className="flex-1 min-w-0 pr-4">
+                                                <h4 className="font-bold text-gray-900 truncate group-hover:text-blue-700 transition-colors uppercase text-sm tracking-wide">{saved.name}</h4>
+                                                <div className="flex items-center gap-3 mt-1.5 font-medium">
+                                                    <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {new Date(saved.createdAt).toLocaleDateString('vi-VN')} {new Date(saved.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                    <span className="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded font-bold">
+                                                        {saved.selectedCourses.length} môn học
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm('Hành động này sẽ thay đổi danh sách môn học bạn đang chọn. Bạn có chắc chắn?')) {
+                                                            handleLoadSchedule(saved);
+                                                        }
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 shadow-sm transition-all active:scale-95"
+                                                >
+                                                    <Check className="w-3.5 h-3.5" />
+                                                    Xem lịch
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm('Bạn có chắc chắn muốn xóa lịch này?')) {
+                                                            handleDeleteSchedule(saved.id);
+                                                        }
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                    title="Xóa lịch"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-5 bg-gray-50 border-t border-gray-100 flex justify-center">
+                            <p className="text-[10px] text-gray-400">* Lịch được lưu trữ cục bộ trên trình duyệt của bạn.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

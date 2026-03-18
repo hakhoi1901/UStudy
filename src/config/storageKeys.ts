@@ -43,4 +43,6 @@ export const STORAGE_KEYS = {
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
+    /** Danh sách các lịch đã lưu */
+    SAVED_SCHEDULES: 'saved_schedules',
 };
