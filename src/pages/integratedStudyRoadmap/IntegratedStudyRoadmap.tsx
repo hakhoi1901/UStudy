@@ -61,7 +61,7 @@ export function IntegratedStudyRoadmap() {
     const { recommended, all, isReady, hasData } = useCourseData();
 
     // Bộ xếp lịch di truyền
-    const { solve, solving, options, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+    const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
 
     // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
     const currentSource = viewMode === 'recommend' ? recommended : all;
@@ -215,6 +215,9 @@ export function IntegratedStudyRoadmap() {
                         setActiveOption={setActiveOption}
                         getConflicts={handleGetConflicts}
                         allowedClassesMap={allowedClassesMap}
+                        setSelectedCourses={setSelectedCourses}
+                        setAllowedClassesMap={setAllowedClassesMap}
+                        setOptions={setOptions}
                     />
                 )}
             </div>

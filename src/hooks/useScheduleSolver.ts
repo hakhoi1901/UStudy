@@ -109,6 +109,7 @@ export function useScheduleSolver() {
         solve,
         solving,
         options,
+        setOptions,
         activeOption,
         setActiveOption,
         currentSections,
