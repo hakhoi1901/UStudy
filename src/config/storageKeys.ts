@@ -39,4 +39,10 @@ export const STORAGE_KEYS = {
     PROJECTED_GRADES: 'gpa_projected_grades',
     /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
+    /** Cấu hình ưu tiên xếp lịch */
+    SOLVER_PREFERENCES: 'solver_preferences',
+    /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
+    ALLOWED_CLASSES_MAP: 'allowed_classes_map',
+    /** Danh sách các lịch đã lưu */
+    SAVED_SCHEDULES: 'saved_schedules',
 };

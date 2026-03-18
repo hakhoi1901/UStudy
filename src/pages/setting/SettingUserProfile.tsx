@@ -1,6 +1,9 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
-import { CheckCircle, GraduationCap } from "lucide-react";
+import { CheckCircle, GraduationCap, Upload } from "lucide-react";
+import { useRef } from "react";
+import { useAppNotification } from "../../context/NotificationContext";
+import { processRawData } from "../../logic/dataProcessor";
 
 export function SettingUserProfile() {
     const {
@@ -10,6 +13,101 @@ export function SettingUserProfile() {
         setFaculty, setMajor, setCohort, setAcademicYear,
         isConfigured, setIsConfigured
     } = useDepartmentData();
+    const { addNotification } = useAppNotification();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const content = e.target?.result;
+            if (typeof content !== 'string') return;
+
+            try {
+                const importedContent = JSON.parse(content);
+
+                // Hỗ trợ cả định dạng mới (có metadata) và định dạng cũ (flat object)
+                let data = importedContent;
+                if (importedContent.metadata && importedContent.data && importedContent.metadata.source === "hcmus-portal-tool") {
+                    data = importedContent.data;
+                }
+
+                // 1. Kiểm tra xem có phải là bản export toàn bộ localStorage (từ trang Setting) không
+                const isFullDump = typeof data === 'object' && !Array.isArray(data) && Object.keys(data).some(key =>
+                    key.startsWith('db_') || key.startsWith('app_') || key.includes('semester') || key === 'raw_student_db'
+                );
+
+                if (isFullDump) {
+                    if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
+                        Object.keys(data).forEach(key => {
+                            localStorage.setItem(key, data[key]);
+                        });
+
+                        addNotification({
+                            title: 'Nhập dữ liệu thành công',
+                            message: `Toàn bộ dữ liệu hệ thống đã được khôi phục.`,
+                            type: 'success'
+                        });
+
+                        setIsConfigured(true);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                    return;
+                }
+
+                // 2. Nếu không phải bản dump, kiểm tra xem có phải là raw data từ Bookmarklet không
+                let rawData = data.raw || data;
+                let metaData = data.meta || null;
+
+                if (rawData && typeof rawData === 'object' && (rawData.grades || rawData.courses)) {
+                    // 1. Lưu bản RAW nguyên vẹn
+                    localStorage.setItem('raw_student_db', JSON.stringify(rawData));
+
+                    // 2. Xử lý raw → processed
+                    const { student, courses } = processRawData(rawData);
+
+                    // 3. Lưu bản đã xử lý
+                    localStorage.setItem('student_db_full', JSON.stringify(student));
+                    localStorage.setItem('course_db_offline', JSON.stringify(courses));
+
+                    if (metaData) {
+                        localStorage.setItem('import_meta', JSON.stringify(metaData));
+                    }
+
+                    addNotification({
+                        title: 'Nhập dữ liệu thành công',
+                        message: `Dữ liệu của ${student.name} đã được tải lên.`,
+                        type: 'success'
+                    });
+
+                    setIsConfigured(true);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error("Định dạng file không hợp lệ. Vui lòng sử dụng file JSON xuất từ hệ thống hoặc Bookmarklet.");
+                }
+
+            } catch (error: any) {
+                console.error("Import error:", error);
+                addNotification({
+                    title: 'Lỗi nhập dữ hiệu',
+                    message: error.message || "Không thể đọc file JSON này. Vui lòng kiểm tra lại.",
+                    type: 'error'
+                });
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
 
     return (
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
@@ -75,16 +173,35 @@ export function SettingUserProfile() {
                     </span> */}
                 </div>
 
-                <button
-                    onClick={() => setIsConfigured(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
-                        ? 'bg-green-50 text-green-700 border border-green-200'
-                        : 'bg-[#004A98] text-white hover:bg-[#003B7A]'
-                        }`}
-                >
-                    <CheckCircle className="w-4 h-4" />
-                    {isConfigured ? 'Đã lưu thiết lập' : 'Xác nhận thông tin'}
-                </button>
+                <div className="flex items-center gap-3">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".json"
+                        className="hidden"
+                    />
+                    {!isConfigured && (
+                        <button
+                            onClick={handleImportClick}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[#004A98] text-[#004A98] hover:bg-blue-50 transition-colors"
+                        >
+                            <Upload className="w-4 h-4" />
+                            Nhập dữ liệu (JSON)
+                        </button>
+                    )}
+
+                    <button
+                        onClick={() => setIsConfigured(true)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-[#004A98] text-white hover:bg-[#003B7A]'
+                            }`}
+                    >
+                        <CheckCircle className="w-4 h-4" />
+                        {isConfigured ? 'Đã lưu thiết lập' : 'Xác nhận thông tin'}
+                    </button>
+                </div>
             </div>
         </div>
     );

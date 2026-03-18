@@ -38,7 +38,14 @@ export function IntegratedStudyRoadmap() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFlowchart, setShowFlowchart] = useState(false);
     const [flowchartCourse, setFlowchartCourse] = useState<Course | null>(null);
-    const [allowedClassesMap, setAllowedClassesMap] = useState<Record<string, string[]>>({});
+    const [allowedClassesMap, setAllowedClassesMap] = useState<Record<string, string[]>>(() => {
+        return readFromStorage<Record<string, string[]>>(STORAGE_KEYS.ALLOWED_CLASSES_MAP, {});
+    });
+
+    // Lưu allowed classes filter vào localStorage
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.ALLOWED_CLASSES_MAP, JSON.stringify(allowedClassesMap));
+    }, [allowedClassesMap]);
 
     // Lưu selected courses vào localStorage
     useEffect(() => {
@@ -54,7 +61,7 @@ export function IntegratedStudyRoadmap() {
     const { recommended, all, isReady, hasData } = useCourseData();
 
     // Bộ xếp lịch di truyền
-    const { solve, solving, options, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+    const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
 
     // Nguồn dữ liệu tuỳ thuộc vào chế độ xem
     const currentSource = viewMode === 'recommend' ? recommended : all;
@@ -208,6 +215,9 @@ export function IntegratedStudyRoadmap() {
                         setActiveOption={setActiveOption}
                         getConflicts={handleGetConflicts}
                         allowedClassesMap={allowedClassesMap}
+                        setSelectedCourses={setSelectedCourses}
+                        setAllowedClassesMap={setAllowedClassesMap}
+                        setOptions={setOptions}
                     />
                 )}
             </div>
@@ -219,8 +229,6 @@ export function IntegratedStudyRoadmap() {
                     onClose={() => setShowFlowchart(false)}
                 />
             )}
-            {/* Footer */}
-            <PrivacyFooter />
         </div>
     );
 }

@@ -21,3 +21,12 @@ export interface TimetableRegisteredCourse {
     confirmedSection?: string; // mã lớp học đã xác nhận
     availableSections: ClassSection[]; // danh sách các lớp học
 }
+
+export interface SavedSchedule {
+    id: string;
+    name: string;
+    createdAt: string;
+    sessions: ClassSection[];
+    selectedCourses: string[]; // List of course IDs
+    allowedClassesMap: Record<string, string[]>;
+}

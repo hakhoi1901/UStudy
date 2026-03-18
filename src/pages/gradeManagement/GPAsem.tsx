@@ -1,4 +1,4 @@
-import { ChartBarBigIcon, FlaskConicalIcon } from "lucide-react";
+import { ChartBarBigIcon } from "lucide-react";
 
 
 interface SemesterGPA {
@@ -14,6 +14,7 @@ interface GPAInformationProps {
     getClassification: (gpa: number) => string;
     gpaPerSemester?: SemesterGPA[];
     majorGPA?: number;
+    majorSpecializedGPA?: number;
 }
 
 function getGpaColor(gpa: number): string {

@@ -70,7 +70,7 @@ export function DashboardWidgets() {
         <h1 className="text-gray-900 mb-2">Trang tổng quan</h1>
         <p className="text-gray-600">Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
         {/* GPA */}
         <div className="bg-white rounded-xl min-w-[200px] p-6 shadow-sm border border-gray-200">

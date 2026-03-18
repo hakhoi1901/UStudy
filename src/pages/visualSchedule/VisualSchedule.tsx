@@ -11,7 +11,6 @@ import { useSchedule } from '../../hooks/useSchedule';
 import { useCourseData } from '../../hooks/useCourseData';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
-
 const COLOR_LEGEND = [
   { color: 'green', label: 'Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
   { color: 'yellow', label: 'Chính trị - Thể chất - Anh văn - ...', bgClass: 'bg-yellow-100', borderClass: 'border-yellow-600' },
@@ -36,6 +35,23 @@ function getSessionsForCell(day: number, period: number, sessions: ScheduleSessi
     const end = start + span - 1;
     return period >= start && period <= end;
   }) || null;
+}
+
+// Lấy tất cả các session tại cùng một ô (để kiểm tra trùng lịch)
+function getAllSessionsForCell(day: number, period: number, sessions: ScheduleSession[]): ScheduleSession[] {
+  return sessions.filter(s => {
+    if (s.dayOfWeek !== day) return false;
+    const start = Math.floor(s.startPeriod);
+    const span = calculateRowSpan(s);
+    const end = start + span - 1;
+    return period >= start && period <= end;
+  });
+}
+
+// Kiểm tra xem có trùng lịch tại ô này không (2 hoặc nhiều hơn 1 môn)
+function hasOverlappingSession(day: number, period: number, sessions: ScheduleSession[]): boolean {
+  const sessionsAtCell = getAllSessionsForCell(day, period, sessions);
+  return sessionsAtCell.length > 1;
 }
 
 function shouldRenderCell(session: ScheduleSession, period: number): boolean {
@@ -226,7 +242,7 @@ function ColorLegend() {
   );
 }
 
-function CourseCard({ session }: { session: ScheduleSession }) {
+function CourseCard({ sessions, hasConflict = false }: { sessions: ScheduleSession | ScheduleSession[]; hasConflict?: boolean }) {
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-500 hover:bg-blue-100',
     green: 'bg-green-50 border-green-500 hover:bg-green-100',
@@ -246,20 +262,29 @@ function CourseCard({ session }: { session: ScheduleSession }) {
     BT: 'Bài tập',
   };
 
-  // Tính toán % height và offset top cho các block không nguyên (VD: 2.5 tiết)
-  const rowSpan = calculateRowSpan(session);
+  // Đảm bảo sessions luôn là array
+  const sessionArray = Array.isArray(sessions) ? sessions : [sessions];
+  const primarySession = sessionArray[0];
 
-  let heightPercent = (session.duration / rowSpan) * 100;
+  // Tính toán % height và offset top cho các block không nguyên (VD: 2.5 tiết)
+  const rowSpan = calculateRowSpan(primarySession);
+
+  let heightPercent = (primarySession.duration / rowSpan) * 100;
   let topOffsetPercent = 0;
-  const isFractionalStart = session.startPeriod % 1 !== 0;
+  const isFractionalStart = primarySession.startPeriod % 1 !== 0;
 
   // Rule đặc biệt: TH và BT (2, 2.5, 3 tiết) vẽ cố định 2 ô full
-  if ((session.type === 'TH' || session.type === 'BT') && [2, 2.5, 3].includes(session.duration)) {
+  if ((primarySession.type === 'TH' || primarySession.type === 'BT') && [2, 2.5, 3].includes(primarySession.duration)) {
     heightPercent = 100;
     topOffsetPercent = 0;
   } else if (isFractionalStart) {
     topOffsetPercent = (0.5 / rowSpan) * 100;
   }
+
+  // Chọn màu theo trạng thái trùng lịch
+  const displayColorClasses = hasConflict 
+    ? 'bg-red-50 border-red-500 hover:bg-red-100' 
+    : colorClasses[primarySession.color];
 
   return (
     <Tooltip delayDuration={150}>
@@ -271,72 +296,89 @@ function CourseCard({ session }: { session: ScheduleSession }) {
           }}
         >
           <div
-            className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${colorClasses[session.color]}`}
+            className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${displayColorClasses}`}
             style={{
               top: `${topOffsetPercent}%`,
               height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
             }}
           >
-            {/* Course Name - Max 2 lines with ellipsis */}
-            <div className="text-[13px] font-bold text-gray-700 leading-tight mb-0.5 line-clamp-2">
-              {session.courseName}
-            </div>
+            {/* Badge trùng lịch + số lượng môn */}
+            {hasConflict && (
+              <div className="mb-1 flex items-center gap-1">
+                <span className="inline-block text-[13px] font-bold text-red-700">⚠️</span>
+                <span className="text-[11px] font-bold text-red-700">Trùng {sessionArray.length} môn</span>
+              </div>
+            )}
 
-            {/* Course Code */}
-            <div className="font-mono text-[13px] font-medium text-gray-900 mb-0.5 leading-tight truncate">
-              {session.courseCode}
-            </div>
+            {/* Hiển thị các môn học */}
+            {sessionArray.map((sess, idx) => (
+              <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-1 mt-1' : ''}>
+                {/* Course Name - Max 2 lines with ellipsis */}
+                <div className={`text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
+                  {sess.courseName}
+                </div>
 
-            {/* Type & Room - Truncate if too long */}
-            <div className="text-[12px] text-gray-600 leading-tight truncate">
-              {typeLabels[session.type]} | {session.room}
-            </div>
+                {/* Course Code */}
+                <div className={`font-mono text-[10px] font-medium mb-0.5 leading-tight truncate ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>
+                  {sess.courseCode}
+                </div>
+
+                {/* Type & Room - Truncate if too long */}
+                <div className={`text-[10px] leading-tight truncate ${hasConflict ? 'text-red-600' : 'text-gray-600'}`}>
+                  {typeLabels[sess.type]} | {sess.room}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="right" align="start" className="z-[100] w-64 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
+      <TooltipContent side="right" align="start" className="z-[100] w-80 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
         <div className="relative">
-          <div className="font-bold text-sm mb-2 text-blue-800">
-            {session.courseCode} - {session.courseName}
-          </div>
-          <div className="space-y-1 text-gray-600">
-            <div className="flex justify-between">
-              <span>Loại:</span>
-              <span className="font-medium text-gray-900">{typeFullLabels[session.type]}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Phòng:</span>
-              <span className="font-medium text-gray-900">{session.room}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tiết:</span>
-              <span className="font-medium text-gray-900">{session.startPeriod} - {Math.floor(session.endPeriod)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Thời gian: </span>
-              <span className="font-medium text-gray-900">{session.startTime} - {session.endTime}</span>
-            </div>
-            {session.totalWeeks > 0 && (
-              <div className="flex justify-between">
-                <span>Thời gian: </span>
-                <span className="font-medium text-gray-900">{session.startDate} - {session.endDate} </span>
+          {sessionArray.map((sess, idx) => (
+            <div key={sess.id} className={idx > 0 ? 'border-t border-gray-200 pt-2 mt-2' : ''}>
+              <div className="font-bold text-sm mb-2 text-blue-800">
+                {sess.courseCode} - {sess.courseName}
               </div>
-            )}
-            {session.totalWeeks > 0 && (
-              <div className="flex justify-between">
-                <span>Thời lượng:</span>
-                <span className="font-medium text-gray-900">{session.totalWeeks} tuần</span>
-              </div>
-            )}
-            <div className="border-t border-gray-200 pt-1 mt-1">
-              <div className="text-[11px] text-gray-500">
-                GV: {session.instructor}
-              </div>
-              <div className="text-[11px] text-gray-500">
-                Lớp: {session.classCode} • {session.credits} TC
+              <div className="space-y-1 text-gray-600">
+                <div className="flex justify-between">
+                  <span>Loại:</span>
+                  <span className="font-medium text-gray-900">{typeFullLabels[sess.type]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Phòng:</span>
+                  <span className="font-medium text-gray-900">{sess.room}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tiết:</span>
+                  <span className="font-medium text-gray-900">{sess.startPeriod} - {Math.floor(sess.endPeriod)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Thời gian: </span>
+                  <span className="font-medium text-gray-900">{sess.startTime} - {sess.endTime}</span>
+                </div>
+                {sess.totalWeeks > 0 && (
+                  <div className="flex justify-between">
+                    <span>Ngày: </span>
+                    <span className="font-medium text-gray-900">{sess.startDate} - {sess.endDate} </span>
+                  </div>
+                )}
+                {sess.totalWeeks > 0 && (
+                  <div className="flex justify-between">
+                    <span>Thời lượng:</span>
+                    <span className="font-medium text-gray-900">{sess.totalWeeks} tuần</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-200 pt-1 mt-1">
+                  <div className="text-[11px] text-gray-500">
+                    GV: {sess.instructor}
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    Lớp: {sess.classCode} • {sess.credits} TC
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </TooltipContent>
     </Tooltip>
@@ -401,12 +443,18 @@ function PeriodRow({
         const session = getSessionsForCell(day.value, period, schedule.sessions);
         const isTodayCell = isToday(day.value);
         const isCurrentPeriod = isTodayCell && currentPeriod === period;
+        const hasOverlap = hasOverlappingSession(day.value, period, schedule.sessions);
 
         if (session && shouldRenderCell(session, period)) {
+          // Nếu có trùng lịch, lấy tất cả sessions; không thì lấy single session
+          const sessionsToDisplay = hasOverlap 
+            ? getAllSessionsForCell(day.value, period, schedule.sessions)
+            : session;
+          
           return (
             <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-1 border border-gray-200 align-middle ${isTodayCell ? 'bg-green-50/50' : ''
               } ${isCurrentPeriod ? 'ring-2 ring-green-500 ring-inset' : ''}`}>
-              <CourseCard session={session} />
+              <CourseCard sessions={sessionsToDisplay} hasConflict={hasOverlap} />
             </td>
           );
         } else if (!session) {
@@ -717,14 +765,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
         </div>
 
         {/* Privacy Footer */}
-        <div className="py-3 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-[10px] text-gray-500">
-            Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
-          </p>
-          <p className="text-[10px] text-gray-500">
-            Copyright © 2026 Unopia. All rights reserved.
-          </p>
-        </div>
+        <PrivacyFooter />
       </div>
     </TooltipProvider >
   );
