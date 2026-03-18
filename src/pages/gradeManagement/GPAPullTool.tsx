@@ -16,7 +16,7 @@ interface GPAPullToolProps {
     totalCredits: number;
 }
 
-/** Map simulator courses (có tín chỉ) sang GPAPullCourse với suggestedGrade = requiredAverage. */
+/** Map simulator courses (có tín chỉ) sang GPAPullCourse; suggestedGrade sẽ được tính ở bước redistribute. */
 function buildNextSemesterFromSimulator(
     simulatorCourses: SimulatorCourseGrade[],
     requiredAverage: number
@@ -31,7 +31,7 @@ function buildNextSemesterFromSimulator(
         credits: c.credits!,
         lockedGrade: c.currentGrade ?? null,
         projectedGrade: c.projectedGrade ?? null,
-        suggestedGrade: requiredAverage,
+        suggestedGrade: null,
         isLocked: c.currentGrade != null,
         source: c.source,
     }));
@@ -57,7 +57,7 @@ export function GPAPullTool({
 }: GPAPullToolProps) {
     const [targetGPAInput, setTargetGPAInput] = useState<string>('');
     const [expanded, setExpanded] = useState(true);
-    const [mode] = useState<'all' | 'foundationMajor'>('all');
+    const [mode, setMode] = useState<'all' | 'foundationMajor'>('all');
     const [draftProjectedGrades, setDraftProjectedGrades] = useState<Record<string, string>>({});
     const [draftProjectedGradeErrors, setDraftProjectedGradeErrors] = useState<Record<string, string>>({});
 
@@ -74,9 +74,11 @@ export function GPAPullTool({
     }, [targetGPAInput, parsedTargetGpa, minTargetGpa]);
 
     const targetGPA = useMemo(() => {
+        if (targetGPAInput.trim() === '') return null;
         if (targetGpaError) return null;
+        if (Number.isNaN(parsedTargetGpa)) return null;
         return parsedTargetGpa;
-    }, [parsedTargetGpa, targetGpaError]);
+    }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
 
     const courseCategoryByCode = useMemo(() => {
         // Best-effort: build from available CTĐT data if present in localStorage.
@@ -90,7 +92,7 @@ export function GPAPullTool({
             for (const c of list) {
                 const code = (c?.course_id ?? c?.id ?? '').toString().trim();
                 if (!code) continue;
-                const cat = (c?.category ?? '').toString().trim();
+                const cat = (c?.category ?? '').toString().trim().toUpperCase();
                 if (!cat) continue;
                 m.set(code, cat);
             }
@@ -109,11 +111,18 @@ export function GPAPullTool({
         );
     }, [gradesHistory, targetGPA]);
 
+    const hasCategoryDataForSimulator = useMemo(
+        () => simulatorCourses.some((course) => courseCategoryByCode.has(course.code)),
+        [simulatorCourses, courseCategoryByCode]
+    );
+
+    const isFoundationMajorModeUnavailable = mode === 'foundationMajor' && !hasCategoryDataForSimulator;
+
     const nextSemester = useMemo((): GPAPullSemester | null => {
         if (!baseResult?.success || baseResult.requiredAverage == null || baseResult.impossible || baseResult.alreadyAchieved)
             return null;
         const filteredSimulator =
-            mode === 'foundationMajor'
+            mode === 'foundationMajor' && hasCategoryDataForSimulator
                 ? simulatorCourses.filter((c) => {
                     const cat = courseCategoryByCode.get(c.code);
                     return cat === 'FOUNDATION' || cat === 'MAJOR';
@@ -123,7 +132,7 @@ export function GPAPullTool({
         if (!raw) return null;
         const courses = redistributeSuggestedGrades(raw.courses, baseResult.requiredAverage);
         return { ...raw, courses };
-    }, [baseResult, simulatorCourses, mode, courseCategoryByCode]);
+    }, [baseResult, simulatorCourses, mode, courseCategoryByCode, hasCategoryDataForSimulator]);
 
     const semesters = useMemo((): GPAPullSemester[] => {
         const list: GPAPullSemester[] = [];
@@ -237,6 +246,8 @@ export function GPAPullTool({
         return null;
     };
 
+    const isFiniteGrade = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <button
@@ -259,12 +270,12 @@ export function GPAPullTool({
 
             {expanded && (
                 <div className="px-6 py-5 border-t border-gray-100 space-y-5">
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                    <div className="flex flex-col gap-3">
                         <p className="text-base leading-relaxed text-gray-700 max-w-3xl">
                             Nhập GPA mong muốn lúc tốt nghiệp, hệ thống sẽ ước tính điểm trung bình cần đạt và gợi ý điểm từng môn cho các học kỳ còn lại.
                         </p>
 
-                        <div className="flex items-start gap-3 lg:flex-shrink-0">
+                        <div className="flex items-start gap-3 flex-wrap">
                             <label htmlFor="gpa-pull-target" className="mt-2 text-sm font-medium text-gray-700 whitespace-nowrap">
                                 GPA mục tiêu
                             </label>
@@ -306,6 +317,39 @@ export function GPAPullTool({
                                 {config.lable} ({config.value})
                             </button>
                         ))}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-sm font-medium text-gray-700">Phạm vi gợi ý</span>
+                            <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-white">
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('all')}
+                                    className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-colors ${mode === 'all'
+                                            ? 'bg-[#004A98] text-white'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    Tất cả môn
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('foundationMajor')}
+                                    className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-colors ${mode === 'foundationMajor'
+                                            ? 'bg-[#004A98] text-white'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    Cơ sở + chuyên ngành
+                                </button>
+                            </div>
+                        </div>
+                        {isFoundationMajorModeUnavailable && (
+                            <p className="text-xs text-amber-700">
+                                Chưa có dữ liệu nhóm môn học (FOUNDATION/MAJOR), hệ thống tạm hiển thị theo tất cả môn.
+                            </p>
+                        )}
                     </div>
 
                     {/* Kết quả tổng + GPA tổng / GPA theo kỳ */}
@@ -363,16 +407,21 @@ export function GPAPullTool({
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
                                         <BookOpen className="w-8 h-8 text-[#004A98] flex-shrink-0" />
                                         <div>
-                                            <p className="text-xs text-gray-600">GPA theo kỳ (cần đạt)</p>
+                                            <p className="text-xs text-gray-600">GPA theo kỳ (mốc tham chiếu)</p>
                                             <p className="text-lg font-bold text-[#004A98]">{baseResult.requiredAverage.toFixed(decimals)}<span className="text-xs text-gray-500">/10</span></p>
                                             <p className="text-xs text-gray-500">
-                                                Các kỳ sau duy trì TB ≥ {baseResult.requiredAverage.toFixed(decimals)}
+                                                Mốc TB cho phần tín chỉ còn lại: ≥ {baseResult.requiredAverage.toFixed(decimals)}
                                                 {requiredAverageTooLow && (
-                                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-700 font-medium">
+                                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-medium">
                                                         &lt; {minTargetGpa.toFixed(decimals)}
                                                     </span>
                                                 )}
                                             </p>
+                                            {requiredAverageTooLow && (
+                                                <p className="text-xs text-amber-700 mt-1">
+                                                    Đây là mốc tham chiếu do bạn đặt mục tiêu thấp; thực tế mỗi môn vẫn cần đạt tối thiểu {minTargetGpa.toFixed(decimals)} để qua môn.
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -394,22 +443,21 @@ export function GPAPullTool({
                                 </div>
                             )}
 
-                            {/* Danh sách kỳ: Học kỳ tiếp theo + các kỳ sau */}
+                            {/* Danh sách kỳ: học kỳ tiếp theo */}
                             {semesters.length > 0 ? (
                                 semesters.map((semester) => {
-                                    const isNext = semester.id === 'next';
                                     const onGradeChange = handleGradeChange;
                                     const warning = getSemesterWarning(semester.courses, semester.requiredGPA);
                                     return (
                                         <div key={semester.id} className="border border-gray-200 rounded-lg overflow-hidden">
                                             <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                                                 <h4 className="text-sm font-semibold text-gray-800">
-                                                    {isNext ? 'Học kỳ đang học' : semester.label}
+                                                    {semester.label}
                                                 </h4>
                                                 <p className="text-xs text-gray-600 mt-0.5">
                                                     GPA cần đạt: <span className="font-medium text-[#004A98]">{semester.requiredGPA.toFixed(decimals)}</span>
                                                     {' · '}Tổng {semester.totalCredits} TC · Tổng điểm cần: {semester.pointsNeeded.toFixed(2)}
-                                                    {' · '}<span className="text-gray-500">Điểm đề xuất/dự kiến: 5–10 (dưới 5 phải học lại)</span>
+                                                    {' · '}<span className="text-gray-500">Điểm đề xuất (hệ thống) và điểm dự kiến (bạn nhập): 5–10</span>
                                                 </p>
                                             </div>
                                             {warning && (
@@ -434,18 +482,21 @@ export function GPAPullTool({
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100">
                                                             {semester.courses.map((course) => {
-                                                                const displayGrade = course.projectedGrade ?? course.suggestedGrade ?? 0;
+                                                                const suggestedGrade = isFiniteGrade(course.suggestedGrade) ? course.suggestedGrade : null;
+                                                                const projectedGrade = isFiniteGrade(course.projectedGrade) ? course.projectedGrade : null;
+                                                                const lockedGrade = isFiniteGrade(course.lockedGrade) ? course.lockedGrade : null;
+                                                                const classificationGrade = course.isLocked ? lockedGrade : projectedGrade;
                                                                 return (
                                                                     <tr key={course.code} className="hover:bg-gray-50/50">
                                                                         <td className="px-4 py-2 font-medium text-gray-900">{course.code}</td>
                                                                         <td className="px-4 py-2 text-gray-700">{course.name}</td>
                                                                         <td className="px-4 py-2 text-center">{course.credits}</td>
                                                                         <td className="px-4 py-2 text-center text-[#004A98] font-medium">
-                                                                            {(course.suggestedGrade ?? 0).toFixed(decimals)}
+                                                                            {suggestedGrade != null ? suggestedGrade.toFixed(decimals) : '—'}
                                                                         </td>
                                                                         <td className="px-4 py-2 text-center">
                                                                             {course.isLocked ? (
-                                                                                <span className="font-medium text-gray-700">{(course.lockedGrade ?? 0).toFixed(decimals)}</span>
+                                                                                <span className="font-medium text-gray-700">{lockedGrade != null ? lockedGrade.toFixed(decimals) : '—'}</span>
                                                                             ) : (
                                                                                 <div className="inline-flex flex-col items-center">
                                                                                     <input
@@ -454,8 +505,8 @@ export function GPAPullTool({
                                                                                         max={10}
                                                                                         step={0.1}
                                                                                         inputMode="decimal"
-                                                                                        value={draftProjectedGrades[course.code] ?? (course.projectedGrade != null ? course.projectedGrade.toFixed(decimals) : '')}
-                                                                                        placeholder={course.suggestedGrade != null ? String(course.suggestedGrade.toFixed(decimals)) : '—'}
+                                                                                        value={draftProjectedGrades[course.code] ?? (projectedGrade != null ? projectedGrade.toFixed(decimals) : '')}
+                                                                                        placeholder={suggestedGrade != null ? String(suggestedGrade.toFixed(decimals)) : ''}
                                                                                         title="Điểm từ 5–10 (dưới 5 phải học lại)"
                                                                                         aria-label={`Điểm dự kiến môn ${course.code}`}
                                                                                         aria-invalid={Boolean(draftProjectedGradeErrors[course.code])}
@@ -524,13 +575,17 @@ export function GPAPullTool({
                                                                             )}
                                                                         </td>
                                                                         <td className="px-4 py-2 text-center">
-                                                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${displayGrade >= 9 ? 'bg-green-100 text-green-700' :
-                                                                                    displayGrade >= 8 ? 'bg-blue-100 text-blue-700' :
-                                                                                        displayGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
-                                                                                            'bg-gray-100 text-gray-700'
-                                                                                }`}>
-                                                                                {getClassification(displayGrade)}
-                                                                            </span>
+                                                                            {classificationGrade != null ? (
+                                                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${classificationGrade >= 9 ? 'bg-green-100 text-green-700' :
+                                                                                        classificationGrade >= 8 ? 'bg-blue-100 text-blue-700' :
+                                                                                            classificationGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
+                                                                                                'bg-gray-100 text-gray-700'
+                                                                                    }`}>
+                                                                                    {getClassification(classificationGrade)}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="text-gray-400">—</span>
+                                                                            )}
                                                                         </td>
                                                                     </tr>
                                                                 );
