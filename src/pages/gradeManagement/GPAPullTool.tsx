@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Calculator, ChevronDown, ChevronUp, TrendingUp, Target, BookOpen } from 'lucide-react';
 import { AcademicRulesEngine } from '../../logic/AcademicRulesEngine';
 import { redistributeSuggestedGrades, getSemesterWarning } from '../../logic/gpaPullRedistribution';
@@ -105,6 +105,13 @@ interface GPAPullToolProps {
     totalCredits: number;
 }
 
+interface ManualRetakeCandidate {
+    code: string;
+    nameVi: string;
+    credits: number;
+    currentGrade: number;
+}
+
 /** Map simulator courses (có tín chỉ) sang GPAPullCourse; suggestedGrade sẽ được tính ở bước redistribute. */
 function buildNextSemesterFromSimulator(
     simulatorCourses: SimulatorCourseGrade[],
@@ -149,6 +156,13 @@ export function GPAPullTool({
     const [mode, setMode] = useState<'all' | 'foundationMajor'>('all');
     const [draftProjectedGrades, setDraftProjectedGrades] = useState<Record<string, string>>({});
     const [draftProjectedGradeErrors, setDraftProjectedGradeErrors] = useState<Record<string, string>>({});
+    const [manualRetakeTargets, setManualRetakeTargets] = useState<Record<string, number>>({});
+    const [draftManualRetakeTargets, setDraftManualRetakeTargets] = useState<Record<string, string>>({});
+    const [draftManualRetakeTargetErrors, setDraftManualRetakeTargetErrors] = useState<Record<string, string>>({});
+    const [pendingRetakeCodes, setPendingRetakeCodes] = useState<string[]>([]);
+    const [retakeSearchTerm, setRetakeSearchTerm] = useState<string>('');
+    const [isRetakePickerOpen, setIsRetakePickerOpen] = useState<boolean>(false);
+    const retakePickerRef = useRef<HTMLDivElement | null>(null);
     const { data: { courses: departmentCourses } } = useDepartmentData();
 
     const pullDecimals = 2;
@@ -369,9 +383,334 @@ export function GPAPullTool({
     }, [targetGPA, baseResult, nextSemester, maxAchievableGpaAtGraduation]);
 
     const retakeSuggestions = useMemo(() => {
-        if (!shouldShowRetakeSuggestions) return [];
         return getRetakeSuggestions(scopedGradesHistory);
-    }, [shouldShowRetakeSuggestions, scopedGradesHistory]);
+    }, [scopedGradesHistory]);
+
+    const simulatorCourseCodes = useMemo(() => {
+        const set = new Set<string>();
+        simulatorCourses.forEach((course) => {
+            set.add(normalizeCourseCode(course.code));
+        });
+        return set;
+    }, [simulatorCourses]);
+
+    const eligibleRetakeCourses = useMemo(() => {
+        const byCode = new Map<string, ManualRetakeCandidate>();
+
+        scopedGradesHistory.forEach((course) => {
+            if (course.status === 'ongoing') return;
+            if (course.credits <= 0) return;
+
+            const code = normalizeCourseCode(course.code);
+            if (!code) return;
+            if (simulatorCourseCodes.has(code)) return;
+            if (AcademicRulesEngine.isCourseExcludedFromGPA(code)) return;
+
+            const existing = byCode.get(code);
+            const nextCandidate: ManualRetakeCandidate = {
+                code,
+                nameVi: course.nameVi,
+                credits: course.credits,
+                currentGrade: course.grade,
+            };
+
+            if (!existing || nextCandidate.currentGrade < existing.currentGrade) {
+                byCode.set(code, nextCandidate);
+            }
+        });
+
+        return Array.from(byCode.values()).sort((a, b) => {
+            if (a.currentGrade !== b.currentGrade) return a.currentGrade - b.currentGrade;
+            return a.code.localeCompare(b.code);
+        });
+    }, [scopedGradesHistory, simulatorCourseCodes]);
+
+    const eligibleRetakeMap = useMemo(() => {
+        const map = new Map<string, ManualRetakeCandidate>();
+        eligibleRetakeCourses.forEach((course) => map.set(course.code, course));
+        return map;
+    }, [eligibleRetakeCourses]);
+
+    const manualRetakeItems = useMemo(() => {
+        const items: Array<ManualRetakeCandidate & { targetGrade: number; impactPoints: number; improveDelta: number }> = [];
+
+        Object.entries(manualRetakeTargets).forEach(([rawCode, target]) => {
+            const code = normalizeCourseCode(rawCode);
+            const meta = eligibleRetakeMap.get(code);
+            if (!meta) return;
+
+            const improveDelta = Math.max(0, target - meta.currentGrade);
+            const impactPoints = improveDelta * meta.credits;
+
+            items.push({
+                ...meta,
+                targetGrade: target,
+                improveDelta,
+                impactPoints,
+            });
+        });
+
+        return items.sort((a, b) => {
+            if (a.currentGrade !== b.currentGrade) return a.currentGrade - b.currentGrade;
+            if (b.impactPoints !== a.impactPoints) return b.impactPoints - a.impactPoints;
+            return a.code.localeCompare(b.code);
+        });
+    }, [manualRetakeTargets, eligibleRetakeMap]);
+
+    const hiddenManualRetakeCount = useMemo(() => {
+        const selectedCodes = Object.keys(manualRetakeTargets).length;
+        return Math.max(0, selectedCodes - manualRetakeItems.length);
+    }, [manualRetakeTargets, manualRetakeItems]);
+
+    const manualRetakeImpact = useMemo(() => {
+        const totalImpactPoints = manualRetakeItems.reduce((sum, item) => sum + item.impactPoints, 0);
+        const avgGpaLift = scopedTotalCredits > 0 ? totalImpactPoints / scopedTotalCredits : 0;
+        return {
+            totalImpactPoints,
+            avgGpaLift,
+        };
+    }, [manualRetakeItems, scopedTotalCredits]);
+
+    const selectedManualRetakeCodes = useMemo(() => {
+        const set = new Set<string>();
+        Object.keys(manualRetakeTargets).forEach((code) => {
+            const normalized = normalizeCourseCode(code);
+            if (normalized) set.add(normalized);
+        });
+        return set;
+    }, [manualRetakeTargets]);
+
+    const selectableRetakeCourses = useMemo(() => {
+        return eligibleRetakeCourses.filter((course) => !selectedManualRetakeCodes.has(course.code));
+    }, [eligibleRetakeCourses, selectedManualRetakeCodes]);
+
+    const filteredSelectableRetakeCourses = useMemo(() => {
+        const keyword = retakeSearchTerm.trim().toLowerCase();
+        if (!keyword) return selectableRetakeCourses;
+        return selectableRetakeCourses.filter((course) => {
+            const code = course.code.toLowerCase();
+            const name = (course.nameVi ?? '').toLowerCase();
+            return code.includes(keyword) || name.includes(keyword);
+        });
+    }, [selectableRetakeCourses, retakeSearchTerm]);
+
+    const selectableRetakeCodeSet = useMemo(() => {
+        const set = new Set<string>();
+        selectableRetakeCourses.forEach((course) => set.add(course.code));
+        return set;
+    }, [selectableRetakeCourses]);
+
+    useEffect(() => {
+        setPendingRetakeCodes((prev) => {
+            const next = prev.filter((code) => selectableRetakeCodeSet.has(code));
+            return next.length === prev.length ? prev : next;
+        });
+    }, [selectableRetakeCodeSet]);
+
+    useEffect(() => {
+        if (!isRetakePickerOpen) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node | null;
+            if (!target) return;
+            if (retakePickerRef.current && !retakePickerRef.current.contains(target)) {
+                setIsRetakePickerOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isRetakePickerOpen]);
+
+    const pendingRetakeCodeSet = useMemo(() => {
+        const set = new Set<string>();
+        pendingRetakeCodes.forEach((code) => {
+            const normalized = normalizeCourseCode(code);
+            if (normalized) set.add(normalized);
+        });
+        return set;
+    }, [pendingRetakeCodes]);
+
+    const pendingRetakeCount = pendingRetakeCodeSet.size;
+
+    const selectedInFilteredCount = useMemo(() => {
+        let count = 0;
+        filteredSelectableRetakeCourses.forEach((course) => {
+            if (pendingRetakeCodeSet.has(course.code)) count += 1;
+        });
+        return count;
+    }, [filteredSelectableRetakeCourses, pendingRetakeCodeSet]);
+
+    const addManualRetake = (rawCode: string) => {
+        const code = normalizeCourseCode(rawCode);
+        if (!code) return;
+        if (!eligibleRetakeMap.has(code)) return;
+
+        setManualRetakeTargets((prev) => {
+            if (prev[code] != null) return prev;
+            return { ...prev, [code]: 8.0 };
+        });
+
+        setPendingRetakeCodes((prev) => prev.filter((pendingCode) => normalizeCourseCode(pendingCode) !== code));
+    };
+
+    const togglePendingRetakeCode = (rawCode: string) => {
+        const code = normalizeCourseCode(rawCode);
+        if (!code) return;
+        if (!selectableRetakeCodeSet.has(code)) return;
+
+        setPendingRetakeCodes((prev) => {
+            const exists = prev.some((item) => normalizeCourseCode(item) === code);
+            if (exists) {
+                return prev.filter((item) => normalizeCourseCode(item) !== code);
+            }
+            return [...prev, code];
+        });
+    };
+
+    const addPendingRetakes = () => {
+        if (pendingRetakeCodeSet.size === 0) return;
+        const orderedPendingCodes = eligibleRetakeCourses
+            .filter((course) => pendingRetakeCodeSet.has(course.code))
+            .map((course) => course.code);
+
+        orderedPendingCodes.forEach((code) => addManualRetake(code));
+        setPendingRetakeCodes([]);
+        setRetakeSearchTerm('');
+        setIsRetakePickerOpen(false);
+    };
+
+    const selectAllFilteredRetakes = () => {
+        if (filteredSelectableRetakeCourses.length === 0) return;
+        setPendingRetakeCodes((prev) => {
+            const normalizedPrev = new Set<string>();
+            prev.forEach((code) => {
+                const normalized = normalizeCourseCode(code);
+                if (normalized && selectableRetakeCodeSet.has(normalized)) {
+                    normalizedPrev.add(normalized);
+                }
+            });
+
+            filteredSelectableRetakeCourses.forEach((course) => normalizedPrev.add(course.code));
+
+            return eligibleRetakeCourses
+                .map((course) => course.code)
+                .filter((code) => normalizedPrev.has(code));
+        });
+    };
+
+    const clearPendingFilteredRetakes = () => {
+        if (filteredSelectableRetakeCourses.length === 0) return;
+        const filteredCodeSet = new Set(filteredSelectableRetakeCourses.map((course) => course.code));
+        setPendingRetakeCodes((prev) => prev.filter((code) => !filteredCodeSet.has(normalizeCourseCode(code))));
+    };
+
+    const removeManualRetake = (rawCode: string) => {
+        const code = normalizeCourseCode(rawCode);
+        setManualRetakeTargets((prev) => {
+            if (prev[code] == null) return prev;
+            const next = { ...prev };
+            delete next[code];
+            return next;
+        });
+        setDraftManualRetakeTargets((prev) => {
+            if (!prev[code]) return prev;
+            const next = { ...prev };
+            delete next[code];
+            return next;
+        });
+        setDraftManualRetakeTargetErrors((prev) => {
+            if (!prev[code]) return prev;
+            const next = { ...prev };
+            delete next[code];
+            return next;
+        });
+    };
+
+    const updateManualRetakeTarget = (rawCode: string, rawValue: string) => {
+        const code = normalizeCourseCode(rawCode);
+        const parsed = parseFloat((rawValue ?? '').replace(',', '.'));
+        if (Number.isNaN(parsed)) return;
+        const clamped = Math.min(10, Math.max(ACADEMIC_RULES.PASS_GRADE_DECIMAL, parsed));
+        const rounded = Math.round(clamped * 100) / 100;
+
+        setManualRetakeTargets((prev) => {
+            if (prev[code] == null) return prev;
+            return { ...prev, [code]: rounded };
+        });
+    };
+
+    const handleManualRetakeTargetInputChange = (rawCode: string, rawValue: string) => {
+        const code = normalizeCourseCode(rawCode);
+        setDraftManualRetakeTargets((prev) => ({ ...prev, [code]: rawValue }));
+
+        const err = validateProjectedGradeText(rawValue);
+        setDraftManualRetakeTargetErrors((prev) => {
+            if (!err) {
+                if (!prev[code]) return prev;
+                const next = { ...prev };
+                delete next[code];
+                return next;
+            }
+            return { ...prev, [code]: err };
+        });
+    };
+
+    const commitManualRetakeTargetInput = (rawCode: string, currentTarget: number) => {
+        const code = normalizeCourseCode(rawCode);
+        const raw = (draftManualRetakeTargets[code] ?? '').trim();
+
+        if (raw === '') {
+            setDraftManualRetakeTargets((prev) => {
+                const next = { ...prev };
+                delete next[code];
+                return next;
+            });
+            setDraftManualRetakeTargetErrors((prev) => {
+                if (!prev[code]) return prev;
+                const next = { ...prev };
+                delete next[code];
+                return next;
+            });
+            return;
+        }
+
+        const err = validateProjectedGradeText(raw);
+        if (err) {
+            setDraftManualRetakeTargetErrors((prev) => ({ ...prev, [code]: err }));
+            return;
+        }
+
+        const parsed = parseFloat(raw.replace(',', '.'));
+        if (!Number.isFinite(parsed)) {
+            setDraftManualRetakeTargets((prev) => ({ ...prev, [code]: currentTarget.toFixed(decimals) }));
+            return;
+        }
+
+        updateManualRetakeTarget(code, String(parsed));
+        const rounded = Math.round(Math.min(10, Math.max(ACADEMIC_RULES.PASS_GRADE_DECIMAL, parsed)) * 100) / 100;
+        setDraftManualRetakeTargets((prev) => ({ ...prev, [code]: rounded.toFixed(decimals) }));
+        setDraftManualRetakeTargetErrors((prev) => {
+            if (!prev[code]) return prev;
+            const next = { ...prev };
+            delete next[code];
+            return next;
+        });
+    };
+
+    const clearAllManualRetakes = () => {
+        if (Object.keys(manualRetakeTargets).length === 0) return;
+        const confirmed = window.confirm('Bạn có chắc muốn xóa toàn bộ danh sách môn cải thiện trong phiên này?');
+        if (!confirmed) return;
+        setManualRetakeTargets({});
+        setDraftManualRetakeTargets({});
+        setDraftManualRetakeTargetErrors({});
+        setPendingRetakeCodes([]);
+        setRetakeSearchTerm('');
+        setIsRetakePickerOpen(false);
+    };
 
     const validateProjectedGradeText = (raw: string): string | null => {
         const trimmed = (raw ?? '').trim();
@@ -743,6 +1082,209 @@ export function GPAPullTool({
                                 <p className="text-sm text-gray-500">Chưa có môn nào trong học kỳ tiếp theo. Import dữ liệu từ portal (điểm + ĐKHP) hoặc chọn đúng CTĐT để xem đề xuất.</p>
                             )}
 
+                            <div className="border border-gray-200 rounded-lg overflow-visible">
+                                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                                    <h4 className="text-sm font-semibold text-gray-800">Môn muốn học cải thiện</h4>
+                                    <p className="text-xs text-gray-600 mt-0.5">
+                                        Chọn từ các môn đã có điểm để mô phỏng kế hoạch cải thiện GPA. Điểm mục tiêu mặc định là 8.0 và có thể chỉnh theo từng môn.
+                                    </p>
+                                </div>
+                                <div className="p-4 space-y-3">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-gray-700">Chọn môn học</label>
+                                        <div className="relative" ref={retakePickerRef}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsRetakePickerOpen((prev) => !prev)}
+                                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-left text-gray-700 flex items-center justify-between hover:border-[#004A98] focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+                                            >
+                                                <span>
+                                                    {pendingRetakeCount > 0
+                                                        ? `Đã chọn ${pendingRetakeCount} môn (bấm để chỉnh)`
+                                                        : 'Bấm để chọn môn học cải thiện'}
+                                                </span>
+                                                {isRetakePickerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+                                            </button>
+
+                                            {isRetakePickerOpen && (
+                                                <div className="absolute z-20 bottom-full mb-2 left-0 right-0 rounded-lg border border-gray-200 bg-white shadow-lg p-3 space-y-2">
+                                                <input
+                                                    id="manual-retake-search"
+                                                    type="text"
+                                                    value={retakeSearchTerm}
+                                                    onChange={(e) => setRetakeSearchTerm(e.target.value)}
+                                                    placeholder="Nhập mã hoặc tên môn để tìm..."
+                                                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+                                                />
+
+                                                <div className="h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+                                                    {filteredSelectableRetakeCourses.length > 0 ? (
+                                                        filteredSelectableRetakeCourses.map((course) => {
+                                                            const isChecked = pendingRetakeCodeSet.has(course.code);
+                                                            return (
+                                                                <label
+                                                                    key={course.code}
+                                                                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
+                                                                >
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={isChecked}
+                                                                        onChange={() => togglePendingRetakeCode(course.code)}
+                                                                        className="w-4 h-4 text-[#004A98] rounded border-gray-300 focus:ring-[#004A98]"
+                                                                    />
+                                                                    <span className="text-sm text-gray-700">
+                                                                        <span className="font-medium text-gray-900">{course.code}</span>
+                                                                        {' - '}
+                                                                        {course.nameVi}
+                                                                        {' '}
+                                                                        <span className="text-gray-500">({course.currentGrade.toFixed(decimals)} → mục tiêu)</span>
+                                                                    </span>
+                                                                </label>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                                            {retakeSearchTerm.trim() !== ''
+                                                                ? 'Không tìm thấy môn phù hợp với từ khóa hiện tại.'
+                                                                : 'Không còn môn hợp lệ để chọn thêm trong phạm vi hiện tại.'}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={selectAllFilteredRetakes}
+                                                        disabled={filteredSelectableRetakeCourses.length === 0 || selectedInFilteredCount === filteredSelectableRetakeCourses.length}
+                                                        className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                    >
+                                                        Chọn tất cả kết quả lọc
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={clearPendingFilteredRetakes}
+                                                        disabled={selectedInFilteredCount === 0}
+                                                        className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                    >
+                                                        Bỏ chọn tất cả kết quả lọc
+                                                    </button>
+                                                    <span className="text-xs text-gray-500">
+                                                        Đã chọn trong danh sách lọc: {selectedInFilteredCount}/{filteredSelectableRetakeCourses.length}
+                                                    </span>
+                                                </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <p className="text-xs text-gray-500">
+                                            Đã chọn {pendingRetakeCount} môn chờ thêm.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={addPendingRetakes}
+                                            disabled={pendingRetakeCount === 0}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-[#004A98] hover:text-white hover:border-[#004A98] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Thêm môn cải thiện
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={clearAllManualRetakes}
+                                            disabled={Object.keys(manualRetakeTargets).length === 0}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Xóa tất cả
+                                        </button>
+                                    </div>
+
+                                    {manualRetakeItems.length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-white border-y border-gray-200">
+                                                    <tr>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Mã môn</th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Tên môn</th>
+                                                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase">TC</th>
+                                                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase">Điểm hiện tại</th>
+                                                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase">Điểm mục tiêu</th>
+                                                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase">Tác động điểm</th>
+                                                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {manualRetakeItems.map((item) => (
+                                                        <tr key={item.code} className="hover:bg-gray-50/50">
+                                                            <td className="px-3 py-2 font-medium text-gray-900">{item.code}</td>
+                                                            <td className="px-3 py-2 text-gray-700">{item.nameVi}</td>
+                                                            <td className="px-3 py-2 text-center">{item.credits}</td>
+                                                            <td className="px-3 py-2 text-center">{item.currentGrade.toFixed(decimals)}</td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <div className="inline-flex flex-col items-center">
+                                                                    <input
+                                                                        type="text"
+                                                                        inputMode="decimal"
+                                                                        value={draftManualRetakeTargets[item.code] ?? item.targetGrade.toFixed(decimals)}
+                                                                        onChange={(e) => handleManualRetakeTargetInputChange(item.code, e.target.value)}
+                                                                        onBlur={() => commitManualRetakeTargetInput(item.code, item.targetGrade)}
+                                                                        aria-invalid={Boolean(draftManualRetakeTargetErrors[item.code])}
+                                                                        title={`Điểm từ ${ACADEMIC_RULES.PASS_GRADE_DECIMAL.toFixed(decimals)}–10.00`}
+                                                                        className={`w-20 px-2 py-1 bg-gray-100 border rounded text-center text-sm focus:outline-none focus:ring-2 ${draftManualRetakeTargetErrors[item.code]
+                                                                                ? 'border-red-300 focus:ring-red-300'
+                                                                                : 'border-gray-200 focus:ring-[#004A98]'
+                                                                            }`}
+                                                                    />
+                                                                    <div className="min-h-[1rem] mt-1">
+                                                                        {draftManualRetakeTargetErrors[item.code] && (
+                                                                            <p className="text-[10px] leading-4 text-red-600" role="alert" aria-live="polite">
+                                                                                {draftManualRetakeTargetErrors[item.code]}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center text-[#004A98] font-medium">
+                                                                {item.impactPoints > 0 ? `+${item.impactPoints.toFixed(decimals)}` : '0.00'}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeManualRetake(item.code)}
+                                                                    className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 text-gray-700 hover:bg-gray-100"
+                                                                >
+                                                                    Xóa
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">
+                                            {eligibleRetakeCourses.length > 0
+                                                ? 'Chưa chọn môn cải thiện nào trong phiên làm việc này.'
+                                                : 'Không có môn hợp lệ để thêm cải thiện trong phạm vi hiện tại.'}
+                                        </p>
+                                    )}
+
+                                    {hiddenManualRetakeCount > 0 && (
+                                        <p className="text-xs text-amber-700">
+                                            Có {hiddenManualRetakeCount} môn đang chọn nhưng không thuộc phạm vi hiển thị hiện tại. Chuyển về &quot;Tất cả môn&quot; để xem đầy đủ.
+                                        </p>
+                                    )}
+
+                                    {manualRetakeItems.length > 0 && (
+                                        <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                                            Tổng tiềm năng cải thiện (quy đổi điểm*tín chỉ): <span className="font-semibold">+{manualRetakeImpact.totalImpactPoints.toFixed(decimals)}</span>
+                                            {' · '}Ước tính kéo GPA phạm vi hiện tại: <span className="font-semibold">+{manualRetakeImpact.avgGpaLift.toFixed(decimals)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {shouldShowRetakeSuggestions && retakeSuggestions.length > 0 && (
                                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                                     <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
@@ -765,6 +1307,7 @@ export function GPAPullTool({
                                                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase">TC</th>
                                                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase">Điểm hiện tại</th>
                                                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase">Tiềm năng tăng</th>
+                                                    <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase">Thao tác</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -775,6 +1318,16 @@ export function GPAPullTool({
                                                         <td className="px-4 py-2 text-center">{s.credits}</td>
                                                         <td className="px-4 py-2 text-center text-gray-700">{s.currentGrade.toFixed(decimals)}</td>
                                                         <td className="px-4 py-2 text-center text-[#004A98] font-medium">+{s.potentialImprove.toFixed(decimals)}</td>
+                                                        <td className="px-4 py-2 text-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => addManualRetake(s.code)}
+                                                                disabled={selectedManualRetakeCodes.has(normalizeCourseCode(s.code)) || !eligibleRetakeMap.has(normalizeCourseCode(s.code))}
+                                                                className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 text-gray-700 hover:bg-[#004A98] hover:text-white hover:border-[#004A98] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                            >
+                                                                {selectedManualRetakeCodes.has(normalizeCourseCode(s.code)) ? 'Đã thêm' : 'Thêm'}
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
