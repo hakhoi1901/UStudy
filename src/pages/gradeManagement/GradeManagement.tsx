@@ -27,7 +27,17 @@ export function GradeManagement() {
   const hasAlertedRef = useRef(false);
 
   const { data } = useDepartmentData();
-  const { gradesHistory, currentGPA, accumulatedCredits, totalCredits, isReady, hasData, gpaPerSemester, majorGPA } = useStudentGradeData();
+  const { 
+    gradesHistory, 
+    currentGPA, 
+    accumulatedCredits, 
+    totalCredits, 
+    isReady, 
+    hasData, 
+    gpaPerSemester, 
+    foundationGPA,
+    majorSpecializedGPA
+  } = useStudentGradeData();
   // [TN] Truyền data.courses để hook lookup tín chỉ.
   // semesterGPA: GPA của học kỳ hiện tại
   // cumulativeGPA: GPA tích lũy
@@ -108,10 +118,22 @@ export function GradeManagement() {
       </div>
 
       {/* Thông tin GPA */}
-      <GPAInformation currentGPA={currentGPA} projectedGPA={cumulativeGPA} majorGPA={majorGPA} />
+      <GPAInformation 
+        currentGPA={currentGPA} 
+        projectedGPA={cumulativeGPA} 
+        majorGPA={foundationGPA} 
+        majorSpecializedGPA={majorSpecializedGPA} 
+      />
 
       {/* GPA theo học kỳ */}
-      <GPAsem currentGPA={currentGPA} projectedGPA={cumulativeGPA} getClassification={getClassification} gpaPerSemester={gpaPerSemester} majorGPA={majorGPA} />
+      <GPAsem 
+        currentGPA={currentGPA} 
+        projectedGPA={cumulativeGPA} 
+        getClassification={getClassification} 
+        gpaPerSemester={gpaPerSemester} 
+        majorGPA={foundationGPA} 
+        majorSpecializedGPA={majorSpecializedGPA} 
+      />
 
       {/* Công cụ "Kéo" GPA: nhập GPA mục tiêu → điểm TB tối thiểu + bảng môn theo kỳ */}
       <GPAPullTool

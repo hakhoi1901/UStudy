@@ -226,12 +226,15 @@ export const AcademicRulesEngine = {
     calculateGPASummary: (
         rawGrades: any[],
         effectiveGrades: any[],
-        hasBLMExemption: boolean
+        hasBLMExemption: boolean,
+        allCoursesMeta: any[] = []
     ): {
         gradesHistory: StudentCourseGrade[];
         currentGPA: number;
         accumulatedCredits: number;
         gpaPerSemester: { semester: string; gpa: number; credits: number; earnedCredits: number }[];
+        foundationGPA: number;
+        majorSpecializedGPA: number;
         majorGPA: number;
     } => {
         const gradesHistory: StudentCourseGrade[] = [];
@@ -241,8 +244,11 @@ export const AcademicRulesEngine = {
 
         const semesterMap = new Map<string, { points: number; credits: number; earnedCredits: number }>();
 
-        let majorPoints = 0;
-        let majorCreditsForGPA = 0;
+        let majorSpecializedPoints = 0;
+        let majorSpecializedCredits = 0;
+        
+        let foundationPoints = 0;
+        let foundationCredits = 0;
 
         effectiveGrades.forEach((g: any, index: number) => {
             const code = String(g.id).trim();
@@ -266,11 +272,19 @@ export const AcademicRulesEngine = {
                 totalPoints += pointsForGPA;
                 totalCreditsForGPA += creditsForGPA;
 
-                // Tích lũy điểm cơ sở ngành: Ký tự thứ 4 (index 3) là số '1'
-                const isMajor = code.length >= 4 && code[3] === '1';
-                if (isMajor && creditsForGPA > 0) {
-                    majorPoints += pointsForGPA;
-                    majorCreditsForGPA += creditsForGPA;
+                // Tích lũy điểm Cơ sở + Chuyên ngành: Ký tự thứ 4 (index 3) là số '1'
+                const isMajorSpecialized = code.length >= 4 && code[3] === '1';
+                if (isMajorSpecialized && creditsForGPA > 0) {
+                    majorSpecializedPoints += pointsForGPA;
+                    majorSpecializedCredits += creditsForGPA;
+                }
+
+                // Tích lũy điểm Cơ sở ngành: Theo category 'FOUNDATION'
+                const courseMeta = allCoursesMeta.find(c => c.course_id === code);
+                const isFoundation = courseMeta?.category === 'FOUNDATION';
+                if (isFoundation && creditsForGPA > 0) {
+                    foundationPoints += pointsForGPA;
+                    foundationCredits += creditsForGPA;
                 }
             }
 
@@ -326,9 +340,18 @@ export const AcademicRulesEngine = {
             .sort((a, b) => a.semester.localeCompare(b.semester));
 
         const currentGPA = totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA) : 0;
-        const majorGPA = majorCreditsForGPA > 0 ? majorPoints / majorCreditsForGPA : 0;
+        const majorSpecializedGPA = majorSpecializedCredits > 0 ? majorSpecializedPoints / majorSpecializedCredits : 0;
+        const foundationGPA = foundationCredits > 0 ? foundationPoints / foundationCredits : 0;
 
-        return { gradesHistory, currentGPA, accumulatedCredits, gpaPerSemester, majorGPA };
+        return { 
+            gradesHistory, 
+            currentGPA, 
+            accumulatedCredits, 
+            gpaPerSemester, 
+            foundationGPA,
+            majorSpecializedGPA,
+            majorGPA: foundationGPA // We'll use foundation as the primary majorGPA now
+        };
     },
 
     /**
