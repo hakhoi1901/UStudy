@@ -417,17 +417,17 @@ export const courses = [
         "category": "GENERAL_DEFENSE",
         "description": ""
     },
-    {
-        "course_id": "CSC10012",
-        "course_name_vi": "Cơ sở lập trình",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "FOUNDATION",
-        "description": ""
-    },
+    // {
+    //     "course_id": "CSC10012",
+    //     "course_name_vi": "Cơ sở lập trình",
+    //     "credits": 4,
+    //     "theory_hours": 45,
+    //     "lab_hours": 30,
+    //     "exercise_hours": 0,
+    //     "course_type": "BB",
+    //     "category": "FOUNDATION",
+    //     "description": ""
+    // },
     {
         "course_id": "CSC10003",
         "course_name_vi": "Phương pháp lập trình hướng đối tượng",
@@ -505,17 +505,17 @@ export const courses = [
         "category": "FOUNDATION",
         "description": ""
     },
-    {
-        "course_id": "CSC13002",
-        "course_name_vi": "Nhập môn công nghệ phần mềm",
-        "credits": 4,
-        "theory_hours": 45,
-        "lab_hours": 30,
-        "exercise_hours": 0,
-        "course_type": "BB",
-        "category": "FOUNDATION",
-        "description": ""
-    },
+    // {
+    //     "course_id": "CSC13002",
+    //     "course_name_vi": "Nhập môn công nghệ phần mềm",
+    //     "credits": 4,
+    //     "theory_hours": 45,
+    //     "lab_hours": 30,
+    //     "exercise_hours": 0,
+    //     "course_type": "BB",
+    //     "category": "FOUNDATION",
+    //     "description": ""
+    // },
     {
         "course_id": "CSC14003",
         "course_name_vi": "Cơ sở trí tuệ nhân tạo",
