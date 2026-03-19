@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { STORAGE_KEYS } from '../../config';
-import { readFromStorage } from '../../helpers/localStorage/save';
+import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check } from 'lucide-react';
 import { type ClassSection, type SavedSchedule } from '../../types';
 import { type SolverPreferences, type ScheduleOption } from '../../hooks/useScheduleSolver';
@@ -54,7 +54,7 @@ export function CalendarView({
 
     // Lưu cấu hình xếp lịch vào localStorage
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.SOLVER_PREFERENCES, JSON.stringify(prefs));
+        saveToStorage(STORAGE_KEYS.SOLVER_PREFERENCES, prefs);
     }, [prefs]);
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [savedSchedules, setSavedSchedules] = useState<SavedSchedule[]>(() => {
@@ -78,7 +78,7 @@ export function CalendarView({
 
         const updated = [newSaved, ...savedSchedules];
         setSavedSchedules(updated);
-        localStorage.setItem(STORAGE_KEYS.SAVED_SCHEDULES, JSON.stringify(updated));
+        saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, updated);
         setShowSaveModal(false);
         setNewScheduleName('');
     };
@@ -103,7 +103,7 @@ export function CalendarView({
     const handleDeleteSchedule = (id: string) => {
         const updated = savedSchedules.filter(s => s.id !== id);
         setSavedSchedules(updated);
-        localStorage.setItem(STORAGE_KEYS.SAVED_SCHEDULES, JSON.stringify(updated));
+        saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, updated);
     };
 
     if (selectedCourses.size === 0 && savedSchedules.length === 0) {

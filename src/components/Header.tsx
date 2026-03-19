@@ -7,6 +7,7 @@ import { useAppNotification } from '../context/NotificationContext';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { ACADEMIC_YEARS } from '../assets/data/tuition';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
+import { readFromStorage, clearAllStorage } from '../helpers/localStorage/save';
 
 export interface HeaderProps {
   selectedSemester?: string;
@@ -27,9 +28,8 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
 
   // lấy tên sinh viên từ local storage
   useEffect(() => {
-    const studentData = localStorage.getItem(STORAGE_KEYS.STUDENT_DB);
-    if (studentData) {
-      const student = JSON.parse(studentData);
+    const student = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+    if (student) {
       setStudentName(student.name);
     }
   }, [hasData]);
@@ -60,7 +60,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   // xử lý đăng xuất
   const handleLogOut = () => {
     // xóa local storage
-    localStorage.clear();
+    clearAllStorage();
     addNotification({
       title: 'Đăng xuất thành công',
       message: 'Tất cả dữ liệu học tập đã được xóa khỏi trình duyệt.',

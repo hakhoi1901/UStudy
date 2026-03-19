@@ -7,7 +7,7 @@ import { useScheduleSolver } from '../../hooks/useScheduleSolver';
 import { type ClassSection } from '../../types';
 import { NoDataCard } from '../../components/nodataCard';
 import { STORAGE_KEYS } from '../../config';
-import { readFromStorage } from '../../helpers/localStorage/save';
+import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { getConflicts } from '../../logic/ScheduleValidator';
 import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
@@ -44,12 +44,12 @@ export function IntegratedStudyRoadmap() {
 
     // Lưu allowed classes filter vào localStorage
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.ALLOWED_CLASSES_MAP, JSON.stringify(allowedClassesMap));
+        saveToStorage(STORAGE_KEYS.ALLOWED_CLASSES_MAP, allowedClassesMap);
     }, [allowedClassesMap]);
 
     // Lưu selected courses vào localStorage
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_BASKET, JSON.stringify(Array.from(selectedCourses)));
+        saveToStorage(STORAGE_KEYS.SELECTED_BASKET, Array.from(selectedCourses));
     }, [selectedCourses]);
 
     // Reset search term khi chuyển tab

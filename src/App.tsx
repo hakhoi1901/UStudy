@@ -15,12 +15,16 @@ import { processRawData } from './logic/dataProcessor';
 import { STORAGE_KEYS } from './config/storageKeys';
 import { APP_CONFIG } from './config';
 import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
+import { SecurityLock } from './components/SecurityLock';
+import { SecurityGate } from './components/SecurityGate';
+import { getSessionPin, saveToStorage } from './helpers/localStorage/save';
 
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
+  const [pendingData, setPendingData] = useState<any>(null);
 
   const [currentPage, setCurrentPage] = useState<string>(() => {
     if (typeof window === 'undefined') return 'dashboard';
@@ -51,18 +55,26 @@ function AppContent() {
         }
 
         if (payload && payload.raw) {
+          const pin = getSessionPin();
+          
+          if (!pin) {
+            // Trường hợp chưa có PIN (mới import lần đầu)
+            setPendingData(payload);
+            return;
+          }
+
           // 1. Lưu bản RAW nguyên vẹn
-          localStorage.setItem('raw_student_db', JSON.stringify(payload.raw));
+          saveToStorage('raw_student_db', payload.raw);
 
           // 2. Xử lý raw → processed (format cũ cho code hiện tại)
           const { student, courses } = processRawData(payload.raw);
 
           // 3. Lưu bản đã xử lý (backward compatible)
-          localStorage.setItem('student_db_full', JSON.stringify(student));
-          localStorage.setItem('course_db_offline', JSON.stringify(courses));
+          saveToStorage('student_db_full', student);
+          saveToStorage('course_db_offline', courses);
 
           if (payload.meta) {
-            localStorage.setItem('import_meta', JSON.stringify(payload.meta));
+            saveToStorage('import_meta', payload.meta);
           }
 
           addNotification({
@@ -111,6 +123,29 @@ function AppContent() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {pendingData && (
+        <SecurityLock 
+          setupMode={true} 
+          onUnlock={() => {
+            const { raw, meta } = pendingData;
+            // Thực hiện lưu sau khi đã có PIN
+            saveToStorage('raw_student_db', raw);
+            const { student, courses } = processRawData(raw);
+            saveToStorage('student_db_full', student);
+            saveToStorage('course_db_offline', courses);
+            if (meta) saveToStorage('import_meta', meta);
+            
+            addNotification({
+              title: 'Khởi tạo thành công',
+              message: `Dữ liệu hệ thống đã được mã hóa và sẵn sàng.`,
+              type: 'success'
+            });
+            
+            setPendingData(null);
+            setTimeout(() => window.location.reload(), 500);
+          }} 
+        />
+      )}
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       <div className="flex-1 flex flex-col overflow-visible">
         <Header selectedSemester={selectedSemester} />
@@ -145,10 +180,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <NotificationProvider>
-      <DepartmentProvider>
-        <AppContent />
-      </DepartmentProvider>
-    </NotificationProvider>
+    <SecurityGate>
+      <NotificationProvider>
+        <DepartmentProvider>
+          <AppContent />
+        </DepartmentProvider>
+      </NotificationProvider>
+    </SecurityGate>
   );
 }

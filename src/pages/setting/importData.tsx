@@ -1,8 +1,11 @@
-import { useRef } from "react";
 import { Download, Upload, Database } from "lucide-react";
+import { saveToStorage, getSessionPin } from "../../helpers/localStorage/save";
+import { SecurityLock } from "../../components/SecurityLock";
+import { useRef, useState } from "react";
 
 export function ImportData() {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [pendingImport, setPendingImport] = useState<any>(null);
 
     const handleExport = () => {
         try {
@@ -74,8 +77,14 @@ export function ImportData() {
 
                 // Xác nhận với người dùng
                 if (window.confirm("Hành động này sẽ ghi đè dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?")) {
+                    const pin = getSessionPin();
+                    if (!pin) {
+                        setPendingImport(dataToImport);
+                        return;
+                    }
+
                     Object.keys(dataToImport).forEach(key => {
-                        localStorage.setItem(key, dataToImport[key]);
+                        saveToStorage(key, dataToImport[key]);
                     });
 
                     alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
@@ -114,6 +123,19 @@ export function ImportData() {
                     <Upload className="w-4 h-4" strokeWidth={2.5} />
                     Nhập dữ liệu
                 </button>
+                {pendingImport && (
+                    <SecurityLock 
+                        setupMode={true} 
+                        onUnlock={() => {
+                            Object.keys(pendingImport).forEach(key => {
+                                saveToStorage(key, pendingImport[key]);
+                            });
+                            alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
+                            setPendingImport(null);
+                            window.location.reload();
+                        }}
+                    />
+                )}
                 <input
                     type="file"
                     ref={fileInputRef}

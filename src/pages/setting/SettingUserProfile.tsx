@@ -1,9 +1,12 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useAppNotification } from "../../context/NotificationContext";
 import { processRawData } from "../../logic/dataProcessor";
+import { saveToStorage, getSessionPin } from "../../helpers/localStorage/save";
+import { SecurityLock } from "../../components/SecurityLock";
+import { STORAGE_KEYS } from "../../config/storageKeys";
 
 export function SettingUserProfile() {
     const {
@@ -15,6 +18,8 @@ export function SettingUserProfile() {
     } = useDepartmentData();
     const { addNotification } = useAppNotification();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [pendingImport, setPendingImport] = useState<any>(null);
+    const [pendingConfig, setPendingConfig] = useState<boolean>(false);
 
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -45,8 +50,14 @@ export function SettingUserProfile() {
 
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
+                        const pin = getSessionPin();
+                        if (!pin) {
+                            setPendingImport({ type: 'FULL_DUMP', data });
+                            return;
+                        }
+
                         Object.keys(data).forEach(key => {
-                            localStorage.setItem(key, data[key]);
+                            saveToStorage(key, data[key]);
                         });
 
                         addNotification({
@@ -68,18 +79,24 @@ export function SettingUserProfile() {
                 let metaData = data.meta || null;
 
                 if (rawData && typeof rawData === 'object' && (rawData.grades || rawData.courses)) {
+                    const pin = getSessionPin();
+                    if (!pin) {
+                        setPendingImport({ type: 'RAW_DATA', data: { rawData, metaData } });
+                        return;
+                    }
+
                     // 1. Lưu bản RAW nguyên vẹn
-                    localStorage.setItem('raw_student_db', JSON.stringify(rawData));
+                    saveToStorage('raw_student_db', rawData);
 
                     // 2. Xử lý raw → processed
                     const { student, courses } = processRawData(rawData);
 
                     // 3. Lưu bản đã xử lý
-                    localStorage.setItem('student_db_full', JSON.stringify(student));
-                    localStorage.setItem('course_db_offline', JSON.stringify(courses));
+                    saveToStorage('student_db_full', student);
+                    saveToStorage('course_db_offline', courses);
 
                     if (metaData) {
-                        localStorage.setItem('import_meta', JSON.stringify(metaData));
+                        saveToStorage('import_meta', metaData);
                     }
 
                     addNotification({
@@ -111,6 +128,60 @@ export function SettingUserProfile() {
 
     return (
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+            {pendingImport && (
+                <SecurityLock 
+                    setupMode={true} 
+                    onUnlock={() => {
+                        const { type, data } = pendingImport;
+                        if (type === 'FULL_DUMP') {
+                            Object.keys(data).forEach(key => {
+                                saveToStorage(key, data[key]);
+                            });
+                        } else {
+                            const { rawData, metaData } = data;
+                            saveToStorage('raw_student_db', rawData);
+                            const { student, courses } = processRawData(rawData);
+                            saveToStorage('student_db_full', student);
+                            saveToStorage('course_db_offline', courses);
+                            if (metaData) saveToStorage('import_meta', metaData);
+                        }
+                        
+                        addNotification({
+                            title: 'Nhập dữ liệu thành công',
+                            message: `Dữ liệu đã được mã hóa và bảo vệ bằng mã PIN.`,
+                            type: 'success'
+                        });
+                        
+                        setPendingImport(null);
+                        setIsConfigured(true);
+                        setTimeout(() => window.location.reload(), 500);
+                    }} 
+                />
+            )}
+
+            {pendingConfig && (
+                <SecurityLock 
+                    setupMode={true} 
+                    onUnlock={() => {
+                        // Khi đã có PIN, lưu cấu hình hiện tại
+                        setIsConfigured(true);
+                        // Lưu lại các giá trị hiện tại vào storage (vì trước đó nó bị chặn do thiếu PIN)
+                        saveToStorage(STORAGE_KEYS.FACULTY_ID, facultyId);
+                        saveToStorage(STORAGE_KEYS.MAJOR_ID, majorId);
+                        saveToStorage(STORAGE_KEYS.COHORT_ID, cohortId);
+                        saveToStorage(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
+                        
+                        addNotification({
+                            title: 'Thiết lập thành công',
+                            message: 'Thông tin chương trình đào tạo đã được lưu an toàn.',
+                            type: 'success'
+                        });
+                        
+                        setPendingConfig(false);
+                        setTimeout(() => window.location.reload(), 500);
+                    }} 
+                />
+            )}
             {!isConfigured &&
                 <div className="mb-6 w-full flex flex-col items-center justify-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn</h2>
@@ -192,7 +263,15 @@ export function SettingUserProfile() {
                     )}
 
                     <button
-                        onClick={() => setIsConfigured(true)}
+                        onClick={() => {
+                            const pin = getSessionPin();
+                            if (!pin) {
+                                setPendingConfig(true);
+                                return;
+                            }
+                            setIsConfigured(true);
+                            setTimeout(() => window.location.reload(), 500);
+                        }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
                             ? 'bg-green-50 text-green-700 border border-green-200'
                             : 'bg-[#004A98] text-white hover:bg-[#003B7A]'
