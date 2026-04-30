@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
+import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import {
     FACULTIES,
     DEFAULT_FACULTY_ID,
@@ -190,29 +191,29 @@ const DepartmentContext = createContext<DepartmentContextType>({
  */
 export function DepartmentProvider({ children }: { children: React.ReactNode }) {
     const [facultyId, setFacultyIdState] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.FACULTY_ID) || DEFAULT_FACULTY_ID;
+        return readFromStorage(STORAGE_KEYS.FACULTY_ID, DEFAULT_FACULTY_ID);
     });
     const [majorId, setMajorIdState] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.MAJOR_ID) || DEFAULT_MAJOR_ID;
+        return readFromStorage(STORAGE_KEYS.MAJOR_ID, DEFAULT_MAJOR_ID);
     });
     const [cohortId, setCohortIdState] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.COHORT_ID) || DEFAULT_COHORT_ID;
+        return readFromStorage(STORAGE_KEYS.COHORT_ID, DEFAULT_COHORT_ID);
     });
     const [academicYear, setAcademicYearState] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.ACADEMIC_YEAR) || APP_CONFIG.DEFAULT_ACADEMIC_YEAR;
+        return readFromStorage(STORAGE_KEYS.ACADEMIC_YEAR, APP_CONFIG.DEFAULT_ACADEMIC_YEAR);
     });
     const [semesterNumber, setSemesterNumberState] = useState<number>(() => {
-        return parseInt(localStorage.getItem(STORAGE_KEYS.ACADEMIC_SEMESTER) || APP_CONFIG.DEFAULT_SEMESTER.toString());
+        return readFromStorage(STORAGE_KEYS.ACADEMIC_SEMESTER, APP_CONFIG.DEFAULT_SEMESTER);
     });
     const [data, setData] = useState<DepartmentData>(defaultData);
     const [isLoading, setIsLoading] = useState(false);
 
     const [isConfigured, setIsConfiguredState] = useState<boolean>(() => {
-        return localStorage.getItem(STORAGE_KEYS.DEPARTMENT_CONFIGURED) === 'true';
+        return readFromStorage(STORAGE_KEYS.DEPARTMENT_CONFIGURED, false);
     });
 
     const setIsConfigured = (value: boolean) => {
-        localStorage.setItem(STORAGE_KEYS.DEPARTMENT_CONFIGURED, value ? 'true' : 'false');
+        saveToStorage(STORAGE_KEYS.DEPARTMENT_CONFIGURED, value);
         setIsConfiguredState(value);
     };
 
@@ -254,42 +255,42 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
     }, [facultyId, majorId, cohortId, academicYear, loadData]);
 
     const setFaculty = (newFacultyId: string) => {
-        localStorage.setItem(STORAGE_KEYS.FACULTY_ID, newFacultyId);
+        saveToStorage(STORAGE_KEYS.FACULTY_ID, newFacultyId);
         setFacultyIdState(newFacultyId);
 
         const newFaculty = FACULTIES.find(f => f.id === newFacultyId);
         const firstMajor = newFaculty?.majors[0];
         const firstMajorId = firstMajor?.id || '';
-        localStorage.setItem(STORAGE_KEYS.MAJOR_ID, firstMajorId);
+        saveToStorage(STORAGE_KEYS.MAJOR_ID, firstMajorId);
         setMajorIdState(firstMajorId);
 
         const firstCohortId = firstMajor?.cohorts[0]?.id || '';
-        localStorage.setItem(STORAGE_KEYS.COHORT_ID, firstCohortId);
+        saveToStorage(STORAGE_KEYS.COHORT_ID, firstCohortId);
         setCohortIdState(firstCohortId);
     };
 
     const setMajor = (newMajorId: string) => {
-        localStorage.setItem(STORAGE_KEYS.MAJOR_ID, newMajorId);
+        saveToStorage(STORAGE_KEYS.MAJOR_ID, newMajorId);
         setMajorIdState(newMajorId);
 
         const newMajor = currentFaculty?.majors.find(m => m.id === newMajorId);
         const firstCohortId = newMajor?.cohorts[0]?.id || '';
-        localStorage.setItem(STORAGE_KEYS.COHORT_ID, firstCohortId);
+        saveToStorage(STORAGE_KEYS.COHORT_ID, firstCohortId);
         setCohortIdState(firstCohortId);
     };
 
     const setCohort = (newCohortId: string) => {
-        localStorage.setItem(STORAGE_KEYS.COHORT_ID, newCohortId);
+        saveToStorage(STORAGE_KEYS.COHORT_ID, newCohortId);
         setCohortIdState(newCohortId);
     };
 
     const setAcademicYear = (year: string) => {
-        localStorage.setItem(STORAGE_KEYS.ACADEMIC_YEAR, year);
+        saveToStorage(STORAGE_KEYS.ACADEMIC_YEAR, year);
         setAcademicYearState(year);
     };
 
     const setSemesterNumber = (num: number) => {
-        localStorage.setItem(STORAGE_KEYS.ACADEMIC_SEMESTER, num.toString());
+        saveToStorage(STORAGE_KEYS.ACADEMIC_SEMESTER, num);
         setSemesterNumberState(num);
     };
 

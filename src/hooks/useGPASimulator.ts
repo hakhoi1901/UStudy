@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { readFromStorage } from '../helpers/localStorage/save';
+import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
 import { GPACalculator } from '../logic/GPACalculator';
 import { AcademicRulesEngine } from '../logic/AcademicRulesEngine';
@@ -107,10 +107,7 @@ export function useGPASimulator(
                 updated[courseCode] = grade;
             }
             // Lưu ngay vào localStorage để persist qua reload trang
-            localStorage.setItem(
-                STORAGE_KEYS.PROJECTED_GRADES,
-                JSON.stringify(updated)
-            );
+            saveToStorage(STORAGE_KEYS.PROJECTED_GRADES, updated);
             return updated;
         });
     }, []);

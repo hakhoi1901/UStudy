@@ -669,6 +669,43 @@
     z-index: 100;
   }
 
+  .z-99999 {
+    z-index: 99999;
+  }
+
+  .bg-slate-900\/40 {
+    background-color: rgba(15, 23, 42, 0.4);
+  }
+
+  /* Tự định nghĩa các class Animation bị thiếu của Tailwind */
+
+  .animate-in {
+    animation-name: enter;
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Cảm giác mượt của Apple */
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    --tw-enter-opacity: 0;
+  }
+
+  .zoom-in-95 {
+    --tw-enter-scale: 0.95;
+  }
+
+  .slide-in-from-top-2 {
+    --tw-enter-translate-y: -0.5rem;
+  }
+
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
+    }
+  }
+
   .col-start-2 {
     grid-column-start: 2;
   }
