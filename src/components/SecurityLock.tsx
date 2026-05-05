@@ -5,8 +5,7 @@ import {
     InputOTPSlot,
     InputOTPSeparator,
 } from './ui/input-otp';
-import { Button } from './ui/button';
-import { Lock, ShieldAlert, Trash2, KeyRound, CheckCircle2, Timer } from 'lucide-react';
+import { Lock, ShieldAlert, Trash2, KeyRound, CheckCircle2, Timer, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import {
     verifyPin,
     setupPin,
@@ -17,13 +16,259 @@ import {
 } from '../helpers/localStorage/save';
 
 interface SecurityLockProps {
-    /** Gọi với CryptoKey sau khi unlock thành công */
     onUnlock: (key: CryptoKey) => void;
-    /** true = chế độ thiết lập PIN lần đầu (không verify data cũ) */
     setupMode?: boolean;
 }
 
 type SetupStep = 'enter' | 'confirm';
+
+const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    @keyframes sec-fadeUp {
+        from { opacity: 0; transform: translateY(28px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes sec-slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes sec-spin {
+        to { transform: rotate(360deg); }
+    }
+    @keyframes sec-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.25); }
+        50%       { box-shadow: 0 0 0 10px rgba(99,102,241,0); }
+    }
+    @keyframes sec-shake {
+        0%, 100% { transform: translateX(0); }
+        20%       { transform: translateX(-6px); }
+        40%       { transform: translateX(6px); }
+        60%       { transform: translateX(-4px); }
+        80%       { transform: translateX(4px); }
+    }
+
+    .sec-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-family: 'DM Sans', sans-serif;
+        background: #f2f0ec;
+        background-image:
+            radial-gradient(ellipse 70% 60% at 15% 40%, rgba(218,214,255,0.55) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 55% at 85% 20%, rgba(196,229,255,0.45) 0%, transparent 55%),
+            radial-gradient(ellipse 50% 50% at 55% 85%, rgba(255,219,195,0.4) 0%, transparent 55%);
+    }
+
+    .sec-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        pointer-events: none;
+    }
+
+    .sec-card {
+        position: relative;
+        width: 100%;
+        max-width: 428px;
+        margin: 20px;
+        background: rgba(255,255,255,0.88);
+        backdrop-filter: blur(24px) saturate(180%);
+        border-radius: 32px;
+        border: 1px solid rgba(255,255,255,0.75);
+        box-shadow:
+            0 0 0 1px rgba(200,190,255,0.15),
+            0 40px 80px -20px rgba(20,20,60,0.14),
+            0 12px 32px -8px rgba(20,20,60,0.08);
+        padding: 52px 44px 40px;
+        animation: sec-fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .sec-icon-ring {
+        width: 76px;
+        height: 76px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 32px;
+        transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+    .sec-icon-ring.indigo {
+        background: linear-gradient(145deg, #6366f1, #a5b4fc);
+        box-shadow: 0 10px 30px -6px rgba(99,102,241,0.45);
+        animation: sec-pulse 2.8s ease-in-out infinite;
+        color: white;
+    }
+    .sec-icon-ring.green {
+        background: linear-gradient(145deg, #059669, #34d399);
+        box-shadow: 0 10px 30px -6px rgba(5,150,105,0.4);
+        color: white;
+    }
+
+    .sec-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+    .sec-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        transition: all 0.35s ease;
+    }
+    .sec-dot.active { background: #6366f1; transform: scale(1.4); }
+    .sec-dot.done   { background: #059669; }
+    .sec-dot.idle   { background: #dde1ea; }
+    .sec-line {
+        width: 30px; height: 2px;
+        border-radius: 2px;
+        transition: background 0.35s ease;
+    }
+    .sec-line.done { background: #059669; }
+    .sec-line.idle { background: #dde1ea; }
+
+    .sec-title {
+        font-family: 'Lora', serif;
+        font-size: 27px;
+        font-weight: 600;
+        color: #16163a;
+        text-align: center;
+        margin: 0 0 10px;
+        line-height: 1.25;
+        letter-spacing: -0.2px;
+    }
+    .sec-sub {
+        font-size: 13.5px;
+        color: #8b93a7;
+        text-align: center;
+        margin: 0 0 34px;
+        line-height: 1.65;
+        font-weight: 400;
+    }
+
+    .sec-lockout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 11px 16px;
+        margin-bottom: 22px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #92400e;
+        animation: sec-slideDown 0.3s ease both;
+    }
+    .sec-lockout strong { color: #b45309; font-variant-numeric: tabular-nums; }
+
+    .sec-otp-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 28px;
+        transform: scale(1.08);
+        transform-origin: center;
+    }
+    .sec-otp-wrap.has-error {
+        animation: sec-shake 0.45s ease both;
+    }
+
+    .sec-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 11px 14px;
+        margin-bottom: 22px;
+        background: #fff1f3;
+        border: 1px solid #fecdd3;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #be123c;
+        animation: sec-slideDown 0.3s ease both;
+        line-height: 1.45;
+    }
+
+    .sec-actions { display: flex; flex-direction: column; gap: 10px; }
+
+    .sec-btn {
+        width: 100%;
+        height: 54px;
+        border: none;
+        border-radius: 16px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .sec-btn.indigo {
+        background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+        box-shadow: 0 8px 22px -5px rgba(99,102,241,0.5);
+    }
+    .sec-btn.green {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        box-shadow: 0 8px 22px -5px rgba(5,150,105,0.45);
+    }
+    .sec-btn:not(:disabled):hover { transform: translateY(-2px); }
+    .sec-btn:not(:disabled):active { transform: scale(0.98); }
+    .sec-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .sec-ghost {
+        background: none;
+        border: none;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #9daabb;
+        cursor: pointer;
+        padding: 9px 14px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        transition: color 0.2s, background 0.2s;
+    }
+    .sec-ghost:hover { color: #ef4444; background: rgba(239,68,68,0.06); }
+    .sec-ghost.back:hover { color: #6366f1; background: rgba(99,102,241,0.06); }
+
+    .sec-spinner { animation: sec-spin 0.75s linear infinite; }
+
+    .sec-footer {
+        margin-top: 30px;
+        padding-top: 22px;
+        border-top: 1px solid #f0f2f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: #c5ccda;
+    }
+    .sec-enc-tag {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #c5ccda;
+    }
+`;
 
 export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false }) => {
     const [pin, setPin] = useState('');
@@ -31,9 +276,8 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
     const [setupStep, setSetupStep] = useState<SetupStep>('enter');
     const [error, setError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
-
-    // Brute-force lockout
     const [lockoutSeconds, setLockoutSeconds] = useState(getLockoutSeconds);
+    const [shakeOtp, setShakeOtp] = useState(false);
 
     useEffect(() => {
         if (lockoutSeconds <= 0) return;
@@ -47,7 +291,10 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
 
     const isLocked = lockoutSeconds > 0;
 
-    // ─── Setup Mode: nhập PIN lần đầu ────────────────────────────────────────
+    const triggerShake = () => {
+        setShakeOtp(true);
+        setTimeout(() => setShakeOtp(false), 500);
+    };
 
     const handleSetupNext = useCallback(() => {
         if (pin.length !== 6) return;
@@ -60,27 +307,24 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         if (confirmPin !== pin) {
             setError('Mã PIN xác nhận không khớp. Vui lòng thử lại.');
             setConfirmPin('');
+            triggerShake();
             return;
         }
         setIsVerifying(true);
         try {
             const key = await setupPin(pin);
             onUnlock(key);
-        } catch (err) {
+        } catch {
             setError('Có lỗi khi thiết lập PIN. Vui lòng thử lại.');
             setIsVerifying(false);
         }
     }, [pin, confirmPin, onUnlock]);
 
-    // ─── Verify Mode: nhập PIN để mở khóa ────────────────────────────────────
-
     const handleVerify = useCallback(async () => {
         if (pin.length !== 6 || isLocked || isVerifying) return;
         setIsVerifying(true);
         setError(null);
-
         const key = await verifyPin(pin);
-
         if (key) {
             resetFailCount();
             onUnlock(key);
@@ -89,32 +333,24 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
             const remaining = getLockoutSeconds();
             setLockoutSeconds(remaining);
             setPin('');
-            if (remaining > 0) {
-                setError(`Sai PIN quá nhiều lần. Vui lòng thử lại sau ${remaining} giây.`);
-            } else {
-                setError('Mã PIN không chính xác. Vui lòng thử lại.');
-            }
+            triggerShake();
+            setError(remaining > 0
+                ? `Sai PIN quá nhiều lần. Vui lòng thử lại sau ${remaining} giây.`
+                : 'Mã PIN không chính xác. Vui lòng thử lại.');
             setIsVerifying(false);
         }
     }, [pin, isLocked, isVerifying, onUnlock]);
 
-    // Auto-submit khi nhập đủ 6 số
     useEffect(() => {
-        if (!setupMode && pin.length === 6 && !isLocked) {
-            handleVerify();
-        }
+        if (!setupMode && pin.length === 6 && !isLocked) handleVerify();
     }, [pin, setupMode, isLocked, handleVerify]);
 
     useEffect(() => {
-        if (setupMode && setupStep === 'confirm' && confirmPin.length === 6) {
-            handleSetupConfirm();
-        }
+        if (setupMode && setupStep === 'confirm' && confirmPin.length === 6) handleSetupConfirm();
     }, [confirmPin, setupMode, setupStep, handleSetupConfirm]);
 
     useEffect(() => {
-        if (setupMode && setupStep === 'enter' && pin.length === 6) {
-            handleSetupNext();
-        }
+        if (setupMode && setupStep === 'enter' && pin.length === 6) handleSetupNext();
     }, [pin, setupMode, setupStep, handleSetupNext]);
 
     const handleForgotPin = () => {
@@ -124,62 +360,64 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         }
     };
 
-    // ─── Render ───────────────────────────────────────────────────────────────
-
     const currentPin = setupMode && setupStep === 'confirm' ? confirmPin : pin;
     const currentOnChange = setupMode && setupStep === 'confirm' ? setConfirmPin : setPin;
-
-    const title = setupMode
-        ? (setupStep === 'enter' ? 'Thiết lập mã PIN' : 'Xác nhận mã PIN')
-        : 'Xác thực quyền truy cập';
-
-    const subtitle = setupMode
-        ? (setupStep === 'enter'
-            ? 'Vui lòng thiết lập mã PIN 6 số để bảo vệ dữ liệu học tập của bạn.'
-            : 'Nhập lại mã PIN vừa tạo để xác nhận.')
-        : 'Dữ liệu của bạn đã được mã hóa. Vui lòng nhập mã PIN để mở khóa.';
+    const isConfirmStep = setupMode && setupStep === 'confirm';
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-100 backdrop-blur-xl h-screen w-screen overflow-hidden">
-            <div className="w-full max-w-md p-8 sm:p-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.2)] border border-white/50 animate-in fade-in zoom-in-95 duration-300">
-                <div className="flex flex-col items-center text-center">
+        <>
+            <style dangerouslySetInnerHTML={{ __html: styles }} />
 
+            <div className="sec-overlay">
+                {/* Background blobs */}
+                <div className="sec-blob" style={{ width: 500, height: 500, top: '-15%', left: '-10%', background: 'radial-gradient(circle, rgba(210,206,255,0.65) 0%, transparent 65%)' }} />
+                <div className="sec-blob" style={{ width: 380, height: 380, bottom: '0%', right: '-8%', background: 'radial-gradient(circle, rgba(167,233,210,0.55) 0%, transparent 65%)' }} />
+                <div className="sec-blob" style={{ width: 280, height: 280, bottom: '15%', left: '3%', background: 'radial-gradient(circle, rgba(255,210,180,0.5) 0%, transparent 65%)' }} />
+
+                <div className="sec-card">
                     {/* Icon */}
-                    <div className={`relative p-4 mb-6 rounded-2xl ring-8 transition-colors duration-300 ${
-                        setupMode && setupStep === 'confirm'
-                            ? 'bg-green-50 text-green-600 ring-green-50/50'
-                            : 'bg-blue-50 text-blue-600 ring-blue-50/50'
-                    }`}>
-                        {setupMode && setupStep === 'confirm'
-                            ? <CheckCircle2 className="w-10 h-10" />
-                            : <Lock className="w-10 h-10" />
+                    <div className={`sec-icon-ring ${isConfirmStep ? 'green' : 'indigo'}`}>
+                        {isConfirmStep
+                            ? <CheckCircle2 size={32} strokeWidth={1.8} />
+                            : <Lock size={30} strokeWidth={1.8} />
                         }
                     </div>
 
-                    {/* Setup steps indicator */}
+                    {/* Steps */}
                     {setupMode && (
-                        <div className="flex items-center gap-2 mb-5">
-                            <div className={`w-2 h-2 rounded-full transition-colors ${setupStep === 'enter' ? 'bg-blue-600' : 'bg-green-500'}`} />
-                            <div className={`w-8 h-0.5 transition-colors ${setupStep === 'confirm' ? 'bg-green-500' : 'bg-gray-200'}`} />
-                            <div className={`w-2 h-2 rounded-full transition-colors ${setupStep === 'confirm' ? 'bg-green-500' : 'bg-gray-200'}`} />
+                        <div className="sec-steps">
+                            <div className={`sec-dot ${setupStep === 'enter' ? 'active' : 'done'}`} />
+                            <div className={`sec-line ${isConfirmStep ? 'done' : 'idle'}`} />
+                            <div className={`sec-dot ${isConfirmStep ? 'active' : 'idle'}`} />
                         </div>
                     )}
 
-                    <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">
-                        {title}
+                    {/* Heading */}
+                    <h1 className="sec-title">
+                        {setupMode
+                            ? (setupStep === 'enter' ? 'Tạo mã PIN' : 'Xác nhận PIN')
+                            : 'Xác thực truy cập'
+                        }
                     </h1>
-                    <p className="text-slate-500 text-sm mb-8 px-2">{subtitle}</p>
+                    <p className="sec-sub">
+                        {setupMode
+                            ? (setupStep === 'enter'
+                                ? 'Thiết lập mã PIN 6 chữ số để bảo vệ dữ liệu học tập của bạn.'
+                                : 'Nhập lại mã PIN vừa tạo để xác nhận.')
+                            : 'Dữ liệu của bạn đã được mã hóa. Nhập mã PIN để mở khóa.'
+                        }
+                    </p>
 
-                    {/* Lockout banner */}
+                    {/* Lockout */}
                     {isLocked && (
-                        <div className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-6 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl">
-                            <Timer className="w-4 h-4 shrink-0" />
-                            <span>Bị khóa tạm thời. Thử lại sau <span className="font-bold tabular-nums">{lockoutSeconds}s</span></span>
+                        <div className="sec-lockout">
+                            <Timer size={14} style={{ flexShrink: 0 }} />
+                            <span>Bị khóa tạm thời — thử lại sau <strong>{lockoutSeconds}s</strong></span>
                         </div>
                     )}
 
-                    {/* OTP Input */}
-                    <div className="mb-8 scale-110">
+                    {/* OTP */}
+                    <div className={`sec-otp-wrap${shakeOtp ? ' has-error' : ''}`}>
                         <InputOTP
                             maxLength={6}
                             value={currentPin}
@@ -188,73 +426,76 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                             autoFocus
                         >
                             <InputOTPGroup>
-                                <InputOTPSlot index={0} className="border-slate-200" />
-                                <InputOTPSlot index={1} className="border-slate-200" />
-                                <InputOTPSlot index={2} className="border-slate-200" />
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
                             </InputOTPGroup>
                             <InputOTPSeparator />
                             <InputOTPGroup>
-                                <InputOTPSlot index={3} className="border-slate-200" />
-                                <InputOTPSlot index={4} className="border-slate-200" />
-                                <InputOTPSlot index={5} className="border-slate-200" />
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
                             </InputOTPGroup>
                         </InputOTP>
                     </div>
 
                     {/* Error */}
                     {error && (
-                        <div className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-6 text-sm font-medium text-rose-600 bg-rose-50 border border-rose-100 rounded-xl animate-in slide-in-from-top-2">
-                            <ShieldAlert className="w-4 h-4 shrink-0" />
+                        <div className="sec-error">
+                            <ShieldAlert size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                             <span>{error}</span>
                         </div>
                     )}
 
                     {/* Actions */}
-                    <div className="grid w-full gap-4">
-                        <Button
-                            size="lg"
-                            className="w-full h-14 text-base font-bold rounded-2xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]"
+                    <div className="sec-actions">
+                        <button
+                            className={`sec-btn ${isConfirmStep ? 'green' : 'indigo'}`}
                             onClick={setupMode
                                 ? (setupStep === 'enter' ? handleSetupNext : handleSetupConfirm)
                                 : handleVerify
                             }
                             disabled={currentPin.length !== 6 || isVerifying || isLocked}
                         >
-                            {isVerifying
-                                ? 'Đang xử lý...'
-                                : setupMode
-                                    ? (setupStep === 'enter' ? 'Tiếp tục →' : 'Hoàn tất thiết lập')
-                                    : 'Mở khóa hệ thống'
-                            }
-                        </Button>
+                            {isVerifying ? (
+                                <>
+                                    <Loader2 size={16} className="sec-spinner" />
+                                    Đang xử lý…
+                                </>
+                            ) : setupMode ? (
+                                setupStep === 'enter'
+                                    ? <> Tiếp tục <ArrowRight size={15} /> </>
+                                    : <> Hoàn tất thiết lập <CheckCircle2 size={15} /> </>
+                            ) : (
+                                <> Mở khóa <ArrowRight size={15} /> </>
+                            )}
+                        </button>
 
-                        {/* Back button in confirm step */}
-                        {setupMode && setupStep === 'confirm' && (
+                        {isConfirmStep && (
                             <button
+                                className="sec-ghost back"
                                 onClick={() => { setSetupStep('enter'); setPin(''); setConfirmPin(''); setError(null); }}
-                                className="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors py-1"
                             >
-                                ← Quay lại đặt PIN mới
+                                <ArrowLeft size={13} />
+                                Quay lại đặt PIN mới
                             </button>
                         )}
 
                         {!setupMode && (
-                            <button
-                                onClick={handleForgotPin}
-                                className="group flex items-center justify-center gap-2 py-2 text-sm font-medium text-slate-400 hover:text-rose-500 transition-colors"
-                            >
-                                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                Quên mã PIN? Xóa dữ liệu
+                            <button className="sec-ghost" onClick={handleForgotPin}>
+                                <Trash2 size={13} />
+                                Quên mã PIN? Xóa toàn bộ dữ liệu
                             </button>
                         )}
                     </div>
-                </div>
 
-                <div className="mt-10 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-slate-400">
-                    <KeyRound className="w-3.5 h-3.5" />
-                    <span className="text-[11px] uppercase tracking-[0.2em] font-bold">PBKDF2 + AES-GCM Encrypted</span>
+                    {/* Footer */}
+                    <div className="sec-footer">
+                        <KeyRound size={11} />
+                        <span className="sec-enc-tag">PBKDF2 · AES-GCM Encrypted</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
