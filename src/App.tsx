@@ -5,25 +5,28 @@ import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/Integrate
 import { GradeManagement } from './pages/gradeManagement/GradeManagement';
 import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Setting } from './pages/setting/Setting';
 import { SettingUserProfile } from './pages/setting/SettingUserProfile';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
 import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
+import { CryptoProvider } from './context/CryptoContext';
+import { useCrypto } from './context/CryptoContext';
 import { processRawData } from './logic/dataProcessor';
 import { STORAGE_KEYS } from './config/storageKeys';
 import { APP_CONFIG } from './config';
 import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
 import { SecurityLock } from './components/SecurityLock';
 import { SecurityGate } from './components/SecurityGate';
-import { getSessionPin, saveToStorage } from './helpers/localStorage/save';
+import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
 
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
+  const { cryptoKey, unlock, refreshHasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
 
   const [currentPage, setCurrentPage] = useState<string>(() => {
@@ -36,60 +39,60 @@ function AppContent() {
     sessionStorage.setItem(STORAGE_KEYS.PAGE, currentPage);
   }, [currentPage]);
 
+  // Lưu data an toàn sau khi đã có cryptoKey
+  const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey) => {
+    await saveSecure('raw_student_db', raw, key);
+    const { student, courses } = processRawData(raw);
+    await saveSecure('student_db_full', student, key);
+    await saveSecure('course_db_offline', courses, key);
+    if (meta) await saveSecure('import_meta', meta, key);
+
+    // Cập nhật RAM cache để hooks có thể đọc ngay không cần reload
+    populateSecureCache('raw_student_db', raw);
+    populateSecureCache('student_db_full', student);
+    populateSecureCache('course_db_offline', courses);
+    if (meta) populateSecureCache('import_meta', meta);
+
+    refreshHasData();
+    return student;
+  }, [refreshHasData]);
+
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Listen for data from the Bookmarklet
-      if (event.data && event.data.type === 'IMPORT_FULL_DATA') {
-        const payload = event.data.payload;
+    const handleMessage = async (event: MessageEvent) => {
+      if (!event.data || event.data.type !== 'IMPORT_FULL_DATA') return;
+      const payload = event.data.payload;
 
-        // Kiểm tra version bookmarklet
-        const incomingVersion = payload.version || payload.meta?.version;
-        if (incomingVersion && incomingVersion !== APP_CONFIG.BOOKMARKLET_VERSION) {
-          alert(`⚠️ BOOKMARKLET CŨ!\n\nPhiên bản bookmarklet của bạn (${incomingVersion}) đã cũ hơn so với hệ thống (${APP_CONFIG.BOOKMARKLET_VERSION}).\n\nVui lòng XÓA bookmark cũ và KÉO LẠI nút mới từ trang chủ để đảm bảo lấy dữ liệu chính xác nhé!`);
-
-          addNotification({
-            title: 'Cần cập nhật Bookmarklet',
-            message: `Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.`,
-            type: 'warning'
-          });
-        }
-
-        if (payload && payload.raw) {
-          const pin = getSessionPin();
-          
-          if (!pin) {
-            // Trường hợp chưa có PIN (mới import lần đầu)
-            setPendingData(payload);
-            return;
-          }
-
-          // 1. Lưu bản RAW nguyên vẹn
-          saveToStorage('raw_student_db', payload.raw);
-
-          // 2. Xử lý raw → processed (format cũ cho code hiện tại)
-          const { student, courses } = processRawData(payload.raw);
-
-          // 3. Lưu bản đã xử lý (backward compatible)
-          saveToStorage('student_db_full', student);
-          saveToStorage('course_db_offline', courses);
-
-          if (payload.meta) {
-            saveToStorage('import_meta', payload.meta);
-          }
-
-          addNotification({
-            title: 'Khởi tạo thành công',
-            message: `Dữ liệu hệ thống cho sinh viên ${student.name} đã sẵn sàng.`,
-            type: 'success'
-          });
-        }
+      // Kiểm tra version bookmarklet
+      const incomingVersion = payload.version || payload.meta?.version;
+      if (incomingVersion && incomingVersion !== APP_CONFIG.BOOKMARKLET_VERSION) {
+        alert(`⚠️ BOOKMARKLET CŨ!\n\nPhiên bản bookmarklet của bạn (${incomingVersion}) đã cũ hơn so với hệ thống (${APP_CONFIG.BOOKMARKLET_VERSION}).\n\nVui lòng XÓA bookmark cũ và KÉO LẠI nút mới từ trang chủ để đảm bảo lấy dữ liệu chính xác nhé!`);
+        addNotification({
+          title: 'Cần cập nhật Bookmarklet',
+          message: `Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.`,
+          type: 'warning'
+        });
       }
+
+      if (!payload?.raw) return;
+
+      if (!cryptoKey) {
+        // Chưa có key → lưu tạm, chờ user setup PIN
+        setPendingData(payload);
+        return;
+      }
+
+      // Đã có key → lưu ngay
+      const student = await saveImportedData(payload.raw, payload.meta, cryptoKey);
+      addNotification({
+        title: 'Khởi tạo thành công',
+        message: `Dữ liệu hệ thống cho sinh viên ${student.name} đã sẵn sàng.`,
+        type: 'success'
+      });
     };
 
-    // Use capture phase (true) so this saves to localStorage BEFORE child hooks re-render
     window.addEventListener('message', handleMessage, true);
     return () => window.removeEventListener('message', handleMessage, true);
-  }, [addNotification]);
+  }, [addNotification, cryptoKey, saveImportedData]);
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -99,7 +102,6 @@ function AppContent() {
       const isSmallScreen = window.innerWidth <= 700;
       setIsMobile(isMobileDevice || isSmallScreen);
     };
-
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -123,27 +125,21 @@ function AppContent() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {pendingData && (
-        <SecurityLock 
-          setupMode={true} 
-          onUnlock={() => {
-            const { raw, meta } = pendingData;
-            // Thực hiện lưu sau khi đã có PIN
-            saveToStorage('raw_student_db', raw);
-            const { student, courses } = processRawData(raw);
-            saveToStorage('student_db_full', student);
-            saveToStorage('course_db_offline', courses);
-            if (meta) saveToStorage('import_meta', meta);
-            
+      {/* Overlay SecurityLock khi có pendingData nhưng chưa có PIN */}
+      {pendingData && !cryptoKey && (
+        <SecurityLock
+          setupMode={true}
+          onUnlock={async (key) => {
+            unlock(key);
+            const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
             addNotification({
               title: 'Khởi tạo thành công',
-              message: `Dữ liệu hệ thống đã được mã hóa và sẵn sàng.`,
+              message: `Dữ liệu hệ thống đã được mã hóa và sẵn sàng cho sinh viên ${student.name}.`,
               type: 'success'
             });
-            
             setPendingData(null);
             setTimeout(() => window.location.reload(), 500);
-          }} 
+          }}
         />
       )}
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
@@ -180,12 +176,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SecurityGate>
-      <NotificationProvider>
-        <DepartmentProvider>
-          <AppContent />
-        </DepartmentProvider>
-      </NotificationProvider>
-    </SecurityGate>
+    <CryptoProvider>
+      <SecurityGate>
+        <NotificationProvider>
+          <DepartmentProvider>
+            <AppContent />
+          </DepartmentProvider>
+        </NotificationProvider>
+      </SecurityGate>
+    </CryptoProvider>
   );
 }

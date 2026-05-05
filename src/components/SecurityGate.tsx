@@ -1,71 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SecurityLock } from './SecurityLock';
-import { getSessionPin, decryptData } from '../helpers/localStorage/save';
+import { useCrypto } from '../context/CryptoContext';
 
 /**
  * SecurityGate.tsx
- * Quản lý 3 trạng thái của ứng dụng: 
- * 1. SETUP_PIN (No data): Mở app bình thường.
- * 2. LOCKED (Has data, No/Invalid session PIN): Chặn toàn bộ app bằng SecurityLock.
- * 3. UNLOCKED (Has data, Valid session PIN): Ẩn SecurityLock, mở app.
+ * Quản lý 3 trạng thái của ứng dụng:
+ * 1. SETUP_PIN (không có data): Mở app bình thường để import.
+ * 2. LOCKED (có data, chưa unlock): Chặn toàn bộ app bằng SecurityLock.
+ * 3. UNLOCKED (có data, cryptoKey trong RAM): Render children bình thường.
+ *
+ * CryptoKey được quản lý hoàn toàn bởi CryptoContext (RAM only).
  */
 export const SecurityGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLocked, setIsLocked] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+    const { cryptoKey, isReady, hasData, unlock } = useCrypto();
 
-  useEffect(() => {
-    const checkSecurity = () => {
-      // 1. Kiểm tra xem có dữ liệu trong localStorage không
-      const hasData = !!(localStorage.getItem('raw_student_db') || localStorage.getItem('student_db_full'));
-      
-      // 2. Kiểm tra PIN trong sessionStorage
-      const pin = getSessionPin();
+    // Lắng nghe storage event (tab khác thay đổi data)
+    useEffect(() => {
+        const handleStorage = () => {
+            // Nếu data bị xóa từ tab khác, reload để reset state
+            window.location.reload();
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, []);
 
-      if (!hasData) {
-        // TRẠNG THÁI 1: SETUP_PIN - Cho phép vào App để Import
-        setIsLocked(false);
-      } else if (pin) {
-        // TRẠNG THÁI 3: UNLOCKED? - Thử giải mã để xác nhận PIN hợp lệ
-        const encryptedData = localStorage.getItem('raw_student_db') || localStorage.getItem('student_db_full');
-        const decrypted = decryptData(encryptedData);
-        
-        if (decrypted) {
-          setIsLocked(false);
-        } else {
-          // PIN sai (có thể do nhập sai hoặc data bị lỗi)
-          // Xóa PIN sai để quay về trạng thái LOCKED
-          sessionStorage.removeItem('USER_PIN');
-          setIsLocked(true);
-        }
-      } else {
-        // TRẠNG THÁI 2: LOCKED - Có data nhưng chưa có PIN
-        setIsLocked(true);
-      }
-      setInitialized(true);
-    };
+    // Chờ khởi tạo
+    if (!isReady) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-pulse text-indigo-600 font-semibold tracking-widest text-xs uppercase">
+                    Initializing Security Layer...
+                </div>
+            </div>
+        );
+    }
 
-    checkSecurity();
-    
-    // Đăng ký lắng nghe sự kiện storage (nếu tab khác thay đổi data)
-    window.addEventListener('storage', checkSecurity);
-    return () => window.removeEventListener('storage', checkSecurity);
-  }, []);
+    // Trạng thái 2: Có data nhưng chưa unlock → chặn app
+    if (hasData && !cryptoKey) {
+        return <SecurityLock onUnlock={unlock} />;
+    }
 
-  if (!initialized) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-indigo-600 font-semibold tracking-widest text-xs uppercase">
-          Initializing Security Layer...
-        </div>
-      </div>
-    );
-  }
-
-  // Nếu bị khóa -> Tuyệt đối KHÔNG render children (<AppContent />)
-  if (isLocked) {
-    return <SecurityLock onUnlock={() => setIsLocked(false)} />;
-  }
-
-  // Đã mở khóa hoặc chưa có data -> Render app bình thường
-  return <>{children}</>;
+    // Trạng thái 1 (không có data) hoặc 3 (đã unlock) → render app
+    return <>{children}</>;
 };

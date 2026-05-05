@@ -1,13 +1,24 @@
-import { Bookmark, User } from 'lucide-react';
+import { Bookmark, User, Shield, Lock } from 'lucide-react';
+import { useState } from 'react';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SettingUserProfile } from './SettingUserProfile';
 import { useStudentDb } from '../../hooks/useStudentDb';
 import { ImportData } from './importData';
 import { ReportError } from './reportError';
 import { BookmarkletButton } from '../../components/BookmarkletButton';
+import { ChangePinModal } from '../../components/ChangePinModal';
+import { useCrypto } from '../../context/CryptoContext';
 
 export function Setting() {
     const { name } = useStudentDb();
+    const { lock, hasData } = useCrypto();
+    const [showChangePinModal, setShowChangePinModal] = useState(false);
+
+    const handleLockNow = () => {
+        lock();
+        window.location.reload();
+    };
+
     return (
         <div className="flex h-full gap-6">
             <div className="flex-1 overflow-y-auto">
@@ -19,6 +30,7 @@ export function Setting() {
                 <div className="flex flex-col">
                     <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full max-w-4xl flex flex-col">
                         <div className="w-full">
+                            {/* Thông tin cá nhân */}
                             <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
                                 <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                     <User className="w-7 h-7" />Thông tin cá nhân
@@ -31,6 +43,7 @@ export function Setting() {
 
                             <SettingUserProfile />
 
+                            {/* Công cụ đồng bộ dữ liệu */}
                             <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
                                 <div className="pb-6 border-b border-gray-200">
                                     <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
@@ -49,6 +62,35 @@ export function Setting() {
                                 </div>
                             </div>
 
+                            {/* Bảo mật */}
+                            {hasData && (
+                                <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
+                                    <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
+                                        <Shield className="w-5 h-5 text-blue-600" />
+                                        Bảo mật
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mb-6">
+                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mã PIN.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <button
+                                            onClick={() => setShowChangePinModal(true)}
+                                            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+                                        >
+                                            <Shield className="w-4 h-4" />
+                                            Đổi mã PIN
+                                        </button>
+                                        <button
+                                            onClick={handleLockNow}
+                                            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                                        >
+                                            <Lock className="w-4 h-4" />
+                                            Khóa ngay
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <ReportError />
                         </div>
                     </div>
@@ -56,6 +98,10 @@ export function Setting() {
                     <PrivacyFooter />
                 </div>
             </div>
+
+            {showChangePinModal && (
+                <ChangePinModal onClose={() => setShowChangePinModal(false)} />
+            )}
         </div>
     );
 }
