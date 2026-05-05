@@ -93,7 +93,7 @@ const styles = `
         transition: background 0.4s ease, box-shadow 0.4s ease;
     }
     .sec-icon-ring.indigo {
-        background: linear-gradient(145deg, #6366f1, #a5b4fc);
+        background: #0065d1ff;
         box-shadow: 0 10px 30px -6px rgba(99,102,241,0.45);
         animation: sec-pulse 2.8s ease-in-out infinite;
         color: white;
@@ -187,7 +187,7 @@ const styles = `
     }
     .sec-input:focus {
         background: white;
-        border-color: #6366f1;
+        border-color: #004A98;
         outline: none;
         box-shadow: 0 0 0 4px rgba(99,102,241,0.1), 0 8px 16px -4px rgba(99,102,241,0.08);
     }
@@ -209,7 +209,7 @@ const styles = `
         justify-content: center;
         transition: color 0.2s;
     }
-    .sec-input-toggle:hover { color: #6366f1; }
+    .sec-input-toggle:hover { color: #004A98; }
 
     .sec-error {
         display: flex;
@@ -249,7 +249,7 @@ const styles = `
         overflow: hidden;
     }
     .sec-btn.indigo {
-        background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+        background: #0354aaff;
         box-shadow: 0 8px 22px -5px rgba(99,102,241,0.5);
     }
     .sec-btn.green {
@@ -462,7 +462,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                             disabled={isVerifying || isLocked}
                             autoFocus
                         />
-                        <div 
+                        <div
                             className="sec-input-toggle"
                             onClick={() => setShowPassword(!showPassword)}
                         >
