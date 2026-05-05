@@ -138,7 +138,6 @@ function AppContent() {
               type: 'success'
             });
             setPendingData(null);
-            setTimeout(() => window.location.reload(), 500);
           }}
         />
       )}

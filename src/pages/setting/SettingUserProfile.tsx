@@ -94,9 +94,6 @@ export function SettingUserProfile() {
                         });
 
                         setIsConfigured(true);
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
                     }
                     return;
                 }
@@ -120,9 +117,6 @@ export function SettingUserProfile() {
                     });
 
                     setIsConfigured(true);
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
                 } else {
                     throw new Error("Định dạng file không hợp lệ. Vui lòng sử dụng file JSON xuất từ hệ thống hoặc Bookmarklet.");
                 }
@@ -170,7 +164,6 @@ export function SettingUserProfile() {
                         
                         setPendingImport(null);
                         setIsConfigured(true);
-                        setTimeout(() => window.location.reload(), 500);
                     }} 
                 />
             )}
@@ -193,7 +186,6 @@ export function SettingUserProfile() {
                         });
                         
                         setPendingConfig(false);
-                        setTimeout(() => window.location.reload(), 500);
                     }} 
                 />
             )}
@@ -284,7 +276,6 @@ export function SettingUserProfile() {
                                 return;
                             }
                             setIsConfigured(true);
-                            setTimeout(() => window.location.reload(), 500);
                         }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
                             ? 'bg-green-50 text-green-700 border border-green-200'
