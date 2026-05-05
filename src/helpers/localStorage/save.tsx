@@ -310,6 +310,7 @@ export function getLockoutSeconds(): number {
 /** Kiểm tra xem có dữ liệu nhạy cảm trong localStorage không */
 export function hasSecureData(): boolean {
     return !!(
+        localStorage.getItem('__pin_verify__') ||
         localStorage.getItem('raw_student_db') ||
         localStorage.getItem('student_db_full')
     );
