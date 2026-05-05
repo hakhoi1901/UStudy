@@ -14,11 +14,14 @@ import { useCrypto } from '../context/CryptoContext';
 export const SecurityGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { cryptoKey, isReady, hasData, unlock } = useCrypto();
 
-    // Lắng nghe storage event (tab khác thay đổi data)
+    // Lắng nghe storage event — chỉ reload khi secure data bị xóa từ tab khác
     useEffect(() => {
-        const handleStorage = () => {
-            // Nếu data bị xóa từ tab khác, reload để reset state
-            window.location.reload();
+        const handleStorage = (e: StorageEvent) => {
+            // Chỉ phản ứng khi key quan trọng bị xóa (clear toàn bộ hoặc xóa từng key)
+            const sensitiveKeys = ['raw_student_db', 'student_db_full', '__pbkdf2_salt__', '__pin_verify__'];
+            if (e.key === null || (e.key && sensitiveKeys.includes(e.key) && e.newValue === null)) {
+                window.location.reload();
+            }
         };
         window.addEventListener('storage', handleStorage);
         return () => window.removeEventListener('storage', handleStorage);

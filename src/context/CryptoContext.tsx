@@ -10,10 +10,29 @@ import {
 /**
  * CryptoContext — RAM-only key manager
  *
- * Giữ CryptoKey hoàn toàn trong React state (không bao giờ ghi ra storage).
+ * Giữ CryptoKey hoàn toàn trong RAM (không bao giờ ghi ra storage).
+ * Sử dụng window-level variable để persist qua HMR (Vite hot reload),
+ * nhưng vẫn mất khi đóng tab/reload trang — đảm bảo bảo mật.
  * Sau khi unlock, tự động decrypt toàn bộ secure data và populate module RAM cache
  * để các hook đồng bộ có thể đọc được qua readFromStorage shim.
  */
+
+// ── HMR-safe persistence ──────────────────────────────────────────────────
+// Window-level variable giữ CryptoKey sống sót qua Vite HMR.
+// Vẫn bị xóa khi page reload hoặc đóng tab → an toàn.
+const WIN_KEY = Symbol.for('__ustudy_crypto_key__');
+
+function getPersistedKey(): CryptoKey | null {
+    return (window as any)[WIN_KEY] || null;
+}
+
+function setPersistedKey(key: CryptoKey | null): void {
+    if (key) {
+        (window as any)[WIN_KEY] = key;
+    } else {
+        delete (window as any)[WIN_KEY];
+    }
+}
 
 interface CryptoContextType {
     /** CryptoKey hiện tại — null nghĩa là chưa unlock */
@@ -36,7 +55,7 @@ const CryptoContext = createContext<CryptoContextType | null>(null);
 export const CACHE_POPULATED_EVENT = 'CACHE_POPULATED';
 
 export function CryptoProvider({ children }: { children: React.ReactNode }) {
-    const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(null);
+    const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(() => getPersistedKey());
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
 
@@ -68,10 +87,12 @@ export function CryptoProvider({ children }: { children: React.ReactNode }) {
     }, [cryptoKey]);
 
     const unlock = useCallback((key: CryptoKey) => {
+        setPersistedKey(key);
         setCryptoKey(key);
     }, []);
 
     const lock = useCallback(() => {
+        setPersistedKey(null);
         setCryptoKey(null);
         clearSecureCache();
     }, []);

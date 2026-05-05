@@ -3,8 +3,9 @@ import { useDepartmentData } from "../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAppNotification } from "../../context/NotificationContext";
+import { useCrypto } from "../../context/CryptoContext";
 import { processRawData } from "../../logic/dataProcessor";
-import { saveToStorage, getSessionPin } from "../../helpers/localStorage/save";
+import { savePlain, saveSecure, populateSecureCache } from "../../helpers/localStorage/save";
 import { SecurityLock } from "../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 
@@ -17,9 +18,28 @@ export function SettingUserProfile() {
         isConfigured, setIsConfigured
     } = useDepartmentData();
     const { addNotification } = useAppNotification();
+    const { cryptoKey, unlock, refreshHasData } = useCrypto();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
     const [pendingConfig, setPendingConfig] = useState<boolean>(false);
+
+    /** Lưu dữ liệu nhạy cảm đã mã hóa + populate RAM cache */
+    const saveImportedSecure = async (rawData: any, metaData: any, key: CryptoKey) => {
+        await saveSecure('raw_student_db', rawData, key);
+        const { student, courses } = processRawData(rawData);
+        await saveSecure('student_db_full', student, key);
+        await saveSecure('course_db_offline', courses, key);
+        if (metaData) await saveSecure('import_meta', metaData, key);
+
+        // Populate RAM cache để hooks đọc được ngay
+        populateSecureCache('raw_student_db', rawData);
+        populateSecureCache('student_db_full', student);
+        populateSecureCache('course_db_offline', courses);
+        if (metaData) populateSecureCache('import_meta', metaData);
+
+        refreshHasData();
+        return student;
+    };
 
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -50,15 +70,22 @@ export function SettingUserProfile() {
 
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
-                        const pin = getSessionPin();
-                        if (!pin) {
+                        if (!cryptoKey) {
                             setPendingImport({ type: 'FULL_DUMP', data });
                             return;
                         }
 
-                        Object.keys(data).forEach(key => {
-                            saveToStorage(key, data[key]);
-                        });
+                        // Lưu từng key: secure keys thì mã hóa, các key khác thì plain
+                        const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
+                        for (const key of Object.keys(data)) {
+                            if (SECURE_KEYS.has(key)) {
+                                await saveSecure(key, data[key], cryptoKey);
+                                populateSecureCache(key, data[key]);
+                            } else {
+                                savePlain(key, data[key]);
+                            }
+                        }
+                        refreshHasData();
 
                         addNotification({
                             title: 'Nhập dữ liệu thành công',
@@ -79,29 +106,16 @@ export function SettingUserProfile() {
                 let metaData = data.meta || null;
 
                 if (rawData && typeof rawData === 'object' && (rawData.grades || rawData.courses)) {
-                    const pin = getSessionPin();
-                    if (!pin) {
+                    if (!cryptoKey) {
                         setPendingImport({ type: 'RAW_DATA', data: { rawData, metaData } });
                         return;
                     }
 
-                    // 1. Lưu bản RAW nguyên vẹn
-                    saveToStorage('raw_student_db', rawData);
-
-                    // 2. Xử lý raw → processed
-                    const { student, courses } = processRawData(rawData);
-
-                    // 3. Lưu bản đã xử lý
-                    saveToStorage('student_db_full', student);
-                    saveToStorage('course_db_offline', courses);
-
-                    if (metaData) {
-                        saveToStorage('import_meta', metaData);
-                    }
+                    const student = await saveImportedSecure(rawData, metaData, cryptoKey);
 
                     addNotification({
                         title: 'Nhập dữ liệu thành công',
-                        message: `Dữ liệu của ${student.name} đã được tải lên.`,
+                        message: `Dữ liệu của ${student.name} đã được tải lên và mã hóa.`,
                         type: 'success'
                     });
 
@@ -131,24 +145,26 @@ export function SettingUserProfile() {
             {pendingImport && (
                 <SecurityLock 
                     setupMode={true} 
-                    onUnlock={() => {
+                    onUnlock={async (key) => {
+                        unlock(key);
                         const { type, data } = pendingImport;
                         if (type === 'FULL_DUMP') {
-                            Object.keys(data).forEach(key => {
-                                saveToStorage(key, data[key]);
-                            });
+                            const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
+                            for (const k of Object.keys(data)) {
+                                if (SECURE_KEYS.has(k)) {
+                                    await saveSecure(k, data[k], key);
+                                    populateSecureCache(k, data[k]);
+                                } else {
+                                    savePlain(k, data[k]);
+                                }
+                            }
                         } else {
-                            const { rawData, metaData } = data;
-                            saveToStorage('raw_student_db', rawData);
-                            const { student, courses } = processRawData(rawData);
-                            saveToStorage('student_db_full', student);
-                            saveToStorage('course_db_offline', courses);
-                            if (metaData) saveToStorage('import_meta', metaData);
+                            await saveImportedSecure(data.rawData, data.metaData, key);
                         }
                         
                         addNotification({
                             title: 'Nhập dữ liệu thành công',
-                            message: `Dữ liệu đã được mã hóa và bảo vệ bằng mã PIN.`,
+                            message: `Dữ liệu đã được mã hóa và bảo vệ bằng mật khẩu.`,
                             type: 'success'
                         });
                         
@@ -162,14 +178,13 @@ export function SettingUserProfile() {
             {pendingConfig && (
                 <SecurityLock 
                     setupMode={true} 
-                    onUnlock={() => {
-                        // Khi đã có PIN, lưu cấu hình hiện tại
+                    onUnlock={(key) => {
+                        unlock(key);
                         setIsConfigured(true);
-                        // Lưu lại các giá trị hiện tại vào storage (vì trước đó nó bị chặn do thiếu PIN)
-                        saveToStorage(STORAGE_KEYS.FACULTY_ID, facultyId);
-                        saveToStorage(STORAGE_KEYS.MAJOR_ID, majorId);
-                        saveToStorage(STORAGE_KEYS.COHORT_ID, cohortId);
-                        saveToStorage(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
+                        savePlain(STORAGE_KEYS.FACULTY_ID, facultyId);
+                        savePlain(STORAGE_KEYS.MAJOR_ID, majorId);
+                        savePlain(STORAGE_KEYS.COHORT_ID, cohortId);
+                        savePlain(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
                         
                         addNotification({
                             title: 'Thiết lập thành công',
@@ -264,8 +279,7 @@ export function SettingUserProfile() {
 
                     <button
                         onClick={() => {
-                            const pin = getSessionPin();
-                            if (!pin) {
+                            if (!cryptoKey) {
                                 setPendingConfig(true);
                                 return;
                             }
