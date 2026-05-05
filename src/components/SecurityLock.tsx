@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-    InputOTPSeparator,
-} from './ui/input-otp';
-import { Lock, ShieldAlert, Trash2, KeyRound, CheckCircle2, Timer, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { Lock, ShieldAlert, Trash2, KeyRound, CheckCircle2, Timer, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import {
     verifyPin,
     setupPin,
@@ -169,16 +163,53 @@ const styles = `
     }
     .sec-lockout strong { color: #b45309; font-variant-numeric: tabular-nums; }
 
-    .sec-otp-wrap {
-        display: flex;
-        justify-content: center;
+    .sec-input-wrap {
+        position: relative;
         margin-bottom: 28px;
-        transform: scale(1.08);
-        transform-origin: center;
+        width: 100%;
     }
-    .sec-otp-wrap.has-error {
+    .sec-input-wrap.has-error {
         animation: sec-shake 0.45s ease both;
     }
+
+    .sec-input {
+        width: 100%;
+        height: 56px;
+        background: rgba(243,244,246,0.8);
+        border: 2px solid transparent;
+        border-radius: 18px;
+        padding: 0 50px 0 20px;
+        font-size: 16px;
+        font-family: 'DM Sans', sans-serif;
+        color: #16163a;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .sec-input:focus {
+        background: white;
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.1), 0 8px 16px -4px rgba(99,102,241,0.08);
+    }
+    .sec-input::placeholder {
+        color: #9daabb;
+        font-size: 14px;
+    }
+    
+    .sec-input-toggle {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9daabb;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+    }
+    .sec-input-toggle:hover { color: #6366f1; }
 
     .sec-error {
         display: flex;
@@ -271,13 +302,14 @@ const styles = `
 `;
 
 export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false }) => {
-    const [pin, setPin] = useState('');
-    const [confirmPin, setConfirmPin] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [setupStep, setSetupStep] = useState<SetupStep>('enter');
     const [error, setError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
     const [lockoutSeconds, setLockoutSeconds] = useState(getLockoutSeconds);
-    const [shakeOtp, setShakeOtp] = useState(false);
+    const [shakeInput, setShakeInput] = useState(false);
 
     useEffect(() => {
         if (lockoutSeconds <= 0) return;
@@ -292,39 +324,42 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
     const isLocked = lockoutSeconds > 0;
 
     const triggerShake = () => {
-        setShakeOtp(true);
-        setTimeout(() => setShakeOtp(false), 500);
+        setShakeInput(true);
+        setTimeout(() => setShakeInput(false), 500);
     };
 
     const handleSetupNext = useCallback(() => {
-        if (pin.length !== 6) return;
+        if (password.length < 4) {
+            setError('Mật khẩu phải có ít nhất 4 ký tự.');
+            triggerShake();
+            return;
+        }
         setError(null);
         setSetupStep('confirm');
-    }, [pin]);
+    }, [password]);
 
     const handleSetupConfirm = useCallback(async () => {
-        if (confirmPin.length !== 6) return;
-        if (confirmPin !== pin) {
-            setError('Mã PIN xác nhận không khớp. Vui lòng thử lại.');
-            setConfirmPin('');
+        if (confirmPassword !== password) {
+            setError('Mật khẩu xác nhận không khớp. Vui lòng thử lại.');
+            setConfirmPassword('');
             triggerShake();
             return;
         }
         setIsVerifying(true);
         try {
-            const key = await setupPin(pin);
+            const key = await setupPin(password);
             onUnlock(key);
         } catch {
-            setError('Có lỗi khi thiết lập PIN. Vui lòng thử lại.');
+            setError('Có lỗi khi thiết lập mật khẩu. Vui lòng thử lại.');
             setIsVerifying(false);
         }
-    }, [pin, confirmPin, onUnlock]);
+    }, [password, confirmPassword, onUnlock]);
 
     const handleVerify = useCallback(async () => {
-        if (pin.length !== 6 || isLocked || isVerifying) return;
+        if (!password || isLocked || isVerifying) return;
         setIsVerifying(true);
         setError(null);
-        const key = await verifyPin(pin);
+        const key = await verifyPin(password);
         if (key) {
             resetFailCount();
             onUnlock(key);
@@ -332,26 +367,25 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
             incrementFailCount();
             const remaining = getLockoutSeconds();
             setLockoutSeconds(remaining);
-            setPin('');
+            setPassword('');
             triggerShake();
             setError(remaining > 0
-                ? `Sai PIN quá nhiều lần. Vui lòng thử lại sau ${remaining} giây.`
-                : 'Mã PIN không chính xác. Vui lòng thử lại.');
+                ? `Sai mật khẩu quá nhiều lần. Vui lòng thử lại sau ${remaining} giây.`
+                : 'Mật khẩu không chính xác. Vui lòng thử lại.');
             setIsVerifying(false);
         }
-    }, [pin, isLocked, isVerifying, onUnlock]);
+    }, [password, isLocked, isVerifying, onUnlock]);
 
-    useEffect(() => {
-        if (!setupMode && pin.length === 6 && !isLocked) handleVerify();
-    }, [pin, setupMode, isLocked, handleVerify]);
-
-    useEffect(() => {
-        if (setupMode && setupStep === 'confirm' && confirmPin.length === 6) handleSetupConfirm();
-    }, [confirmPin, setupMode, setupStep, handleSetupConfirm]);
-
-    useEffect(() => {
-        if (setupMode && setupStep === 'enter' && pin.length === 6) handleSetupNext();
-    }, [pin, setupMode, setupStep, handleSetupNext]);
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            if (setupMode) {
+                if (setupStep === 'enter') handleSetupNext();
+                else handleSetupConfirm();
+            } else {
+                handleVerify();
+            }
+        }
+    };
 
     const handleForgotPin = () => {
         if (window.confirm('Hành động này sẽ xóa toàn bộ dữ liệu hiện tại. Bạn có chắc chắn?')) {
@@ -360,8 +394,8 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         }
     };
 
-    const currentPin = setupMode && setupStep === 'confirm' ? confirmPin : pin;
-    const currentOnChange = setupMode && setupStep === 'confirm' ? setConfirmPin : setPin;
+    const currentVal = setupMode && setupStep === 'confirm' ? confirmPassword : password;
+    const currentOnChange = setupMode && setupStep === 'confirm' ? setConfirmPassword : setPassword;
     const isConfirmStep = setupMode && setupStep === 'confirm';
 
     return (
@@ -395,16 +429,16 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                     {/* Heading */}
                     <h1 className="sec-title">
                         {setupMode
-                            ? (setupStep === 'enter' ? 'Tạo mã PIN' : 'Xác nhận PIN')
+                            ? (setupStep === 'enter' ? 'Tạo mật khẩu' : 'Xác nhận mật khẩu')
                             : 'Xác thực truy cập'
                         }
                     </h1>
                     <p className="sec-sub">
                         {setupMode
                             ? (setupStep === 'enter'
-                                ? 'Thiết lập mã PIN 6 chữ số để bảo vệ dữ liệu học tập của bạn.'
-                                : 'Nhập lại mã PIN vừa tạo để xác nhận.')
-                            : 'Dữ liệu của bạn đã được mã hóa. Nhập mã PIN để mở khóa.'
+                                ? 'Thiết lập mật khẩu để bảo vệ dữ liệu học tập của bạn.'
+                                : 'Nhập lại mật khẩu vừa tạo để xác nhận.')
+                            : 'Dữ liệu của bạn đã được mã hóa. Nhập mật khẩu để mở khóa.'
                         }
                     </p>
 
@@ -416,27 +450,24 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                         </div>
                     )}
 
-                    {/* OTP */}
-                    <div className={`sec-otp-wrap${shakeOtp ? ' has-error' : ''}`}>
-                        <InputOTP
-                            maxLength={6}
-                            value={currentPin}
-                            onChange={currentOnChange}
+                    {/* Password Input */}
+                    <div className={`sec-input-wrap${shakeInput ? ' has-error' : ''}`}>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            className="sec-input"
+                            placeholder={isConfirmStep ? "Xác nhận mật khẩu..." : "Nhập mật khẩu..."}
+                            value={currentVal}
+                            onChange={(e) => currentOnChange(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             disabled={isVerifying || isLocked}
                             autoFocus
+                        />
+                        <div 
+                            className="sec-input-toggle"
+                            onClick={() => setShowPassword(!showPassword)}
                         >
-                            <InputOTPGroup>
-                                <InputOTPSlot index={0} />
-                                <InputOTPSlot index={1} />
-                                <InputOTPSlot index={2} />
-                            </InputOTPGroup>
-                            <InputOTPSeparator />
-                            <InputOTPGroup>
-                                <InputOTPSlot index={3} />
-                                <InputOTPSlot index={4} />
-                                <InputOTPSlot index={5} />
-                            </InputOTPGroup>
-                        </InputOTP>
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </div>
                     </div>
 
                     {/* Error */}
@@ -455,7 +486,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                                 ? (setupStep === 'enter' ? handleSetupNext : handleSetupConfirm)
                                 : handleVerify
                             }
-                            disabled={currentPin.length !== 6 || isVerifying || isLocked}
+                            disabled={!currentVal || isVerifying || isLocked}
                         >
                             {isVerifying ? (
                                 <>
@@ -474,17 +505,17 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                         {isConfirmStep && (
                             <button
                                 className="sec-ghost back"
-                                onClick={() => { setSetupStep('enter'); setPin(''); setConfirmPin(''); setError(null); }}
+                                onClick={() => { setSetupStep('enter'); setPassword(''); setConfirmPassword(''); setError(null); }}
                             >
                                 <ArrowLeft size={13} />
-                                Quay lại đặt PIN mới
+                                Quay lại đặt mật khẩu mới
                             </button>
                         )}
 
                         {!setupMode && (
                             <button className="sec-ghost" onClick={handleForgotPin}>
                                 <Trash2 size={13} />
-                                Quên mã PIN? Xóa toàn bộ dữ liệu
+                                Quên mật khẩu? Xóa toàn bộ dữ liệu
                             </button>
                         )}
                     </div>
