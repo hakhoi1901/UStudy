@@ -130,7 +130,7 @@ export function IntegratedStudyRoadmap() {
 
     // Giao diện chính
     return (
-        <div className="flex gap-6 min-h-screen pb-10" style={{ isolation: 'isolate' }}>
+        <div className="flex gap-6 min-h-screen" style={{ isolation: 'isolate' }}>
             {/* Nội dung chính */}
             <div className="flex-1 w-full">
                 <div className="mb-6">

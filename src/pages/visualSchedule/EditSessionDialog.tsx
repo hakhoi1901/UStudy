@@ -108,110 +108,110 @@ function EditSessionDialog({
     };
 
     return (
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] overflow-y-auto">
-            <div className="p-6 space-y-5">
+        <DialogContent className="sm:max-w-md p-6 overflow-hidden border-none shadow-xl bg-white rounded-lg max-h-[90vh] overflow-y-auto">
+            <div className="space-y-6">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
+                    <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
                         <Pencil className="w-5 h-5 text-[#004A98]" />
                         Tùy chỉnh môn học
                     </DialogTitle>
-                    <DialogDescription className="text-gray-500 font-medium">
+                    <DialogDescription className="text-sm text-gray-500 mt-1">
                         {session.courseCode} — {session.courseName}
                     </DialogDescription>
                 </DialogHeader>
 
                 {/* Mode selector */}
-                <div className="flex p-1 bg-gray-100 rounded-xl">
+                <div className="flex p-1 bg-gray-100 rounded-lg">
                     <button
                         onClick={() => setMode('global')}
-                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${mode === 'global' ? 'bg-white shadow-md text-blue-600 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${mode === 'global' ? 'bg-white shadow-sm text-[#004A98]' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         Toàn bộ học kỳ
                     </button>
                     <button
                         onClick={() => setMode('single')}
-                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${mode === 'single' ? 'bg-white shadow-md text-blue-600 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${mode === 'single' ? 'bg-white shadow-sm text-[#004A98]' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         Chỉ Tuần {weekNumber}
                     </button>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="space-y-4">
                     {/* Day and Room */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="day" className="text-[11px] uppercase font-bold text-gray-400 ml-1 flex items-center gap-1">
-                                <CalendarIcon className="w-3 h-3" /> Thứ
+                            <Label htmlFor="day" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                <CalendarIcon className="w-4 h-4 text-gray-500" /> Thứ
                             </Label>
                             <select
                                 id="day"
                                 value={dayOfWeek}
                                 onChange={(e) => setDayOfWeek(e.target.value)}
-                                className="w-full h-10 px-3 rounded-xl border border-gray-200 bg-white text-sm font-medium outline-none"
+                                className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
                             >
                                 {DAYS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                                 <option value="8">Chủ Nhật</option>
                             </select>
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="room" className="text-[11px] uppercase font-bold text-gray-400 ml-1 flex items-center gap-1">
-                                <MapPin className="w-3 h-3" /> Phòng
+                            <Label htmlFor="room" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                <MapPin className="w-4 h-4 text-gray-500" /> Phòng
                             </Label>
-                            <Input id="room" value={room} onChange={(e) => setRoom(e.target.value)} className="h-10 rounded-xl border-gray-200" />
+                            <Input id="room" value={room} onChange={(e) => setRoom(e.target.value)} className="h-10 rounded-md border-gray-300" />
                         </div>
                     </div>
 
                     {/* Periods */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="start" className="text-[11px] uppercase font-bold text-gray-400 ml-1">Tiết bắt đầu</Label>
-                            <Input id="start" type="number" step="0.5" value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="h-10 rounded-xl border-gray-200" />
+                            <Label htmlFor="start" className="text-sm font-medium text-gray-700">Tiết bắt đầu</Label>
+                            <Input id="start" type="number" step="0.5" value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="h-10 rounded-md border-gray-300" />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="end" className="text-[11px] uppercase font-bold text-gray-400 ml-1">Tiết kết thúc</Label>
-                            <Input id="end" type="number" step="0.5" value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="h-10 rounded-xl border-gray-200" />
+                            <Label htmlFor="end" className="text-sm font-medium text-gray-700">Tiết kết thúc</Label>
+                            <Input id="end" type="number" step="0.5" value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="h-10 rounded-md border-gray-300" />
                         </div>
                     </div>
 
                     {/* Week range — only in global mode */}
                     {mode === 'global' && (
-                        <div className="grid grid-cols-2 gap-3 p-3 bg-blue-50/60 rounded-xl border border-blue-100">
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-[#004A98]/5 rounded-lg border border-[#004A98]/20">
                             <div className="space-y-1.5">
-                                <Label className="text-[11px] uppercase font-bold text-blue-500 ml-1">Bắt đầu từ tuần</Label>
-                                <Input type="number" placeholder="Mặc định" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} className="h-10 rounded-xl border-blue-200 bg-white" />
+                                <Label className="text-sm font-medium text-[#004A98]">Bắt đầu từ tuần</Label>
+                                <Input type="number" placeholder="Mặc định" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} className="h-10 rounded-md border-gray-300 bg-white" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-[11px] uppercase font-bold text-blue-500 ml-1">Kết thúc ở tuần</Label>
-                                <Input type="number" placeholder="Mặc định" value={endWeek} onChange={(e) => setEndWeek(e.target.value)} className="h-10 rounded-xl border-blue-200 bg-white" />
+                                <Label className="text-sm font-medium text-[#004A98]">Kết thúc ở tuần</Label>
+                                <Input type="number" placeholder="Mặc định" value={endWeek} onChange={(e) => setEndWeek(e.target.value)} className="h-10 rounded-md border-gray-300 bg-white" />
                             </div>
                         </div>
                     )}
 
                     {/* Notes */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="note" className="text-[11px] uppercase font-bold text-gray-400 ml-1 flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" /> Ghi chú
+                        <Label htmlFor="note" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                            <MessageSquare className="w-4 h-4 text-gray-500" /> Ghi chú
                         </Label>
                         <Input
                             id="note"
                             placeholder="Nhập lời nhắc (Kiểm tra, mang sách...)"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
-                            className="h-10 rounded-xl border-gray-200"
+                            className="h-10 rounded-md border-gray-300"
                         />
                     </div>
 
                     {/* Color */}
                     <div className="space-y-1.5">
-                        <Label className="text-[11px] uppercase font-bold text-gray-400 ml-1 flex items-center gap-1">
-                            <Palette className="w-3 h-3" /> Màu sắc
+                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                            <Palette className="w-4 h-4 text-gray-500" /> Màu sắc
                         </Label>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             <Input
                                 type="color"
                                 value={color.startsWith('#') ? color : '#3b82f6'}
                                 onChange={(e) => setColor(e.target.value)}
-                                className="w-10 h-10 p-1 rounded-xl cursor-pointer border-gray-200"
+                                className="w-10 h-10 p-1 rounded-md cursor-pointer border-gray-300"
                             />
                             <div className="flex gap-2">
                                 {Object.keys(colorBgs).map(c => (
@@ -227,35 +227,38 @@ function EditSessionDialog({
                 </div>
 
                 {/* Danger zone */}
-                <div className="p-3 bg-red-50 rounded-xl border border-red-100 space-y-2">
-                    <p className="text-[11px] uppercase font-bold text-red-400 mb-2">Xóa / Ẩn buổi học</p>
+                <div className="p-4 bg-white rounded-lg border border-red-200 space-y-3">
+                    <p className="text-sm font-semibold text-red-600 flex items-center gap-2">
+                        <Trash2 className="w-4 h-4" />
+                        Xóa / Ẩn buổi học
+                    </p>
                     <div className="grid grid-cols-3 gap-2">
                         <button
                             onClick={handleSkipWeek}
-                            className="py-2 px-2 text-[11px] font-bold rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors border border-orange-200 leading-tight"
+                            className="py-2 px-2 text-xs font-medium rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                             Bỏ Tuần {weekNumber}
                         </button>
                         <button
                             onClick={handleEndFromWeek}
-                            className="py-2 px-2 text-[11px] font-bold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors border border-red-200 leading-tight"
+                            className="py-2 px-2 text-xs font-medium rounded-md bg-white border border-orange-300 text-orange-700 hover:bg-orange-50 transition-colors"
                         >
                             Kết thúc từ Tuần {weekNumber}
                         </button>
                         <button
                             onClick={handleDeleteSession}
-                            className="py-2 px-2 text-[11px] font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors leading-tight"
+                            className="py-2 px-2 text-xs font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
                         >
                             Xóa toàn bộ
                         </button>
                     </div>
                 </div>
 
-                <DialogFooter className="flex gap-3">
-                    <Button variant="ghost" className="flex-1 h-10 rounded-xl text-gray-500 font-bold hover:bg-gray-100">
+                <DialogFooter className="flex gap-3 pt-2 border-t border-gray-100">
+                    <Button variant="outline" className="flex-1 h-10 rounded-md text-gray-700 font-medium border-gray-300 hover:bg-gray-50">
                         Đóng
                     </Button>
-                    <Button onClick={handleSave} className="flex-[2] h-10 rounded-xl bg-[#0055CC] hover:bg-[#004A98] font-bold text-white transition-all active:scale-95">
+                    <Button onClick={handleSave} className="flex-[2] h-10 rounded-md bg-[#004A98] hover:bg-[#003d7a] font-medium text-white transition-colors">
                         Lưu thay đổi
                     </Button>
                 </DialogFooter>
