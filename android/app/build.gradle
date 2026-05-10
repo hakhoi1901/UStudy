@@ -22,6 +22,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    
+    // Đổi tên file APK đầu ra
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def projectName = "UStudy"
+            // Ví dụ: UStudy-debug.apk hoặc UStudy-release.apk
+            outputFileName = "${projectName}-${variant.name}.apk"
+        }
+    }
 }
 
 repositories {

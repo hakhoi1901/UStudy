@@ -21,7 +21,6 @@ export function SettingUserProfile() {
     const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
-    const [pendingConfig, setPendingConfig] = useState<boolean>(false);
 
     /** Lưu dữ liệu nhạy cảm đã mã hóa + populate RAM cache */
     const saveImportedSecure = async (rawData: any, metaData: any, key: CryptoKey) => {
@@ -168,27 +167,7 @@ export function SettingUserProfile() {
                 />
             )}
 
-            {pendingConfig && (
-                <SecurityLock 
-                    setupMode={!hasData} 
-                    onUnlock={(key) => {
-                        unlock(key);
-                        setIsConfigured(true);
-                        savePlain(STORAGE_KEYS.FACULTY_ID, facultyId);
-                        savePlain(STORAGE_KEYS.MAJOR_ID, majorId);
-                        savePlain(STORAGE_KEYS.COHORT_ID, cohortId);
-                        savePlain(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
-                        
-                        addNotification({
-                            title: 'Thiết lập thành công',
-                            message: 'Thông tin chương trình đào tạo đã được lưu an toàn.',
-                            type: 'success'
-                        });
-                        
-                        setPendingConfig(false);
-                    }} 
-                />
-            )}
+
             {!isConfigured &&
                 <div className="mb-6 w-full flex flex-col items-center justify-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn</h2>
@@ -271,11 +250,16 @@ export function SettingUserProfile() {
 
                     <button
                         onClick={() => {
-                            if (!cryptoKey) {
-                                setPendingConfig(true);
-                                return;
-                            }
+                            savePlain(STORAGE_KEYS.FACULTY_ID, facultyId);
+                            savePlain(STORAGE_KEYS.MAJOR_ID, majorId);
+                            savePlain(STORAGE_KEYS.COHORT_ID, cohortId);
+                            savePlain(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
                             setIsConfigured(true);
+                            addNotification({
+                                title: 'Thiết lập thành công',
+                                message: 'Thông tin chương trình đào tạo đã được lưu.',
+                                type: 'success'
+                            });
                         }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
                             ? 'bg-green-50 text-green-700 border border-green-200'
