@@ -6,17 +6,32 @@ import React, { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../components/ui/tooltip';
-import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
+import { type ScheduleSession, type WeeklySchedule, type ScheduleOverrides, type Holiday, DAYS } from '../../types/Schedule';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useCourseData } from '../../hooks/useCourseData';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
+import { ScheduleLogic } from '../../logic/ScheduleLogic';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+  DialogTrigger
+} from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Pencil, Trash2, Plus, Info } from 'lucide-react';
 const COLOR_LEGEND = [
   { color: 'green', label: 'Toán học', bgClass: 'bg-green-100', borderClass: 'border-green-600' },
   { color: 'yellow', label: 'Chính trị - Thể chất - Anh văn - ...', bgClass: 'bg-yellow-100', borderClass: 'border-yellow-600' },
   { color: 'blue', label: 'Cơ sở ngành / Chuyên ngành', bgClass: 'bg-blue-100', borderClass: 'border-blue-600' },
   { color: 'purple', label: 'Khác', bgClass: 'bg-purple-100', borderClass: 'border-purple-600' },
 ];
+import { timePeriods } from '../../constants';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -228,7 +243,7 @@ function QuickStatsCard({ icon: Icon, title, value, subtitle, bgColor, trend }: 
 
 function ColorLegend() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
       <div className="flex items-center gap-6 flex-wrap">
         <span className="text-sm font-medium text-gray-700">Màu môn học:</span>
         {COLOR_LEGEND.map((item) => (
@@ -237,12 +252,252 @@ function ColorLegend() {
             <span className="text-xs text-gray-600">{item.label}</span>
           </div>
         ))}
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-[11px] text-blue-600 font-medium">Bấm vào môn để tùy chỉnh nhanh</span>
+        </div>
       </div>
     </div>
   );
 }
 
-function CourseCard({ sessions, hasConflict = false }: { sessions: ScheduleSession | ScheduleSession[]; hasConflict?: boolean }) {
+function EditSessionDialog({
+  session,
+  weekNumber,
+  overrides,
+  onSave
+}: {
+  session: ScheduleSession;
+  weekNumber: number;
+  overrides: ScheduleOverrides;
+  onSave: (newOverrides: ScheduleOverrides) => void;
+}) {
+  const [room, setRoom] = useState(session.room);
+  const [startPeriod, setStartPeriod] = useState(session.startPeriod.toString());
+  const [endPeriod, setEndPeriod] = useState(session.endPeriod.toString());
+  const [mode, setMode] = useState<'global' | 'single'>('global');
+
+  const colorBgs = {
+    blue: 'bg-blue-600',
+    green: 'bg-green-600',
+    yellow: 'bg-yellow-500',
+    purple: 'bg-purple-600',
+  };
+
+  const handleSave = () => {
+    const newOverrides = { ...overrides };
+    const update = {
+      room,
+      startPeriod: parseFloat(startPeriod),
+      endPeriod: parseFloat(endPeriod),
+    };
+
+    if (mode === 'global') {
+      newOverrides.sessionOverrides = {
+        ...newOverrides.sessionOverrides,
+        [session.id]: update
+      };
+    } else {
+      newOverrides.weekOverrides = {
+        ...newOverrides.weekOverrides,
+        [`${weekNumber}_${session.id}`]: update
+      };
+    }
+
+    onSave(newOverrides);
+  };
+
+  return (
+    <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl bg-white">
+      <div className="p-6 space-y-6">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
+            <Pencil className={`w-5 h-5 ${session.color === 'yellow' ? 'text-yellow-600' : `text-${session.color}-600`}`} />
+            Tùy chỉnh môn học
+          </DialogTitle>
+          <DialogDescription className="text-gray-500 font-medium">
+            {session.courseCode} — {session.courseName}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex p-1 bg-gray-100 rounded-xl">
+            <button
+              onClick={() => setMode('global')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${mode === 'global' ? 'bg-white shadow-md text-blue-600 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Áp dụng toàn bộ tuần
+            </button>
+            <button
+              onClick={() => setMode('single')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${mode === 'single' ? 'bg-white shadow-md text-blue-600 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Chỉ áp dụng Tuần {weekNumber}
+            </button>
+          </div>
+
+          <div className="grid gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="room" className="text-[11px] uppercase font-bold text-gray-400 ml-1">Phòng học</Label>
+              <Input id="room" value={room} onChange={(e) => setRoom(e.target.value)} className="h-11 rounded-xl border-gray-200 focus:ring-blue-500" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="start" className="text-[11px] uppercase font-bold text-gray-400 ml-1">Tiết bắt đầu</Label>
+                <Input id="start" type="number" step="0.5" value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="h-11 rounded-xl border-gray-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="end" className="text-[11px] uppercase font-bold text-gray-400 ml-1">Tiết kết thúc</Label>
+                <Input id="end" type="number" step="0.5" value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="h-11 rounded-xl border-gray-200" />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-3">
+            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800 leading-relaxed font-medium">
+              Bạn có thể nhập tiết lẻ (ví dụ: <span className="font-bold">3.5</span>). Hệ thống sẽ tự động quy đổi sang giờ học thực tế.
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter className="flex gap-3 pt-2">
+          <Button variant="ghost" onClick={() => window.location.reload()} className="flex-1 h-11 rounded-xl text-gray-500 font-bold hover:bg-gray-100">
+            Hủy bỏ
+          </Button>
+          <Button onClick={handleSave} className="flex-[2] h-11 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 font-bold text-white transition-all active:scale-95">
+            Lưu thay đổi
+          </Button>
+        </DialogFooter>
+      </div>
+    </DialogContent>
+  );
+}
+
+function HolidayManagerDialog({
+  overrides,
+  courses,
+  onSave
+}: {
+  overrides: ScheduleOverrides;
+  courses: string[];
+  onSave: (newOverrides: ScheduleOverrides) => void;
+}) {
+  const [startWeek, setStartWeek] = useState('10');
+  const [duration, setDuration] = useState('1');
+  const [affected, setAffected] = useState<'all' | string>('all');
+  const [reason, setReason] = useState('Nghỉ thi');
+
+  const addHoliday = () => {
+    const newHoliday: Holiday = {
+      id: Math.random().toString(36).substr(2, 9),
+      startWeek: parseInt(startWeek),
+      duration: parseInt(duration),
+      affectedCourseCodes: affected === 'all' ? 'all' : [affected],
+      reason
+    };
+
+    onSave({
+      ...overrides,
+      holidays: [...overrides.holidays, newHoliday]
+    });
+  };
+
+  const removeHoliday = (id: string) => {
+    onSave({
+      ...overrides,
+      holidays: overrides.holidays.filter(h => h.id !== id)
+    });
+  };
+
+  return (
+    <DialogContent className="sm:max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-orange-600" />
+          Quản lý kỳ nghỉ & Dời lịch
+        </DialogTitle>
+        <DialogDescription>
+          Thêm kỳ nghỉ để tự động dời lịch học của các môn bị ảnh hưởng.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="py-4 space-y-4">
+        {/* Form thêm mới */}
+        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[11px] uppercase font-bold text-gray-500">Từ tuần nào</Label>
+              <Input type="number" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] uppercase font-bold text-gray-500">Số tuần nghỉ</Label>
+              <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px] uppercase font-bold text-gray-500">Áp dụng cho môn</Label>
+            <select
+              value={affected}
+              onChange={(e) => setAffected(e.target.value)}
+              className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white text-sm"
+            >
+              <option value="all">Tất cả các môn</option>
+              {courses.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px] uppercase font-bold text-gray-500">Lý do</Label>
+            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="VD: Nghỉ Tết, Nghỉ thi..." />
+          </div>
+
+          <Button onClick={addHoliday} className="w-full bg-orange-600 hover:bg-orange-700 gap-2">
+            <Plus className="w-4 h-4" /> Thêm kỳ nghỉ
+          </Button>
+        </div>
+
+        {/* Danh sách hiện tại */}
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold">Kỳ nghỉ đã thiết lập:</Label>
+          {overrides.holidays.length === 0 ? (
+            <p className="text-xs text-gray-400 italic text-center py-4">Chưa có kỳ nghỉ nào được thiết lập.</p>
+          ) : (
+            <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+              {overrides.holidays.map(h => (
+                <div key={h.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <div className="text-xs">
+                    <p className="font-bold text-gray-900">{h.reason}</p>
+                    <p className="text-gray-500">Tuần {h.startWeek} • {h.duration} tuần • {h.affectedCourseCodes === 'all' ? 'Tất cả môn' : h.affectedCourseCodes.join(', ')}</p>
+                  </div>
+                  <button onClick={() => removeHoliday(h.id)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </DialogContent>
+  );
+}
+
+function CourseCard({
+  sessions,
+  hasConflict = false,
+  weekNumber,
+  overrides,
+  onSave
+}: {
+  sessions: ScheduleSession | ScheduleSession[];
+  hasConflict?: boolean;
+  weekNumber: number;
+  overrides: ScheduleOverrides;
+  onSave: (newOverrides: ScheduleOverrides) => void;
+}) {
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-500 hover:bg-blue-100',
     green: 'bg-green-50 border-green-500 hover:bg-green-100',
@@ -282,106 +537,126 @@ function CourseCard({ sessions, hasConflict = false }: { sessions: ScheduleSessi
   }
 
   // Chọn màu theo trạng thái trùng lịch
-  const displayColorClasses = hasConflict 
-    ? 'bg-red-50 border-red-500 hover:bg-red-100' 
+  const displayColorClasses = hasConflict
+    ? 'bg-red-50 border-red-500 hover:bg-red-100'
     : colorClasses[primarySession.color];
 
   return (
-    <Tooltip delayDuration={150}>
-      <TooltipTrigger asChild>
-        <div
-          className="relative w-full h-full"
-          style={{
-            minHeight: `${rowSpan * 56}px`,
-          }}
-        >
+    <Dialog>
+      <Tooltip delayDuration={150}>
+        <TooltipTrigger asChild>
           <div
-            className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${displayColorClasses}`}
+            className="relative w-full h-full group"
             style={{
-              top: `${topOffsetPercent}%`,
-              height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
+              minHeight: `${rowSpan * 56}px`,
             }}
           >
-            {/* Badge trùng lịch + số lượng môn */}
-            {hasConflict && (
-              <div className="mb-1 flex items-center gap-1">
-                <span className="inline-block text-[13px] font-bold text-red-700">⚠️</span>
-                <span className="text-[11px] font-bold text-red-700">Trùng {sessionArray.length} môn</span>
-              </div>
-            )}
+            <div
+              className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden ${displayColorClasses} ${primarySession.isOverridden ? 'border-dashed border-2' : ''}`}
+              style={{
+                top: `${topOffsetPercent}%`,
+                height: `calc(${heightPercent}% - 6px)`, // Trừ hao padding của table cell (p-1)
+              }}
+            >
+              {/* Overlay Edit Button - Only this triggers Dialog */}
+              <DialogTrigger asChild>
+                <div
+                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-1.5 bg-white shadow-md rounded-md border border-gray-200 hover:bg-gray-50 transition-colors">
+                    <Pencil className="w-3 h-3 text-blue-600" />
+                  </div>
+                </div>
+              </DialogTrigger>
 
-            {/* Hiển thị các môn học */}
+              {/* Badge trùng lịch + số lượng môn */}
+              {hasConflict && (
+                <div className="mb-1 flex items-center gap-1">
+                  <span className="inline-block text-[13px] font-bold text-red-700">⚠️</span>
+                  <span className="text-[11px] font-bold text-red-700">Trùng {sessionArray.length} môn</span>
+                </div>
+              )}
+
+              {/* Hiển thị các môn học */}
+              {sessionArray.map((sess, idx) => (
+                <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-1 mt-1' : ''}>
+                  {/* Course Name - Max 2 lines with ellipsis */}
+                  <div className={`text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
+                    {sess.courseName}
+                  </div>
+
+                  {/* Course Code */}
+                  <div className={`font-mono text-[10px] font-medium mb-0.5 leading-tight truncate ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>
+                    {sess.courseCode}
+                  </div>
+
+                  {/* Type & Room - Truncate if too long */}
+                  <div className={`text-[10px] leading-tight truncate ${hasConflict ? 'text-red-600' : 'text-gray-600'}`}>
+                    {typeLabels[sess.type]} | {sess.room}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right" align="start" className="z-[100] w-80 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
+          <div className="relative">
             {sessionArray.map((sess, idx) => (
-              <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-1 mt-1' : ''}>
-                {/* Course Name - Max 2 lines with ellipsis */}
-                <div className={`text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
-                  {sess.courseName}
+              <div key={sess.id} className={idx > 0 ? 'border-t border-gray-200 pt-2 mt-2' : ''}>
+                <div className="font-bold text-sm mb-2 text-blue-800">
+                  {sess.courseCode} - {sess.courseName}
                 </div>
-
-                {/* Course Code */}
-                <div className={`font-mono text-[10px] font-medium mb-0.5 leading-tight truncate ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>
-                  {sess.courseCode}
-                </div>
-
-                {/* Type & Room - Truncate if too long */}
-                <div className={`text-[10px] leading-tight truncate ${hasConflict ? 'text-red-600' : 'text-gray-600'}`}>
-                  {typeLabels[sess.type]} | {sess.room}
+                <div className="space-y-1 text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Loại:</span>
+                    <span className="font-medium text-gray-900">{typeFullLabels[sess.type]}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Phòng:</span>
+                    <span className="font-medium text-gray-900">{sess.room}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tiết:</span>
+                    <span className="font-medium text-gray-900">{sess.startPeriod} - {Math.floor(sess.endPeriod)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Thời gian: </span>
+                    <span className="font-medium text-gray-900">{sess.startTime} - {sess.endTime}</span>
+                  </div>
+                  {sess.totalWeeks > 0 && (
+                    <div className="flex justify-between">
+                      <span>Ngày: </span>
+                      <span className="font-medium text-gray-900">{sess.startDate} - {sess.endDate} </span>
+                    </div>
+                  )}
+                  {sess.totalWeeks > 0 && (
+                    <div className="flex justify-between">
+                      <span>Thời lượng:</span>
+                      <span className="font-medium text-gray-900">{sess.totalWeeks} tuần</span>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 pt-1 mt-1">
+                    <div className="text-[11px] text-gray-500">
+                      GV: {sess.instructor}
+                    </div>
+                    <div className="text-[11px] text-gray-500">
+                      Lớp: {sess.classCode} • {sess.credits} TC
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="right" align="start" className="z-[100] w-80 bg-[#e8f0fd] border-blue-500 text-gray-900 rounded-lg shadow-xl p-3 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-200 border border-gray-200">
-        <div className="relative">
-          {sessionArray.map((sess, idx) => (
-            <div key={sess.id} className={idx > 0 ? 'border-t border-gray-200 pt-2 mt-2' : ''}>
-              <div className="font-bold text-sm mb-2 text-blue-800">
-                {sess.courseCode} - {sess.courseName}
-              </div>
-              <div className="space-y-1 text-gray-600">
-                <div className="flex justify-between">
-                  <span>Loại:</span>
-                  <span className="font-medium text-gray-900">{typeFullLabels[sess.type]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Phòng:</span>
-                  <span className="font-medium text-gray-900">{sess.room}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tiết:</span>
-                  <span className="font-medium text-gray-900">{sess.startPeriod} - {Math.floor(sess.endPeriod)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Thời gian: </span>
-                  <span className="font-medium text-gray-900">{sess.startTime} - {sess.endTime}</span>
-                </div>
-                {sess.totalWeeks > 0 && (
-                  <div className="flex justify-between">
-                    <span>Ngày: </span>
-                    <span className="font-medium text-gray-900">{sess.startDate} - {sess.endDate} </span>
-                  </div>
-                )}
-                {sess.totalWeeks > 0 && (
-                  <div className="flex justify-between">
-                    <span>Thời lượng:</span>
-                    <span className="font-medium text-gray-900">{sess.totalWeeks} tuần</span>
-                  </div>
-                )}
-                <div className="border-t border-gray-200 pt-1 mt-1">
-                  <div className="text-[11px] text-gray-500">
-                    GV: {sess.instructor}
-                  </div>
-                  <div className="text-[11px] text-gray-500">
-                    Lớp: {sess.classCode} • {sess.credits} TC
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </TooltipContent>
-    </Tooltip>
+        </TooltipContent>
+      </Tooltip>
+      <EditSessionDialog
+        session={primarySession}
+        weekNumber={weekNumber}
+        overrides={overrides}
+        onSave={onSave}
+      />
+    </Dialog>
   );
 }
 
@@ -425,13 +700,17 @@ function PeriodRow({
   time,
   schedule,
   isToday,
-  currentPeriod
+  currentPeriod,
+  overrides,
+  onSave
 }: {
   period: number;
   time: string;
   schedule: WeeklySchedule;
   isToday: (day: number) => boolean;
   currentPeriod: number | null;
+  overrides: ScheduleOverrides;
+  onSave: (newOverrides: ScheduleOverrides) => void;
 }) {
   return (
     <tr>
@@ -447,14 +726,20 @@ function PeriodRow({
 
         if (session && shouldRenderCell(session, period)) {
           // Nếu có trùng lịch, lấy tất cả sessions; không thì lấy single session
-          const sessionsToDisplay = hasOverlap 
+          const sessionsToDisplay = hasOverlap
             ? getAllSessionsForCell(day.value, period, schedule.sessions)
             : session;
-          
+
           return (
             <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-1 border border-gray-200 align-middle ${isTodayCell ? 'bg-green-50/50' : ''
               } ${isCurrentPeriod ? 'ring-2 ring-green-500 ring-inset' : ''}`}>
-              <CourseCard sessions={sessionsToDisplay} hasConflict={hasOverlap} />
+              <CourseCard
+                sessions={sessionsToDisplay}
+                hasConflict={hasOverlap}
+                weekNumber={schedule.weekNumber}
+                overrides={overrides}
+                onSave={onSave}
+              />
             </td>
           );
         } else if (!session) {
@@ -474,43 +759,72 @@ interface VisualScheduleProps {
 }
 
 export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
-  const SEMESTER_3_SCHEDULE: WeeklySchedule = useSchedule();
+  const { overrides, updateOverrides, ...SEMESTER_3_SCHEDULE_BASE } = useSchedule();
 
   // Lấy data từ localStorage qua Recommender
   const { isReady, hasData } = useCourseData();
 
   const [currentWeek, setCurrentWeek] = useState(() => {
-    if (!SEMESTER_3_SCHEDULE.semesterStartDate) return 1;
+    if (!SEMESTER_3_SCHEDULE_BASE.semesterStartDate) return 1;
     const now = new Date();
-    const msDiff = now.getTime() - SEMESTER_3_SCHEDULE.semesterStartDate.getTime();
+    const msDiff = now.getTime() - SEMESTER_3_SCHEDULE_BASE.semesterStartDate.getTime();
     if (msDiff < 0) return 1;
     const week = Math.floor(msDiff / (7 * 24 * 60 * 60 * 1000)) + 1;
     return week;
   });
 
   const schedule = {
-    ...SEMESTER_3_SCHEDULE,
-    semesterName: selectedSemester || SEMESTER_3_SCHEDULE.semesterName
+    ...SEMESTER_3_SCHEDULE_BASE,
+    semesterName: selectedSemester || SEMESTER_3_SCHEDULE_BASE.semesterName,
+    overrides,
+    updateOverrides
   };
 
   const { semesterStartDate } = schedule;
   let weekStartStr = `Tuần ${currentWeek}`;
 
   const displaySessions = schedule.sessions.filter(session => {
+    // 1. Kiểm tra holiday và tính toán tuần nội dung thực tế
+    const actualWeek = ScheduleLogic.getActualWeekForCourse(currentWeek, session.courseCode, schedule.overrides.holidays);
+
+    // Nếu tuần hiện tại là tuần nghỉ của môn này
+    if (actualWeek === null) return false;
+
     if (!semesterStartDate || !session.startDateParsed || !session.endDateParsed) return true;
 
-    const currentWeekStart = new Date(semesterStartDate);
-    currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeek - 1) * 7);
+    // 2. Tính toán ngày của "actualWeek" (tuần nội dung mà session này thuộc về)
+    const contentWeekStart = new Date(semesterStartDate);
+    contentWeekStart.setDate(contentWeekStart.getDate() + (actualWeek - 1) * 7);
 
-    // Cuối Chủ Nhật
-    const currentWeekEnd = new Date(currentWeekStart);
-    currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
-    currentWeekEnd.setHours(23, 59, 59, 999);
+    const contentWeekEnd = new Date(contentWeekStart);
+    contentWeekEnd.setDate(contentWeekEnd.getDate() + 6);
+    contentWeekEnd.setHours(23, 59, 59, 999);
 
-    if (currentWeekStart > session.endDateParsed || currentWeekEnd < session.startDateParsed) {
+    if (contentWeekStart > session.endDateParsed || contentWeekEnd < session.startDateParsed) {
       return false;
     }
     return true;
+  }).map(session => {
+    // 3. Áp dụng week overrides cho session nếu có
+    const weekOverride = schedule.overrides.weekOverrides[`${currentWeek}_${session.id}`];
+    if (weekOverride) {
+      // Re-calculate times if periods changed
+      let sP = weekOverride.startPeriod !== undefined ? weekOverride.startPeriod : session.startPeriod;
+      let eP = weekOverride.endPeriod !== undefined ? weekOverride.endPeriod : session.endPeriod;
+      const adjusted = ScheduleLogic.adjustPeriodsForPractical(session.type, sP, eP);
+
+      return {
+        ...session,
+        ...weekOverride,
+        startPeriod: adjusted.startPeriod,
+        endPeriod: adjusted.endPeriod,
+        startTime: ScheduleLogic.periodToTimeString(adjusted.startPeriod, true),
+        endTime: ScheduleLogic.periodToTimeString(adjusted.endPeriod, false),
+        duration: adjusted.duration,
+        isOverridden: true
+      };
+    }
+    return session;
   });
 
   if (semesterStartDate) {
@@ -530,8 +844,8 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
   const totalPeriods = displaySessions.reduce((acc, s) => acc + s.duration, 0);
 
   const totalMinutes = totalPeriods * 50;
-  const formattedHours = totalMinutes % 60 === 0 
-    ? `${Math.floor(totalMinutes / 60)} giờ` 
+  const formattedHours = totalMinutes % 60 === 0
+    ? `${Math.floor(totalMinutes / 60)} giờ`
     : `${Math.floor(totalMinutes / 60)} giờ ${totalMinutes % 60} phút`;
 
   // Update schedule data based on current week
@@ -634,14 +948,33 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
             </p>
           </div>
 
-          {/* Export Button */}
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">Xuất lịch</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Manage Holidays Button */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors duration-200 border border-orange-200"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm font-medium">Quản lý nghỉ lễ</span>
+                </button>
+              </DialogTrigger>
+              <HolidayManagerDialog
+                overrides={schedule.overrides}
+                courses={Array.from(new Set(schedule.sessions.map(s => s.courseCode)))}
+                onSave={schedule.updateOverrides}
+              />
+            </Dialog>
+
+            {/* Export Button */}
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              <Download className="w-4 h-4" />
+              <span className="text-sm font-medium">Xuất lịch</span>
+            </button>
+          </div>
         </div>
 
         {/* Quick Stats Cards */}
@@ -662,7 +995,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
             bgColor="bg-green-600"
             trend={periodsTrend}
           />
-          <QuickStatsCard   
+          <QuickStatsCard
             icon={Calendar}
             title="Tuần hiện tại"
             value={`Tuần ${displaySchedule.weekNumber}/17`}
@@ -694,7 +1027,7 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
           <button
             onClick={handleNextWeek}
-            disabled={currentWeek === 17}
+            disabled={currentWeek === 25} // Increased limit for holidays
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="text-sm font-medium">Tuần sau</span>
@@ -729,11 +1062,18 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
                 </td>
               </tr>
 
-              <PeriodRow period={1} time="7:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={2} time="8:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={3} time="9:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={4} time="10:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={5} time="11:00" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              {timePeriods.slice(0, 5).map((period) => (
+                <PeriodRow
+                  key={period.period}
+                  period={period.period}
+                  time={period.start}
+                  schedule={displaySchedule}
+                  isToday={isToday}
+                  currentPeriod={currentPeriod}
+                  overrides={schedule.overrides}
+                  onSave={schedule.updateOverrides}
+                />
+              ))}
 
               {/* BUỔI CHIỀU */}
               <tr className="bg-orange-50">
@@ -742,11 +1082,18 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
                 </td>
               </tr>
 
-              <PeriodRow period={6} time="12:40" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={7} time="13:30" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={8} time="14:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={9} time="15:20" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
-              <PeriodRow period={10} time="16:10" schedule={displaySchedule} isToday={isToday} currentPeriod={currentPeriod} />
+              {timePeriods.slice(5, 10).map((period) => (
+                <PeriodRow
+                  key={period.period}
+                  period={period.period}
+                  time={period.start}
+                  schedule={displaySchedule}
+                  isToday={isToday}
+                  currentPeriod={currentPeriod}
+                  overrides={schedule.overrides}
+                  onSave={schedule.updateOverrides}
+                />
+              ))}
             </tbody>
           </table>
         </div>

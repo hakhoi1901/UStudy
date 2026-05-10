@@ -6,7 +6,7 @@
  */
 
 import { timePeriods } from '../constants/timetable';
-import { type ScheduleSession, type WeeklySchedule } from '../types/Schedule';
+import { type ScheduleSession, type WeeklySchedule, type ScheduleOverrides, type Holiday } from '../types/Schedule';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -243,13 +243,45 @@ export const ScheduleLogic = {
     },
 
     /**
+     * Tính toán tuần thực tế của môn học sau khi đã trừ đi các kỳ nghỉ/dời lịch.
+     * Trả về null nếu tuần hiện tại là tuần nghỉ của môn đó.
+     */
+    getActualWeekForCourse: (currentWeek: number, courseCode: string, holidays: Holiday[]): number | null => {
+        let shiftedWeeks = 0;
+        let isHoliday = false;
+
+        // Sắp xếp holiday theo tuần tăng dần để tính toán chính xác
+        const sortedHolidays = [...holidays].sort((a, b) => a.startWeek - b.startWeek);
+
+        for (const h of sortedHolidays) {
+            const isAffected = h.affectedCourseCodes === 'all' || h.affectedCourseCodes.includes(courseCode);
+            if (!isAffected) continue;
+
+            // Nếu currentWeek nằm trong khoảng nghỉ
+            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + h.duration) {
+                isHoliday = true;
+                break;
+            }
+
+            // Nếu currentWeek đã vượt qua kỳ nghỉ, thì "tuần nội dung" bị lùi lại
+            if (currentWeek >= h.startWeek + h.duration) {
+                shiftedWeeks += h.duration;
+            }
+        }
+
+        if (isHoliday) return null;
+        return currentWeek - shiftedWeeks;
+    },
+
+    /**
      * Xây dựng toàn bộ sessions từ danh sách đăng ký + metadata khóa học.
      * Orchestrator function thay thế mega-loop trong useSchedule.ts.
      */
     buildScheduleSessions: (
         coursesRegistered: any[],
         allCoursesMeta: any[],
-        metadata: any
+        metadata: any,
+        overrides?: ScheduleOverrides
     ): WeeklySchedule => {
         const semester = metadata?.params?.registration?.sem || '1';
         const year = metadata?.params?.registration?.year || '24-25';
@@ -295,11 +327,21 @@ export const ScheduleLogic = {
                 if (!match) return;
 
                 const dayStr = match[1];
-                const dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
+                let dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
 
-                const rawStart = parseFloat(match[2]);
-                const rawEnd = parseFloat(match[3]);
-                const room = match[5];
+                let rawStart = parseFloat(match[2]);
+                let rawEnd = parseFloat(match[3]);
+                let room = match[5] || '';
+
+                // --- Apply Global Overrides ---
+                const sessionId = `${course.id}_${index}_${partIdx}`;
+                const override = overrides?.sessionOverrides?.[sessionId];
+                if (override) {
+                    if (override.room !== undefined) room = override.room;
+                    if (override.startPeriod !== undefined) rawStart = override.startPeriod;
+                    if (override.endPeriod !== undefined) rawEnd = override.endPeriod;
+                    if (override.dayOfWeek !== undefined) dayOfWeek = override.dayOfWeek;
+                }
 
                 const adjusted = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
                 const startTimeStr = ScheduleLogic.periodToTimeString(adjusted.startPeriod, true);
