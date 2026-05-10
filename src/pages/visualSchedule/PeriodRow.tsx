@@ -1,0 +1,68 @@
+import { CourseCard } from './EditSessionDialog';
+import { type WeeklySchedule, type ScheduleOverrides, type ScheduleSession, DAYS } from '../../types/Schedule';
+import {
+    getSessionsForCell,
+    hasOverlappingSession,
+    getAllSessionsForCell,
+    calculateRowSpan,
+    shouldRenderCell,
+} from '../../logic/visualCheduler/scheduleHelpers';
+
+
+// Helper to render period row with today highlighting
+export function PeriodRow({
+    period,
+    time,
+    schedule,
+    isToday,
+    currentPeriod,
+    overrides,
+    onSave
+}: {
+    period: number;
+    time: string;
+    schedule: WeeklySchedule;
+    isToday: (day: number) => boolean;
+    currentPeriod: number | null;
+    overrides: ScheduleOverrides;
+    onSave: (newOverrides: ScheduleOverrides) => void;
+}) {
+    return (
+        <tr>
+            <td className="sticky left-0 bg-gray-50 z-10 p-1.5 border border-gray-200 text-center h-14">
+                <div className="text-[13px] font-semibold text-gray-700">{period}</div>
+                <div className="text-[11px] text-gray-500">{time}</div>
+            </td>
+            {DAYS.map((day) => {
+                const session = getSessionsForCell(day.value, period, schedule.sessions);
+                const isTodayCell = isToday(day.value);
+                const isCurrentPeriod = isTodayCell && currentPeriod === period;
+                const hasOverlap = hasOverlappingSession(day.value, period, schedule.sessions);
+
+                if (session && shouldRenderCell(session, period)) {
+                    // Nếu có trùng lịch, lấy tất cả sessions; không thì lấy single session
+                    const sessionsToDisplay = hasOverlap
+                        ? getAllSessionsForCell(day.value, period, schedule.sessions)
+                        : session;
+
+                    return (
+                        <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-1 border border-gray-200 align-middle ${isTodayCell ? 'bg-green-50/50' : ''
+                            } ${isCurrentPeriod ? 'ring-2 ring-green-500 ring-inset' : ''}`}>
+                            <CourseCard
+                                sessions={sessionsToDisplay}
+                                hasConflict={hasOverlap}
+                                weekNumber={schedule.weekNumber}
+                                overrides={overrides}
+                                onSave={onSave}
+                            />
+                        </td>
+                    );
+                } else if (!session) {
+                    return <td key={day.value} className={`p-1 border border-gray-200 bg-white h-14 ${isTodayCell ? 'bg-green-50/30' : ''
+                        }`} />;
+                }
+                return null;
+            })}
+        </tr>
+    );
+}
