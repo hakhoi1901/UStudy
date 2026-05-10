@@ -332,9 +332,10 @@ function CourseCard({
             <Tooltip delayDuration={150}>
                 <TooltipTrigger asChild>
                     <div
-                        className="relative w-full h-full group"
+                        className="relative w-full h-full group schedule-cell"
                         style={{
-                            minHeight: `${rowSpan * 56}px`,
+                            // Desktop: 56px/row, Mobile: 36px/row
+                            minHeight: `${rowSpan * 36}px`,
                         }}
                     >
                         <div
@@ -373,20 +374,20 @@ function CourseCard({
 
                             {/* Hiển thị các môn học */}
                             {sessionArray.map((sess, idx) => (
-                                <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-1 mt-1' : ''}>
-                                    {/* Course Name - Max 2 lines with ellipsis */}
-                                    <div className={`text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
+                                <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-0.5 mt-0.5' : ''}>
+                                    {/* Course Name */}
+                                    <div className={`text-[9px] md:text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
                                         {sess.courseName}
                                     </div>
 
                                     {/* Course Code */}
-                                    <div className={`font-mono text-[10px] font-medium mb-0.5 leading-tight truncate ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>
+                                    <div className={`font-mono text-[8px] md:text-[10px] font-medium mb-0.5 leading-tight truncate ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>
                                         {sess.courseCode}
                                     </div>
 
-                                    {/* Type & Room - Truncate if too long */}
-                                    <div className={`text-[10px] leading-tight truncate ${hasConflict ? 'text-red-600' : 'text-gray-600'}`}>
-                                        {typeLabels[sess.type]} | {sess.room}
+                                    {/* Type & Room */}
+                                    <div className={`text-[8px] md:text-[10px] leading-tight truncate ${hasConflict ? 'text-red-600' : 'text-gray-600'}`}>
+                                        {sess.type} | {sess.room}
                                     </div>
                                 </div>
                             ))}

@@ -336,20 +336,20 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
   return (
     <div>
       {/* Header with Export Button */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-4 md:mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-gray-900 mb-2">Học phí</h1>
-          <p className="text-gray-600">
-            Xem chi tiết học phí của học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span> và thông tin thanh toán.
+          <h1 className="text-gray-900 mb-1 md:mb-2">Học phí</h1>
+          <p className="text-gray-600 text-sm md:text-base">
+            Xem chi tiết học phí học kỳ <span className="font-semibold text-[#004A98]">{currentSemesterSummary.semesterName}</span>.
           </p>
         </div>
 
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
+          className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg flex-shrink-0"
         >
-          <Download className="w-4 h-4" />
-          <span className="text-sm font-medium">Xuất hóa đơn</span>
+          <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          <span className="text-xs md:text-sm font-medium">Xuất hóa đơn</span>
         </button>
       </div>
 
@@ -433,7 +433,32 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
 
       {/* Enhanced Table - Chi tiết học phí */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile: Card list */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {currentSemesterData.map((course) => (
+            <div key={course.stt} className="px-4 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-mono font-bold text-[#004A98]">{course.courseCode}</p>
+                  <p className="text-xs font-medium text-gray-900 mt-0.5 truncate">{course.courseName}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">{course.credits} TC • {course.tuitionCredits} TC HP • {course.periods} tiết</p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs font-bold text-[#004A98]">{new Intl.NumberFormat('vi-VN').format(course.actualFee)}₫</p>
+                  {course.discount > 0 && <p className="text-[10px] text-green-600">-{new Intl.NumberFormat('vi-VN').format(course.discount)}₫</p>}
+                </div>
+              </div>
+            </div>
+          ))}
+          {/* Mobile total */}
+          <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-700">Tổng cộng</span>
+            <span className="text-sm font-bold text-[#004A98]">{new Intl.NumberFormat('vi-VN').format(currentSemesterSummary.totalFee)}₫</span>
+          </div>
+        </div>
+
+        {/* Desktop: Full table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-xs min-w-[1100px]">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 border-b-2 border-gray-300 z-10">
               <tr>
@@ -588,6 +613,7 @@ export function TuitionManagement({ selectedSemester: initialSelectedSemester }:
             </tfoot>
           </table>
         </div>
+        {/* end desktop table */}
       </div>
 
       {/* Enhanced Payment Information */}

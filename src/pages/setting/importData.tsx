@@ -1,11 +1,13 @@
 import { Download, Upload, Database } from "lucide-react";
-import { saveToStorage, getSessionPin } from "../../helpers/localStorage/save";
+import { verifyBackupPin, importBackupWithCurrentKey, hasSecureData } from "../../helpers/localStorage/save";
 import { SecurityLock } from "../../components/SecurityLock";
 import { useRef, useState } from "react";
+import { useCrypto } from "../../context/CryptoContext";
 
 export function ImportData() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
+    const { cryptoKey } = useCrypto();
 
     const handleExport = () => {
         try {
@@ -77,18 +79,16 @@ export function ImportData() {
 
                 // Xác nhận với người dùng
                 if (window.confirm("Hành động này sẽ ghi đè dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?")) {
-                    const pin = getSessionPin();
-                    if (!pin) {
+                    if (dataToImport['__pbkdf2_salt__'] && dataToImport['__pin_verify__']) {
                         setPendingImport(dataToImport);
-                        return;
+                    } else {
+                        // File cũ không mã hóa
+                        Object.keys(dataToImport).forEach(key => {
+                            localStorage.setItem(key, dataToImport[key]);
+                        });
+                        alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
+                        window.location.reload();
                     }
-
-                    Object.keys(dataToImport).forEach(key => {
-                        saveToStorage(key, dataToImport[key]);
-                    });
-
-                    alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
-                    window.location.reload();
                 }
             } catch (error) {
                 alert('File không hợp lệ hoặc bị lỗi!');
@@ -125,12 +125,31 @@ export function ImportData() {
                 </button>
                 {pendingImport && (
                     <SecurityLock 
-                        setupMode={true} 
+                        setupMode={false} 
+                        customTitle="Xác thực tệp sao lưu"
+                        customSubtitle="Nhập mật khẩu đã tạo khi xuất tệp dữ liệu này để khôi phục."
+                        customVerify={async (pin) => {
+                             const isValid = await verifyBackupPin(pin, pendingImport['__pbkdf2_salt__'], pendingImport['__pin_verify__']);
+                             if (isValid) {
+                                 if (hasSecureData() && cryptoKey) {
+                                     // Nếu máy đang có mật khẩu, decrypt file và mã hoá lại bằng mật khẩu hiện tại
+                                     await importBackupWithCurrentKey(pendingImport, pin, cryptoKey);
+                                 } else if (hasSecureData() && !cryptoKey) {
+                                     // Trạng thái bất thường — SecurityGate đáng lẽ đã chặn
+                                     console.error('[importData] cryptoKey null khi hasSecureData=true');
+                                     alert('Lỗi bảo mật: Vui lòng tải lại trang và đăng nhập lại.');
+                                     return false;
+                                 } else {
+                                     // Máy chưa có mật khẩu → ghi đè toàn bộ (mang mật khẩu của file)
+                                     Object.keys(pendingImport).forEach(key => {
+                                         localStorage.setItem(key, pendingImport[key]);
+                                     });
+                                 }
+                             }
+                             return isValid;
+                        }}
                         onUnlock={() => {
-                            Object.keys(pendingImport).forEach(key => {
-                                saveToStorage(key, pendingImport[key]);
-                            });
-                            alert('Nhập dữ liệu thành công! Trang sẽ được tải lại.');
+                            alert('Khôi phục dữ liệu thành công! Ứng dụng sẽ khởi động lại.');
                             setPendingImport(null);
                             window.location.reload();
                         }}

@@ -20,13 +20,14 @@ import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
 import { SecurityLock } from './components/SecurityLock';
 import { SecurityGate } from './components/SecurityGate';
 import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
+import { App as CapacitorApp } from '@capacitor/app';
 
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
-  const { cryptoKey, unlock, refreshHasData } = useCrypto();
+  const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
 
   const [currentPage, setCurrentPage] = useState<string>(() => {
@@ -107,6 +108,26 @@ function AppContent() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  useEffect(() => {
+    const handleBackButton = () => {
+      setCurrentPage((prevPage) => {
+        if (prevPage !== 'dashboard') {
+          return 'dashboard';
+        } else {
+          CapacitorApp.exitApp();
+          return prevPage;
+        }
+      });
+    };
+
+    CapacitorApp.addListener('backButton', handleBackButton);
+
+    return () => {
+      CapacitorApp.removeAllListeners();
+    };
+  }, []);
+
+
   // if (isMobile) {
   //   return (
   //     <div className="flex h-screen w-screen items-center justify-center bg-gray-50 p-4">
@@ -128,7 +149,7 @@ function AppContent() {
       {/* Overlay SecurityLock khi có pendingData nhưng chưa có PIN */}
       {pendingData && !cryptoKey && (
         <SecurityLock
-          setupMode={true}
+          setupMode={!hasData}
           onUnlock={async (key) => {
             unlock(key);
             const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
@@ -142,11 +163,11 @@ function AppContent() {
         />
       )}
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="flex-1 flex flex-col overflow-visible">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header selectedSemester={selectedSemester} />
         {/* Giao diện chính/các trang*/}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-[1600px] mx-auto w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 relative">
+          <div className="p-4 md:p-6 max-w-[1600px] mx-auto w-full">
             {!isConfigured ? (
               <div className="h-full flex items-center justify-center" style={{ marginTop: '40px' }}>
                 <div className="max-w-2xl w-full mx-auto">

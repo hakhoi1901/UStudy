@@ -18,7 +18,7 @@ export function SettingUserProfile() {
         isConfigured, setIsConfigured
     } = useDepartmentData();
     const { addNotification } = useAppNotification();
-    const { cryptoKey, unlock, refreshHasData } = useCrypto();
+    const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
     const [pendingConfig, setPendingConfig] = useState<boolean>(false);
@@ -135,10 +135,10 @@ export function SettingUserProfile() {
     };
 
     return (
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
             {pendingImport && (
                 <SecurityLock 
-                    setupMode={true} 
+                    setupMode={!hasData} 
                     onUnlock={async (key) => {
                         unlock(key);
                         const { type, data } = pendingImport;
@@ -170,7 +170,7 @@ export function SettingUserProfile() {
 
             {pendingConfig && (
                 <SecurityLock 
-                    setupMode={true} 
+                    setupMode={!hasData} 
                     onUnlock={(key) => {
                         unlock(key);
                         setIsConfigured(true);

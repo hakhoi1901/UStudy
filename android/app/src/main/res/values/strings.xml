@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">UStudy</string>
+    <string name="title_activity_main">UStudy</string>
+    <string name="package_name">com.ustudy.app</string>
+    <string name="custom_url_scheme">com.ustudy.app</string>
+</resources>

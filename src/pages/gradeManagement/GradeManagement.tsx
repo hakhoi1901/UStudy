@@ -17,7 +17,7 @@ import { RetakeCourses } from './RetakeCourses';
 import { GradeHistory } from './GradeHistory';
 import { GPACalculator } from '../../logic/GPACalculator';
 import { GPAsem } from './GPAsem';
-import { FileDown } from 'lucide-react';
+import { FileDown, TrendingUp, BarChart2, X } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TranscriptPDF } from '../../components/TranscriptPDF';
 import { readFromStorage } from '../../helpers/localStorage/save';
@@ -29,6 +29,7 @@ export function GradeManagement() {
   // const [courses, setCourses] = useState<Course[]>([]);
   const [selectedSemester, setSelectedSemester] = useState('all');
   const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
+  const [mobileActivePanel, setMobileActivePanel] = useState<'gpaPull' | 'gpaSimulation' | null>(null);
   const hasAlertedRef = useRef(false);
 
   const { data } = useDepartmentData();
@@ -187,19 +188,82 @@ export function GradeManagement() {
         majorSpecializedGPA={majorSpecializedGPA} 
       />
 
-      {/* Công cụ "Kéo" GPA: nhập GPA mục tiêu → điểm TB tối thiểu + bảng môn theo kỳ */}
-      <GPAPullTool
-        gradesHistory={gradesHistory}
-        getClassification={getClassification}
-        simulatorCourses={simulatorCourses}
-        handleGradeChange={handleGradeChange}
-        currentGPA={currentGPA}
-        accumulatedCredits={accumulatedCredits}
-        totalCredits={totalCredits}
-      />
+      {/* Mobile Feature Buttons (chỉ hiện trên mobile) */}
+      <div className="md:hidden grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setMobileActivePanel(mobileActivePanel === 'gpaPull' ? null : 'gpaPull')}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all shadow-sm ${
+            mobileActivePanel === 'gpaPull'
+              ? 'bg-[#004A98] text-white border-[#004A98]'
+              : 'bg-white text-gray-700 border-gray-200 hover:border-[#004A98] hover:text-[#004A98]'
+          }`}
+        >
+          <TrendingUp className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm font-medium">Kéo GPA</span>
+        </button>
+        <button
+          onClick={() => setMobileActivePanel(mobileActivePanel === 'gpaSimulation' ? null : 'gpaSimulation')}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all shadow-sm ${
+            mobileActivePanel === 'gpaSimulation'
+              ? 'bg-[#004A98] text-white border-[#004A98]'
+              : 'bg-white text-gray-700 border-gray-200 hover:border-[#004A98] hover:text-[#004A98]'
+          }`}
+        >
+          <BarChart2 className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm font-medium">Mô phỏng GPA</span>
+        </button>
+      </div>
 
-      {/* Mô phỏng GPA - Học kỳ tiếp theo */}
-      <GPASimulation courses={simulatorCourses} expandedSection={expandedSection} setExpandedSection={setExpandedSection} semesterGPA={semesterGPA} cumulativeGPA={cumulativeGPA} getClassification={getClassification} handleGradeChange={handleGradeChange} />
+      {/* Mobile Panel: Kéo GPA */}
+      {mobileActivePanel === 'gpaPull' && (
+        <div className="md:hidden">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-800">Công cụ Kéo GPA</span>
+            <button onClick={() => setMobileActivePanel(null)} className="p-1.5 rounded-full hover:bg-gray-100">
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          <GPAPullTool
+            gradesHistory={gradesHistory}
+            getClassification={getClassification}
+            simulatorCourses={simulatorCourses}
+            handleGradeChange={handleGradeChange}
+            currentGPA={currentGPA}
+            accumulatedCredits={accumulatedCredits}
+            totalCredits={totalCredits}
+          />
+        </div>
+      )}
+
+      {/* Mobile Panel: Mô phỏng GPA */}
+      {mobileActivePanel === 'gpaSimulation' && (
+        <div className="md:hidden">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-800">Mô phỏng GPA</span>
+            <button onClick={() => setMobileActivePanel(null)} className="p-1.5 rounded-full hover:bg-gray-100">
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          <GPASimulation courses={simulatorCourses} expandedSection={expandedSection} setExpandedSection={setExpandedSection} semesterGPA={semesterGPA} cumulativeGPA={cumulativeGPA} getClassification={getClassification} handleGradeChange={handleGradeChange} />
+        </div>
+      )}
+
+      {/* Desktop: GPAPullTool + GPASimulation hiện bình thường */}
+      <div className="hidden md:block">
+        <GPAPullTool
+          gradesHistory={gradesHistory}
+          getClassification={getClassification}
+          simulatorCourses={simulatorCourses}
+          handleGradeChange={handleGradeChange}
+          currentGPA={currentGPA}
+          accumulatedCredits={accumulatedCredits}
+          totalCredits={totalCredits}
+        />
+      </div>
+
+      <div className="hidden md:block">
+        <GPASimulation courses={simulatorCourses} expandedSection={expandedSection} setExpandedSection={setExpandedSection} semesterGPA={semesterGPA} cumulativeGPA={cumulativeGPA} getClassification={getClassification} handleGradeChange={handleGradeChange} />
+      </div>
 
       {/* Danh sách môn học cần học lại (Nếu có) */}
       {retakeCourses.length > 0 && (

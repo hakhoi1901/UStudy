@@ -48,9 +48,9 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
     };
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <History className="w-8 h-8 text-[#004A98]" />
+            <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <History className="w-6 h-6 md:w-8 md:h-8 text-[#004A98]" />
                     <h3 className="text-sm font-semibold text-gray-800">Lịch sử điểm</h3>
                     <span className="px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full">
                         {filteredHistory.length} môn
@@ -58,14 +58,14 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                 </div>
 
                 {/* Lọc theo học kỳ */}
-                <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-500" />
+                <div className="flex items-center gap-1.5 md:gap-2">
+                    <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500" />
                     <select
                         value={selectedSemester}
                         onChange={(e) => setSelectedSemester(e.target.value)}
-                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+                        className="px-2 md:px-3 py-1 md:py-1.5 border border-gray-200 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
                     >
-                        <option value="all">Tất cả học kỳ</option>
+                        <option value="all">Tất cả</option>
                         {uniqueSemesters.map(sem => (
                             <option key={sem} value={sem}>{sem}</option>
                         ))}
@@ -73,8 +73,50 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                 </div>
             </div>
 
-            {/* Bảng lịch sử điểm */}
-            <div className="overflow-x-auto">
+            {/* Mobile: Card view */}
+            <div className="md:hidden divide-y divide-gray-100">
+                {sortedHistory.map((course) => (
+                    <div key={course.id} className={`px-4 py-3 ${course.needsRetake ? 'bg-red-50/40' : ''}`}>
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold text-gray-900">{course.nameVi}</p>
+                                <p className="text-[10px] text-gray-600">{course.code}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <span className={`px-2 py-0.5 rounded-md font-semibold text-xs ${course.grade > 0 ? (
+                                        course.grade >= 9.0 ? 'bg-green-100 text-green-700' :
+                                            course.grade >= 8.0 ? 'bg-blue-100 text-blue-700' :
+                                                course.grade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
+                                                    course.grade >= 5.0 ? 'bg-orange-100 text-orange-700' :
+                                                        'bg-red-100 text-red-700'
+                                    ) : 'bg-gray-100 text-gray-400'
+                                    }`}>
+                                    {course.grade > 0 ? course.grade.toFixed(1) : '—'}
+                                </span>
+                                {course.grade > 0 ? (
+                                    course.needsRetake ? (
+                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] rounded-full font-medium">Học lại</span>
+                                    ) : (
+                                        <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-medium">Đạt</span>
+                                    )
+                                ) : (
+                                    <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full font-medium">
+                                        {course.status === 'ongoing' ? 'Đang học' : 'Chưa có'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-[10px] text-gray-500">{course.semester}</span>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-[10px] text-gray-500">{course.credits} TC</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop: Table view */}
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -190,6 +232,7 @@ export function GradeHistory({ filteredHistory, selectedSemester, uniqueSemester
                     </tbody>
                 </table>
             </div>
+            {/* end desktop table */}
         </div>
     );
 }

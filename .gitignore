@@ -32,3 +32,8 @@ data.json
 temp/*
 
 *.txt
+
+build/*
+android/app/build/*
+capacitor-cordova-android-plugins/*
+capacitor-android-plugins/*

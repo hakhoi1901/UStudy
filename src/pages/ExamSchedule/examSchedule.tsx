@@ -165,11 +165,11 @@ export function ExamScheduleVi() {
 
     return (
         <div className="max-w-[1600px] mx-auto">
-            <h1 className="text-gray-900 mb-2">Lịch thi</h1>
-            <p className="text-gray-600 mb-8">Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn.</p>
+            <h1 className="text-gray-900 mb-1 md:mb-2">Lịch thi</h1>
+            <p className="text-gray-600 mb-4 md:mb-8 text-sm md:text-base">Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn.</p>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Summary Cards - ẩn trên mobile */}
+            <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* Card: Upcoming Exams (Takes 2 columns) */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {/* Header */}
@@ -347,29 +347,29 @@ export function ExamScheduleVi() {
             </div>
 
             {/* Filters & Actions */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="bg-white rounded-xl px-3 py-3 md:p-6 shadow-sm border border-gray-200 mb-4 md:mb-6">
+                <div className="flex flex-wrap gap-2 md:flex-col lg:flex-row lg:items-center justify-between">
                     {/* Left: Filters */}
-                    <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                    <div className="flex flex-wrap gap-2 md:gap-4 flex-1">
 
                         {/* Semester Filter */}
                         <select
                             value={selectedSemester}
                             onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
+                            className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
                         >
-                            <option value="all">Tất cả học kỳ</option>
+                            <option value="all">Tất cả kỳ</option>
                             {availableSemesters.map(sem => (
                                 <option key={sem} value={sem}>{sem}</option>
                             ))}
                         </select>
 
                         {/* Exam Type Tabs */}
-                        <div className="flex bg-gray-100 rounded-lg p-1">
+                        <div className="flex bg-gray-100 rounded-lg p-0.5 md:p-1">
                             <button
                                 onClick={() => setSelectedType('all')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'all'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'all'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -379,7 +379,7 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Giữa kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -389,7 +389,7 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Cuối kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -399,15 +399,15 @@ export function ExamScheduleVi() {
                         </div>
 
                         {/* Search */}
-                        <div className="relative flex-1 max-w-xs">
+                        <div className="relative flex-1 min-w-[140px] max-w-xs">
                             <input
                                 type="text"
                                 placeholder="Tìm môn học..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                                className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
                             />
-                            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
@@ -415,8 +415,55 @@ export function ExamScheduleVi() {
                 </div>
             </div>
 
-            {/* Exam Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Exam Cards - Mobile only */}
+            <div className="md:hidden bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+                {filteredData.length === 0 ? (
+                    <div className="text-center py-10">
+                        <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 text-sm">Không tìm thấy lịch thi nào</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-100">
+                        {filteredData.map((exam, index) => {
+                            const daysUntil = getDaysUntilExam(exam.examDate);
+                            const isUpcoming = daysUntil > 0 && daysUntil <= 7;
+                            return (
+                                <div key={exam.id} className={`px-4 py-3 ${isUpcoming ? 'bg-blue-50' : ''}`}>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <span className="text-[11px] font-mono font-bold text-[#004A98]">{exam.courseCode}</span>
+                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${exam.examType === 'Giữa kỳ' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{exam.examType}</span>
+                                            </div>
+                                            <p className="text-xs font-medium text-gray-900 truncate">{exam.courseName}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <Calendar className="w-3 h-3" />{formatDate(exam.examDate)}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <Clock className="w-3 h-3" />{exam.examTime.split(' - ')[0]}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <MapPin className="w-3 h-3" />{exam.room}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {daysUntil > 0 && (
+                                            <div className="flex-shrink-0 text-right">
+                                                <p className="text-lg font-bold text-[#004A98] leading-tight">{daysUntil}</p>
+                                                <p className="text-[9px] text-gray-400">ngày nữa</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Exam Table - Desktop only */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1100px]">
                         <colgroup>

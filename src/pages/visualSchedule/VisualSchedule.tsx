@@ -240,23 +240,24 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
     <TooltipProvider>
       <div>
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-4 md:mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-gray-900 mb-2">Thời khóa biểu</h1>
-            <p className="text-gray-600">
+            <h1 className="text-gray-900 mb-1 md:mb-2">Thời khóa biểu</h1>
+            <p className="text-gray-600 text-sm md:text-base">
               Xem lịch học theo tuần - {schedule.semesterName}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3">
             {/* Manage Holidays Button */}
             <Dialog>
               <DialogTrigger asChild>
                 <button
-                  className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors duration-200 border border-orange-200"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors duration-200 border border-orange-200"
                 >
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-sm font-medium">Quản lý nghỉ lễ</span>
+                  <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  <span className="text-xs md:text-sm font-medium hidden sm:inline">Quản lý nghỉ lễ</span>
+                  <span className="text-xs font-medium sm:hidden">Nghỉ lễ</span>
                 </button>
               </DialogTrigger>
               <HolidayManagerDialog
@@ -269,36 +270,36 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
             {/* Export Button */}
             <button
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
+              className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003d7a] transition-colors duration-200 shadow-md hover:shadow-lg"
             >
-              <Download className="w-4 h-4" />
-              <span className="text-sm font-medium">Xuất lịch</span>
+              <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="text-xs md:text-sm font-medium">Xuất lịch</span>
             </button>
           </div>
         </div>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
           <QuickStatsCard
             icon={BookOpen}
-            title="Tổng môn học"
-            value={`${displaySchedule.totalCourses}/${schedule.totalCourses} môn `}
-            subtitle={`${displaySchedule.totalCredits} tín chỉ`}
+            title="Tổng môn"
+            value={`${displaySchedule.totalCourses}/${schedule.totalCourses}`}
+            subtitle={`${displaySchedule.totalCredits} TC`}
             bgColor="bg-[#004A98]"
             trend={coursesTrend}
           />
           <QuickStatsCard
             icon={Clock}
-            title="Tiết học / tuần"
-            value={`${displaySchedule.totalPeriodsPerWeek} tiết`}
+            title="Tiết/tuần"
+            value={`${displaySchedule.totalPeriodsPerWeek}`}
             subtitle={formattedHours}
             bgColor="bg-green-600"
             trend={periodsTrend}
           />
           <QuickStatsCard
             icon={Calendar}
-            title="Tuần hiện tại"
-            value={`Tuần ${displaySchedule.weekNumber}/17`}
+            title="Tuần"
+            value={`${displaySchedule.weekNumber}/17`}
             subtitle={displaySchedule.weekRange}
             bgColor="bg-orange-600"
           />
@@ -308,47 +309,47 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
         <ColorLegend />
 
         {/* Week Navigation */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
+        <div className="bg-white rounded-lg border border-gray-200 px-3 py-2.5 md:p-4 mb-3 md:mb-4 flex items-center justify-between">
           <button
             onClick={handlePreviousWeek}
             disabled={currentWeek === 1}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Tuần trước</span>
+            <span className="text-xs md:text-sm font-medium hidden sm:inline">Tuần trước</span>
           </button>
 
           <div className="text-center">
-            <div className="text-lg font-semibold text-[#004A98]">
+            <div className="text-sm md:text-lg font-semibold text-[#004A98]">
               Tuần {displaySchedule.weekNumber}
             </div>
-            <div className="text-xs text-gray-500">{displaySchedule.weekRange}</div>
+            <div className="text-[10px] md:text-xs text-gray-500">{displaySchedule.weekRange}</div>
           </div>
 
           <button
             onClick={handleNextWeek}
-            disabled={currentWeek === 25} // Increased limit for holidays
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={currentWeek === 25}
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="text-sm font-medium">Tuần sau</span>
+            <span className="text-xs md:text-sm font-medium hidden sm:inline">Tuần sau</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* Weekly Calendar Grid */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-6">
-          <table className="w-full border-collapse table-fixed min-w-[1000px]">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-4 md:mb-6">
+          <table className="w-full border-collapse table-fixed min-w-[560px] md:min-w-[1000px]">
             <thead>
               <tr className="bg-[#004A98]">
-                <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-1 text-white text-xs font-semibold w-16 min-w-[64px]">
+                <th className="sticky left-0 bg-[#004A98] z-20 border border-gray-300 p-0.5 md:p-1 text-white text-[10px] md:text-xs font-semibold w-10 md:w-16 min-w-[40px] md:min-w-[64px]">
                   Tiết
                 </th>
                 {DAYS.map((day) => (
-                  <th key={day.value} className={`border border-gray-300 p-1 text-white text-[13px] font-semibold min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
+                  <th key={day.value} className={`border border-gray-300 p-0.5 md:p-1 text-white text-[10px] md:text-[13px] font-semibold min-w-[80px] md:min-w-[165px] ${isToday(day.value) ? 'bg-green-600' : ''
                     }`}>
                     {day.label}
                     {isToday(day.value) && (
-                      <div className="text-[11px] font-normal mt-0.5">Hôm nay</div>
+                      <div className="text-[9px] md:text-[11px] font-normal mt-0.5">Hôm nay</div>
                     )}
                   </th>
                 ))}
