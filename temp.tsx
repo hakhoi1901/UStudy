@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, AlertCircle, ChevronDown, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../hooks/useStudentDb';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
@@ -347,31 +347,34 @@ export function ExamScheduleVi() {
             </div>
 
             {/* Filters & Actions */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
                     {/* Left: Filters */}
                     <div className="flex flex-col sm:flex-row gap-4 flex-1">
 
                         {/* Semester Filter */}
-                        <select
-                            value={selectedSemester}
-                            onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
-                        >
-                            <option value="all">Tất cả học kỳ</option>
-                            {availableSemesters.map(sem => (
-                                <option key={sem} value={sem}>{sem}</option>
-                            ))}
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={selectedSemester}
+                                onChange={(e) => setSelectedSemester(e.target.value)}
+                                className="w-full sm:w-auto pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium text-sm appearance-none"
+                            >
+                                <option value="all">Tất cả học kỳ</option>
+                                {availableSemesters.map(sem => (
+                                    <option key={sem} value={sem}>{sem}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
 
                         {/* Exam Type Tabs */}
-                        <div className="flex bg-gray-100 rounded-lg p-1">
+                        <div className="flex bg-gray-50 border border-gray-100 rounded-lg p-1">
                             <button
                                 onClick={() => setSelectedType('all')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'all'
+                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${selectedType === 'all'
                                     ? 'bg-white text-[#004A98] shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                    : 'text-gray-500 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Tất cả
@@ -379,9 +382,9 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Giữa kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
+                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                    : 'text-gray-500 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Giữa kỳ
@@ -389,9 +392,9 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Cuối kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
+                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                    : 'text-gray-500 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Cuối kỳ
@@ -399,15 +402,15 @@ export function ExamScheduleVi() {
                         </div>
 
                         {/* Search */}
-                        <div className="relative flex-1 max-w-xs">
+                        <div className="relative flex-1 max-w-md">
                             <input
                                 type="text"
-                                placeholder="Tìm môn học..."
+                                placeholder="Tìm mã môn hoặc tên môn học..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent text-sm"
                             />
-                            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
@@ -419,30 +422,15 @@ export function ExamScheduleVi() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1100px]">
-                        <colgroup>
-                            <col className="w-[45px]" />
-                            <col className="w-[100px]" />
-                            <col className="w-[280px]" />
-                            <col className="w-[80px]" />
-                            <col className="w-[120px]" />
-                            <col className="w-[120px]" />
-                            <col className="w-[80px]" />
-                            <col className="w-[150px]" />
-                            <col className="w-[90px]" />
-                            <col className="w-[150px]" />
-                        </colgroup>
-                        <thead className="bg-[#004A98] text-white sticky top-0 z-10">
+
+                        <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tên môn học</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Lớp</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ngày thi</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Giờ thi</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phòng</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Địa điểm</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Loại</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ghi chú</th>
+                                <th className="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">STT</th>
+                                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Môn học</th>
+                                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lịch thi</th>
+                                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Địa điểm</th>
+                                <th className="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Loại</th>
+                                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -454,51 +442,72 @@ export function ExamScheduleVi() {
                                     <tr
                                         key={exam.id}
                                         className={`
-                      hover:bg-gray-50 transition-colors
-                      ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-                      ${isUpcoming ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
-                    `}
+                                            hover:bg-gray-50/80 transition-colors
+                                            ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}
+                                            ${isUpcoming ? 'bg-[#004A98]/[0.03] border-l-4 border-[#004A98]' : ''}
+                                        `}
                                     >
-                                        <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
-                                        <td className="px-3 py-3 text-sm font-mono font-semibold text-[#004A98] break-all">{exam.courseCode}</td>
-                                        <td className="px-3 py-3 text-sm text-gray-900">
-                                            <div className="line-clamp-2 leading-relaxed" title={exam.courseName}>
-                                                {exam.courseName}
+                                        {/* STT */}
+                                        <td className="px-4 py-4 text-sm text-gray-500 text-center font-medium">{index + 1}</td>
+
+                                        {/* Môn học */}
+                                        <td className="px-4 py-4">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-xs font-mono font-bold text-[#004A98]">{exam.courseCode}</span>
+                                                <span className="text-sm font-semibold text-gray-900 leading-snug">{exam.courseName}</span>
+                                                <span className="text-[11px] text-gray-400 font-medium">Nhóm: {exam.className}</span>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-3 text-sm text-gray-600">{exam.className}</td>
-                                        <td className="px-3 py-3 text-sm font-medium text-gray-900">
-                                            <div className="flex items-center gap-1">
-                                                {formatDate(exam.examDate)}
+
+                                        {/* Lịch thi */}
+                                        <td className="px-4 py-4">
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+                                                    <Calendar className="w-4 h-4 text-[#004A98]/60" />
+                                                    {formatDate(exam.examDate)}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                    <Clock className="w-4 h-4 text-gray-400" />
+                                                    {exam.examTime}
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-3 font-medium text-gray-900">
-                                            <div className="flex items-center gap-1">
-                                                {exam.examTime}
+
+                                        {/* Địa điểm */}
+                                        <td className="px-4 py-4">
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="flex items-center gap-2 text-sm text-gray-700 font-semibold">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                                    Phòng: {exam.room}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                                    {exam.location.replace('Cơ sở ', '')}
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-3 text-sm font-medium text-gray-900">{exam.room}</td>
-                                        <td className="px-3 py-3 text-sm text-gray-600">
-                                            <div className="flex items-center gap-1">
-                                                <MapPin className="w-4 h-4 text-gray-400" />
-                                                {exam.location.replace('Cơ sở ', '')}
-                                            </div>
-                                        </td>
-                                        <td className="px-3 py-3">
+
+                                        {/* Loại */}
+                                        <td className="px-4 py-4 text-center">
                                             <span
-                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${exam.examType === 'Giữa kỳ'
-                                                    ? 'bg-amber-100 text-amber-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${exam.examType === 'Giữa kỳ'
+                                                    ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                                                    : 'bg-rose-50 text-rose-700 border border-rose-100'
                                                     }`}
                                             >
-                                                {exam.examType}
+                                                {exam.examType === 'Giữa kỳ' ? 'Giữa kỳ' : 'Cuối kỳ'}
                                             </span>
                                         </td>
-                                        <td className="px-3 py-3 text-sm text-gray-600">
-                                            {exam.notes && (
-                                                <div className="flex items-center gap-1">
-                                                    <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+
+                                        {/* Ghi chú */}
+                                        <td className="px-4 py-4">
+                                            {exam.notes ? (
+                                                <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 px-2 py-1.5 rounded-lg border border-orange-100">
+                                                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                                    <span className="line-clamp-2">{exam.notes}</span>
                                                 </div>
+                                            ) : (
+                                                <span className="text-gray-300 text-xs">—</span>
                                             )}
                                         </td>
                                     </tr>
@@ -519,15 +528,26 @@ export function ExamScheduleVi() {
             </div>
 
             {/* Info Footer */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
-                <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                        <p className="font-semibold mb-1">Lưu ý cho các bạn:</p>
-                        <ul className="list-disc list-inside space-y-1 text-blue-700">
-                            <li>Sinh viên cần có mặt trước giờ thi 15 phút</li>
-                            <li>Mang theo thẻ sinh viên và giấy tờ tùy thân khi dự thi</li>
-                            <li>Kiểm tra kỹ phòng thi và địa điểm trước ngày thi</li>
+            <div className="mt-8 p-5 bg-[#004A98]/[0.03] border border-[#004A98]/10 rounded-xl mb-8">
+                <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0">
+                        <AlertCircle className="w-5 h-5 text-[#004A98]" />
+                    </div>
+                    <div className="text-sm">
+                        <p className="font-bold text-gray-900 mb-2">Lưu ý quan trọng cho sinh viên:</p>
+                        <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-gray-600">
+                            <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-[#004A98]"></div>
+                                Có mặt trước giờ thi 15 phút
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-[#004A98]"></div>
+                                Mang theo thẻ sinh viên/CCCD
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-[#004A98]"></div>
+                                Kiểm tra kỹ phòng & địa điểm
+                            </li>
                         </ul>
                     </div>
                 </div>

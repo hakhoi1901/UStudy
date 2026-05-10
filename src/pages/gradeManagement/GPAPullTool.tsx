@@ -767,8 +767,8 @@ export function GPAPullTool({
                                     placeholder="VD: 8.0"
                                     aria-label="GPA mong muốn lúc ra trường"
                                     className={`w-28 sm:w-32 px-3 py-2 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent ${targetGpaError
-                                            ? 'border-red-300 focus:ring-red-300'
-                                            : 'border-gray-200 focus:ring-[#004A98]'
+                                        ? 'border-red-300 focus:ring-red-300'
+                                        : 'border-gray-200 focus:ring-[#004A98]'
                                         }`}
                                 />
                                 <div className="min-h-[1.25rem] mt-1">
@@ -803,8 +803,8 @@ export function GPAPullTool({
                                     type="button"
                                     onClick={() => setMode('all')}
                                     className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-colors ${mode === 'all'
-                                            ? 'bg-[#004A98] text-white'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-[#004A98] text-white'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     Tất cả môn
@@ -813,8 +813,8 @@ export function GPAPullTool({
                                     type="button"
                                     onClick={() => setMode('foundationMajor')}
                                     className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-colors ${mode === 'foundationMajor'
-                                            ? 'bg-[#004A98] text-white'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-[#004A98] text-white'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     Cơ sở ngành
@@ -838,12 +838,12 @@ export function GPAPullTool({
                         <>
                             <div
                                 className={`rounded-lg border p-4 ${baseResult.success && !baseResult.impossible && !baseResult.alreadyAchieved
-                                        ? 'bg-blue-50 border-blue-200'
-                                        : baseResult.alreadyAchieved
-                                            ? 'bg-green-50 border-green-200'
-                                            : baseResult.impossible
-                                                ? 'bg-red-50 border-red-200'
-                                                : 'bg-gray-50 border-gray-200'
+                                    ? 'bg-blue-50 border-blue-200'
+                                    : baseResult.alreadyAchieved
+                                        ? 'bg-green-50 border-green-200'
+                                        : baseResult.impossible
+                                            ? 'bg-red-50 border-red-200'
+                                            : 'bg-gray-50 border-gray-200'
                                     }`}
                             >
                                 <p className={`text-sm font-medium mb-1 ${baseResult.impossible ? 'text-red-800' : 'text-gray-800'}`}>{baseResult.message}</p>
@@ -1041,8 +1041,8 @@ export function GPAPullTool({
                                                                                             });
                                                                                         }}
                                                                                         className={`w-16 px-2 py-1 bg-gray-100 border rounded text-center text-sm focus:outline-none focus:ring-2 ${draftProjectedGradeErrors[course.code]
-                                                                                                ? 'border-red-300 focus:ring-red-300'
-                                                                                                : 'border-gray-200 focus:ring-[#004A98]'
+                                                                                            ? 'border-red-300 focus:ring-red-300'
+                                                                                            : 'border-gray-200 focus:ring-[#004A98]'
                                                                                             }`}
                                                                                     />
                                                                                     <div className="min-h-[1rem] mt-1">
@@ -1058,9 +1058,9 @@ export function GPAPullTool({
                                                                         <td className="px-4 py-2 text-center">
                                                                             {classificationGrade != null ? (
                                                                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${classificationGrade >= 9 ? 'bg-green-100 text-green-700' :
-                                                                                        classificationGrade >= 8 ? 'bg-blue-100 text-blue-700' :
-                                                                                            classificationGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
-                                                                                                'bg-gray-100 text-gray-700'
+                                                                                    classificationGrade >= 8 ? 'bg-blue-100 text-blue-700' :
+                                                                                        classificationGrade >= 7 ? 'bg-yellow-100 text-yellow-700' :
+                                                                                            'bg-gray-100 text-gray-700'
                                                                                     }`}>
                                                                                     {getClassification(classificationGrade)}
                                                                                 </span>
@@ -1108,70 +1108,70 @@ export function GPAPullTool({
 
                                             {isRetakePickerOpen && (
                                                 <div className="absolute z-20 bottom-full mb-2 left-0 right-0 rounded-lg border border-gray-200 bg-white shadow-lg p-3 space-y-2">
-                                                <input
-                                                    id="manual-retake-search"
-                                                    type="text"
-                                                    value={retakeSearchTerm}
-                                                    onChange={(e) => setRetakeSearchTerm(e.target.value)}
-                                                    placeholder="Nhập mã hoặc tên môn để tìm..."
-                                                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
-                                                />
+                                                    <input
+                                                        id="manual-retake-search"
+                                                        type="text"
+                                                        value={retakeSearchTerm}
+                                                        onChange={(e) => setRetakeSearchTerm(e.target.value)}
+                                                        placeholder="Nhập mã hoặc tên môn để tìm..."
+                                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
+                                                    />
 
-                                                <div className="h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-                                                    {filteredSelectableRetakeCourses.length > 0 ? (
-                                                        filteredSelectableRetakeCourses.map((course) => {
-                                                            const isChecked = pendingRetakeCodeSet.has(course.code);
-                                                            return (
-                                                                <label
-                                                                    key={course.code}
-                                                                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
-                                                                >
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={isChecked}
-                                                                        onChange={() => togglePendingRetakeCode(course.code)}
-                                                                        className="w-4 h-4 text-[#004A98] rounded border-gray-300 focus:ring-[#004A98]"
-                                                                    />
-                                                                    <span className="text-sm text-gray-700">
-                                                                        <span className="font-medium text-gray-900">{course.code}</span>
-                                                                        {' - '}
-                                                                        {course.nameVi}
-                                                                        {' '}
-                                                                        <span className="text-gray-500">({course.currentGrade.toFixed(decimals)} → mục tiêu)</span>
-                                                                    </span>
-                                                                </label>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <div className="px-3 py-2 text-sm text-gray-500">
-                                                            {retakeSearchTerm.trim() !== ''
-                                                                ? 'Không tìm thấy môn phù hợp với từ khóa hiện tại.'
-                                                                : 'Không còn môn hợp lệ để chọn thêm trong phạm vi hiện tại.'}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                    <div className="h-60 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+                                                        {filteredSelectableRetakeCourses.length > 0 ? (
+                                                            filteredSelectableRetakeCourses.map((course) => {
+                                                                const isChecked = pendingRetakeCodeSet.has(course.code);
+                                                                return (
+                                                                    <label
+                                                                        key={course.code}
+                                                                        className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50"
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={isChecked}
+                                                                            onChange={() => togglePendingRetakeCode(course.code)}
+                                                                            className="w-4 h-4 text-[#004A98] rounded border-gray-300 focus:ring-[#004A98]"
+                                                                        />
+                                                                        <span className="text-sm text-gray-700">
+                                                                            <span className="font-medium text-gray-900">{course.code}</span>
+                                                                            {' - '}
+                                                                            {course.nameVi}
+                                                                            {' '}
+                                                                            <span className="text-gray-500">({course.currentGrade.toFixed(decimals)} → mục tiêu)</span>
+                                                                        </span>
+                                                                    </label>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <div className="px-3 py-2 text-sm text-gray-500">
+                                                                {retakeSearchTerm.trim() !== ''
+                                                                    ? 'Không tìm thấy môn phù hợp với từ khóa hiện tại.'
+                                                                    : 'Không còn môn hợp lệ để chọn thêm trong phạm vi hiện tại.'}
+                                                            </div>
+                                                        )}
+                                                    </div>
 
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={selectAllFilteredRetakes}
-                                                        disabled={filteredSelectableRetakeCourses.length === 0 || selectedInFilteredCount === filteredSelectableRetakeCourses.length}
-                                                        className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                    >
-                                                        Chọn tất cả kết quả lọc
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={clearPendingFilteredRetakes}
-                                                        disabled={selectedInFilteredCount === 0}
-                                                        className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                    >
-                                                        Bỏ chọn tất cả kết quả lọc
-                                                    </button>
-                                                    <span className="text-xs text-gray-500">
-                                                        Đã chọn trong danh sách lọc: {selectedInFilteredCount}/{filteredSelectableRetakeCourses.length}
-                                                    </span>
-                                                </div>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={selectAllFilteredRetakes}
+                                                            disabled={filteredSelectableRetakeCourses.length === 0 || selectedInFilteredCount === filteredSelectableRetakeCourses.length}
+                                                            className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            Chọn tất cả kết quả lọc
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={clearPendingFilteredRetakes}
+                                                            disabled={selectedInFilteredCount === 0}
+                                                            className="px-2.5 py-1 text-xs font-medium rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            Bỏ chọn tất cả kết quả lọc
+                                                        </button>
+                                                        <span className="text-xs text-gray-500">
+                                                            Đã chọn trong danh sách lọc: {selectedInFilteredCount}/{filteredSelectableRetakeCourses.length}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -1232,8 +1232,8 @@ export function GPAPullTool({
                                                                         aria-invalid={Boolean(draftManualRetakeTargetErrors[item.code])}
                                                                         title={`Điểm từ ${ACADEMIC_RULES.PASS_GRADE_DECIMAL.toFixed(decimals)}–10.00`}
                                                                         className={`w-20 px-2 py-1 bg-gray-100 border rounded text-center text-sm focus:outline-none focus:ring-2 ${draftManualRetakeTargetErrors[item.code]
-                                                                                ? 'border-red-300 focus:ring-red-300'
-                                                                                : 'border-gray-200 focus:ring-[#004A98]'
+                                                                            ? 'border-red-300 focus:ring-red-300'
+                                                                            : 'border-gray-200 focus:ring-[#004A98]'
                                                                             }`}
                                                                     />
                                                                     <div className="min-h-[1rem] mt-1">
