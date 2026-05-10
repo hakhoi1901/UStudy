@@ -135,23 +135,20 @@ export const ScheduleLogic = {
     },
 
     /**
-     * Điều chỉnh tiết bắt đầu/kết thúc cho lớp TH/BT.
-     * Lớp thực hành luôn có duration = 2.5 tiết.
+     * Tính duration thực tế từ startPeriod và endPeriod.
+     * Trong ký hiệu VN: T2(1-5) = tiết 1 đến 5 bao gồm cả tiết 5 → duration = 5.
+     * Tiết lẻ T2(3.5-5.5) → duration = 2 (thực tế 2 tiết học).
      */
     adjustPeriodsForPractical: (
-        courseType: string,
+        _courseType: string,
         startPeriod: number,
         endPeriod: number
     ): { startPeriod: number; endPeriod: number; duration: number } => {
-        if (courseType !== 'TH' && courseType !== 'BT') {
-            const duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
-            return { startPeriod, endPeriod, duration };
-        }
-
-        // Lớp thực hành/bài tập luôn được tính bằng 2.5 tiết để ra chính xác tổng số tuần, 
-        // nhưng tiết bắt đầu và kết thúc lưu lại ở dạng gốc (1-2, 1-3 v.v) để thông tin UI hiện chính xác nhất.
-        const duration = 2.5;
-
+        // endPeriod nguyên = inclusive (T2(1-5) có 5 tiết)
+        // endPeriod lẻ = exclusive-end (T2(3.5-5.5) có 2 tiết)
+        const duration = Number.isInteger(endPeriod)
+            ? endPeriod - startPeriod + 1
+            : endPeriod - startPeriod;
         return { startPeriod, endPeriod, duration };
     },
 
@@ -281,10 +278,15 @@ export const ScheduleLogic = {
         coursesRegistered: any[],
         allCoursesMeta: any[],
         metadata: any,
-        overrides?: ScheduleOverrides
+        overrides?: ScheduleOverrides,
+        systemHolidays: Holiday[] = []
     ): WeeklySchedule => {
         const semester = metadata?.params?.registration?.sem || '1';
         const year = metadata?.params?.registration?.year || '24-25';
+
+        // Merge holidays: System holidays + User overrides
+        const combinedHolidays = [...systemHolidays, ...(overrides?.holidays || [])];
+        const activeOverrides = overrides ? { ...overrides, holidays: combinedHolidays } : { sessionOverrides: {}, weekOverrides: {}, holidays: combinedHolidays };
 
         let totalCourses = 0;
         let totalCredits = 0;
@@ -335,7 +337,7 @@ export const ScheduleLogic = {
 
                 // --- Apply Global Overrides ---
                 const sessionId = `${course.id}_${index}_${partIdx}`;
-                const override = overrides?.sessionOverrides?.[sessionId];
+                const override = activeOverrides.sessionOverrides?.[sessionId];
                 if (override) {
                     if (override.room !== undefined) room = override.room;
                     if (override.startPeriod !== undefined) rawStart = override.startPeriod;

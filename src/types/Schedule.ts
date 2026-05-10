@@ -12,7 +12,8 @@ export interface ScheduleSession {
     endPeriod: number; // Có thể là số thập phân cho TH: 3.5, 5.5, 8.5, 10.5
     startTime: string;
     endTime: string;
-    color: 'blue' | 'green' | 'yellow' | 'purple';
+    color: string; // Hex color or predefined key
+    note?: string;
     session: 'morning' | 'afternoon';
     duration: number; // Số tiết: 2, 2.5, etc.
     totalWeeks: number;
@@ -66,9 +67,13 @@ export interface SessionOverride {
     room?: string;
     startPeriod?: number;
     endPeriod?: number;
-    startWeek?: number;
+    startWeek?: number;   // Tuần bắt đầu dạy
+    endWeek?: number;     // Tuần kết thúc dạy
+    hiddenWeeks?: number[]; // Các tuần bị bỏ qua (nghỉ đột xuất)
     duration?: number;
     dayOfWeek?: 2 | 3 | 4 | 5 | 6 | 7 | 8;
+    note?: string;
+    color?: string;
 }
 
 export interface ScheduleOverrides {
