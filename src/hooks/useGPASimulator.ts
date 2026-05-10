@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { readPlain, savePlain, readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
 import { GPACalculator } from '../logic/GPACalculator';
 import { AcademicRulesEngine } from '../logic/AcademicRulesEngine';
@@ -36,10 +36,25 @@ export function useGPASimulator(
         return map;
     }, [allCoursesMeta, gradesHistory]);
 
+    const [stamp, setStamp] = useState(0);
+
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data && (
+                event.data.type === 'IMPORT_FULL_DATA' ||
+                event.data.type === 'CACHE_POPULATED'
+            )) {
+                setStamp(Date.now());
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
+
     // [TN] Điểm dự đoán { [courseCode]: grade }
     // Khởi tạo bằng cách đọc từ localStorage → restore điểm đã nhập lần trước
     const [projectedGrades, setProjectedGrades] = useState<Record<string, number>>(
-        () => readFromStorage<Record<string, number>>(STORAGE_KEYS.PROJECTED_GRADES, {})
+        () => readPlain<Record<string, number>>(STORAGE_KEYS.PROJECTED_GRADES, {})
     );
 
     // [TN] Danh sách môn trong simulator
@@ -65,6 +80,7 @@ export function useGPASimulator(
         // [TN] NGUỒN 2: Kết quả đăng ký học phần (ĐKHP)
         const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
         const registrations: any[] = studentDb?.registrations ?? [];
+        void stamp; // trigger re-memo khi stamp thay đổi
 
         // Set mã môn đã có trong ongoing → dùng để lọc trùng
         const ongoingIds = new Set(ongoingCourses.map(c => c.code));
@@ -93,7 +109,7 @@ export function useGPASimulator(
         }
 
         return [...ongoingCourses, ...regCourses];
-    }, [gradesHistory, projectedGrades, creditsMap]);
+    }, [gradesHistory, projectedGrades, creditsMap, stamp]);
 
     // [TN] Handler: user nhập điểm
     // Nhận number | null. null = user xóa trắng input → xóa khỏi storage.
@@ -106,8 +122,8 @@ export function useGPASimulator(
             } else {
                 updated[courseCode] = grade;
             }
-            // Lưu ngay vào localStorage để persist qua reload trang
-            saveToStorage(STORAGE_KEYS.PROJECTED_GRADES, updated);
+            // Lưu ngay vào localStorage
+            savePlain(STORAGE_KEYS.PROJECTED_GRADES, updated);
             return updated;
         });
     }, []);

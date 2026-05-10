@@ -25,3 +25,10 @@ dist-ssr
 
 diagram.md
 architecture.md
+
+.env
+
+data.json
+temp/*
+
+*.txt

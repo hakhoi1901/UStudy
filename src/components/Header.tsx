@@ -8,6 +8,7 @@ import { useDepartmentData } from '../context/DepartmentContext';
 import { ACADEMIC_YEARS } from '../assets/data/tuition';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
 import { readFromStorage, clearAllStorage } from '../helpers/localStorage/save';
+import { useCrypto } from '../context/CryptoContext';
 
 export interface HeaderProps {
   selectedSemester?: string;
@@ -25,6 +26,8 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   const { hasData } = useStudentGradeData();
   // lấy thông báo
   const { addNotification } = useAppNotification();
+  // crypto context để lock khi đăng xuất
+  const { lock } = useCrypto();
 
   // lấy tên sinh viên từ local storage
   useEffect(() => {
@@ -59,17 +62,14 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
 
   // xử lý đăng xuất
   const handleLogOut = () => {
-    // xóa local storage
     clearAllStorage();
+    lock(); // xóa key khỏi RAM
     addNotification({
       title: 'Đăng xuất thành công',
       message: 'Tất cả dữ liệu học tập đã được xóa khỏi trình duyệt.',
       type: 'info'
     });
-    // tải lại trang sau 100ms
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    setTimeout(() => window.location.reload(), 100);
   };
 
   // xử lý đăng nhập

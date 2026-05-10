@@ -17,6 +17,11 @@ import { RetakeCourses } from './RetakeCourses';
 import { GradeHistory } from './GradeHistory';
 import { GPACalculator } from '../../logic/GPACalculator';
 import { GPAsem } from './GPAsem';
+import { FileDown } from 'lucide-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { TranscriptPDF } from '../../components/TranscriptPDF';
+import { readFromStorage } from '../../helpers/localStorage/save';
+import { STORAGE_KEYS } from '../../config';
 
 export function GradeManagement() {
   // [TN] Thay bằng simulatorCourses từ useGPASimulator — hook tự build danh sách
@@ -43,6 +48,8 @@ export function GradeManagement() {
   // cumulativeGPA: GPA tích lũy
   const { simulatorCourses, handleGradeChange, semesterGPA, cumulativeGPA } = useGPASimulator(gradesHistory, data.courses);
   const { addNotification } = useAppNotification();
+  const { currentFaculty, currentMajor, currentCohort } = useDepartmentData();
+  const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
   // Lấy danh sách học kỳ
   const uniqueSemesters = Array.from(new Set(gradesHistory.map(g => g.semester))).sort((a, b) => b.localeCompare(a));
@@ -112,9 +119,54 @@ export function GradeManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-gray-900 mb-2">Quản lý điểm</h1>
-        <p className="text-gray-600">Xem điểm số, mô phỏng GPA và theo dõi các môn học cần học lại.</p>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-gray-900 mb-2">Quản lý điểm</h1>
+          <p className="text-gray-600">Xem điểm số, mô phỏng GPA và theo dõi các môn học cần học lại.</p>
+        </div>
+        
+        {hasData && (
+          <PDFDownloadLink 
+            document={
+              <TranscriptPDF 
+                data={{
+                  studentInfo: {
+                    fullName: studentDb?.name || "N/A",
+                    dob: studentDb?.dob || "---",
+                    studentId: studentDb?.id || "---",
+                    course: currentCohort?.name || "---",
+                    program: currentFaculty?.name || "---",
+                    major: currentMajor?.name || "---",
+                  },
+                  courses: gradesHistory.map((g, idx) => ({
+                    no: idx + 1,
+                    id: g.code,
+                    title: g.nameVi,
+                    credits: g.credits,
+                    score10: g.grade,
+                    score4: (g.grade >= 9 ? 4.0 : g.grade >= 8 ? 3.5 : g.grade >= 7 ? 3.0 : g.grade >= 6.5 ? 2.5 : g.grade >= 5 ? 2.0 : 0.0).toFixed(1)
+                  })),
+                  summary: {
+                    totalCredits: accumulatedCredits,
+                    gpa10: currentGPA.toFixed(2),
+                    gpa4: (currentGPA >= 9 ? 4.0 : currentGPA >= 8 ? 3.5 : currentGPA >= 7 ? 3.0 : currentGPA >= 6.5 ? 2.5 : currentGPA >= 5 ? 2.0 : 0.0).toFixed(2)
+                  }
+                }} 
+              />
+            } 
+            fileName={`BangDiem_${studentDb?.name || 'SinhVien'}.pdf`}
+          >
+            {({ loading }) => (
+              <button
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003B7A] transition-colors shadow-sm disabled:opacity-50"
+              >
+                <FileDown className="w-4 h-4" />
+                {loading ? 'Đang chuẩn bị...' : 'Xuất bảng điểm'}
+              </button>
+            )}
+          </PDFDownloadLink>
+        )}
       </div>
 
       {/* Thông tin GPA */}

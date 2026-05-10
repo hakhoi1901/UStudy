@@ -15,7 +15,10 @@ export function useCourseData() {
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
-            if (event.data && event.data.type === 'IMPORT_FULL_DATA') {
+            if (event.data && (
+                event.data.type === 'IMPORT_FULL_DATA' ||
+                event.data.type === 'CACHE_POPULATED'
+            )) {
                 setStamp(Date.now());
             }
         };

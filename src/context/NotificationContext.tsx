@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
+import { readPlain, savePlain } from '../helpers/localStorage/save';
 import type { ReactNode } from 'react';
 
 /*
@@ -81,7 +81,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-        const saved = readFromStorage<any[]>('app_notifications', []);
+        const saved = readPlain<any[]>('app_notifications', []);
         if (saved) {
             return saved.map((n: any) => ({
                 ...n,
@@ -101,7 +101,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     });
 
     useEffect(() => {
-        saveToStorage('app_notifications', notifications);
+        savePlain('app_notifications', notifications);
     }, [notifications]);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
