@@ -80,7 +80,7 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                                 </td>
                                                 <td className="px-3 py-3 text-sm text-center">
                                                     {diff === null ? (
-                                                        <div className="text-gray-400 text-sm">—</div>
+                                                        <div className="text-gray-400 text-sm">-</div>
                                                     ) : (
                                                         <div className={`text-sm font-medium ${diff > 0.05 ? 'text-green-600' : diff < -0.05 ? 'text-red-600' : 'text-gray-500'}`}>
                                                             {diff > 0 ? '+' : ''}{diff.toFixed(ACADEMIC_RULES.UI.HISTORY_DECIMALS)}

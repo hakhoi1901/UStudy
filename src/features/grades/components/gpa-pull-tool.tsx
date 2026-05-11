@@ -72,7 +72,7 @@ export function GPAPullTool({
     });
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <GPAPullHeader expanded={expanded} setExpanded={setExpanded} />
 
             {expanded && (

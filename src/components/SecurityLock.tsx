@@ -370,9 +370,9 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         setError(null);
 
         if (!window.crypto || !window.crypto.subtle) {
-             setError('Môi trường không bảo mật (HTTP). Vui lòng dùng App (APK) hoặc HTTPS.');
-             setIsVerifying(false);
-             return;
+            setError('Môi trường không bảo mật (HTTP). Vui lòng dùng App (APK) hoặc HTTPS.');
+            setIsVerifying(false);
+            return;
         }
 
         if (customVerify) {
@@ -474,7 +474,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                     {isLocked && (
                         <div className="sec-lockout">
                             <Timer size={14} style={{ flexShrink: 0 }} />
-                            <span>Bị khóa tạm thời — thử lại sau <strong>{lockoutSeconds}s</strong></span>
+                            <span>Bị khóa tạm thời - thử lại sau <strong>{lockoutSeconds}s</strong></span>
                         </div>
                     )}
 

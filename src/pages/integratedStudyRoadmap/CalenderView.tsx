@@ -144,7 +144,7 @@ export function CalendarView({
                     <div className="flex-1 min-w-0">
                         <p className="text-xs md:text-sm text-blue-900 font-medium truncate">
                             {currentSections.length > 0
-                                ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
+                                ? `Phương án ${activeOption + 1}/${options.length} - ${selectedCourses.size} môn`
                                 : `${selectedCourses.size} môn đã chọn`}
                         </p>
                         <p className="hidden md:block text-xs text-blue-700">

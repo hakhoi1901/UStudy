@@ -12,7 +12,7 @@ const sections = [
         iconColor: 'text-blue-600',
         iconBg: 'bg-blue-50',
         title: 'Tổng quan bảo mật',
-        content: 'UStudy được thiết kế với nguyên tắc "Privacy by Design" — quyền riêng tư của bạn được đặt lên hàng đầu trong mọi quyết định kiến trúc. Toàn bộ dữ liệu cá nhân (điểm số, lịch học, thông tin sinh viên) được mã hóa ngay trên thiết bị của bạn trước khi lưu vào bộ nhớ trình duyệt. Không có bất kỳ dữ liệu nào được gửi lên máy chủ của chúng tôi.',
+        content: 'UStudy được thiết kế với nguyên tắc "Privacy by Design" - quyền riêng tư của bạn được đặt lên hàng đầu trong mọi quyết định kiến trúc. Toàn bộ dữ liệu cá nhân (điểm số, lịch học, thông tin sinh viên) được mã hóa ngay trên thiết bị của bạn trước khi lưu vào bộ nhớ trình duyệt. Không có bất kỳ dữ liệu nào được gửi lên máy chủ của chúng tôi.',
     },
     // {
     //     id: 'encryption',
@@ -21,9 +21,9 @@ const sections = [
     //     iconBg: 'bg-indigo-50',
     //     title: 'Mã hóa dữ liệu',
     //     items: [
-    //         { icon: FileKey2, label: 'Thuật toán', desc: 'PBKDF2 (310,000 vòng lặp) + AES-GCM 256-bit — tiêu chuẩn mã hóa được sử dụng bởi các tổ chức tài chính và chính phủ trên thế giới.' },
+    //         { icon: FileKey2, label: 'Thuật toán', desc: 'PBKDF2 (310,000 vòng lặp) + AES-GCM 256-bit - tiêu chuẩn mã hóa được sử dụng bởi các tổ chức tài chính và chính phủ trên thế giới.' },
     //         { icon: KeyRound, label: 'Khóa mã hóa', desc: 'CryptoKey chỉ tồn tại trong RAM (bộ nhớ tạm) và không bao giờ được ghi ra ổ cứng hay localStorage. Khi bạn đóng tab hoặc khóa ứng dụng, khóa sẽ bị xóa hoàn toàn.' },
-    //         { icon: RefreshCw, label: 'Salt & IV ngẫu nhiên', desc: 'Mỗi người dùng có Salt 16 byte riêng, mỗi lần mã hóa sử dụng IV 12 byte ngẫu nhiên — đảm bảo cùng một dữ liệu sẽ tạo ra ciphertext khác nhau mỗi lần.' },
+    //         { icon: RefreshCw, label: 'Salt & IV ngẫu nhiên', desc: 'Mỗi người dùng có Salt 16 byte riêng, mỗi lần mã hóa sử dụng IV 12 byte ngẫu nhiên - đảm bảo cùng một dữ liệu sẽ tạo ra ciphertext khác nhau mỗi lần.' },
     //         { icon: Fingerprint, label: 'Xác thực toàn vẹn', desc: 'AES-GCM tự động kiểm tra tính toàn vẹn (authentication tag). Bất kỳ thay đổi nào trên dữ liệu đã mã hóa sẽ bị phát hiện và từ chối giải mã.' },
     //     ],
     // },
@@ -36,7 +36,7 @@ const sections = [
         items: [
             { icon: Globe, label: '100% Client-side', desc: 'Toàn bộ dữ liệu được lưu trong localStorage của trình duyệt bạn. Không có máy chủ (server) nào của UStudy lưu trữ dữ liệu cá nhân của bạn.' },
             { icon: EyeOff, label: 'Không theo dõi', desc: 'UStudy không sử dụng cookie theo dõi, fingerprinting, hay bất kỳ hình thức thu thập dữ liệu hành vi nào. Chúng tôi không biết bạn là ai, bạn dùng tính năng gì.' },
-            { icon: Server, label: 'Không có database trung tâm', desc: 'Không tồn tại cơ sở dữ liệu tập trung chứa thông tin sinh viên. Mỗi người dùng là một "đảo" độc lập — dữ liệu của bạn chỉ thuộc về bạn.' },
+            { icon: Server, label: 'Không có database trung tâm', desc: 'Không tồn tại cơ sở dữ liệu tập trung chứa thông tin sinh viên. Mỗi người dùng là một "đảo" độc lập - dữ liệu của bạn chỉ thuộc về bạn.' },
         ],
     },
     // {
@@ -48,7 +48,7 @@ const sections = [
     //     items: [
     //         { icon: Lock, label: 'Mật khẩu không lưu trữ', desc: 'Mật khẩu của bạn không bao giờ được lưu dưới dạng plaintext hay hash. Nó chỉ được dùng để derive khóa AES thông qua PBKDF2, sau đó biến mất khỏi RAM.' },
     //         { icon: Cpu, label: 'Chống brute-force', desc: 'PBKDF2 với 310,000 iterations khiến mỗi lần thử mật khẩu mất ~0.5 giây. Kẻ tấn công cần hàng chục năm để dò mật khẩu 4 ký tự đơn giản.' },
-    //         { icon: AlertTriangle, label: 'Khóa tạm thời', desc: 'Sau nhiều lần nhập sai, hệ thống tự động khóa tạm thời với thời gian tăng dần — ngăn chặn tấn công brute-force trực tiếp.' },
+    //         { icon: AlertTriangle, label: 'Khóa tạm thời', desc: 'Sau nhiều lần nhập sai, hệ thống tự động khóa tạm thời với thời gian tăng dần - ngăn chặn tấn công brute-force trực tiếp.' },
     //     ],
     // },
     {
@@ -61,7 +61,7 @@ const sections = [
             { icon: Eye, label: 'Quyền được biết', desc: 'Bạn luôn biết chính xác dữ liệu nào được lưu, ở đâu, và được mã hóa bằng cách nào. Trang này chính là minh chứng cho quyền đó.' },
             { icon: HardDriveDownload, label: 'Quyền xuất dữ liệu', desc: 'Bạn có thể xuất toàn bộ dữ liệu ra file backup mã hóa bất cứ lúc nào thông qua tính năng Sao lưu ở trang Cài đặt.' },
             { icon: Trash2, label: 'Quyền xóa dữ liệu', desc: 'Bạn có thể xóa toàn bộ dữ liệu ngay lập tức bằng cách Đăng xuất hoặc "Quên mật khẩu" trên màn hình khóa. Dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.' },
-            { icon: RefreshCw, label: 'Quyền đồng bộ lại', desc: 'Sau khi xóa, bạn luôn có thể đồng bộ lại dữ liệu từ Portal trường thông qua Bookmarklet — không cần liên hệ hỗ trợ.' },
+            { icon: RefreshCw, label: 'Quyền đồng bộ lại', desc: 'Sau khi xóa, bạn luôn có thể đồng bộ lại dữ liệu từ Portal trường thông qua Bookmarklet - không cần liên hệ hỗ trợ.' },
         ],
     },
     {
@@ -72,7 +72,7 @@ const sections = [
         title: 'Rủi ro bạn nên biết',
         items: [
             { icon: AlertTriangle, label: 'Quên mật khẩu', desc: 'Nếu quên mật khẩu, dữ liệu đã mã hóa không thể giải mã được. Hệ thống sẽ yêu cầu xóa toàn bộ và đồng bộ lại từ Portal. Đây là đánh đổi cần thiết để bảo vệ quyền riêng tư.' },
-            { icon: Globe, label: 'Môi trường không bảo mật', desc: 'UStudy yêu cầu HTTPS hoặc môi trường bảo mật (như ứng dụng APK) để hoạt động. Nếu chạy trên HTTP, mã hóa sẽ bị vô hiệu hóa — không nên sử dụng trong trường hợp này.' },
+            { icon: Globe, label: 'Môi trường không bảo mật', desc: 'UStudy yêu cầu HTTPS hoặc môi trường bảo mật (như ứng dụng APK) để hoạt động. Nếu chạy trên HTTP, mã hóa sẽ bị vô hiệu hóa - không nên sử dụng trong trường hợp này.' },
             { icon: Server, label: 'Trình duyệt dùng chung', desc: 'Nếu nhiều người dùng cùng một trình duyệt, dữ liệu của bạn có thể bị người khác truy cập. Hãy luôn khóa hoặc đăng xuất khi rời khỏi máy tính dùng chung.' },
         ],
     },

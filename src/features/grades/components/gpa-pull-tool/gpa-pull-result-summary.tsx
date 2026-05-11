@@ -43,7 +43,7 @@ export function GPAPullResultSummary({
                 <div className="flex items-baseline gap-2">
                     {baseResult?.success ? (
                         <span className={`text-2xl font-bold ${baseResult.alreadyAchieved ? 'text-green-900' : 'text-orange-900'}`}>
-                            {baseResult.alreadyAchieved ? '—' : (baseResult.requiredAverage?.toFixed(decimals) ?? '—')}
+                            {baseResult.alreadyAchieved ? '-' : (baseResult.requiredAverage?.toFixed(decimals) ?? '-')}
                         </span>
                     ) : (
                         <span className="text-2xl font-bold text-red-900">! ! !</span>

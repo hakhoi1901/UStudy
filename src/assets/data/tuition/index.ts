@@ -30,7 +30,7 @@ const tuitionMap: Record<string, TuitionYear> = {
  * Merge: shared (chung toàn trường) + majors[majorId] (riêng ngành).
  * Major-specific rates ghi đè lên shared nếu trùng key.
  *
- * @returns { default_price, rates } — rates đã được merge
+ * @returns { default_price, rates } - rates đã được merge
  */
 export function getTuitionRates(academicYear: string, majorId: string) {
     const yearData = tuitionMap[academicYear] || tuitionMap[DEFAULT_ACADEMIC_YEAR];

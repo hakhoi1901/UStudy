@@ -29,7 +29,7 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
                                 course.grade >= 5.0 ? 'bg-orange-100 text-orange-700' :
                                     'bg-red-100 text-red-700'
                 ) : 'bg-gray-100 text-gray-400 italic'}`}>
-                    {course.grade > 0 ? course.grade.toFixed(1) : "—"}
+                    {course.grade > 0 ? course.grade.toFixed(1) : "-"}
                 </span>
             </td>
             <td className="px-4 py-3 text-center">

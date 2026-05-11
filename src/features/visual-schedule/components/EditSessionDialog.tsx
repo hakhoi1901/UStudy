@@ -115,7 +115,7 @@ function EditSessionDialog({
                         Tùy chỉnh môn học
                     </DialogTitle>
                     <DialogDescription className="text-sm text-gray-500 mt-1">
-                        {session.courseCode} — {session.courseName}
+                        {session.courseCode} - {session.courseName}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -172,7 +172,7 @@ function EditSessionDialog({
                         </div>
                     </div>
 
-                    {/* Week range — only in global mode */}
+                    {/* Week range - only in global mode */}
                     {mode === 'global' && (
                         <div className="grid grid-cols-2 gap-4 p-4 bg-[#004A98]/5 rounded-lg border border-[#004A98]/20">
                             <div className="space-y-1.5">

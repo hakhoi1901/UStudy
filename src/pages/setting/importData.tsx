@@ -60,7 +60,7 @@ export function ImportData() {
                 if (!result) return;
 
                 const importedContent = JSON.parse(result);
-                
+
                 // Hỗ trợ cả định dạng mới (có metadata) và định dạng cũ (flat object)
                 let dataToImport = importedContent;
                 if (importedContent.metadata && importedContent.data && importedContent.metadata.source === "hcmus-portal-tool") {
@@ -124,29 +124,29 @@ export function ImportData() {
                     Nhập dữ liệu
                 </button>
                 {pendingImport && (
-                    <SecurityLock 
-                        setupMode={false} 
+                    <SecurityLock
+                        setupMode={false}
                         customTitle="Xác thực tệp sao lưu"
                         customSubtitle="Nhập mật khẩu đã tạo khi xuất tệp dữ liệu này để khôi phục."
                         customVerify={async (pin) => {
-                             const isValid = await verifyBackupPin(pin, pendingImport['__pbkdf2_salt__'], pendingImport['__pin_verify__']);
-                             if (isValid) {
-                                 if (hasSecureData() && cryptoKey) {
-                                     // Nếu máy đang có mật khẩu, decrypt file và mã hoá lại bằng mật khẩu hiện tại
-                                     await importBackupWithCurrentKey(pendingImport, pin, cryptoKey);
-                                 } else if (hasSecureData() && !cryptoKey) {
-                                     // Trạng thái bất thường — SecurityGate đáng lẽ đã chặn
-                                     console.error('[importData] cryptoKey null khi hasSecureData=true');
-                                     alert('Lỗi bảo mật: Vui lòng tải lại trang và đăng nhập lại.');
-                                     return false;
-                                 } else {
-                                     // Máy chưa có mật khẩu → ghi đè toàn bộ (mang mật khẩu của file)
-                                     Object.keys(pendingImport).forEach(key => {
-                                         localStorage.setItem(key, pendingImport[key]);
-                                     });
-                                 }
-                             }
-                             return isValid;
+                            const isValid = await verifyBackupPin(pin, pendingImport['__pbkdf2_salt__'], pendingImport['__pin_verify__']);
+                            if (isValid) {
+                                if (hasSecureData() && cryptoKey) {
+                                    // Nếu máy đang có mật khẩu, decrypt file và mã hoá lại bằng mật khẩu hiện tại
+                                    await importBackupWithCurrentKey(pendingImport, pin, cryptoKey);
+                                } else if (hasSecureData() && !cryptoKey) {
+                                    // Trạng thái bất thường - SecurityGate đáng lẽ đã chặn
+                                    console.error('[importData] cryptoKey null khi hasSecureData=true');
+                                    alert('Lỗi bảo mật: Vui lòng tải lại trang và đăng nhập lại.');
+                                    return false;
+                                } else {
+                                    // Máy chưa có mật khẩu → ghi đè toàn bộ (mang mật khẩu của file)
+                                    Object.keys(pendingImport).forEach(key => {
+                                        localStorage.setItem(key, pendingImport[key]);
+                                    });
+                                }
+                            }
+                            return isValid;
                         }}
                         onUnlock={() => {
                             alert('Khôi phục dữ liệu thành công! Ứng dụng sẽ khởi động lại.');

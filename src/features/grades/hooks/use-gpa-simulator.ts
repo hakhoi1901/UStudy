@@ -6,7 +6,7 @@ import { AcademicRulesEngine } from '../services/academic-rules-engine';
 import type { StudentCourseGrade, SimulatorCourseGrade } from '../types';
 
 /**
- * Hook quản lý GPA Simulator — Học kỳ tiếp theo.
+ * Hook quản lý GPA Simulator - Học kỳ tiếp theo.
  * Tự động thu thập:
  *   1. Môn đang học (status = 'ongoing') từ gradesHistory
  *   2. Môn đã đăng ký học phần (ĐKHP, courseType = 'LT') từ studentDb
@@ -22,11 +22,11 @@ export function useGPASimulator(
      */
     const creditsMap = useMemo(() => {
         const map = new Map<string, number>();
-        // Nguồn 2 (thấp hơn) — CTĐT
+        // Nguồn 2 (thấp hơn) - CTĐT
         for (const c of allCoursesMeta) {
             if (c.course_id && c.credits) map.set(c.course_id, c.credits);
         }
-        // Nguồn 1 (cao hơn) — grades, ghi đè CTĐT nếu trùng
+        // Nguồn 1 (cao hơn) - grades, ghi đè CTĐT nếu trùng
         for (const g of gradesHistory) {
             if (g.code && g.credits) map.set(g.code, g.credits);
         }

@@ -4,7 +4,7 @@ import type { TuitionRates, CourseMeta, CourseFeeResult } from '../types';
  * FinancialLogic.ts
  *
  * Domain Logic: Tất cả logic liên quan đến học phí, đơn giá, billing credits.
- * Không phụ thuộc React — có thể test/import độc lập.
+ * Không phụ thuộc React - có thể test/import độc lập.
  */
 
 export const FinancialLogic = {

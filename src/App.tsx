@@ -22,6 +22,7 @@ import { SecurityGate } from './components/SecurityGate';
 import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Analytics } from '@vercel/analytics/react';
+import { CACHE_POPULATED_EVENT } from './context/CryptoContext';
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
@@ -53,6 +54,9 @@ function AppContent() {
     populateSecureCache('student_db_full', student);
     populateSecureCache('course_db_offline', courses);
     if (meta) populateSecureCache('import_meta', meta);
+
+    // Báo các hook re-render (giống CryptoContext làm sau unlock)
+    window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
 
     refreshHasData();
     return student;

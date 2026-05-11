@@ -14,7 +14,7 @@ import { useCrypto } from '../context/CryptoContext';
 export const SecurityGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { cryptoKey, isReady, hasData, unlock } = useCrypto();
 
-    // Lắng nghe storage event — chỉ reload khi secure data bị xóa từ tab khác
+    // Lắng nghe storage event - chỉ reload khi secure data bị xóa từ tab khác
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
             // Chỉ phản ứng khi key quan trọng bị xóa (clear toàn bộ hoặc xóa từng key)

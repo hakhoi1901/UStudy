@@ -2,7 +2,7 @@
  * ScheduleLogic.ts
  *
  * Domain Logic: Parsing và xử lý chuỗi lịch học.
- * Không phụ thuộc React — có thể test/import độc lập.
+ * Không phụ thuộc React - có thể test/import độc lập.
  */
 
 import { timePeriods } from '../constants/timetable';

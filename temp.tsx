@@ -507,7 +507,7 @@ export function ExamScheduleVi() {
                                                     <span className="line-clamp-2">{exam.notes}</span>
                                                 </div>
                                             ) : (
-                                                <span className="text-gray-300 text-xs">—</span>
+                                                <span className="text-gray-300 text-xs">-</span>
                                             )}
                                         </td>
                                     </tr>

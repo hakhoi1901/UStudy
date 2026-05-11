@@ -36,7 +36,7 @@ export function GPAPullSemesterTable({
                         <div className="flex flex-col">
                             <span className="text-[10px] text-gray-500 uppercase font-bold">Sau kỳ này cần</span>
                             <span className="text-sm font-bold text-gray-800">
-                                {semesterStats.newRequiredAvgAfter ? semesterStats.newRequiredAvgAfter.toFixed(decimals) : '—'}
+                                {semesterStats.newRequiredAvgAfter ? semesterStats.newRequiredAvgAfter.toFixed(decimals) : '-'}
                             </span>
                         </div>
                     </div>
@@ -103,7 +103,7 @@ export function GPAPullSemesterTable({
                                                     isHigh ? 'text-green-700' :
                                                         'text-[#004A98]'
                                                 }`}>
-                                                {displayGrade != null ? displayGrade.toFixed(decimals) : '—'}
+                                                {displayGrade != null ? displayGrade.toFixed(decimals) : '-'}
                                             </span>
                                             {!isLocked && displayGrade != null && (
                                                 <div className="w-12 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">

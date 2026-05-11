@@ -21,7 +21,7 @@ export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) 
                                         'bg-red-100 text-red-700'
                     ) : 'bg-gray-100 text-gray-400'
                         }`}>
-                        {course.grade > 0 ? course.grade.toFixed(1) : '—'}
+                        {course.grade > 0 ? course.grade.toFixed(1) : '-'}
                     </span>
                     {course.grade > 0 ? (
                         course.needsRetake ? (

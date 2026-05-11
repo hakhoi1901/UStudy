@@ -6,6 +6,7 @@ import { useAppNotification } from "../../context/NotificationContext";
 import { useCrypto } from "../../context/CryptoContext";
 import { processRawData } from "../../logic/dataProcessor";
 import { savePlain, saveSecure, populateSecureCache } from "../../helpers/localStorage/save";
+import { CACHE_POPULATED_EVENT } from "../../context/CryptoContext";
 import { SecurityLock } from "../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 
@@ -35,6 +36,9 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
         populateSecureCache('student_db_full', student);
         populateSecureCache('course_db_offline', courses);
         if (metaData) populateSecureCache('import_meta', metaData);
+
+        // Báo các hook re-render (giống CryptoContext làm sau unlock)
+        window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
 
         refreshHasData();
         return student;
@@ -70,6 +74,27 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
                         if (!cryptoKey) {
+                            // Nếu backup có salt → là bản backup đã mã hóa
+                            // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu
+                            if (data['__pbkdf2_salt__']) {
+                                for (const [k, v] of Object.entries(data)) {
+                                    if (typeof v === 'string') {
+                                        localStorage.setItem(k, v);
+                                    } else {
+                                        localStorage.setItem(k, JSON.stringify(v));
+                                    }
+                                }
+                                // Sau khi reload salt + pin_verify vào localStorage,
+                                // refreshHasData() → hasData=true → SecurityGate tự chặn và hỏi mật khẩu cũ
+                                refreshHasData();
+                                addNotification({
+                                    title: 'Backup đã được tải',
+                                    message: 'Nhập mật khẩu của file backup để tiếp tục khôi phục dữ liệu.',
+                                    type: 'info'
+                                });
+                                return;
+                            }
+                            // Backup không mã hóa → yêu cầu tạo mật khẩu mới
                             setPendingImport({ type: 'FULL_DUMP', data });
                             return;
                         }
@@ -84,6 +109,8 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                                 savePlain(key, data[key]);
                             }
                         }
+                        // Báo các hook re-render
+                        window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
                         refreshHasData();
 
                         addNotification({

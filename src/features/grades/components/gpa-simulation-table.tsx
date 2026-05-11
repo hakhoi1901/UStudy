@@ -96,7 +96,7 @@ export function GPASimulationTable({
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-900 text-center">
                                             <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
-                                                {course.credits !== null ? `${course.credits} TC` : '—'}
+                                                {course.credits !== null ? `${course.credits} TC` : '-'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-center">
@@ -106,7 +106,7 @@ export function GPASimulationTable({
                                                 max="10"
                                                 step="0.1"
                                                 value={course.projectedGrade ?? ''}
-                                                placeholder="—"
+                                                placeholder="-"
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     handleGradeChange(course.code, val === '' ? null : (parseFloat(val) || 0));
@@ -121,7 +121,7 @@ export function GPASimulationTable({
                                                         course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
                                                             'bg-orange-100 text-orange-700'
                                                 }`}>
-                                                {course.projectedGrade !== null ? getClassification(course.projectedGrade) : '—'}
+                                                {course.projectedGrade !== null ? getClassification(course.projectedGrade) : '-'}
                                             </span>
                                         </td>
                                     </tr>
