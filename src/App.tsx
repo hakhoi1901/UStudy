@@ -6,6 +6,7 @@ import { TuitionPage } from './pages/TuitionPage/TuitionPage';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
 import { useState, useEffect, useCallback } from 'react';
 import { Setting } from './pages/setting/Setting';
+import { PrivacySecurity } from './pages/setting/PrivacySecurity';
 import { SettingUserProfile } from './pages/setting/SettingUserProfile';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAppNotification } from './context/NotificationContext';
@@ -153,6 +154,7 @@ function AppContent() {
           {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
           {currentPage === 'examSchedule' && <ExamScheduleVi />}
           {currentPage === 'settings' && <Setting />}
+          {currentPage === 'privacy' && <PrivacySecurity />}
         </MainLayout>
       )}
     </>
