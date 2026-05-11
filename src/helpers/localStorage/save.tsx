@@ -223,6 +223,67 @@ export async function verifyPin(pin: string): Promise<CryptoKey | null> {
 }
 
 /**
+ * Xác minh PIN của file backup trước khi import
+ */
+export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayload: string): Promise<boolean> {
+    try {
+        const salt = fromBase64(saltRaw);
+        const key = await deriveKey(pin, salt);
+        
+        const decoded = decodePayload(verifyPayload);
+        if (!decoded) return false;
+        
+        const { iv, ciphertext } = decoded;
+        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+        const result = JSON.parse(new TextDecoder().decode(plaintext));
+        
+        return result?.ok === true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Import dữ liệu từ file backup và mã hóa lại bằng khoá hiện tại của ứng dụng.
+ */
+export async function importBackupWithCurrentKey(
+    backupData: Record<string, string>,
+    backupPin: string,
+    currentKey: CryptoKey
+): Promise<void> {
+    const backupSaltRaw = backupData[INTERNAL_KEYS.SALT];
+    if (!backupSaltRaw) throw new Error('File backup không hợp lệ');
+    const backupSalt = fromBase64(backupSaltRaw);
+    const backupKey = await deriveKey(backupPin, backupSalt);
+
+    for (const [k, v] of Object.entries(backupData)) {
+        if (k === INTERNAL_KEYS.SALT || k === INTERNAL_KEYS.PIN_VERIFY || k === INTERNAL_KEYS.FAIL_COUNT || k === INTERNAL_KEYS.LOCKOUT_UNTIL) {
+            continue; // Bỏ qua các key hệ thống của backup
+        }
+        
+        // Kiểm tra xem key này có phải là dữ liệu nhạy cảm cần giải mã không
+        if ((SECURE_DATA_KEYS as readonly string[]).includes(k)) {
+            try {
+                const decoded = decodePayload(v);
+                if (!decoded) continue;
+                const { iv, ciphertext } = decoded;
+                const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, backupKey, ciphertext);
+                const parsed = JSON.parse(new TextDecoder().decode(plaintext));
+                
+                // Encrypt lại bằng currentKey và lưu vào localStorage
+                await saveSecure(k, parsed, currentKey);
+            } catch {
+                // Ignore lỗi decrypt từng key
+            }
+        } else {
+            // Dữ liệu plain
+            localStorage.setItem(k, v);
+        }
+    }
+}
+
+
+/**
  * Đổi PIN:
  * 1. Decrypt toàn bộ SECURE_DATA_KEYS bằng oldKey
  * 2. Tạo salt mới, derive newKey

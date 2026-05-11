@@ -34,3 +34,7 @@ temp/*
 *.txt
 
 android/
+build/*
+android/app/build/*
+capacitor-cordova-android-plugins/*
+capacitor-android-plugins/*

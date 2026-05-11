@@ -83,8 +83,6 @@ export class CourseRecommender {
 
         grades.forEach((g: any) => {
             const cid = String(g.id).trim();
-            console.log("cid")
-            console.log(cid);
             let scoreRaw = g.score;
             const credits = parseInt(g.credits) || 0;
 

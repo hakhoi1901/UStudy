@@ -165,87 +165,85 @@ export function ExamScheduleVi() {
 
     return (
         <div className="max-w-[1600px] mx-auto">
-            <h1 className="text-gray-900 mb-2">Lịch thi</h1>
-            <p className="text-gray-600 mb-8">Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn.</p>
+            <h1 className="text-gray-900 mb-1 md:mb-2">Lịch thi</h1>
+            <p className="text-gray-600 mb-4 md:mb-8 text-sm md:text-base">Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn.</p>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Summary Cards - Responsive */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
                 {/* Card: Upcoming Exams (Takes 2 columns) */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    {/* Header */}
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                        <div className="w-9 h-9 bg-[#004A98]/10 rounded-lg flex items-center justify-center">
-                            <Clock className="w-[18px] h-[18px] text-[#004A98]" />
+                    <div className="px-4 py-3 md:px-6 md:py-4 border-b border-gray-100 flex items-center gap-2 md:gap-3">
+                        <div className="w-8 h-8 md:w-9 md:h-9 bg-[#004A98]/10 rounded-lg flex items-center justify-center">
+                            <Clock className="w-4 h-4 md:w-[18px] md:h-[18px] text-[#004A98]" />
                         </div>
                         <div>
-                            <h3 className="text-sm text-gray-900 font-semibold">Các môn thi sắp tới</h3>
-                            <p className="text-xs text-gray-400">{upcomingExams.length} môn cần chuẩn bị</p>
+                            <h3 className="text-xs md:text-sm text-gray-900 font-semibold">Các môn thi sắp tới</h3>
+                            <p className="text-[10px] md:text-xs text-gray-400">{upcomingExams.length} môn cần chuẩn bị</p>
                         </div>
                     </div>
 
                     {upcomingExams.length > 0 ? (
                         <div className="divide-y divide-gray-100">
-                            {/* Featured next exam - highlighted row */}
-                            <div className="px-6 py-4 bg-[#004A98]/[0.03]">
+                            <div className="px-4 py-3 md:px-6 md:py-4 bg-[#004A98]/[0.03]">
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs font-mono font-semibold text-[#004A98]">{upcomingExams[0].courseCode}</span>
-                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${upcomingExams[0].examType === 'Giữa kỳ' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                                        <div className="flex items-center gap-2 mb-0.5 md:mb-1">
+                                            <span className="text-[10px] md:text-xs font-mono font-semibold text-[#004A98]">{upcomingExams[0].courseCode}</span>
+                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] md:text-[10px] font-medium ${upcomingExams[0].examType === 'Giữa kỳ' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                                                 }`}>
                                                 {upcomingExams[0].examType}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-900 font-medium mb-1.5">{upcomingExams[0].courseName}</p>
-                                        <div className="flex items-center gap-4 text-xs text-gray-400">
+                                        <p className="text-xs md:text-sm text-gray-900 font-medium mb-1 md:mb-1.5 truncate md:whitespace-normal">{upcomingExams[0].courseName}</p>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-4 text-[10px] md:text-xs text-gray-400">
                                             <span className="flex items-center gap-1">
-                                                <Calendar className="w-3.5 h-3.5" />
+                                                <Calendar className="w-3 md:w-3.5 h-3 md:h-3.5" />
                                                 {formatDate(upcomingExams[0].examDate)}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Clock className="w-3.5 h-3.5" />
+                                                <Clock className="w-3 md:w-3.5 h-3 md:h-3.5" />
                                                 {upcomingExams[0].examTime.split(' - ')[0]}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <MapPin className="w-3.5 h-3.5" />
+                                                <MapPin className="w-3 md:w-3.5 h-3 md:h-3.5" />
                                                 {upcomingExams[0].room}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex-shrink-0 ml-4 text-right">
-                                        <p className="text-2xl font-bold text-[#004A98]">{getDaysUntilExam(upcomingExams[0].examDate)}</p>
-                                        <p className="text-[11px] text-gray-400">ngày nữa</p>
+                                    <div className="flex-shrink-0 ml-3 md:ml-4 text-right">
+                                        <p className="text-lg md:text-2xl font-bold text-[#004A98]">{getDaysUntilExam(upcomingExams[0].examDate)}</p>
+                                        <p className="text-[9px] md:text-[11px] text-gray-400">ngày nữa</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Remaining exams - simple list */}
                             {upcomingExams.slice(1, 5).map((exam) => (
-                                <div key={exam.id} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
+                                <div key={exam.id} className="px-4 py-2.5 md:px-6 md:py-3 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-xs font-mono font-semibold text-[#004A98]">{exam.courseCode}</span>
-                                            <span className="text-sm text-gray-800">{exam.courseName}</span>
+                                            <span className="text-[10px] md:text-xs font-mono font-semibold text-[#004A98]">{exam.courseCode}</span>
+                                            <span className="text-xs md:text-sm text-gray-800 truncate block md:inline">{exam.courseName}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-gray-400">
+                                        <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-gray-400">
                                             <span>{formatDate(exam.examDate)}</span>
-                                            <span>·</span>
-                                            <span>{exam.examTime.split(' - ')[0]}</span>
-                                            <span>·</span>
-                                            <span>{exam.room}</span>
+                                            <span className="hidden md:inline">·</span>
+                                            <span className="md:inline">{exam.examTime.split(' - ')[0]}</span>
+                                            <span className="hidden md:inline">·</span>
+                                            <span className="hidden md:inline">{exam.room}</span>
                                         </div>
                                     </div>
-                                    <div className="flex-shrink-0 ml-4 text-right">
-                                        <span className="text-sm font-semibold text-gray-600">{getDaysUntilExam(exam.examDate)}</span>
-                                        <span className="text-[11px] text-gray-400 ml-1">ngày</span>
+                                    <div className="flex-shrink-0 ml-3 md:ml-4 text-right">
+                                        <span className="text-xs md:text-sm font-semibold text-gray-600">{getDaysUntilExam(exam.examDate)}</span>
+                                        <span className="text-[9px] md:text-[11px] text-gray-400 ml-1">ngày</span>
                                     </div>
                                 </div>
                             ))}
 
                             {/* +X more link */}
                             {upcomingExams.length > 5 && (
-                                <div className="px-6 py-3">
-                                    <span className="text-sm text-[#004A98] font-medium cursor-pointer hover:underline">
+                                <div className="px-4 py-2.5 md:px-6 md:py-3">
+                                    <span className="text-[11px] md:text-sm text-[#004A98] font-medium cursor-pointer hover:underline">
                                         +{upcomingExams.length - 5} môn khác →
                                     </span>
                                 </div>
@@ -265,21 +263,21 @@ export function ExamScheduleVi() {
                 {/* Card: Exam Progress */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {/* Header */}
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                        <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center">
-                            <BookOpen className="w-[18px] h-[18px] text-emerald-600" />
+                    <div className="px-4 py-3 md:px-6 md:py-4 border-b border-gray-100 flex items-center gap-2 md:gap-3">
+                        <div className="w-8 h-8 md:w-9 md:h-9 bg-emerald-50 rounded-lg flex items-center justify-center">
+                            <BookOpen className="w-4 h-4 md:w-[18px] md:h-[18px] text-emerald-600" />
                         </div>
                         <div>
-                            <h3 className="text-sm text-gray-900 font-semibold">Tiến độ kỳ thi</h3>
-                            <p className="text-xs text-gray-400">{selectedSemester === 'all' ? 'Tất cả học kỳ' : selectedSemester}</p>
+                            <h3 className="text-xs md:text-sm text-gray-900 font-semibold">Tiến độ kỳ thi</h3>
+                            <p className="text-[10px] md:text-xs text-gray-400 truncate max-w-[150px] md:max-w-none">{selectedSemester === 'all' ? 'Tất cả học kỳ' : selectedSemester}</p>
                         </div>
                     </div>
 
-                    <div className="px-6 py-5">
-                        {/* Donut Chart - smaller, thinner */}
-                        <div className="flex items-center justify-center mb-6">
-                            <div className="relative w-28 h-28">
-                                <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 112 112">
+                    <div className="px-4 py-4 md:px-6 md:py-5">
+                        {/* Donut Chart */}
+                        <div className="flex items-center justify-center mb-4 md:mb-6">
+                            <div className="relative w-20 h-20 md:w-28 md:h-28">
+                                <svg className="w-20 h-20 md:w-28 md:h-28 transform -rotate-90" viewBox="0 0 112 112">
                                     <circle cx="56" cy="56" r="48" stroke="#F3F4F6" strokeWidth="8" fill="none" />
                                     <circle
                                         cx="56" cy="56" r="48"
@@ -293,36 +291,36 @@ export function ExamScheduleVi() {
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-2xl font-bold text-gray-900">{progressPercent}%</span>
-                                    <span className="text-[11px] text-gray-400">hoàn thành</span>
+                                    <span className="text-lg md:text-2xl font-bold text-gray-900">{progressPercent}%</span>
+                                    <span className="text-[9px] md:text-[11px] text-gray-400">hoàn thành</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Stats - simple rows */}
                         <div className="divide-y divide-gray-100 border-t border-gray-100">
-                            <div className="flex items-center justify-between py-2.5">
-                                <span className="text-sm text-gray-500">Tổng số môn thi</span>
-                                <span className="text-sm font-semibold text-gray-800">{totalExams}</span>
+                            <div className="flex items-center justify-between py-2 md:py-2.5">
+                                <span className="text-[11px] md:text-sm text-gray-500">Tổng số môn thi</span>
+                                <span className="text-[11px] md:text-sm font-semibold text-gray-800">{totalExams}</span>
                             </div>
-                            <div className="flex items-center justify-between py-2.5">
-                                <span className="text-sm text-gray-500">Đã hoàn thành</span>
-                                <span className="text-sm font-semibold text-emerald-600">{completedExams}</span>
+                            <div className="flex items-center justify-between py-2 md:py-2.5">
+                                <span className="text-[11px] md:text-sm text-gray-500">Đã hoàn thành</span>
+                                <span className="text-[11px] md:text-sm font-semibold text-emerald-600">{completedExams}</span>
                             </div>
-                            <div className="flex items-center justify-between py-2.5">
-                                <span className="text-sm text-gray-500">Còn lại</span>
-                                <span className="text-sm font-semibold text-[#004A98]">{remainingExams}</span>
+                            <div className="flex items-center justify-between py-2 md:py-2.5">
+                                <span className="text-[11px] md:text-sm text-gray-500">Còn lại</span>
+                                <span className="text-[11px] md:text-sm font-semibold text-[#004A98]">{remainingExams}</span>
                             </div>
                         </div>
 
                         {/* Breakdown by type - simple progress */}
-                        <div className="mt-4 space-y-3">
+                        <div className="mt-3 md:mt-4 space-y-2.5 md:space-y-3">
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs text-gray-500">Giữa kỳ</span>
-                                    <span className="text-xs text-gray-500">{completedMidterms}/{midtermExams}</span>
+                                    <span className="text-[10px] md:text-xs text-gray-500">Giữa kỳ</span>
+                                    <span className="text-[10px] md:text-xs text-gray-500">{completedMidterms}/{midtermExams}</span>
                                 </div>
-                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-[#004A98] rounded-full transition-all duration-700"
                                         style={{ width: midtermExams > 0 ? `${(completedMidterms / midtermExams) * 100}%` : '100%' }}
@@ -331,10 +329,10 @@ export function ExamScheduleVi() {
                             </div>
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs text-gray-500">Cuối kỳ</span>
-                                    <span className="text-xs text-gray-500">{completedFinals}/{finalExams}</span>
+                                    <span className="text-[10px] md:text-xs text-gray-500">Cuối kỳ</span>
+                                    <span className="text-[10px] md:text-xs text-gray-500">{completedFinals}/{finalExams}</span>
                                 </div>
-                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-[#004A98]/60 rounded-full transition-all duration-700"
                                         style={{ width: finalExams > 0 ? `${(completedFinals / finalExams) * 100}%` : '100%' }}
@@ -347,29 +345,29 @@ export function ExamScheduleVi() {
             </div>
 
             {/* Filters & Actions */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="bg-white rounded-xl px-3 py-3 md:p-6 shadow-sm border border-gray-200 mb-4 md:mb-6">
+                <div className="flex flex-wrap gap-2 md:flex-col lg:flex-row lg:items-center justify-between">
                     {/* Left: Filters */}
-                    <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                    <div className="flex flex-wrap gap-2 md:gap-4 flex-1">
 
                         {/* Semester Filter */}
                         <select
                             value={selectedSemester}
                             onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
+                            className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
                         >
-                            <option value="all">Tất cả học kỳ</option>
+                            <option value="all">Tất cả kỳ</option>
                             {availableSemesters.map(sem => (
                                 <option key={sem} value={sem}>{sem}</option>
                             ))}
                         </select>
 
                         {/* Exam Type Tabs */}
-                        <div className="flex bg-gray-100 rounded-lg p-1">
+                        <div className="flex bg-gray-100 rounded-lg p-0.5 md:p-1">
                             <button
                                 onClick={() => setSelectedType('all')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'all'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'all'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -379,7 +377,7 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Giữa kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'Giữa kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -389,7 +387,7 @@ export function ExamScheduleVi() {
                             <button
                                 onClick={() => setSelectedType('Cuối kỳ')}
                                 disabled={selectedSemester === 'all'}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
+                                className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${selectedType === 'Cuối kỳ'
                                     ? 'bg-white text-[#004A98] shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     } ${selectedSemester === 'all' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -399,15 +397,15 @@ export function ExamScheduleVi() {
                         </div>
 
                         {/* Search */}
-                        <div className="relative flex-1 max-w-xs">
+                        <div className="relative flex-1 min-w-[140px] max-w-xs">
                             <input
                                 type="text"
                                 placeholder="Tìm môn học..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                                className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
                             />
-                            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
@@ -415,8 +413,55 @@ export function ExamScheduleVi() {
                 </div>
             </div>
 
-            {/* Exam Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Exam Cards - Mobile only */}
+            <div className="md:hidden bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+                {filteredData.length === 0 ? (
+                    <div className="text-center py-10">
+                        <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 text-sm">Không tìm thấy lịch thi nào</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-100">
+                        {filteredData.map((exam, index) => {
+                            const daysUntil = getDaysUntilExam(exam.examDate);
+                            const isUpcoming = daysUntil > 0 && daysUntil <= 7;
+                            return (
+                                <div key={exam.id} className={`px-4 py-3 ${isUpcoming ? 'bg-blue-50' : ''}`}>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <span className="text-[11px] font-mono font-bold text-[#004A98]">{exam.courseCode}</span>
+                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${exam.examType === 'Giữa kỳ' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{exam.examType}</span>
+                                            </div>
+                                            <p className="text-xs font-medium text-gray-900 truncate">{exam.courseName}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <Calendar className="w-3 h-3" />{formatDate(exam.examDate)}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <Clock className="w-3 h-3" />{exam.examTime.split(' - ')[0]}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <MapPin className="w-3 h-3" />{exam.room}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {daysUntil > 0 && (
+                                            <div className="flex-shrink-0 text-right">
+                                                <p className="text-lg font-bold text-[#004A98] leading-tight">{daysUntil}</p>
+                                                <p className="text-[9px] text-gray-400">ngày nữa</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Exam Table - Desktop only */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1100px]">
                         <colgroup>
@@ -431,7 +476,7 @@ export function ExamScheduleVi() {
                             <col className="w-[90px]" />
                             <col className="w-[150px]" />
                         </colgroup>
-                        <thead className="bg-gradient-to-r from-[#004A98] to-[#0066CC] text-white sticky top-0 z-10">
+                        <thead className="bg-[#004A98] text-white sticky top-0 z-10">
                             <tr>
                                 <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
                                 <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
@@ -469,13 +514,11 @@ export function ExamScheduleVi() {
                                         <td className="px-3 py-3 text-sm text-gray-600">{exam.className}</td>
                                         <td className="px-3 py-3 text-sm font-medium text-gray-900">
                                             <div className="flex items-center gap-1">
-                                                <Calendar className="w-4 h-4 text-gray-400" />
                                                 {formatDate(exam.examDate)}
                                             </div>
                                         </td>
-                                        <td className="px-3 py-3 text-sm text-gray-600">
+                                        <td className="px-3 py-3 font-medium text-gray-900">
                                             <div className="flex items-center gap-1">
-                                                <Clock className="w-4 h-4 text-gray-400" />
                                                 {exam.examTime}
                                             </div>
                                         </td>

@@ -1,9 +1,8 @@
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
+import { MainLayout } from './layouts/MainLayout';
 import { DashboardWidgets } from './pages/dashboardWidgets/DashboardWidgets';
 import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
 import { GradeManagement } from './pages/gradeManagement/GradeManagement';
-import { TuitionManagement } from './pages/tuitionManagement/TuitionManagement';
+import { TuitionPage } from './pages/TuitionPage/TuitionPage';
 import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
 import { useState, useEffect, useCallback } from 'react';
 import { Setting } from './pages/setting/Setting';
@@ -20,13 +19,14 @@ import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
 import { SecurityLock } from './components/SecurityLock';
 import { SecurityGate } from './components/SecurityGate';
 import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
-
+import { App as CapacitorApp } from '@capacitor/app';
+import { Analytics } from '@vercel/analytics/react';
 
 function AppContent() {
   const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
   const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
-  const { cryptoKey, unlock, refreshHasData } = useCrypto();
+  const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
 
   const [currentPage, setCurrentPage] = useState<string>(() => {
@@ -94,41 +94,31 @@ function AppContent() {
     return () => window.removeEventListener('message', handleMessage, true);
   }, [addNotification, cryptoKey, saveImportedData]);
 
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    const checkMobile = () => {
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isSmallScreen = window.innerWidth <= 700;
-      setIsMobile(isMobileDevice || isSmallScreen);
+    const handleBackButton = () => {
+      setCurrentPage((prevPage) => {
+        if (prevPage !== 'dashboard') {
+          return 'dashboard';
+        } else {
+          CapacitorApp.exitApp();
+          return prevPage;
+        }
+      });
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    CapacitorApp.addListener('backButton', handleBackButton);
+
+    return () => {
+      CapacitorApp.removeAllListeners();
+    };
   }, []);
 
-  if (isMobile) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] max-w-sm w-full text-center border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h1 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">Trải nghiệm trên PC</h1>
-          <p className="text-gray-500 text-sm leading-relaxed mb-6">
-            Hệ thống quản lý học tập và xếp lịch hiện tại chỉ hỗ trợ hiển thị và thao tác trên máy tính (PC/Laptop) để đảm bảo trải nghiệm tốt nhất.
-          </p>
-          <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 inline-block">
-            <p className="text-xs font-medium text-gray-600">Vui lòng truy cập lại bằng máy tính nhé! </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen bg-gray-50">
+    <>
       {/* Overlay SecurityLock khi có pendingData nhưng chưa có PIN */}
       {pendingData && !cryptoKey && (
         <SecurityLock
-          setupMode={true}
+          setupMode={!hasData}
           onUnlock={async (key) => {
             unlock(key);
             const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
@@ -141,41 +131,38 @@ function AppContent() {
           }}
         />
       )}
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="flex-1 flex flex-col overflow-visible">
-        <Header selectedSemester={selectedSemester} />
-        {/* Giao diện chính/các trang*/}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-[1600px] mx-auto w-full">
-            {!isConfigured ? (
-              <div className="h-full flex items-center justify-center" style={{ marginTop: '40px' }}>
-                <div className="max-w-2xl w-full mx-auto">
-                  <div className="w-1 flex flex-row w-full items-center justify-center">
-                    <SettingUserProfile />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <>
-                {currentPage === 'dashboard' && <DashboardWidgets />}
-                {currentPage === 'courses' && <IntegratedStudyRoadmap />}
-                {currentPage === 'grades' && <GradeManagement />}
-                {currentPage === 'tuition' && <TuitionManagement selectedSemester={selectedSemester} />}
-                {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
-                {currentPage === 'examSchedule' && <ExamScheduleVi />}
-                {currentPage === 'settings' && <Setting />}
-              </>
-            )}
+
+      {!isConfigured ? (
+        <div className="flex h-screen w-full items-center justify-center bg-gray-50 p-4">
+          <div className="max-w-2xl w-full mx-auto">
+            <div className="w-full flex flex-row items-center justify-center">
+              <SettingUserProfile />
+            </div>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      ) : (
+        <MainLayout
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          selectedSemester={selectedSemester}
+        >
+          {currentPage === 'dashboard' && <DashboardWidgets />}
+          {currentPage === 'courses' && <IntegratedStudyRoadmap />}
+          {currentPage === 'grades' && <GradeManagement />}
+          {currentPage === 'tuition' && <TuitionPage selectedSemester={selectedSemester} />}
+          {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
+          {currentPage === 'examSchedule' && <ExamScheduleVi />}
+          {currentPage === 'settings' && <Setting />}
+        </MainLayout>
+      )}
+    </>
   );
 }
 
 export default function App() {
   return (
     <CryptoProvider>
+      <Analytics />
       <SecurityGate>
         <NotificationProvider>
           <DepartmentProvider>
