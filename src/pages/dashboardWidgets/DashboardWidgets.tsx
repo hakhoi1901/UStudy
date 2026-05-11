@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
 
-import { useStudentGradeData } from '../../hooks/useStudentGradeData';
+import { useStudentGradeData } from '../../features/grades';
 import { NoDataCard } from '../../components/nodataCard';
-import { ACADEMIC_RULES } from '../../config';
+import { ACADEMIC_RULES } from '../../constants';
 import { FinancialLogic } from '../../logic/FinancialLogic';
-import { GPACalculator } from '../../logic/GPACalculator';
+import { GPACalculator } from '../../features/grades';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 
 export function DashboardWidgets() {

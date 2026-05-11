@@ -1,16 +1,1 @@
-[
-  {
-    "id": "tet-nguyen-dan-2025",
-    "startWeek": 22,
-    "duration": 2,
-    "affectedCourseCodes": "all",
-    "reason": "Nghỉ Tết Nguyên Đán (Hệ thống)"
-  },
-  {
-    "id": "le-30-4-2025",
-    "startWeek": 34,
-    "duration": 1,
-    "affectedCourseCodes": "all",
-    "reason": "Nghỉ lễ 30/4 - 1/5 (Hệ thống)"
-  }
-]
+[]

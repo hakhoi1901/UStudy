@@ -1,6 +1,6 @@
 import { LogOut, ChevronDown, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useStudentGradeData } from '../hooks/useStudentGradeData';
+import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
 import { BookmarkletButton } from './BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../context/NotificationContext';

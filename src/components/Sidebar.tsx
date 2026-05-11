@@ -33,7 +33,7 @@ const bottomNavItems = [
   { icon: Home, label: 'Tổng quan', page: 'dashboard' },
   { icon: Map, label: 'Lộ trình', page: 'courses' },
   { icon: BarChart3, label: 'Điểm', page: 'grades' },
-  { icon: DollarSign, label: 'Học phí', page: 'tuition' },
+  { icon: Calendar, label: 'Thời khóa biểu', page: 'schedule' },
   { icon: Menu, label: 'Thêm', page: '__more__' },
 ];
 

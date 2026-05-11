@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { readFromStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
-import { AcademicRulesEngine } from '../../logic/AcademicRulesEngine';
+import { AcademicRulesEngine } from '../../features/grades';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import type { Course } from '../../types';
 
