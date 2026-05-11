@@ -245,67 +245,77 @@ export const FinancialLogic = {
 
     /**
      * Ước tính học phí từ nhiều nguồn dữ liệu.
+     * @param selectedSemesterKey  Key kỳ đang chọn trên UI, vd "24-25/2". Ưu tiên lookup trước importMeta.
      */
     estimateTuitionFromSources: (
         studentDb: any,
         importMeta: any,
         allCoursesMeta: CourseMeta[],
-        tuitionRates: TuitionRates | null
+        tuitionRates: TuitionRates | null,
+        selectedSemesterKey?: string
     ): { estimatedTuition: number; tuitionSource: 'tuition_page' | 'registration' | 'none' } => {
-        const tuitionMeta = importMeta?.params?.tuition;
         const regMeta = importMeta?.params?.registration;
-
         let tuitionPageTotal = 0;
         const tuitionMap = studentDb?.tuition;
 
-        if (tuitionMap && typeof tuitionMap === 'object' && !tuitionMap.total) {
-            const periods = Object.keys(tuitionMap);
-            if (periods.length > 0) {
-                const regTarget = regMeta ? `${String(regMeta.year).substring(2, 4)}-${String(regMeta.year).substring(7, 9)}/${regMeta.sem}` : null;
-                const match = regTarget ? tuitionMap[regTarget] : null;
-                const latest = tuitionMap[periods.sort().reverse()[0]];
-                const target = match || latest;
-                tuitionPageTotal = parseFloat(String(target.total || "0").replace(/,/g, '')) || 0;
+        // 1. Thử lấy từ Tuition Page Data (Dữ liệu đã cào từ trang học phí)
+        if (tuitionMap && typeof tuitionMap === 'object') {
+            if (selectedSemesterKey) {
+                // Nếu có kỳ cụ thể, CHỈ lấy kỳ đó, không lấy kỳ khác
+                const target = tuitionMap[selectedSemesterKey];
+                if (target) {
+                    const feeStr = target.fee ?? target.total ?? "0";
+                    tuitionPageTotal = parseFloat(String(feeStr).replace(/,/g, '')) || 0;
+                }
+            } else if (!tuitionMap.total) {
+                // Fallback cũ cho các phiên bản chưa có selectedSemesterKey
+                const periods = Object.keys(tuitionMap);
+                if (periods.length > 0) {
+                    const regTarget = regMeta ? `${String(regMeta.year).substring(2, 4)}-${String(regMeta.year).substring(7, 9)}/${regMeta.sem}` : null;
+                    const target = (regTarget && tuitionMap[regTarget]) || tuitionMap[periods.sort().reverse()[0]];
+                    if (target) {
+                        const feeStr = target.fee ?? target.total ?? "0";
+                        tuitionPageTotal = parseFloat(String(feeStr).replace(/,/g, '')) || 0;
+                    }
+                }
+            } else {
+                tuitionPageTotal = parseFloat(String(studentDb.tuition.total).replace(/,/g, '')) || 0;
             }
-        } else {
-            tuitionPageTotal = studentDb?.tuition?.total
-                ? parseFloat(String(studentDb.tuition.total).replace(/,/g, '')) || 0
-                : 0;
         }
 
-        const isTuitionFresh = (() => {
-            if (!tuitionMeta || !regMeta) return tuitionPageTotal > 0;
-            const sameYear = tuitionMeta.year === regMeta.year;
-            const sameSem = parseInt(tuitionMeta.sem) >= parseInt(regMeta.sem);
-            return sameYear && sameSem && tuitionPageTotal > 0;
-        })();
-
-        if (isTuitionFresh) {
+        if (tuitionPageTotal > 0) {
             return { estimatedTuition: tuitionPageTotal, tuitionSource: 'tuition_page' };
         }
 
+        // 2. Fallback: Tính từ danh sách môn đăng ký (Registration)
+        // Lưu ý: Phải lọc đúng môn của học kỳ đang chọn
         if (studentDb?.registrations && studentDb.registrations.length > 0) {
-            const ltCourses = studentDb.registrations.filter((r: any) => r.courseType === 'LT');
-            const uniqueCourses = new Map<string, any>();
-            ltCourses.forEach((r: any) => {
-                if (!uniqueCourses.has(r.id)) uniqueCourses.set(r.id, r);
-            });
+            const importMetaRegTarget = regMeta ? `${String(regMeta.year).substring(2, 4)}-${String(regMeta.year).substring(7, 9)}/${regMeta.sem}` : null;
+            
+            // Nếu có selectedSemesterKey, chỉ tính nếu nó khớp với kỳ đăng ký trong DB
+            // (Hiện tại registrations trong studentDb thường chỉ chứa 1 kỳ mới nhất lúc cào)
+            const isMatch = !selectedSemesterKey || selectedSemesterKey === importMetaRegTarget;
+            
+            if (isMatch) {
+                const ltCourses = studentDb.registrations.filter((r: any) => r.courseType === 'LT');
+                const uniqueCourses = new Map<string, any>();
+                ltCourses.forEach((r: any) => {
+                    if (!uniqueCourses.has(r.id)) uniqueCourses.set(r.id, r);
+                });
 
-            const courseList = Array.from(uniqueCourses.entries()).map(([courseId]) => {
-                const meta = allCoursesMeta.find((m: any) => m.course_id === courseId);
-                const credits = parseInt(meta?.credits as any) || 3;
-                return { id: courseId, credits };
-            });
+                const courseList = Array.from(uniqueCourses.entries()).map(([courseId]) => {
+                    const meta = allCoursesMeta.find((m: any) => m.course_id === courseId);
+                    const credits = parseInt(meta?.credits as any) || 3;
+                    return { id: courseId, credits };
+                });
 
-            return {
-                estimatedTuition: FinancialLogic.calculateTotalTuition(courseList, tuitionRates, allCoursesMeta),
-                tuitionSource: 'registration'
-            };
+                const total = FinancialLogic.calculateTotalTuition(courseList, tuitionRates, allCoursesMeta);
+                if (total > 0) {
+                    return { estimatedTuition: total, tuitionSource: 'registration' };
+                }
+            }
         }
 
-        return {
-            estimatedTuition: tuitionPageTotal,
-            tuitionSource: tuitionPageTotal > 0 ? 'tuition_page' : 'none'
-        };
+        return { estimatedTuition: 0, tuitionSource: 'none' };
     },
 };

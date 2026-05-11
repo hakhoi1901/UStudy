@@ -7,7 +7,7 @@ import { FinancialLogic } from '../../tuition';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 
 export function useStudentGradeData() {
-    const { data: { tuitionRates, courses: allCoursesMeta } } = useDepartmentData();
+    const { data: { tuitionRates, courses: allCoursesMeta }, academicYear, semesterNumber } = useDepartmentData();
     const [stamp, setStamp] = useState(Date.now());
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
@@ -25,6 +25,15 @@ export function useStudentGradeData() {
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
     }, []);
+
+    // Build selected semester key, e.g. "2024-2025" + sem 2 → "24-25/2"
+    const selectedSemesterKey = useMemo(() => {
+        const y = String(academicYear);
+        if (y.length === 9) {
+            return `${y.substring(2, 4)}-${y.substring(7, 9)}/${semesterNumber}`;
+        }
+        return `${y}/${semesterNumber}`;
+    }, [academicYear, semesterNumber]);
 
     const gradeData = useMemo(() => {
         setIsReady(false);
@@ -62,7 +71,7 @@ export function useStudentGradeData() {
         // ── Tuition estimation: delegate to FinancialLogic ──
         const importMeta = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
         const { estimatedTuition, tuitionSource } = FinancialLogic.estimateTuitionFromSources(
-            studentDb, importMeta, allCoursesMeta, tuitionRates
+            studentDb, importMeta, allCoursesMeta, tuitionRates, selectedSemesterKey
         );
 
         setIsReady(true);
@@ -79,7 +88,8 @@ export function useStudentGradeData() {
             majorSpecializedGPA,
         };
 
-    }, [stamp, tuitionRates, allCoursesMeta]);
+    // selectedSemesterKey added so memo re-runs when user changes semester
+    }, [stamp, tuitionRates, allCoursesMeta, selectedSemesterKey]);
 
     return { ...gradeData, isReady, hasData };
 }
