@@ -1,6 +1,6 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
-import { CheckCircle, GraduationCap, Upload } from "lucide-react";
+import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAppNotification } from "../../context/NotificationContext";
 import { useCrypto } from "../../context/CryptoContext";
@@ -9,7 +9,7 @@ import { savePlain, saveSecure, populateSecureCache } from "../../helpers/localS
 import { SecurityLock } from "../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 
-export function SettingUserProfile() {
+export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
         facultyId, majorId, cohortId, academicYear,
         currentFaculty, currentMajor,
@@ -271,6 +271,23 @@ export function SettingUserProfile() {
                     </button>
                 </div>
             </div>
+            {/* Privacy link - chỉ hiện khi chưa cấu hình */}
+            {!isConfigured && (
+                <div className="mt-6 pt-5 border-t border-gray-200">
+                    <button
+                        onClick={(e) => { e.preventDefault(); onPageChange('privacy'); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors group"
+                    >
+                        <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                            <Shield className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-sm font-semibold">Bảo mật & Quyền dữ liệu</p>
+                            <p className="text-xs text-blue-500">Tìm hiểu cách chúng tôi bảo vệ dữ liệu của bạn</p>
+                        </div>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

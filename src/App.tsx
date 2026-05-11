@@ -133,30 +133,30 @@ function AppContent() {
         />
       )}
 
-      {!isConfigured ? (
-        <div className="flex h-screen w-full items-center justify-center bg-gray-50 p-4">
-          <div className="max-w-2xl w-full mx-auto">
-            <div className="w-full flex flex-row items-center justify-center">
-              <SettingUserProfile />
-            </div>
+      <MainLayout
+        currentPage={isConfigured ? currentPage : (currentPage === 'privacy' ? 'privacy' : 'setup')}
+        onPageChange={setCurrentPage}
+        selectedSemester={selectedSemester}
+      >
+        {!isConfigured && currentPage !== 'privacy' ? (
+          <div className="w-full flex flex-col items-center justify-center">
+            <SettingUserProfile 
+              onPageChange={setCurrentPage}
+            />
           </div>
-        </div>
-      ) : (
-        <MainLayout
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          selectedSemester={selectedSemester}
-        >
-          {currentPage === 'dashboard' && <DashboardWidgets />}
-          {currentPage === 'courses' && <IntegratedStudyRoadmap />}
-          {currentPage === 'grades' && <GradeManagement />}
-          {currentPage === 'tuition' && <TuitionPage selectedSemester={selectedSemester} />}
-          {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
-          {currentPage === 'examSchedule' && <ExamScheduleVi />}
-          {currentPage === 'settings' && <Setting />}
-          {currentPage === 'privacy' && <PrivacySecurity />}
-        </MainLayout>
-      )}
+        ) : (
+          <>
+            {currentPage === 'dashboard' && <DashboardWidgets />}
+            {currentPage === 'courses' && <IntegratedStudyRoadmap />}
+            {currentPage === 'grades' && <GradeManagement />}
+            {currentPage === 'tuition' && <TuitionPage selectedSemester={selectedSemester} />}
+            {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
+            {currentPage === 'examSchedule' && <ExamScheduleVi />}
+            {currentPage === 'settings' && <Setting />}
+            {currentPage === 'privacy' && <PrivacySecurity />}
+          </>
+        )}
+      </MainLayout>
     </>
   );
 }
