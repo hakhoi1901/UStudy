@@ -14,19 +14,19 @@ const sections = [
         title: 'Tổng quan bảo mật',
         content: 'UStudy được thiết kế với nguyên tắc "Privacy by Design" — quyền riêng tư của bạn được đặt lên hàng đầu trong mọi quyết định kiến trúc. Toàn bộ dữ liệu cá nhân (điểm số, lịch học, thông tin sinh viên) được mã hóa ngay trên thiết bị của bạn trước khi lưu vào bộ nhớ trình duyệt. Không có bất kỳ dữ liệu nào được gửi lên máy chủ của chúng tôi.',
     },
-    {
-        id: 'encryption',
-        icon: Lock,
-        iconColor: 'text-indigo-600',
-        iconBg: 'bg-indigo-50',
-        title: 'Mã hóa dữ liệu',
-        items: [
-            { icon: FileKey2, label: 'Thuật toán', desc: 'PBKDF2 (310,000 vòng lặp) + AES-GCM 256-bit — tiêu chuẩn mã hóa được sử dụng bởi các tổ chức tài chính và chính phủ trên thế giới.' },
-            { icon: KeyRound, label: 'Khóa mã hóa', desc: 'CryptoKey chỉ tồn tại trong RAM (bộ nhớ tạm) và không bao giờ được ghi ra ổ cứng hay localStorage. Khi bạn đóng tab hoặc khóa ứng dụng, khóa sẽ bị xóa hoàn toàn.' },
-            { icon: RefreshCw, label: 'Salt & IV ngẫu nhiên', desc: 'Mỗi người dùng có Salt 16 byte riêng, mỗi lần mã hóa sử dụng IV 12 byte ngẫu nhiên — đảm bảo cùng một dữ liệu sẽ tạo ra ciphertext khác nhau mỗi lần.' },
-            { icon: Fingerprint, label: 'Xác thực toàn vẹn', desc: 'AES-GCM tự động kiểm tra tính toàn vẹn (authentication tag). Bất kỳ thay đổi nào trên dữ liệu đã mã hóa sẽ bị phát hiện và từ chối giải mã.' },
-        ],
-    },
+    // {
+    //     id: 'encryption',
+    //     icon: Lock,
+    //     iconColor: 'text-indigo-600',
+    //     iconBg: 'bg-indigo-50',
+    //     title: 'Mã hóa dữ liệu',
+    //     items: [
+    //         { icon: FileKey2, label: 'Thuật toán', desc: 'PBKDF2 (310,000 vòng lặp) + AES-GCM 256-bit — tiêu chuẩn mã hóa được sử dụng bởi các tổ chức tài chính và chính phủ trên thế giới.' },
+    //         { icon: KeyRound, label: 'Khóa mã hóa', desc: 'CryptoKey chỉ tồn tại trong RAM (bộ nhớ tạm) và không bao giờ được ghi ra ổ cứng hay localStorage. Khi bạn đóng tab hoặc khóa ứng dụng, khóa sẽ bị xóa hoàn toàn.' },
+    //         { icon: RefreshCw, label: 'Salt & IV ngẫu nhiên', desc: 'Mỗi người dùng có Salt 16 byte riêng, mỗi lần mã hóa sử dụng IV 12 byte ngẫu nhiên — đảm bảo cùng một dữ liệu sẽ tạo ra ciphertext khác nhau mỗi lần.' },
+    //         { icon: Fingerprint, label: 'Xác thực toàn vẹn', desc: 'AES-GCM tự động kiểm tra tính toàn vẹn (authentication tag). Bất kỳ thay đổi nào trên dữ liệu đã mã hóa sẽ bị phát hiện và từ chối giải mã.' },
+    //     ],
+    // },
     {
         id: 'data-storage',
         icon: HardDriveDownload,
@@ -39,18 +39,18 @@ const sections = [
             { icon: Server, label: 'Không có database trung tâm', desc: 'Không tồn tại cơ sở dữ liệu tập trung chứa thông tin sinh viên. Mỗi người dùng là một "đảo" độc lập — dữ liệu của bạn chỉ thuộc về bạn.' },
         ],
     },
-    {
-        id: 'auth',
-        icon: KeyRound,
-        iconColor: 'text-amber-600',
-        iconBg: 'bg-amber-50',
-        title: 'Xác thực & Mật khẩu',
-        items: [
-            { icon: Lock, label: 'Mật khẩu không lưu trữ', desc: 'Mật khẩu của bạn không bao giờ được lưu dưới dạng plaintext hay hash. Nó chỉ được dùng để derive khóa AES thông qua PBKDF2, sau đó biến mất khỏi RAM.' },
-            { icon: Cpu, label: 'Chống brute-force', desc: 'PBKDF2 với 310,000 iterations khiến mỗi lần thử mật khẩu mất ~0.5 giây. Kẻ tấn công cần hàng chục năm để dò mật khẩu 4 ký tự đơn giản.' },
-            { icon: AlertTriangle, label: 'Khóa tạm thời', desc: 'Sau nhiều lần nhập sai, hệ thống tự động khóa tạm thời với thời gian tăng dần — ngăn chặn tấn công brute-force trực tiếp.' },
-        ],
-    },
+    // {
+    //     id: 'auth',
+    //     icon: KeyRound,
+    //     iconColor: 'text-amber-600',
+    //     iconBg: 'bg-amber-50',
+    //     title: 'Xác thực & Mật khẩu',
+    //     items: [
+    //         { icon: Lock, label: 'Mật khẩu không lưu trữ', desc: 'Mật khẩu của bạn không bao giờ được lưu dưới dạng plaintext hay hash. Nó chỉ được dùng để derive khóa AES thông qua PBKDF2, sau đó biến mất khỏi RAM.' },
+    //         { icon: Cpu, label: 'Chống brute-force', desc: 'PBKDF2 với 310,000 iterations khiến mỗi lần thử mật khẩu mất ~0.5 giây. Kẻ tấn công cần hàng chục năm để dò mật khẩu 4 ký tự đơn giản.' },
+    //         { icon: AlertTriangle, label: 'Khóa tạm thời', desc: 'Sau nhiều lần nhập sai, hệ thống tự động khóa tạm thời với thời gian tăng dần — ngăn chặn tấn công brute-force trực tiếp.' },
+    //     ],
+    // },
     {
         id: 'rights',
         icon: Eye,
