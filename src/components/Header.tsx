@@ -1,5 +1,6 @@
 import { LogOut, ChevronDown, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { LogoutConfirmModal } from './LogoutConfirmModal';
 import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
 import { BookmarkletButton } from './BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
@@ -20,6 +21,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   const [localSemester, setLocalSemester] = useState(`Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`);
   const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { academicYear, setAcademicYear, semesterNumber, setSemesterNumber } = useDepartmentData();
 
   // lấy dữ liệu sinh viên
@@ -59,7 +61,11 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
   };
 
   // xử lý đăng xuất
-  const handleLogOut = () => {
+  const handleLogOutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogOutConfirm = () => {
     clearAllStorage();
     lock();
     addNotification({
@@ -161,7 +167,7 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
 
                 {/* Log Out Button */}
                 <button
-                  onClick={handleLogOut}
+                  onClick={handleLogOutClick}
                   className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-sm focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
                 >
                   <LogOut className="w-4 h-4" strokeWidth={2.5} />
@@ -188,6 +194,13 @@ export function Header({ selectedSemester: propSelectedSemester, onSemesterChang
           </div>
         </div>
       </div>
+
+      {showLogoutModal && (
+        <LogoutConfirmModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={handleLogOutConfirm}
+        />
+      )}
     </header>
   );
 }

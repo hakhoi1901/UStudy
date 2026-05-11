@@ -1,12 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-    InputOTPSeparator,
-} from './ui/input-otp';
+import React, { useState, useCallback } from 'react';
 import { Button } from './ui/button';
-import { KeyRound, ShieldAlert, CheckCircle2, Loader2, X } from 'lucide-react';
+import { KeyRound, ShieldAlert, CheckCircle2, Loader2, X, Eye, EyeOff } from 'lucide-react';
 import { verifyPin, changePin } from '../helpers/localStorage/save';
 import { useCrypto } from '../context/CryptoContext';
 
@@ -14,48 +8,54 @@ interface ChangePinModalProps {
     onClose: () => void;
 }
 
-type Step = 'old-pin' | 'new-pin' | 'confirm-pin' | 'success';
+type Step = 'old-password' | 'new-password' | 'confirm-password' | 'success';
 
 export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
     const { cryptoKey, unlock } = useCrypto();
 
-    const [step, setStep] = useState<Step>('old-pin');
-    const [oldPin, setOldPin] = useState('');
-    const [newPin, setNewPin] = useState('');
-    const [confirmPin, setConfirmPin] = useState('');
+    const [step, setStep] = useState<Step>('old-password');
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState('');
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Step 1: Verify PIN cũ
+    // Step 1: Verify mật khẩu cũ
     const handleVerifyOld = useCallback(async () => {
-        if (oldPin.length !== 6 || isProcessing) return;
+        if (!oldPassword || isProcessing) return;
         setIsProcessing(true);
         setError(null);
-        const key = await verifyPin(oldPin);
+        const key = await verifyPin(oldPassword);
         if (key) {
-            setStep('new-pin');
+            setStep('new-password');
         } else {
-            setError('Mã PIN hiện tại không đúng.');
-            setOldPin('');
+            setError('Mật khẩu hiện tại không đúng.');
+            setOldPassword('');
         }
         setIsProcessing(false);
-    }, [oldPin, isProcessing]);
+    }, [oldPassword, isProcessing]);
 
-    // Step 2: Tiếp nhận PIN mới
-    const handleNewPinNext = useCallback(() => {
-        if (newPin.length !== 6) return;
+    // Step 2: Tiếp nhận mật khẩu mới
+    const handleNewPasswordNext = useCallback(() => {
+        if (newPassword.length < 4) {
+            setError('Mật khẩu phải có ít nhất 4 ký tự.');
+            return;
+        }
         setError(null);
-        setStep('confirm-pin');
-    }, [newPin]);
+        setStep('confirm-password');
+    }, [newPassword]);
 
-    // Step 3: Confirm + thực hiện đổi PIN
+    // Step 3: Confirm + thực hiện đổi mật khẩu
     const handleConfirmChange = useCallback(async () => {
-        if (confirmPin.length !== 6 || isProcessing) return;
+        if (!confirmPassword || isProcessing) return;
 
-        if (confirmPin !== newPin) {
-            setError('PIN xác nhận không khớp. Vui lòng thử lại.');
-            setConfirmPin('');
+        if (confirmPassword !== newPassword) {
+            setError('Mật khẩu xác nhận không khớp. Vui lòng thử lại.');
+            setConfirmPassword('');
             return;
         }
 
@@ -73,64 +73,64 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
             await new Promise(r => setTimeout(r, 50));
 
             setProgress('Đang tạo khóa mã hóa mới (PBKDF2)...');
-            const newKey = await changePin(cryptoKey, newPin);
+            const newKey = await changePin(cryptoKey, newPassword);
 
             setProgress('Hoàn tất!');
             unlock(newKey);
             setStep('success');
         } catch (err) {
             console.error('[ChangePinModal]', err);
-            setError('Có lỗi xảy ra khi đổi PIN. Vui lòng thử lại.');
+            setError('Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.');
             setIsProcessing(false);
             setProgress('');
         }
-    }, [confirmPin, newPin, cryptoKey, isProcessing, unlock]);
+    }, [confirmPassword, newPassword, cryptoKey, isProcessing, unlock]);
 
-    // Auto-submit
-    useEffect(() => {
-        if (step === 'old-pin' && oldPin.length === 6) handleVerifyOld();
-    }, [oldPin, step, handleVerifyOld]);
-
-    useEffect(() => {
-        if (step === 'new-pin' && newPin.length === 6) handleNewPinNext();
-    }, [newPin, step, handleNewPinNext]);
-
-    useEffect(() => {
-        if (step === 'confirm-pin' && confirmPin.length === 6) handleConfirmChange();
-    }, [confirmPin, step, handleConfirmChange]);
 
     // ─── Render ───────────────────────────────────────────────────────────────
 
-    const stepConfig: Record<Step, { title: string; subtitle: string; pin: string; setPin: (v: string) => void }> = {
-        'old-pin': {
-            title: 'Nhập mã PIN hiện tại',
-            subtitle: 'Xác nhận danh tính trước khi đổi mã PIN.',
-            pin: oldPin,
-            setPin: setOldPin,
+    const stepConfig: Record<Step, { title: string; subtitle: string; password: string; setPassword: (v: string) => void; showPassword: boolean; setShowPassword: (v: boolean) => void; placeholder: string }> = {
+        'old-password': {
+            title: 'Nhập mật khẩu hiện tại',
+            subtitle: 'Xác nhận danh tính trước khi đổi mật khẩu.',
+            password: oldPassword,
+            setPassword: setOldPassword,
+            showPassword: showOldPassword,
+            setShowPassword: setShowOldPassword,
+            placeholder: 'Nhập mật khẩu hiện tại...',
         },
-        'new-pin': {
-            title: 'Đặt mã PIN mới',
-            subtitle: 'Chọn mã PIN mới gồm 6 chữ số.',
-            pin: newPin,
-            setPin: setNewPin,
+        'new-password': {
+            title: 'Đặt mật khẩu mới',
+            subtitle: 'Chọn mật khẩu mới (ít nhất 4 ký tự).',
+            password: newPassword,
+            setPassword: setNewPassword,
+            showPassword: showNewPassword,
+            setShowPassword: setShowNewPassword,
+            placeholder: 'Nhập mật khẩu mới...',
         },
-        'confirm-pin': {
-            title: 'Xác nhận PIN mới',
-            subtitle: 'Nhập lại mã PIN mới để xác nhận.',
-            pin: confirmPin,
-            setPin: setConfirmPin,
+        'confirm-password': {
+            title: 'Xác nhận mật khẩu mới',
+            subtitle: 'Nhập lại mật khẩu mới để xác nhận.',
+            password: confirmPassword,
+            setPassword: setConfirmPassword,
+            showPassword: showConfirmPassword,
+            setShowPassword: setShowConfirmPassword,
+            placeholder: 'Xác nhận mật khẩu mới...',
         },
         'success': {
-            title: 'Đổi PIN thành công!',
-            subtitle: 'Mã PIN mới đã được áp dụng. Dữ liệu đã được mã hóa lại.',
-            pin: '',
-            setPin: () => {},
+            title: 'Đổi mật khẩu thành công!',
+            subtitle: 'Mật khẩu mới đã được áp dụng. Dữ liệu đã được mã hóa lại.',
+            password: '',
+            setPassword: () => {},
+            showPassword: false,
+            setShowPassword: () => {},
+            placeholder: '',
         },
     };
 
     const current = stepConfig[step];
 
-    const stepIndex = { 'old-pin': 0, 'new-pin': 1, 'confirm-pin': 2, 'success': 3 };
+    const stepIndex = { 'old-password': 0, 'new-password': 1, 'confirm-password': 2, 'success': 3 };
 
     return (
         <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -140,7 +140,7 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
                         <KeyRound className="w-5 h-5 text-blue-600" />
-                        <span className="font-bold text-slate-800">Đổi mã PIN</span>
+                        <span className="font-bold text-slate-800">Đổi mật khẩu</span>
                     </div>
                     {step !== 'success' && !isProcessing && (
                         <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -178,7 +178,7 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
                                 Đóng
                             </Button>
                         </>
-                    ) : isProcessing && step === 'confirm-pin' ? (
+                    ) : isProcessing && step === 'confirm-password' ? (
                         /* Processing State */
                         <>
                             <div className="p-4 mb-5 bg-blue-50 text-blue-600 rounded-2xl ring-8 ring-blue-50/50">
@@ -194,26 +194,30 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
                             <h2 className="text-xl font-extrabold text-slate-900 mb-2">{current.title}</h2>
                             <p className="text-slate-500 text-sm mb-8">{current.subtitle}</p>
 
-                            <div className="mb-6 scale-105">
-                                <InputOTP
-                                    maxLength={6}
-                                    value={current.pin}
-                                    onChange={current.setPin}
+                            <div className="relative w-full mb-6">
+                                <input
+                                    type={current.showPassword ? "text" : "password"}
+                                    className="w-full h-12 px-4 pr-12 text-base bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                    placeholder={current.placeholder}
+                                    value={current.password}
+                                    onChange={(e) => current.setPassword(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (step === 'old-password') handleVerifyOld();
+                                            else if (step === 'new-password') handleNewPasswordNext();
+                                            else if (step === 'confirm-password') handleConfirmChange();
+                                        }
+                                    }}
                                     disabled={isProcessing}
                                     autoFocus
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    onClick={() => current.setShowPassword(!current.showPassword)}
                                 >
-                                    <InputOTPGroup>
-                                        <InputOTPSlot index={0} className="border-slate-200" />
-                                        <InputOTPSlot index={1} className="border-slate-200" />
-                                        <InputOTPSlot index={2} className="border-slate-200" />
-                                    </InputOTPGroup>
-                                    <InputOTPSeparator />
-                                    <InputOTPGroup>
-                                        <InputOTPSlot index={3} className="border-slate-200" />
-                                        <InputOTPSlot index={4} className="border-slate-200" />
-                                        <InputOTPSlot index={5} className="border-slate-200" />
-                                    </InputOTPGroup>
-                                </InputOTP>
+                                    {current.showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
 
                             {error && (
@@ -227,18 +231,18 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
                                 <Button
                                     size="lg"
                                     className="w-full h-12 font-bold rounded-xl bg-blue-600 hover:bg-blue-700"
-                                    onClick={step === 'old-pin' ? handleVerifyOld : step === 'new-pin' ? handleNewPinNext : handleConfirmChange}
-                                    disabled={current.pin.length !== 6 || isProcessing}
+                                    onClick={step === 'old-password' ? handleVerifyOld : step === 'new-password' ? handleNewPasswordNext : handleConfirmChange}
+                                    disabled={!current.password || isProcessing}
                                 >
-                                    {isProcessing ? 'Đang xử lý...' : step === 'confirm-pin' ? 'Xác nhận đổi PIN' : 'Tiếp tục →'}
+                                    {isProcessing ? 'Đang xử lý...' : step === 'confirm-password' ? 'Xác nhận đổi mật khẩu' : 'Tiếp tục →'}
                                 </Button>
 
-                                {step === 'confirm-pin' && (
+                                {step === 'confirm-password' && (
                                     <button
-                                        onClick={() => { setStep('new-pin'); setNewPin(''); setConfirmPin(''); setError(null); }}
+                                        onClick={() => { setStep('new-password'); setNewPassword(''); setConfirmPassword(''); setError(null); }}
                                         className="text-sm text-slate-400 hover:text-slate-600 transition-colors py-1"
                                     >
-                                        ← Đặt lại PIN mới
+                                        ← Đặt lại mật khẩu mới
                                     </button>
                                 )}
                             </div>

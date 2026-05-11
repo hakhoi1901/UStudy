@@ -68,7 +68,7 @@ export function Setting() {
                                         Bảo mật
                                     </h2>
                                     <p className="text-sm text-gray-500 mb-6">
-                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mã PIN.
+                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mật khẩu.
                                     </p>
                                     <div className="flex flex-col sm:flex-row gap-3">
                                         <button
@@ -76,7 +76,7 @@ export function Setting() {
                                             className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
                                         >
                                             <Shield className="w-4 h-4" />
-                                            Đổi mã PIN
+                                            Đổi mật khẩu
                                         </button>
                                         <button
                                             onClick={handleLockNow}
