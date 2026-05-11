@@ -170,17 +170,17 @@ export function TuitionPage({ selectedSemester }: TuitionPageProps) {
           Thông tin thanh toán
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 md:gap-6 mb-6">
           <TuitionCountDown
             calculateDaysUntilDue={calculateDaysUntilDue}
             formatDate={formatDate}
             currentSemesterSummary={currentSemesterSummary}
           />
 
-          <TuitionStatus
+          {/* <TuitionStatus
             currentSemesterSummary={currentSemesterSummary}
             getStatusBadge={getStatusBadge}
-          />
+          /> */}
         </div>
 
         <Payment
