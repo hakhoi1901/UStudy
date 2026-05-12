@@ -9,6 +9,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../
 import { type ScheduleSession, type WeeklySchedule, DAYS } from '../../types/Schedule';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useCourseData } from '../../hooks/useCourseData';
+import { useStudentDb } from '../../hooks/useStudentDb';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 const COLOR_LEGEND = [
@@ -478,6 +479,27 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
   // Lấy data từ localStorage qua Recommender
   const { isReady, hasData } = useCourseData();
+  const { exams } = useStudentDb();
+
+  const allExamDates = React.useMemo(() => {
+    if (!exams || typeof exams !== 'object') return [];
+    const dates: Date[] = [];
+    Object.values(exams).forEach((semesterExams: any) => {
+      const addDate = (item: any) => {
+        let formattedDate = item.date || '';
+        if (formattedDate.includes('/')) {
+          const parts = formattedDate.split('/');
+          if (parts.length === 3) {
+            const d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            if (!isNaN(d.getTime())) dates.push(d);
+          }
+        }
+      };
+      if (semesterExams.midterm) semesterExams.midterm.forEach(addDate);
+      if (semesterExams.final) semesterExams.final.forEach(addDate);
+    });
+    return dates;
+  }, [exams]);
 
   const [currentWeek, setCurrentWeek] = useState(() => {
     if (!SEMESTER_3_SCHEDULE.semesterStartDate) return 1;
@@ -501,11 +523,18 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
 
     const currentWeekStart = new Date(semesterStartDate);
     currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeek - 1) * 7);
+    currentWeekStart.setHours(0, 0, 0, 0);
 
     // Cuối Chủ Nhật
     const currentWeekEnd = new Date(currentWeekStart);
     currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
     currentWeekEnd.setHours(23, 59, 59, 999);
+
+    // Kiểm tra xem tuần này có rơi vào tuần thi không
+    const isExamWeek = allExamDates.some(d => d >= currentWeekStart && d <= currentWeekEnd);
+    if (isExamWeek) {
+      return false; // Tuần thi thì không có lịch học
+    }
 
     if (currentWeekStart > session.endDateParsed || currentWeekEnd < session.startDateParsed) {
       return false;
@@ -643,6 +672,17 @@ export function VisualSchedule({ selectedSemester }: VisualScheduleProps) {
             <span className="text-sm font-medium">Xuất lịch</span>
           </button>
         </div>
+
+        {/* Thông báo tuần thi */}
+        {displaySchedule.sessions.length === 0 && totalFilteredCourses === 0 && schedule.sessions.length > 0 && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm">
+            <span className="text-xl">🎓</span>
+            <div>
+              <h3 className="text-sm font-semibold text-amber-800">Tuần thi tập trung</h3>
+              <p className="text-xs text-amber-700 mt-1">Tuần này là tuần thi nên bạn không có lịch học. Chúc bạn ôn thi thật tốt và đạt kết quả cao nhé!</p>
+            </div>
+          </div>
+        )}
 
         {/* Quick Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

@@ -1,5 +1,6 @@
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
+import { ChatbotWidget } from './components/ChatbotWidget';
 import { DashboardWidgets } from './pages/dashboardWidgets/DashboardWidgets';
 import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
 import { GradeManagement } from './pages/gradeManagement/GradeManagement';
@@ -169,6 +170,7 @@ function AppContent() {
           </div>
         </main>
       </div>
+      <ChatbotWidget />
     </div>
   );
 }
@@ -182,7 +184,10 @@ export default function App() {
             <AppContent />
           </DepartmentProvider>
         </NotificationProvider>
+        
       </SecurityGate>
+
+
     </CryptoProvider>
   );
 }

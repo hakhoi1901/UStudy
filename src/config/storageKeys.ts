@@ -45,4 +45,6 @@ export const STORAGE_KEYS = {
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */
     SAVED_SCHEDULES: 'saved_schedules',
+    /** Lịch sử chat của chatbot */
+    CHAT_HISTORY: 'chatbot_chat_history',
 };
