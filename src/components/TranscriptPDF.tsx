@@ -50,14 +50,14 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   profileCol: {
     width: '50%',
   },
   profileRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 5.5,
   },
   profileLabel: {
     width: 80,
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   profileValue: {
     flex: 1,
   },
-  table: {
+  tableSection: {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderColor: '#000',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   tableRow: {
     flexDirection: 'row',
@@ -103,6 +103,18 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+const ROWS_PER_TABLE_SECTION = 18;
+
+const chunkCourses = (courses: Course[], chunkSize: number) => {
+  const chunks: Course[][] = [];
+
+  for (let index = 0; index < courses.length; index += chunkSize) {
+    chunks.push(courses.slice(index, index + chunkSize));
+  }
+
+  return chunks;
+};
 
 export interface StudentInfo {
   fullName: string;
@@ -137,6 +149,8 @@ export interface TranscriptPDFProps {
 }
 
 export const TranscriptPDF: React.FC<TranscriptPDFProps> = ({ data }) => {
+  const courseSections = chunkCourses(data.courses, ROWS_PER_TABLE_SECTION);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -190,53 +204,58 @@ export const TranscriptPDF: React.FC<TranscriptPDFProps> = ({ data }) => {
         </View>
 
         {/* Data Table Section */}
-        <View style={styles.table}>
-          {/* Table Header */}
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <View style={[styles.tableCell, styles.col1]}>
-              <Text style={styles.boldText}>STT</Text>
-            </View>
-            <View style={[styles.tableCell, styles.col2]}>
-              <Text style={styles.boldText}>Mã MH</Text>
-            </View>
-            <View style={[styles.tableCell, styles.col3]}>
-              <Text style={styles.boldText}>Tên môn học</Text>
-            </View>
-            <View style={[styles.tableCell, styles.col4]}>
-              <Text style={styles.boldText}>Số TC</Text>
-            </View>
-            <View style={[styles.tableCell, styles.col5]}>
-              <Text style={styles.boldText}>Điểm hệ 10</Text>
-            </View>
-            <View style={[styles.tableCell, styles.col6]}>
-              <Text style={styles.boldText}>Điểm hệ 4</Text>
-            </View>
-          </View>
-
-          {/* Table Body */}
-          {data.courses.map((course, index) => (
-            <View style={styles.tableRow} key={index}>
+        {courseSections.map((sectionCourses, sectionIndex) => (
+          <View
+            style={styles.tableSection}
+            key={sectionIndex}
+            break={sectionIndex > 0}
+            wrap={false}
+          >
+            <View style={[styles.tableRow, styles.tableHeader]} wrap={false}>
               <View style={[styles.tableCell, styles.col1]}>
-                <Text>{course.no}</Text>
+                <Text style={styles.boldText}>STT</Text>
               </View>
               <View style={[styles.tableCell, styles.col2]}>
-                <Text>{course.id}</Text>
+                <Text style={styles.boldText}>Mã MH</Text>
               </View>
               <View style={[styles.tableCell, styles.col3]}>
-                <Text>{course.title}</Text>
+                <Text style={styles.boldText}>Tên môn học</Text>
               </View>
               <View style={[styles.tableCell, styles.col4]}>
-                <Text>{course.credits}</Text>
+                <Text style={styles.boldText}>Số TC</Text>
               </View>
               <View style={[styles.tableCell, styles.col5]}>
-                <Text>{course.score10}</Text>
+                <Text style={styles.boldText}>Điểm hệ 10</Text>
               </View>
               <View style={[styles.tableCell, styles.col6]}>
-                <Text>{course.score4}</Text>
+                <Text style={styles.boldText}>Điểm hệ 4</Text>
               </View>
             </View>
-          ))}
-        </View>
+
+            {sectionCourses.map((course, index) => (
+              <View style={styles.tableRow} key={`${sectionIndex}-${index}`} wrap={false}>
+                <View style={[styles.tableCell, styles.col1]}>
+                  <Text>{course.no}</Text>
+                </View>
+                <View style={[styles.tableCell, styles.col2]}>
+                  <Text>{course.id}</Text>
+                </View>
+                <View style={[styles.tableCell, styles.col3]}>
+                  <Text>{course.title}</Text>
+                </View>
+                <View style={[styles.tableCell, styles.col4]}>
+                  <Text>{course.credits}</Text>
+                </View>
+                <View style={[styles.tableCell, styles.col5]}>
+                  <Text>{course.score10}</Text>
+                </View>
+                <View style={[styles.tableCell, styles.col6]}>
+                  <Text>{course.score4}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
 
         {/* Summary Section */}
         <View style={styles.summaryContainer}>
