@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   },
   profileRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 5.5,
   },
   profileLabel: {
     width: 80,
