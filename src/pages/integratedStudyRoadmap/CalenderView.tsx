@@ -1,12 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
-import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check } from 'lucide-react';
+import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers } from 'lucide-react';
 import { type ClassSection, type SavedSchedule } from '../../types';
 import { type SolverPreferences, type ScheduleOption } from '../../hooks/useScheduleSolver';
 import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
+
+function getSolidTint(hexColor: string, tint = 0.9) {
+    const normalized = hexColor.replace('#', '');
+    if (!/^[0-9A-Fa-f]{6}$/.test(normalized)) return '#F8FAFC';
+
+    const red = parseInt(normalized.slice(0, 2), 16);
+    const green = parseInt(normalized.slice(2, 4), 16);
+    const blue = parseInt(normalized.slice(4, 6), 16);
+    const mix = (channel: number) => Math.round(channel + (255 - channel) * tint);
+
+    return `rgb(${mix(red)}, ${mix(green)}, ${mix(blue)})`;
+}
 
 interface CalendarViewProps {
     selectedCourses: Set<string>;
@@ -24,6 +36,57 @@ interface CalendarViewProps {
     setSelectedCourses: (courses: Set<string>) => void;
     setAllowedClassesMap: (map: Record<string, string[]>) => void;
     setOptions: (options: ScheduleOption[]) => void;
+}
+
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+function StatCard({
+    icon: Icon,
+    label,
+    value,
+    sub,
+    accent,
+}: {
+    icon: React.ElementType;
+    label: string;
+    value: string | number;
+    sub?: string;
+    accent?: string; // tailwind bg class
+}) {
+    return (
+        <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-sm flex-1 min-w-0">
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent ?? 'bg-blue-50'}`}>
+                <Icon className={`h-4 w-4 ${accent ? 'text-white' : 'text-[#004A98]'}`} />
+            </div>
+            <div className="min-w-0">
+                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide truncate">{label}</p>
+                <p className="text-lg font-bold text-gray-900 leading-none mt-0.5">{value}</p>
+                {sub && <p className="text-[10px] text-gray-400 mt-0.5 truncate">{sub}</p>}
+            </div>
+        </div>
+    );
+}
+
+// ─── Per-day load bar ─────────────────────────────────────────────────────────
+function DayLoadBar({ day, count, max }: { day: string; count: number; max: number }) {
+    const pct = max > 0 ? (count / max) * 100 : 0;
+    const color =
+        pct === 100
+            ? 'bg-red-400'
+            : pct >= 60
+            ? 'bg-amber-400'
+            : 'bg-emerald-400';
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <span className="text-[10px] font-bold text-gray-700">{count}</span>
+            <div className="h-10 w-5 bg-gray-100 rounded-full overflow-hidden flex flex-col justify-end">
+                <div
+                    className={`w-full rounded-full transition-all ${color}`}
+                    style={{ height: `${pct}%` }}
+                />
+            </div>
+            <span className="text-[9px] text-gray-400">{day}</span>
+        </div>
+    );
 }
 
 export function CalendarView({
@@ -62,8 +125,49 @@ export function CalendarView({
     });
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showListModal, setShowListModal] = useState(false);
+    const [showStatsPanel, setShowStatsPanel] = useState(false);
     const [newScheduleName, setNewScheduleName] = useState('');
 
+    // ── Computed stats ─────────────────────────────────────────────────────────
+    const stats = useMemo(() => {
+        if (currentSections.length === 0) return null;
+
+        const totalPeriods = currentSections.reduce(
+            (sum, s) => sum + Math.round(s.endPeriod - s.startPeriod + 1),
+            0
+        );
+
+        // Tiết mỗi ngày (day 2–8)
+        const periodsPerDay: Record<number, number> = {};
+        for (const s of currentSections) {
+            periodsPerDay[s.day] = (periodsPerDay[s.day] ?? 0) + Math.round(s.endPeriod - s.startPeriod + 1);
+        }
+
+        const dayValues = Object.values(periodsPerDay);
+        const maxPerDay = Math.max(...dayValues, 0);
+        const scheduledDays = Object.keys(periodsPerDay).length;
+
+        // Total credits: sum unique courses' credits
+        const scheduledCourseIds = new Set(currentSections.map(s => s.courseCode));
+        const totalCredits = allCurrentCourses
+            .filter(c => scheduledCourseIds.has(c.id) || selectedCourses.has(c.id))
+            .reduce((sum, c) => sum + (c.credits ?? 0), 0);
+
+        // Conflict count
+        const conflictCount = currentSections.filter(s => getConflicts(s).length > 0).length;
+
+        return {
+            totalPeriods,
+            periodsPerDay,
+            maxPerDay,
+            scheduledDays,
+            totalCredits,
+            conflictCount,
+            freeDays: 7 - scheduledDays, // Mon–Sat = 6 days
+        };
+    }, [currentSections, allCurrentCourses, selectedCourses, getConflicts]);
+
+    // ── Save / load handlers ───────────────────────────────────────────────────
     const handleSaveSchedule = () => {
         if (!newScheduleName.trim()) return;
         const newSaved: SavedSchedule = {
@@ -72,7 +176,7 @@ export function CalendarView({
             createdAt: new Date().toISOString(),
             sessions: currentSections,
             selectedCourses: Array.from(selectedCourses),
-            allowedClassesMap: allowedClassesMap
+            allowedClassesMap,
         };
         const updated = [newSaved, ...savedSchedules];
         setSavedSchedules(updated);
@@ -84,11 +188,7 @@ export function CalendarView({
     const handleLoadSchedule = (saved: SavedSchedule) => {
         setSelectedCourses(new Set(saved.selectedCourses));
         setAllowedClassesMap(saved.allowedClassesMap);
-        const restoredOption: ScheduleOption = {
-            option: 1,
-            fitness: 1000,
-            classSections: saved.sessions
-        };
+        const restoredOption: ScheduleOption = { option: 1, fitness: 1000, classSections: saved.sessions };
         setOptions([restoredOption]);
         setActiveOption(0);
         setShowListModal(false);
@@ -100,6 +200,11 @@ export function CalendarView({
         saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, updated);
     };
 
+    const coursesToSchedule = Array.from(selectedCourses)
+        .map(id => allCurrentCourses.find(c => c.id === id))
+        .filter((c): c is NonNullable<typeof c> => !!c);
+
+    // ── Empty state ────────────────────────────────────────────────────────────
     if (selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 md:p-12 text-center">
@@ -129,79 +234,157 @@ export function CalendarView({
         );
     }
 
-    const coursesToSchedule = Array.from(selectedCourses)
-        .map(id => allCurrentCourses.find(c => c.id === id))
-        .filter((c): c is NonNullable<typeof c> => !!c);
-
+    // ── Main render ────────────────────────────────────────────────────────────
     return (
-        <div>
-            {/* ---- Toolbar ---- */}
-            {/* Desktop: 1 hàng ngang. Mobile: 2 hàng */}
-            <div className="mb-4 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="space-y-4">
 
-                {/* Hàng 1: thông tin + nút xếp lịch */}
+            {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
+            <div className="p-3 md:p-4 bg-gradient-to-r from-[#004A98]/5 to-blue-50 border border-blue-100 rounded-xl">
                 <div className="flex items-center gap-2 md:gap-3">
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs md:text-sm text-blue-900 font-medium truncate">
+                        <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
                             {currentSections.length > 0
-                                ? `Phương án ${activeOption + 1}/${options.length} - ${selectedCourses.size} môn`
+                                ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
                                 : `${selectedCourses.size} môn đã chọn`}
                         </p>
-                        <p className="hidden md:block text-xs text-blue-700">
-                            Thuật toán di truyền sẽ tự động chọn lớp tốt nhất, tránh trùng lịch.
+                        <p className="hidden md:block text-xs text-blue-600 mt-0.5">
+                            Thuật toán di truyền tự động chọn lớp tốt nhất, tránh trùng lịch.
                         </p>
                     </div>
 
-                    {/* Nút Cấu hình - icon only trên mobile */}
                     <button
                         onClick={() => setIsConfigOpen(true)}
-                        className="flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 bg-[#004A98]/10 text-[#004A98] rounded-lg hover:bg-[#004A98]/20 transition-colors shrink-0 text-xs md:text-sm border border-[#004A98]/20"
+                        className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm border border-[#004A98]/20 shadow-sm"
                         title="Cấu hình ưu tiên"
                     >
-                        <Settings className="w-4 h-4" />
-                        <span className="hidden md:inline font-semibold">Cấu hình</span>
+                        <Settings className="w-3.5 h-3.5" />
+                        <span className="hidden md:inline font-medium">Cấu hình</span>
                     </button>
 
-                    {/* Nút Lịch đã lưu - icon only trên mobile */}
                     <button
                         onClick={() => setShowListModal(true)}
-                        className="flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 bg-white text-[#004A98] border border-[#004A98] rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm shadow-sm"
+                        className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] border border-[#004A98]/30 rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm shadow-sm"
                     >
-                        <List className="w-4 h-4" />
-                        <span className="hidden md:inline">Lịch đã lưu ({savedSchedules.length})</span>
+                        <List className="w-3.5 h-3.5" />
+                        <span className="hidden md:inline">Lịch đã lưu</span>
                         {savedSchedules.length > 0 && (
-                            <span className="md:hidden px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
+                            <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
                                 {savedSchedules.length}
                             </span>
                         )}
                     </button>
 
-                    {/* Nút Xếp lịch */}
+                    {stats && (
+                        <button
+                            onClick={() => setShowStatsPanel(prev => !prev)}
+                            className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-lg border transition-all shrink-0 text-xs md:text-sm shadow-sm ${
+                                showStatsPanel
+                                    ? 'bg-[#004A98] text-white border-[#004A98]'
+                                    : 'bg-white text-[#004A98] border-[#004A98]/30 hover:bg-blue-50'
+                            }`}
+                        >
+                            <BarChart2 className="w-3.5 h-3.5" />
+                            <span className="hidden md:inline">{showStatsPanel ? 'Ẩn thống kê' : 'Thống kê'}</span>
+                        </button>
+                    )}
+
                     <button
                         onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
                         disabled={solving}
-                        className="flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-xs md:text-sm font-medium shadow-md"
+                        className="flex items-center gap-1.5 px-4 md:px-5 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-xs md:text-sm font-semibold shadow-md"
                     >
-                        <Cpu className="w-4 h-4" />
+                        <Cpu className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">{solving ? 'Đang xếp...' : 'Xếp lịch'}</span>
                         <span className="sm:hidden">{solving ? '...' : 'Xếp'}</span>
                     </button>
                 </div>
             </div>
 
-            {/* Lỗi solver */}
+            {/* ═══ Solver error ══════════════════════════════════════════════ */}
             {solverError && (
-                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs md:text-sm text-red-700">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs md:text-sm text-red-700">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                     <span>{solverError}</span>
                 </div>
             )}
 
-            {/* Điều hướng phương án */}
+            {/* ═══ Stats panel (chỉ hiện khi có lịch) ══════════════════════ */}
+            {stats && showStatsPanel && (
+                <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                        <BarChart2 className="w-3.5 h-3.5 text-[#004A98]" />
+                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Thống kê phương án</span>
+                        {stats.conflictCount > 0 && (
+                            <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                                <AlertTriangle className="w-3 h-3" />
+                                {stats.conflictCount} lớp trùng lịch
+                            </span>
+                        )}
+                        {stats.conflictCount === 0 && currentSections.length > 0 && (
+                            <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                                <Check className="w-3 h-3" />
+                                Không trùng lịch
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Stat cards */}
+                    <div className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                        <StatCard
+                            icon={BookOpen}
+                            label="Số môn"
+                            value={selectedCourses.size}
+                            sub={`${currentSections.length} lớp học`}
+                        />
+                        <StatCard
+                            icon={Hash}
+                            label="Tổng tiết / tuần"
+                            value={stats.totalPeriods}
+                            sub={`≈ ${(stats.totalPeriods * 45 / 60).toFixed(1)} giờ`}
+                        />
+                        <StatCard
+                            icon={Layers}
+                            label="Số tín chỉ"
+                            value={stats.totalCredits || '—'}
+                            sub={stats.totalCredits ? 'tín chỉ đăng ký' : 'Chưa có dữ liệu'}
+                        />
+                        <StatCard
+                            icon={Calendar}
+                            label="Ngày học / tuần"
+                            value={`${stats.scheduledDays} ngày`}
+                            sub={stats.freeDays > 0 ? `Nghỉ ${stats.freeDays} ngày` : 'Học cả tuần'}
+                            accent={stats.freeDays >= 2 ? 'bg-emerald-500' : stats.freeDays === 1 ? 'bg-amber-400' : 'bg-red-400'}
+                        />
+                    </div>
+
+                    {/* Per-day load bars */}
+                    <div className="px-4 pb-3">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Phân bổ tiết theo ngày</p>
+                        <div className="flex items-end gap-3">
+                            {weekDays.map(day => (
+                                <DayLoadBar
+                                    key={day.day}
+                                    day={day.short}
+                                    count={stats.periodsPerDay[day.day] ?? 0}
+                                    max={stats.maxPerDay}
+                                />
+                            ))}
+                            <div className="ml-auto flex flex-col gap-1.5 text-[10px] text-gray-400">
+                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-emerald-400" />Nhẹ</span>
+                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-amber-400" />Vừa</span>
+                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-400" />Nặng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══ Option navigator ══════════════════════════════════════════ */}
             {options.length > 1 && (
-                <div className="mb-3 md:mb-4 flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-2 bg-white p-1.5 border border-slate-200 rounded-xl shadow-sm flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                        <span className="text-xs text-gray-600 font-medium px-1 shrink-0">Phương án:</span>
+                        <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Phương án:</span>
                         <button
                             onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
                             className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors shrink-0"
@@ -213,10 +396,10 @@ export function CalendarView({
                                 <button
                                     key={opt.option}
                                     onClick={() => setActiveOption(idx)}
-                                    className={`px-2 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all shrink-0 ${activeOption === idx
+                                    className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all shrink-0 ${activeOption === idx
                                         ? 'bg-[#004A98] text-white shadow-md'
                                         : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                                        }`}
+                                    }`}
                                 >
                                     PA {opt.option}
                                 </button>
@@ -233,7 +416,7 @@ export function CalendarView({
                     <button
                         onClick={() => setShowSaveModal(true)}
                         disabled={currentSections.length === 0}
-                        className="flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 shrink-0 text-xs md:text-sm font-medium shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 shrink-0 text-xs md:text-sm font-semibold shadow-sm"
                     >
                         <Save className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Lưu phương án</span>
@@ -242,154 +425,285 @@ export function CalendarView({
                 </div>
             )}
 
-            {/* Lịch học - scroll ngang trên mobile */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-auto shadow-sm">
-                <div className="min-w-[600px] md:min-w-[860px]">
-                    {/* Hàng tiêu đề */}
-                    <div className="grid sticky top-0 z-5" style={{ gridTemplateColumns: '52px repeat(6, 1fr)' }}>
-                        <div className="bg-[#004A98] rounded-tl-2xl h-10 md:h-12 flex items-end pb-1 justify-center">
-                            <span className="text-[11px] md:text-[14px] text-white font-medium">Tiết</span>
+            {/* ═══ Timetable grid ════════════════════════════════════════════ */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                {/* Grid header */}
+                <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white shadow-sm">
+                            <Calendar className="h-4 w-4" />
                         </div>
-                        {weekDays.map((day, idx) => (
-                            <div
-                                key={day.day}
-                                className={`bg-[#004A98] text-white flex flex-col items-center justify-center border-l border-white/10 h-10 md:h-12 ${idx === weekDays.length - 1 ? 'rounded-tr-2xl' : ''}`}
-                            >
-                                <span className="hidden md:block text-[10px] text-white/60 font-normal">{day.nameVi}</span>
-                                <span className="text-[10px] md:text-sm font-bold">{day.short}</span>
-                            </div>
-                        ))}
+                        <div className="min-w-0">
+                            <h3 className="text-sm font-semibold text-gray-900">Thời khóa biểu dự kiến</h3>
+                            <p className="truncate text-xs text-gray-500">
+                                {currentSections.length > 0
+                                    ? `${currentSections.length} lớp · ${stats?.totalPeriods ?? 0} tiết · ${stats?.scheduledDays ?? 0} ngày học`
+                                    : 'Bấm Xếp lịch để xem phương án phù hợp'}
+                            </p>
+                        </div>
                     </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                            <Clock className="h-3 w-3 text-[#004A98]" />
+                            Sáng 1–5
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                            <Clock className="h-3 w-3 text-orange-500" />
+                            Chiều 6–10
+                        </span>
+                    </div>
+                </div>
 
-                    {/* Lưới nền + lớp học */}
-                    <div className="relative">
-                        {timePeriods.map((period) => {
-                            const isFirstAfternoon = period.period === 6;
-                            return (
-                                <div key={period.period}>
-                                    {isFirstAfternoon && (
-                                        <div className="grid items-center" style={{ gridTemplateColumns: '52px 1fr', height: '22px' }}>
-                                            <div className="bg-amber-50 border-b border-t border-amber-200 flex items-center justify-center">
-                                                <span className="text-[7px] md:text-[8px] text-amber-600 font-semibold">Trưa</span>
-                                            </div>
-                                            <div className="bg-amber-50/60 border-b border-t border-amber-200 flex items-center px-2 md:px-3">
-                                                <div className="flex-1 border-t border-dashed border-amber-300" />
-                                                <span className="hidden md:block text-[9px] text-amber-500 px-2">Nghỉ trưa 11:50 – 12:40</span>
-                                                <div className="flex-1 border-t border-dashed border-amber-300" />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="grid" style={{ gridTemplateColumns: '52px repeat(6, 1fr)', height: '52px' }}>
-                                        <div className={`flex flex-col items-center justify-center border-b border-r px-0.5 shrink-0 bg-sky-50 border-gray-200`}>
-                                            <div className="text-[8px] md:text-[10px] font-bold px-1 py-0.5 rounded-full mb-0.5 bg-sky-100 text-sky-700">
-                                                P{period.period}
-                                            </div>
-                                            <span className="text-[7px] md:text-[8px] text-gray-400 leading-none text-center">
-                                                {period.time.split(' - ')[0]}
-                                            </span>
-                                            <span className="text-[7px] md:text-[8px] text-gray-300 leading-none">↓</span>
-                                            <span className="text-[7px] md:text-[8px] text-gray-400 leading-none">
-                                                {period.time.split(' - ')[1]}
-                                            </span>
-                                        </div>
-                                        {weekDays.map((day) => (
-                                            <div
-                                                key={`${day.day}-${period.period}`}
-                                                className="border-b border-l border-gray-100 hover:bg-gray-50/50 transition-colors"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-
-                        {/* Lớp học */}
-                        {currentSections.map((classSection: ClassSection) => {
-                            const conflicts = getConflicts(classSection);
-                            const hasConflict = conflicts.length > 0;
-
-                            // Mỗi row = 52px thay vì 60px trên mobile
-                            const rowH = 52;
-                            const lunchBreakOffset = classSection.startPeriod >= 6 ? 22 : 0;
-                            const topPx = (classSection.startPeriod - 1) * rowH + lunchBreakOffset;
-                            const heightPeriods = classSection.endPeriod - classSection.startPeriod + 1;
-                            const spansLunch = classSection.startPeriod < 6 && classSection.endPeriod >= 6;
-                            const heightPx = heightPeriods * rowH + (spansLunch ? 22 : 0);
-                            const dayColIndex = classSection.day - 2;
-
-                            const bgColor = hasConflict ? '#ffffffff' : classSection.color;
-                            const borderColor = hasConflict ? '#EF4444' : classSection.color;
-                            const textColor = hasConflict ? '#991B1B' : '#ffffffff';
-                            const subTextColor = hasConflict ? '#B91C1C' : 'rgba(255, 255, 255, 0.85)';
-
-                            const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
-                            const endTime = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
-
-                            return (
+                <div className="overflow-auto">
+                    <div className="min-w-[620px] md:min-w-[1000px]">
+                        {/* Column headers */}
+                        <div className="grid sticky top-0 z-20 bg-[#004A98]" style={{ gridTemplateColumns: '64px repeat(6, 1fr)' }}>
+                            <div className="sticky left-0 z-30 bg-[#004A98] h-11 md:h-12 flex items-center justify-center border-r border-white/20">
+                                <span className="text-[10px] md:text-xs text-white font-semibold">Tiết</span>
+                            </div>
+                            {weekDays.map((day) => (
                                 <div
-                                    key={classSection.id}
-                                    style={{
-                                        position: 'absolute',
-                                        top: topPx + 2,
-                                        left: `calc(52px + ${dayColIndex} * ((100% - 52px) / 6) + 2px)`,
-                                        width: `calc((100% - 52px) / 6 - 4px)`,
-                                        height: heightPx - 4,
-                                        backgroundColor: bgColor,
-                                        border: `1.5px solid ${hasConflict ? '#FCA5A5' : 'rgba(255,255,255,0.25)'}`,
-                                        borderLeft: `3px solid ${borderColor}`,
-                                        borderRadius: '6px',
-                                        overflow: 'hidden',
-                                        boxShadow: hasConflict ? '0 2px 8px rgba(239,68,68,0.25)' : '0 2px 8px rgba(0,0,0,0.15)',
-                                    }}
-                                    className="flex flex-col px-1 md:px-2 py-1 cursor-default"
+                                    key={day.day}
+                                    className="bg-[#004A98] text-white flex flex-col items-center justify-center border-l border-white/15 h-11 md:h-12 px-1"
                                 >
-                                    {hasConflict && (
-                                        <div className="flex items-center gap-0.5 mb-0.5 px-0.5 py-0.5 bg-red-100 rounded-sm">
-                                            <AlertTriangle className="w-2 h-2 text-red-600 shrink-0" />
-                                            <span className="text-[7px] md:text-[8.5px] font-bold text-red-700 uppercase">Trùng</span>
-                                        </div>
+                                    <span className="hidden md:block text-[10px] text-white/70 font-normal leading-none">{day.nameVi}</span>
+                                    <span className="text-[11px] md:text-[13px] font-semibold leading-tight">{day.short}</span>
+                                    {/* Tiết-per-day badge */}
+                                    {stats && (stats.periodsPerDay[day.day] ?? 0) > 0 && (
+                                        <span className="hidden md:inline-flex mt-0.5 text-[9px] font-bold bg-white/20 rounded-full px-1.5 leading-4">
+                                            {Math.round(stats.periodsPerDay[day.day])} tiết
+                                        </span>
                                     )}
+                                </div>
+                            ))}
+                        </div>
 
-                                    <p className="text-[9px] md:text-[12px] font-bold leading-none truncate" style={{ color: textColor }}>
-                                        {classSection.courseCode}
-                                    </p>
-
-                                    {heightPx >= 70 && (
-                                        <p className="text-[8px] md:text-[10px] font-semibold leading-tight mt-0.5 line-clamp-2" style={{ color: subTextColor }}>
-                                            {classSection.courseNameVi}
-                                        </p>
-                                    )}
-
-                                    <div className="flex-1" />
-
-                                    <div className="flex flex-col gap-0.5 mt-0.5">
-                                        <div className="flex items-center gap-0.5">
-                                            <span
-                                                className="text-[7px] md:text-[9px] font-bold px-0.5 md:px-1 py-0.5 rounded"
-                                                style={{
-                                                    backgroundColor: hasConflict ? '#FEE2E2' : 'rgba(0,0,0,0.2)',
-                                                    color: hasConflict ? '#991B1B' : 'rgba(255,255,255,0.95)',
-                                                }}
+                        {/* Grid body — layer 1: lưới, layer 2: thẻ môn */}
+                        <div style={{ position: 'relative', isolation: 'isolate' }}>
+                          {/* ── Layer 1: lưới nền (z=1) ── */}
+                          <div style={{ position: 'relative', zIndex: 1 }}>
+                            {timePeriods.map((period) => {
+                                const isFirstAfternoon = period.period === 6;
+                                return (
+                                    <div key={period.period}>
+                                        {isFirstAfternoon && (
+                                            <div
+                                                className="grid items-stretch border-y border-orange-200 bg-orange-50"
+                                                style={{ gridTemplateColumns: '64px 1fr', height: '34px' }}
                                             >
-                                                {classSection.sectionNumber}
-                                            </span>
-                                            {classSection.room !== '---' && heightPx >= 60 && (
-                                                <span className="text-[7px] md:text-[9px] font-semibold px-0.5 rounded truncate" style={{ color: subTextColor }}>
-                                                    {classSection.room}
+                                                <div className="sticky left-0 flex items-center justify-center border-r border-orange-200 bg-orange-50" style={{ zIndex: 4 }}>
+                                                    <span className="text-[9px] md:text-[11px] font-semibold uppercase tracking-wide text-orange-700">Trưa</span>
+                                                </div>
+                                                <div className="flex items-center justify-center bg-orange-50 px-3">
+                                                    <span className="text-[10px] md:text-xs font-semibold text-orange-700">
+                                                        Nghỉ trưa 11:50 - 12:40
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div
+                                            className={`grid ${period.period <= 5 ? 'bg-sky-50/20' : ''}`}
+                                            style={{ gridTemplateColumns: '64px repeat(6, 1fr)', height: '56px' }}
+                                        >
+                                        <div className="sticky left-0 flex flex-col items-center justify-center border-b border-r border-gray-200 bg-gray-50 px-1 text-center" style={{ zIndex: 4 }}>
+                                                <div className="text-[11px] md:text-[13px] font-semibold text-gray-700">
+                                                    {period.period}
+                                                </div>
+                                                <span className="text-[8px] md:text-[10px] text-gray-500 leading-tight">
+                                                    {period.time.split(' - ')[0]}
+                                                </span>
+                                                <span className="text-[8px] md:text-[10px] text-gray-400 leading-none">–</span>
+                                                <span className="text-[8px] md:text-[10px] text-gray-500 leading-tight">
+                                                    {period.time.split(' - ')[1]}
+                                                </span>
+                                            </div>
+                                            {weekDays.map((day) => (
+                                                <div
+                                                    key={`${day.day}-${period.period}`}
+                                                    className="border-b border-l border-gray-200 bg-white transition-colors hover:bg-slate-50/80"
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                          </div>{/* end layer 1 */}
+
+                          {/* ── Layer 2: thẻ môn học, phủ lên lưới (z=2) ── */}
+                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: 'none' }}>
+                            {currentSections.map((classSection: ClassSection) => {
+                                const conflicts = getConflicts(classSection);
+                                const hasConflict = conflicts.length > 0;
+
+                                const rowH = 56;
+                                const lunchBreakOffset = classSection.startPeriod >= 6 ? 34 : 0;
+                                const topPx = (classSection.startPeriod - 1) * rowH + lunchBreakOffset;
+                                const heightPeriods = classSection.endPeriod - classSection.startPeriod + 1;
+                                const spansLunch = classSection.startPeriod < 6 && classSection.endPeriod >= 6;
+                                const heightPx = heightPeriods * rowH + (spansLunch ? 34 : 0);
+                                const dayColIndex = classSection.day - 2;
+
+                                // Color tokens
+                                const baseColor = hasConflict ? '#EF4444' : classSection.color;
+                                const bgColor   = hasConflict ? '#FFF1F2' : getSolidTint(classSection.color);
+                                const textColor    = hasConflict ? '#991B1B' : '#111827';
+                                const subTextColor = hasConflict ? '#B91C1C' : '#6B7280';
+                                const pillBg    = hasConflict ? '#FEE2E2' : getSolidTint(classSection.color, 0.82);
+                                const pillText  = hasConflict ? '#991B1B' : '#374151';
+
+                                const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
+                                const endTime   = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
+
+                                // Responsive thresholds
+                                const isCompact  = heightPx < 80;   // 1 tiết
+                                const isMedium   = heightPx >= 80 && heightPx < 150;  // 2 tiết
+                                const isTall     = heightPx >= 150; // 3+ tiết
+
+                                return (
+                                    <div
+                                        key={classSection.id}
+                                        style={{
+                                            position: 'absolute',
+                                            top: topPx + 2,
+                                            left: `calc(64px + ${dayColIndex} * ((100% - 64px) / 6) + 3px)`,
+                                            width: `calc((100% - 64px) / 6 - 6px)`,
+                                            height: heightPx - 4,
+                                            backgroundColor: bgColor,
+                                            borderRadius: '8px',
+                                            borderLeft: `3.5px solid ${baseColor}`,
+                                            border: `1px solid ${hasConflict ? '#FECACA' : getSolidTint(classSection.color, 0.65)}`,
+                                            borderLeftWidth: '3.5px',
+                                            borderLeftColor: baseColor,
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            padding: isCompact ? '3px 6px' : '5px 7px',
+                                            gap: 0,
+                                            boxSizing: 'border-box',
+                                            boxShadow: hasConflict
+                                                ? '0 2px 8px rgba(239,68,68,0.15)'
+                                                : '0 1px 4px rgba(15,23,42,0.08)',
+                                            cursor: 'default',
+                                            zIndex: 2,
+                                            pointerEvents: 'auto',
+                                        }}
+                                    >
+                                        {/* Conflict badge — only when tall enough */}
+                                        {hasConflict && !isCompact && (
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: 3,
+                                                background: '#FEE2E2', borderRadius: 4,
+                                                padding: '1px 5px', marginBottom: 3, width: 'fit-content',
+                                            }}>
+                                                <AlertTriangle style={{ width: 9, height: 9, color: '#DC2626', flexShrink: 0 }} />
+                                                <span style={{ fontSize: 8, fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Trùng lịch</span>
+                                            </div>
+                                        )}
+
+                                        {/* Course code — always shown */}
+                                        <p style={{
+                                            fontFamily: 'ui-monospace, monospace',
+                                            fontSize: isCompact ? 9 : 11,
+                                            fontWeight: 700,
+                                            color: textColor,
+                                            lineHeight: 1.2,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            flexShrink: 0,
+                                            marginBottom: isCompact ? 0 : 2,
+                                        }}>
+                                            {classSection.courseCode}
+                                            {/* On compact, also show group inline */}
+                                            {isCompact && (
+                                                <span style={{ fontFamily: 'inherit', fontWeight: 500, color: subTextColor, fontSize: 8, marginLeft: 4 }}>
+                                                    · Lớp {classSection.sectionNumber}
                                                 </span>
                                             )}
-                                        </div>
+                                        </p>
 
-                                        {heightPx >= 80 && startTime && (
-                                            <p className="text-[7px] md:text-[10px] px-0.5 py-0.5 rounded font-semibold" style={{ color: subTextColor }}>
-                                                {startTime}–{endTime}
+                                        {/* Course name — medium + tall */}
+                                        {!isCompact && (
+                                            <p style={{
+                                                fontSize: 9,
+                                                fontWeight: 600,
+                                                color: subTextColor,
+                                                lineHeight: 1.3,
+                                                overflow: 'hidden',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: isMedium ? 2 : 3,
+                                                WebkitBoxOrient: 'vertical',
+                                                flexShrink: 1,
+                                                minHeight: 0,
+                                                marginBottom: 'auto',
+                                            } as React.CSSProperties}>
+                                                {classSection.courseNameVi}
                                             </p>
                                         )}
+
+                                        {/* Spacer for tall cards */}
+                                        {isTall && <div style={{ flex: 1 }} />}
+
+                                        {/* Footer: group + room + time — medium + tall */}
+                                        {!isCompact && (
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                flexShrink: 0,
+                                                marginTop: isMedium ? 'auto' : 4,
+                                                paddingTop: 3,
+                                                borderTop: `1px solid ${hasConflict ? '#FECACA' : getSolidTint(classSection.color, 0.72)}`,
+                                            }}>
+                                                {/* Group + Room row */}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+                                                    <span style={{
+                                                        flexShrink: 0,
+                                                        background: pillBg,
+                                                        color: pillText,
+                                                        fontSize: 8,
+                                                        fontWeight: 700,
+                                                        borderRadius: 4,
+                                                        padding: '1px 5px',
+                                                        lineHeight: 1.5,
+                                                        whiteSpace: 'nowrap',
+                                                    }}>
+                                                        Lớp {classSection.sectionNumber}
+                                                    </span>
+                                                    {classSection.room && classSection.room !== '---' && (
+                                                        <span style={{
+                                                            fontSize: 8,
+                                                            fontWeight: 600,
+                                                            color: subTextColor,
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                        }}>
+                                                            {classSection.room}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Time row — only when tall enough or time is short */}
+                                                {startTime && (isTall || isMedium) && (
+                                                    <span style={{
+                                                        fontSize: 8,
+                                                        fontWeight: 500,
+                                                        color: subTextColor,
+                                                        lineHeight: 1.2,
+                                                        whiteSpace: 'nowrap',
+                                                    }}>
+                                                        {startTime} – {endTime}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                          </div>{/* end layer 2 */}
+                        </div>{/* end grid body */}
                     </div>
                 </div>
             </div>
@@ -397,13 +711,13 @@ export function CalendarView({
             {/* Chú thích */}
             <Note />
 
-            {/* Modal Lưu phương án */}
+            {/* ═══ Modal: Lưu phương án ══════════════════════════════════════ */}
             {showSaveModal && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg overflow-hidden">
                         <div className="p-4 md:p-5 border-b border-gray-100 flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base md:text-lg">
-                                <Save className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
+                                <Save className="w-4 h-4 text-emerald-600" />
                                 Lưu phương án lịch
                             </h3>
                             <button onClick={() => setShowSaveModal(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -417,12 +731,12 @@ export function CalendarView({
                                 type="text"
                                 value={newScheduleName}
                                 onChange={(e) => setNewScheduleName(e.target.value)}
-                                placeholder="VD: Lịch học kỳ 2 - Option 1"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm"
+                                placeholder="VD: Lịch học kỳ 2 – Option 1"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSaveSchedule()}
                             />
                             <p className="mt-3 text-xs text-gray-400 italic">
-                                * Hệ thống sẽ lưu lại danh sách môn học và các lớp học cụ thể đang hiển thị.
+                                * Hệ thống lưu danh sách môn học và các lớp học cụ thể đang hiển thị.
                             </p>
                         </div>
                         <div className="p-4 md:p-5 bg-gray-50 flex gap-3 justify-end">
@@ -432,7 +746,7 @@ export function CalendarView({
                             <button
                                 onClick={handleSaveSchedule}
                                 disabled={!newScheduleName.trim()}
-                                className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm shadow hover:bg-green-700 transition-all disabled:opacity-50"
+                                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow hover:bg-emerald-700 transition-all disabled:opacity-50"
                             >
                                 Xác nhận lưu
                             </button>
@@ -441,14 +755,14 @@ export function CalendarView({
                 </div>
             )}
 
-            {/* Modal Cấu hình */}
+            {/* ═══ Modal: Cấu hình ══════════════════════════════════════════ */}
             {isConfigOpen && (
                 <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-2xl overflow-hidden">
                         <div className="p-4 bg-[#004A98] flex items-center justify-between text-white">
                             <div className="flex items-center gap-2">
                                 <Settings className="w-4 h-4 md:w-5 md:h-5" />
-                                <h3 className="font-semibold text-sm md:text-lg">Cấu hình thuật toán xếp lịch</h3>
+                                <h3 className="font-semibold text-sm md:text-base">Cấu hình thuật toán xếp lịch</h3>
                             </div>
                             <button onClick={() => setIsConfigOpen(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
                                 <X className="w-5 h-5" />
@@ -496,7 +810,7 @@ export function CalendarView({
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* "Dồn lịch" sẽ ưu tiên các phương án có nhiều ngày nghỉ trống trong tuần.</p>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* "Dồn lịch" ưu tiên phương án có nhiều ngày nghỉ trống trong tuần.</p>
                             </div>
 
                             {/* Tiết trống */}
@@ -527,14 +841,14 @@ export function CalendarView({
                                                         daysOff: current.includes(day) ? current.filter(d => d !== day) : [...current, day]
                                                     };
                                                 })}
-                                                className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border ${isOff ? 'bg-red-500 border-red-500 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'}`}
+                                                className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border ${isOff ? 'bg-red-500 border-red-500 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400 hover:border-red-300'}`}
                                             >
                                                 {day === 6 ? 'CN' : `T${day + 2}`}
                                             </button>
                                         );
                                     })}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Thuật toán sẽ phạt điểm cực nặng các phương án bị dính vào ngày đỏ.</p>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* Thuật toán sẽ phạt điểm nặng các phương án dính vào ngày đỏ.</p>
                             </div>
                         </div>
 
@@ -556,20 +870,20 @@ export function CalendarView({
                 </div>
             )}
 
-            {/* Modal Danh sách lịch đã lưu */}
+            {/* ═══ Modal: Danh sách lịch đã lưu ════════════════════════════ */}
             {showListModal && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl overflow-hidden">
                         <div className="p-4 md:p-5 border-b border-gray-100 flex items-center justify-between bg-blue-50/50">
-                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base md:text-lg">
-                                <List className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
+                                <List className="w-4 h-4 text-blue-600" />
                                 Lịch học đã lưu
                             </h3>
                             <button onClick={() => setShowListModal(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
-                        <div className="overflow-y-auto p-3 md:p-4 custom-scrollbar" style={{ maxHeight: '60vh' }}>
+                        <div className="overflow-y-auto p-3 md:p-4" style={{ maxHeight: '60vh' }}>
                             {savedSchedules.length === 0 ? (
                                 <div className="text-center py-10">
                                     <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -588,7 +902,7 @@ export function CalendarView({
                                                         <Clock className="w-2.5 h-2.5" />
                                                         {new Date(saved.createdAt).toLocaleDateString('vi-VN')}
                                                     </span>
-                                                    <span className="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded font-bold">
+                                                    <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold">
                                                         {saved.selectedCourses.length} môn
                                                     </span>
                                                 </div>
