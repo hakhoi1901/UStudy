@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Book, ShoppingCart, X } from 'lucide-react';
+import { Calendar, Book, ShoppingCart, X, Users } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -14,6 +14,7 @@ import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
+import { GroupSchedulePage } from '../GroupSchedulePage';
 import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
 
@@ -21,6 +22,7 @@ import { createPortal } from 'react-dom';
 export const tabs = {
     trainingProgram: 'trainingProgram',
     selection: 'selection',
+    groupSchedule: 'groupSchedule',
     calendar: 'calendar',
 } as const;
 
@@ -28,7 +30,12 @@ export type Tab = keyof typeof tabs;
 
 
 export function IntegratedStudyRoadmap() {
-    const [activeTab, setActiveTab] = useState<Tab>('selection');
+    const [activeTab, setActiveTab] = useState<Tab>(() => {
+        if (typeof window !== 'undefined' && (window.location.pathname === '/group' || window.location.hash.startsWith('#v1_'))) {
+            return 'groupSchedule';
+        }
+        return 'selection';
+    });
     const [viewMode, setViewMode] = useState<'recommend' | 'all'>('all');
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
         const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
@@ -230,6 +237,7 @@ export function IntegratedStudyRoadmap() {
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
                                 { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
+                                { id: tabs.groupSchedule, label: 'Xếp lịch nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
                                 { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
@@ -243,6 +251,7 @@ export function IntegratedStudyRoadmap() {
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
+                                { id: tabs.groupSchedule, label: 'Nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
                                 { id: 'calendar', label: 'Lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
@@ -335,6 +344,16 @@ export function IntegratedStudyRoadmap() {
                             setSelectedCourses={setSelectedCourses}
                             setAllowedClassesMap={setAllowedClassesMap}
                             setOptions={setOptions}
+                        />
+                    )}
+
+                    {activeTab === 'groupSchedule' && (
+                        <GroupSchedulePage
+                            embedded
+                            selectedCourseIds={selectedCourses}
+                            allCourses={globalAllCourses as Course[]}
+                            allowedClassesMap={allowedClassesMap}
+                            onPageChange={() => undefined}
                         />
                     )}
                 </div>

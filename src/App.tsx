@@ -33,12 +33,16 @@ function AppContent() {
 
   const [currentPage, setCurrentPage] = useState<string>(() => {
     if (typeof window === 'undefined') return 'dashboard';
+    if (window.location.pathname === '/group' || window.location.hash.startsWith('#v1_')) return 'courses';
     const savedPage = sessionStorage.getItem(STORAGE_KEYS.PAGE);
     return savedPage ? savedPage : 'dashboard';
   });
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEYS.PAGE, currentPage);
+    if (currentPage !== 'courses' && window.location.pathname === '/group') {
+      window.history.replaceState(null, '', '/');
+    }
   }, [currentPage]);
 
   // Lưu data an toàn sau khi đã có cryptoKey

@@ -1,307 +1,476 @@
-import { CONFIG, WEIGHTS } from './Constants.js';
-import { Chromosome } from './Chromosome.js';
-import { FitnessEvaluator } from './FitnessValuator.js';
-import CourseDatabase from './CourseDatabase.js';
+import pako from 'pako';
 
-/**
- * Class giải quyết bài toán xếp lịch nhóm
- */
-class GroupGeneticSolver {
-    constructor(sharedSubjects, studentProfiles, valuator) {
-        // sharedSubjects: Mảng các object môn học chung
-        // studentProfiles: Mảng [{ name: "Tui", subjects: [môn riêng...] }, { name: "Bạn A", subjects: [...] }]
-        
-        this.sharedSubjects = sharedSubjects;
-        this.studentProfiles = studentProfiles;
-        this.valuator = valuator; // Dùng chung bộ đánh giá (hoặc có thể tạo riêng cho từng người nếu muốn)
+import CourseDatabase from './CourseDatabase';
+import { FitnessEvaluator } from './FitnessValuator';
+import { Bitset } from './Bitset';
+import type {
+  CourseWeight,
+  GroupFitnessConfig,
+  GroupMemberToken,
+  GroupScheduleItem,
+  GroupScheduleOption,
+  GroupScheduleRunResult,
+  GroupSolution,
+  StateMatrix,
+} from './GroupTypes';
 
-        // 1. Tạo bản đồ Gen (Gene Mapping)
-        // Cấu trúc nhiễm sắc thể: [ --- SHARED GENES --- | --- STUDENT 1 GENES --- | --- STUDENT 2 GENES --- ]
-        this.geneMap = [];
-        
-        // Map cho môn chung
-        this.sharedSubjects.forEach((subj, idx) => {
-            this.geneMap.push({ type: 'SHARED', course: subj, localIdx: idx });
-        });
+const GROUP_URL_PREFIX = 'v1_';
+const MASK_PARTS = 10;
+const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
 
-        // Map cho môn riêng từng người
-        this.studentProfiles.forEach((student, sIdx) => {
-            student.subjects.forEach((subj, cIdx) => {
-                this.geneMap.push({ type: 'PRIVATE', studentIdx: sIdx, course: subj, localIdx: cIdx });
-            });
-        });
-    }
+type ClassLike = {
+  id: string;
+  mask?: number[];
+  scheduleMask?: Bitset;
+  schedule?: string | string[];
+};
 
-    solve(topK = 5) {
-        let population = [];
+type CourseLike = {
+  id: string;
+  name?: string;
+  classes: ClassLike[];
+};
 
-        // Khởi tạo
-        for (let i = 0; i < CONFIG.POPULATION_SIZE; i++) {
-            const ind = this.createIndividual();
-            this.calculateGroupFitness(ind);
-            population.push(ind);
-        }
-
-        // Tiến hóa
-        for (let gen = 0; gen < CONFIG.GENERATIONS; gen++) {
-            population.sort((a, b) => b.fitness - a.fitness);
-
-            // Nếu tìm được phương án hoàn hảo (điểm rất cao), có thể dừng sớm (tùy chọn)
-            
-            const newPop = [];
-            
-            // Elitism
-            const eliteCount = Math.floor(CONFIG.POPULATION_SIZE * 0.1) || 1;
-            for(let i=0; i<eliteCount; i++) newPop.push(population[i]);
-
-            while(newPop.length < CONFIG.POPULATION_SIZE) {
-                const p1 = this.tournamentSelect(population);
-                const p2 = this.tournamentSelect(population);
-                
-                let child = this.crossover(p1, p2);
-                this.mutate(child);
-                
-                this.calculateGroupFitness(child);
-                newPop.push(child);
-            }
-            population = newPop;
-        }
-
-        population.sort((a, b) => b.fitness - a.fitness);
-        return this.filterUniqueResults(population, topK);
-    }
-
-    // --- LOGIC TÍNH ĐIỂM NHÓM (QUAN TRỌNG NHẤT) ---
-    calculateGroupFitness(ind) {
-        let totalFitness = 0;
-        let hasHardConflict = false;
-
-        // 1. Giải mã Gen thành Lịch học cụ thể cho từng người
-        // Mảng chứa danh sách môn học ĐÃ CHỌN LỚP cho từng sinh viên
-        // studentSchedules[0] = [ {course: ..., selectedClass: ...}, ... ]
-        const studentSchedules = this.studentProfiles.map(() => []);
-
-        // Biến tạm lưu class index của các môn chung để dùng lại
-        const sharedClassIndices = {};
-
-        ind.genes.forEach((geneVal, geneIdx) => {
-            const mapInfo = this.geneMap[geneIdx];
-
-            if (mapInfo.type === 'SHARED') {
-                // Đây là môn chung, mọi người đều phải học lớp này
-                const selectedClass = mapInfo.course.classes[geneVal];
-                
-                // Lưu lại để add vào lịch của tất cả mọi người
-                this.studentProfiles.forEach((_, sIdx) => {
-                    studentSchedules[sIdx].push({
-                        course: mapInfo.course,
-                        classObj: selectedClass,
-                        classIdx: geneVal
-                    });
-                });
-
-            } else if (mapInfo.type === 'PRIVATE') {
-                // Đây là môn riêng, chỉ add cho đúng người đó
-                const selectedClass = mapInfo.course.classes[geneVal];
-                studentSchedules[mapInfo.studentIdx].push({
-                    course: mapInfo.course,
-                    classObj: selectedClass,
-                    classIdx: geneVal
-                });
-            }
-        });
-
-        // 2. Tính điểm cho TỪNG NGƯỜI
-        // Fitness của cả nhóm = Tổng fitness từng cá nhân / Số người (Trung bình cộng)
-        // Hoặc = Fitness của người thấp điểm nhất (để đảm bảo không ai bị lịch xấu quá) -> Tôi chọn cách này để công bằng.
-        
-        let minMemberFitness = Infinity;
-
-        for (let sIdx = 0; sIdx < this.studentProfiles.length; sIdx++) {
-            const mySubjects = studentSchedules[sIdx];
-            
-            // Giả lập cấu trúc để đưa vào FitnessEvaluator
-            // FitnessEvaluator cần input dạng: [{ classes: [..., {scheduleMask}, ...] }] 
-            // Nhưng ta đã chọn cụ thể 1 lớp rồi, nên ta tạo một Chromosome giả chỉ có 1 gen/môn
-            
-            // Cách nhanh hơn: Viết lại logic check trùng nhẹ tại đây hoặc tái sử dụng Evaluator một cách khéo léo.
-            // Để tận dụng tối đa file FitnessValuator.js xịn xò bạn đã có, ta sẽ làm như sau:
-            
-            // Tạo một Chromosome giả cho sinh viên này
-            const dummyInd = new Chromosome(mySubjects.length);
-            // Gen của dummyInd luôn là 0 (vì ta sẽ tạo một danh sách môn học giả chỉ chứa đúng 1 lớp đã chọn)
-            dummyInd.genes.fill(0); 
-
-            // Tạo danh sách môn học giả
-            const dummySubjects = mySubjects.map(item => ({
-                id: item.course.id,
-                classes: [item.classObj] // Chỉ chứa đúng 1 lớp đã chọn từ gen tổng
-            }));
-
-            // Gọi Evaluator chấm điểm cho sinh viên này
-            const memberFitness = this.valuator.getFitness(dummyInd, dummySubjects);
-
-            // Nếu người này bị trùng lịch (Fitness âm), đánh dấu ngay
-            if (memberFitness < 0) {
-                hasHardConflict = true;
-                // Phạt cực nặng vào tổng điểm nhóm
-                totalFitness -= Math.abs(memberFitness) * 10; 
-            } else {
-                totalFitness += memberFitness;
-            }
-
-            if (memberFitness < minMemberFitness) minMemberFitness = memberFitness;
-        }
-
-        // Logic tổng hợp điểm: 
-        // Nếu có bất kỳ ai bị trùng lịch -> Fitness nhóm cực thấp
-        // Nếu không, lấy điểm trung bình
-        if (hasHardConflict) {
-            ind.fitness = -9999999; // Fail
-        } else {
-            ind.fitness = totalFitness / this.studentProfiles.length;
-        }
-    }
-
-    // --- CÁC HÀM HELPER GENETIC (Tương tự GeneticSolver đơn) ---
-
-    createIndividual() {
-        const ind = new Chromosome(this.geneMap.length);
-        this.geneMap.forEach((info, idx) => {
-            // Random lớp dựa trên số lượng lớp của môn học đó
-            const classCount = info.course.classes.length;
-            ind.genes[idx] = Math.floor(Math.random() * classCount);
-        });
-        return ind;
-    }
-
-    crossover(p1, p2) {
-        const child = new Chromosome(p1.genes.length);
-        const split = Math.floor(Math.random() * p1.genes.length);
-        for(let i=0; i<p1.genes.length; i++) {
-            child.genes[i] = (i < split) ? p1.genes[i] : p2.genes[i];
-        }
-        return child;
-    }
-
-    mutate(ind) {
-        if (Math.random() < CONFIG.MUTATION_RATE) {
-            const idx = Math.floor(Math.random() * ind.genes.length);
-            const info = this.geneMap[idx];
-            const classCount = info.course.classes.length;
-            ind.genes[idx] = Math.floor(Math.random() * classCount);
-        }
-    }
-
-    tournamentSelect(pop) {
-        let best = pop[Math.floor(Math.random() * pop.length)];
-        for(let i=0; i < CONFIG.TOURNAMENT_SIZE; i++) {
-            const other = pop[Math.floor(Math.random() * pop.length)];
-            if (other.fitness > best.fitness) best = other;
-        }
-        return best;
-    }
-
-    filterUniqueResults(population, topK) {
-        const results = [];
-        const seen = new Set();
-        for(const ind of population) {
-            if (results.length >= topK) break;
-            const key = ind.genes.join('|');
-            if (!seen.has(key)) {
-                seen.add(key);
-                results.push(ind);
-            }
-        }
-        return results;
-    }
+export class GroupURLDecodeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GroupURLDecodeError';
+  }
 }
 
-/**
- * Hàm chạy chính cho Group Scheduler
- * @param {Object} dbData - Dữ liệu môn học gốc (JSON)
- * @param {Array} sharedCourseIDs - Danh sách mã môn học chung ["MTH...", "CSC..."]
- * @param {Array} studentDataList - Danh sách sinh viên và môn riêng 
- * Ví dụ: [ { name: "Tui", ownCourseIDs: ["PHY..."] }, { name: "Crush", ownCourseIDs: ["ENG..."] } ]
- * @param {Object} preferences - Cài đặt (Ngày nghỉ,...)
- */
-export function runGroupScheduleSolver(dbData, sharedCourseIDs, studentDataList, preferences) {
-    console.log("👥 Bắt đầu xếp lịch nhóm...");
-    
-    // 1. Chuẩn bị DB
-    const db = new CourseDatabase();
-    db.loadData(typeof dbData === 'string' ? JSON.parse(dbData) : dbData);
+function normalizeCourseId(courseId: string): string {
+  return courseId.trim().toUpperCase();
+}
 
-    // 2. Lấy dữ liệu Môn Chung
-    const sharedSubjects = [];
-    sharedCourseIDs.forEach(id => {
-        const c = db.getCourse(id);
-        if (c) sharedSubjects.push(c);
-        else console.warn(`Không tìm thấy môn chung: ${id}`);
+function uniqueCourseIds(courseIds: string[]): string[] {
+  return Array.from(new Set(courseIds.map(normalizeCourseId).filter(Boolean)));
+}
+
+function normalizeMask(mask?: number[], partCount = MASK_PARTS): number[] {
+  const normalized = new Array(partCount).fill(0);
+  if (!Array.isArray(mask)) return normalized;
+  for (let i = 0; i < Math.min(partCount, mask.length); i++) {
+    normalized[i] = mask[i] | 0;
+  }
+  return normalized;
+}
+
+function getClassMask(cls: ClassLike): number[] {
+  if (Array.isArray(cls.mask)) return normalizeMask(cls.mask);
+  if (cls.scheduleMask?.parts) return normalizeMask(cls.scheduleMask.parts);
+  return normalizeMask();
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function fromBase64Url(value: string): Uint8Array {
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function getCourse(db: CourseDatabase, courseId: string): CourseLike | null {
+  return db.getCourse(courseId) as CourseLike | null;
+}
+
+function getClasses(db: CourseDatabase, courseId: string): ClassLike[] {
+  return getCourse(db, courseId)?.classes ?? [];
+}
+
+function memberCourseSet(member: GroupMemberToken): Set<string> {
+  return new Set([...uniqueCourseIds(member.sharedCourses), ...uniqueCourseIds(member.personalCourses)]);
+}
+
+function getPreferenceHits(courseId: string, classId: string, subscribers: number[], members: GroupMemberToken[]): number {
+  return subscribers.reduce((hits, memberIndex) => {
+    const preferred = members[memberIndex]?.preferredClasses?.[courseId];
+    return preferred?.includes(classId) ? hits + 1 : hits;
+  }, 0);
+}
+
+function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
+  return courses
+    .filter((course) => {
+      if (!course.subscribers.includes(memberIndex)) return false;
+      if (scope === 'shared') return course.isShared;
+      if (scope === 'personal') return !course.isShared;
+      return true;
+    })
+    .map((course) => {
+      const selectedClassId = solution.assignments.get(course.courseId) ?? solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
+      const courseData = getCourse(db, course.courseId);
+      const classObj = courseData?.classes.find((cls) => cls.id === selectedClassId);
+      if (!courseData || !classObj) return null;
+      return {
+        id: course.courseId,
+        classes: [classObj],
+      };
+    })
+    .filter((subject): subject is { id: string; classes: ClassLike[] } => Boolean(subject));
+}
+
+function scoreMemberSchedule(
+  solution: GroupSolution,
+  db: CourseDatabase,
+  courses: CourseWeight[],
+  memberIndex: number,
+  config: GroupFitnessConfig,
+  scope: 'all' | 'shared' | 'personal' = 'all',
+): number {
+  const subjects = buildMemberSubjects(solution, db, courses, memberIndex, scope);
+  if (subjects.length === 0) return 0;
+
+  const evaluator = new FitnessEvaluator({
+    session: config.session || '0',
+    strategy: config.strategy || 'compress',
+    noGaps: config.noGaps ?? false,
+    daysOff: config.daysOff || [],
+  });
+  const chromosome = { genes: subjects.map(() => 0) };
+  return evaluator.getFitness(chromosome, subjects);
+}
+
+export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken {
+  const sharedCourses = uniqueCourseIds(member.sharedCourses);
+  const personalCourses = uniqueCourseIds(member.personalCourses).filter((courseId) => !sharedCourses.includes(courseId));
+  const preferredClasses = Object.fromEntries(
+    Object.entries(member.preferredClasses ?? {})
+      .map(([courseId, classIds]) => [normalizeCourseId(courseId), Array.from(new Set(classIds.map((classId) => String(classId).trim()).filter(Boolean)))])
+      .filter(([, classIds]) => classIds.length > 0),
+  );
+
+  return {
+    nickname: member.nickname?.trim() || undefined,
+    sharedCourses,
+    personalCourses,
+    busyMask: normalizeMask(member.busyMask),
+    preferredClasses,
+    personalConfig: member.personalConfig,
+  };
+}
+
+export function encodeGroupURL(members: GroupMemberToken[]): string {
+  const sanitized = members.map(sanitizeGroupMember);
+  const json = JSON.stringify(sanitized);
+  const compressed = pako.deflate(json);
+  const b64 = toBase64Url(compressed);
+  return `${window.location.origin}/group#${GROUP_URL_PREFIX}${b64}`;
+}
+
+export function decodeGroupURL(hash: string): GroupMemberToken[] {
+  const fragment = hash.startsWith('#') ? hash.slice(1) : hash;
+  if (!fragment) return [];
+  if (!fragment.startsWith(GROUP_URL_PREFIX)) {
+    throw new GroupURLDecodeError('Link nhóm không đúng định dạng hoặc khác phiên bản.');
+  }
+
+  try {
+    const bytes = fromBase64Url(fragment.slice(GROUP_URL_PREFIX.length));
+    const json = pako.inflate(bytes, { to: 'string' });
+    const parsed = JSON.parse(json) as GroupMemberToken[];
+    if (!Array.isArray(parsed)) throw new Error('Payload is not an array');
+    return parsed.map(sanitizeGroupMember);
+  } catch (error) {
+    throw new GroupURLDecodeError(error instanceof Error ? `Link nhóm bị lỗi hoặc bị cắt ngắn: ${error.message}` : 'Link nhóm bị lỗi hoặc bị cắt ngắn.');
+  }
+}
+
+export function buildDensityMap(members: GroupMemberToken[]): CourseWeight[] {
+  const courseSubscribers = new Map<string, Set<number>>();
+
+  members.map(sanitizeGroupMember).forEach((member, memberIndex) => {
+    memberCourseSet(member).forEach((courseId) => {
+      if (!courseSubscribers.has(courseId)) courseSubscribers.set(courseId, new Set());
+      courseSubscribers.get(courseId)?.add(memberIndex);
     });
+  });
 
-    // 3. Lấy dữ liệu Môn Riêng cho từng người
-    const studentProfiles = studentDataList.map(student => {
-        const ownSubjects = [];
-        student.ownCourseIDs.forEach(id => {
-            const c = db.getCourse(id);
-            if (c) ownSubjects.push(c);
-            else console.warn(`Không tìm thấy môn riêng ${id} của ${student.name}`);
-        });
-        return {
-            name: student.name,
-            subjects: ownSubjects
-        };
+  return Array.from(courseSubscribers.entries())
+    .map(([courseId, subscribers]) => {
+      const subscriberList = Array.from(subscribers).sort((a, b) => a - b);
+      return {
+        courseId,
+        subscribers: subscriberList,
+        isShared: subscriberList.length >= 2,
+      };
+    })
+    .sort((a, b) => {
+      if (b.subscribers.length !== a.subscribers.length) return b.subscribers.length - a.subscribers.length;
+      if (Number(b.isShared) !== Number(a.isShared)) return Number(b.isShared) - Number(a.isShared);
+      return a.courseId.localeCompare(b.courseId);
     });
+}
 
-    // 4. Khởi tạo Engine
-    const valuator = new FitnessEvaluator(preferences);
-    const solver = new GroupGeneticSolver(sharedSubjects, studentProfiles, valuator);
+export function isClassValid(classMask: number[], subscribers: number[], state: StateMatrix): boolean {
+  return subscribers.every((memberIndex) =>
+    normalizeMask(classMask).every((mask, partIndex) => ((state[memberIndex]?.[partIndex] ?? 0) & mask) === 0),
+  );
+}
 
-    // 5. Chạy
-    const rawResults = solver.solve(5); // Top 5 phương án nhóm
+export function solveGroup(
+  courses: CourseWeight[],
+  courseDatabase: CourseDatabase,
+  members: GroupMemberToken[],
+  maxSolutions = 50,
+  mode: 'shared-first' | 'split' = 'shared-first',
+): GroupSolution[] {
+  const solutions: GroupSolution[] = [];
+  const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
 
-    // 6. Mapping kết quả trả về (Format lại cho dễ hiển thị)
-    // Cấu trúc trả về sẽ phức tạp hơn: Một phương án chứa N thời khóa biểu (cho N người)
-    return rawResults.map((ind, optIdx) => {
-        const groupResult = {
-            optionName: `Phương án nhóm ${optIdx + 1}`,
-            totalFitness: ind.fitness,
-            schedules: {} // Key: Tên sinh viên, Value: Lịch của người đó
-        };
+  function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
+    if (solutions.length >= maxSolutions) return;
+    if (courseIndex === courses.length) {
+      solutions.push({
+        assignments: new Map(assignments),
+        stateMatrix: state.map((memberMask) => [...memberMask]),
+      });
+      return;
+    }
 
-        // Re-construct lại lịch từ genes
-        ind.genes.forEach((geneVal, geneIdx) => {
-            const mapInfo = solver.geneMap[geneIdx];
-            const selectedClass = mapInfo.course.classes[geneVal];
-            
-            // Helper add vào list kết quả
-            const addToResult = (studentName) => {
-                if (!groupResult.schedules[studentName]) groupResult.schedules[studentName] = [];
-                
-                // Format dữ liệu giống Scheduler đơn để tái sử dụng UI render
-                let visualMask = selectedClass.mask;
-                if (!visualMask && selectedClass.scheduleMask) {
-                    visualMask = selectedClass.scheduleMask.parts;
-                }
+    const course = courses[courseIndex];
+    const availableClasses = getClasses(courseDatabase, course.courseId)
+      .sort((a, b) => getPreferenceHits(course.courseId, b.id, course.subscribers, members) - getPreferenceHits(course.courseId, a.id, course.subscribers, members));
+    if (availableClasses.length === 0) return;
 
-                groupResult.schedules[studentName].push({
-                    subjectID: mapInfo.course.id,
-                    subjectName: mapInfo.course.name,
-                    classID: selectedClass.id,
-                    type: mapInfo.type, // SHARED hoặc PRIVATE
-                    mask: visualMask || [0,0,0,0],
-                    schedule: selectedClass.schedule
-                });
-            };
+    if (mode === 'split' && course.subscribers.length > 1) {
+      function assignSubscriber(subscriberOffset: number, workingState: StateMatrix) {
+        if (solutions.length >= maxSolutions) return;
+        if (subscriberOffset === course.subscribers.length) {
+          dfs(courseIndex + 1, workingState, assignments);
+          return;
+        }
 
-            if (mapInfo.type === 'SHARED') {
-                studentProfiles.forEach(s => addToResult(s.name));
-            } else {
-                addToResult(studentProfiles[mapInfo.studentIdx].name);
-            }
-        });
+        const memberIndex = course.subscribers[subscriberOffset];
+        const sortedForMember = [...availableClasses].sort((a, b) =>
+          getPreferenceHits(course.courseId, b.id, [memberIndex], members) - getPreferenceHits(course.courseId, a.id, [memberIndex], members),
+        );
 
-        return groupResult;
+        for (const cls of sortedForMember) {
+          const classMask = getClassMask(cls);
+          if (!isClassValid(classMask, [memberIndex], workingState)) continue;
+
+          const nextState = workingState.map((memberMask, idx) => {
+            if (idx !== memberIndex) return [...memberMask];
+            return memberMask.map((mask, partIndex) => mask | classMask[partIndex]);
+          });
+
+          assignments.set(memberAssignmentKey(course.courseId, memberIndex), cls.id);
+          assignSubscriber(subscriberOffset + 1, nextState);
+          assignments.delete(memberAssignmentKey(course.courseId, memberIndex));
+        }
+      }
+
+      assignSubscriber(0, state);
+      return;
+    }
+
+    for (const cls of availableClasses) {
+      const classMask = getClassMask(cls);
+      if (!isClassValid(classMask, course.subscribers, state)) continue;
+
+      const nextState = state.map((memberMask, memberIndex) => {
+        if (!course.subscribers.includes(memberIndex)) return [...memberMask];
+        return memberMask.map((mask, partIndex) => mask | classMask[partIndex]);
+      });
+
+      assignments.set(course.courseId, cls.id);
+      dfs(courseIndex + 1, nextState, assignments);
+      assignments.delete(course.courseId);
+    }
+  }
+
+  dfs(0, initialState, new Map());
+  return solutions;
+}
+
+export function scoreGroupSolution(
+  solution: GroupSolution,
+  courseDatabase: CourseDatabase,
+  courses: CourseWeight[],
+  members: GroupMemberToken[],
+  config: GroupFitnessConfig,
+): number {
+  const memberScores = members.map((member, memberIndex) => {
+    const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'shared');
+    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, {
+      ...config,
+      ...member.personalConfig,
+    }, 'personal');
+    return sharedScore + personalScore;
+  });
+  const total = memberScores.reduce((sum, score) => sum + score, 0);
+  const avg = memberScores.length > 0 ? total / memberScores.length : 0;
+  const variance = memberScores.reduce((sum, score) => sum + (score - avg) ** 2, 0) / Math.max(memberScores.length, 1);
+  const fairnessPenalty = config.fairnessWeight * Math.sqrt(variance);
+  const sharedBonus = courses.filter((course) => course.isShared && solution.assignments.has(course.courseId)).length * config.sharedSlotBonus;
+  const personalPreferenceBonus = courses.reduce((bonus, course) => {
+    if (course.isShared) return bonus;
+    const classId = solution.assignments.get(course.courseId) ?? solution.assignments.get(memberAssignmentKey(course.courseId, course.subscribers[0] ?? -1));
+    if (!classId) return bonus;
+    const satisfiedMembers = course.subscribers.filter((memberIndex) => members[memberIndex]?.preferredClasses?.[course.courseId]?.includes(classId)).length;
+    return bonus + satisfiedMembers * config.personalPreferenceWeight;
+  }, 0);
+  const groupPreferenceBonus = courses.reduce((bonus, course) => {
+    const preferred = config.groupPreferredClasses?.[course.courseId];
+    if (!preferred?.length) return bonus;
+    const globalClassId = solution.assignments.get(course.courseId);
+    if (globalClassId) return preferred.includes(globalClassId) ? bonus + config.groupPreferenceWeight * Math.max(course.subscribers.length, 1) : bonus;
+    const satisfied = course.subscribers.filter((memberIndex) => {
+      const memberClassId = solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
+      return memberClassId ? preferred.includes(memberClassId) : false;
+    }).length;
+    return bonus + satisfied * config.groupPreferenceWeight;
+  }, 0);
+
+  return total - fairnessPenalty + sharedBonus + personalPreferenceBonus + groupPreferenceBonus;
+}
+
+function toScheduleOption(
+  solution: GroupSolution,
+  optionIndex: number,
+  fitness: number,
+  courseDatabase: CourseDatabase,
+  courses: CourseWeight[],
+  members: GroupMemberToken[],
+): GroupScheduleOption {
+  const itemsByMember = members.map<GroupScheduleItem[]>((() => []));
+  const assignmentRecord: Record<string, string> = {};
+
+  courses.forEach((course) => {
+    const courseData = getCourse(courseDatabase, course.courseId);
+    if (!courseData) return;
+
+    const globalClassId = solution.assignments.get(course.courseId);
+    if (globalClassId) {
+      assignmentRecord[course.courseId] = globalClassId;
+      const classObj = courseData.classes.find((cls) => cls.id === globalClassId);
+      if (!classObj) return;
+
+      const item: GroupScheduleItem = {
+        courseId: course.courseId,
+        courseName: courseData.name || course.courseId,
+        classId: globalClassId,
+        memberIndexes: [...course.subscribers],
+        isShared: course.isShared,
+        mask: getClassMask(classObj),
+        schedule: classObj.schedule,
+      };
+
+      course.subscribers.forEach((memberIndex) => {
+        itemsByMember[memberIndex].push(item);
+      });
+      return;
+    }
+
+    course.subscribers.forEach((memberIndex) => {
+      const classId = solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
+      if (!classId) return;
+      assignmentRecord[memberAssignmentKey(course.courseId, memberIndex)] = classId;
+      const classObj = courseData.classes.find((cls) => cls.id === classId);
+      if (!classObj) return;
+      itemsByMember[memberIndex].push({
+        courseId: course.courseId,
+        courseName: courseData.name || course.courseId,
+        classId,
+        memberIndexes: [memberIndex],
+        isShared: false,
+        mask: getClassMask(classObj),
+        schedule: classObj.schedule,
+      });
     });
+  });
+
+  return {
+    option: optionIndex + 1,
+    fitness,
+    assignments: assignmentRecord,
+    schedules: members.map((member, memberIndex) => ({
+      memberIndex,
+      nickname: member.nickname || `Thành viên ${memberIndex + 1}`,
+      items: itemsByMember[memberIndex],
+    })),
+  };
+}
+
+export function runGroupScheduleSolver(
+  dbData: unknown,
+  members: GroupMemberToken[],
+  config: Partial<GroupFitnessConfig> = {},
+  maxSolutions = 50,
+): GroupScheduleRunResult {
+  const sanitizedMembers = members.map(sanitizeGroupMember).filter((member) => member.sharedCourses.length + member.personalCourses.length > 0);
+  const warnings: string[] = [];
+  const courseDatabase = new CourseDatabase();
+  courseDatabase.loadData(typeof dbData === 'string' ? JSON.parse(dbData) : dbData);
+
+  const density = buildDensityMap(sanitizedMembers).filter((course) => {
+    const exists = getClasses(courseDatabase, course.courseId).length > 0;
+    if (!exists) warnings.push(`Không tìm thấy lớp học cho môn ${course.courseId}.`);
+    return exists;
+  });
+
+  if (sanitizedMembers.length === 0 || density.length === 0) {
+    return { density, solutions: [], warnings };
+  }
+
+  let solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first');
+  if (solutions.length === 0) {
+    warnings.push('Không có nghiệm khi bắt buộc các môn trùng nhau học cùng lớp. Đang dùng phương án dự phòng: cho phép tách lớp nếu cần.');
+    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split');
+  }
+  const fitnessConfig: GroupFitnessConfig = {
+    daysOff: config.daysOff ?? [],
+    session: config.session ?? '0',
+    strategy: config.strategy ?? 'compress',
+    noGaps: config.noGaps ?? false,
+    fairnessWeight: config.fairnessWeight ?? 0.35,
+    sharedSlotBonus: config.sharedSlotBonus ?? 12,
+    personalPreferenceWeight: config.personalPreferenceWeight ?? 8,
+    groupPreferenceWeight: config.groupPreferenceWeight ?? 12,
+    groupPreferredClasses: config.groupPreferredClasses ?? {},
+  };
+
+  const ranked = solutions
+    .map((solution) => ({
+      solution,
+      fitness: scoreGroupSolution(solution, courseDatabase, density, sanitizedMembers, fitnessConfig),
+    }))
+    .sort((a, b) => b.fitness - a.fitness)
+    .slice(0, 3)
+    .map(({ solution, fitness }, optionIndex) => toScheduleOption(solution, optionIndex, fitness, courseDatabase, density, sanitizedMembers));
+
+  return {
+    density,
+    solutions: ranked,
+    warnings,
+  };
+}
+
+export function isDuplicateMember(member: GroupMemberToken, members: GroupMemberToken[]): boolean {
+  const current = sanitizeGroupMember(member);
+    const currentKey = JSON.stringify({
+    sharedCourses: [...current.sharedCourses].sort(),
+    personalCourses: [...current.personalCourses].sort(),
+    busyMask: current.busyMask,
+    preferredClasses: current.preferredClasses ?? {},
+  });
+
+  return members.some((existing) => {
+    const sanitized = sanitizeGroupMember(existing);
+    return JSON.stringify({
+      sharedCourses: [...sanitized.sharedCourses].sort(),
+      personalCourses: [...sanitized.personalCourses].sort(),
+      busyMask: sanitized.busyMask,
+      preferredClasses: sanitized.preferredClasses ?? {},
+    }) === currentKey;
+  });
 }
