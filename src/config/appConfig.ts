@@ -5,7 +5,7 @@ export const APP_CONFIG = {
     /**
      * Đường dẫn đăng nhập Portal
      */
-    PORTAL_LOGIN_URL: 'https://portal.hcmus.edu.vn/',
+    PORTAL_LOGIN_URL: 'https://new-portal4.hcmus.edu.vn/',
 
     /**
      * Danh sách học kỳ hiển thị trên dropdown
@@ -29,11 +29,15 @@ export const APP_CONFIG = {
      */
     DEFAULT_TARGET_YEAR: "25-26",
     DEFAULT_TARGET_SEM: "2",
+    DEFAULT_CLASS_TARGET_YEAR: "25-26",
+    DEFAULT_CLASS_TARGET_SEM: "2",
+    DEFAULT_REG_TARGET_YEAR: "25-26",
+    DEFAULT_REG_TARGET_SEM: "2",
 
     /**
      * Phiên bản hiện tại của Bookmarklet
      */
-    BOOKMARKLET_VERSION: '1.2.0',
+    BOOKMARKLET_VERSION: '0.1.1',
 
     /**
      * Thông tin liên hệ và báo cáo

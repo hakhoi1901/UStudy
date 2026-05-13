@@ -9,7 +9,11 @@
         URL_LOPMO: "/SinhVien.aspx?pid=327",
         URL_DKHP: "/SinhVien.aspx?pid=212",
         TARGET_YEAR: "25-26",
-        TARGET_SEM: "1"
+        TARGET_SEM: "2",
+        CLASS_TARGET_YEAR: "25-26",
+        CLASS_TARGET_SEM: "2",
+        REG_TARGET_YEAR: "25-26",
+        REG_TARGET_SEM: "2"
     };
 
     //  Kiểm tra hạn sử dụng 30 ngày
@@ -50,6 +54,11 @@
         return new Promise((resolve, reject) => {
             // Xóa modal cũ nếu có
             document.getElementById('hcmus-tool-modal')?.remove();
+
+            const classYearDefault = CONFIG.CLASS_TARGET_YEAR || CONFIG.TARGET_YEAR || "25-26";
+            const classSemDefault = String(CONFIG.CLASS_TARGET_SEM || CONFIG.TARGET_SEM || "2");
+            const regYearDefault = CONFIG.REG_TARGET_YEAR || CONFIG.TARGET_YEAR || "25-26";
+            const regSemDefault = String(CONFIG.REG_TARGET_SEM || CONFIG.TARGET_SEM || "2");
 
             const modal = document.createElement('div');
             modal.id = 'hcmus-tool-modal';
@@ -105,11 +114,11 @@
                         Lấy Danh Sách Lớp Mở
                     </label>
                     <div id="grp-class" style="display:flex;gap:10px;padding-left:28px;">
-                        <input type="text" id="class-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <input type="text" id="class-year" value="${classYearDefault}" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
                         <select id="class-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                            <option value="1">Học kỳ 1</option>
-                            <option value="2">Học kỳ 2</option>
-                            <option value="3">Học kỳ 3</option>
+                            <option value="1" ${classSemDefault === "1" ? "selected" : ""}>Học kỳ 1</option>
+                            <option value="2" ${classSemDefault === "2" ? "selected" : ""}>Học kỳ 2</option>
+                            <option value="3" ${classSemDefault === "3" ? "selected" : ""}>Học kỳ 3</option>
                         </select>
                     </div>
                 </div>
@@ -120,11 +129,11 @@
                         Lấy Kết Quả ĐKHP
                     </label>
                     <div id="grp-reg" style="display:flex;gap:10px;padding-left:28px;">
-                        <input type="text" id="reg-year" value="25-26" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <input type="text" id="reg-year" value="${regYearDefault}" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
                         <select id="reg-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
-                            <option value="1">Học kỳ 1</option>
-                            <option value="2" selected>Học kỳ 2</option>
-                            <option value="3">Học kỳ 3</option>
+                            <option value="1" ${regSemDefault === "1" ? "selected" : ""}>Học kỳ 1</option>
+                            <option value="2" ${regSemDefault === "2" ? "selected" : ""}>Học kỳ 2</option>
+                            <option value="3" ${regSemDefault === "3" ? "selected" : ""}>Học kỳ 3</option>
                         </select>
                     </div>
                 </div>

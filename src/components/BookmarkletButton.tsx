@@ -34,6 +34,10 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
             URL_DKHP: "/SinhVien.aspx?pid=212",
             TARGET_YEAR: APP_CONFIG.DEFAULT_TARGET_YEAR,
             TARGET_SEM: APP_CONFIG.DEFAULT_TARGET_SEM,
+            CLASS_TARGET_YEAR: APP_CONFIG.DEFAULT_CLASS_TARGET_YEAR,
+            CLASS_TARGET_SEM: APP_CONFIG.DEFAULT_CLASS_TARGET_SEM,
+            REG_TARGET_YEAR: APP_CONFIG.DEFAULT_REG_TARGET_YEAR,
+            REG_TARGET_SEM: APP_CONFIG.DEFAULT_REG_TARGET_SEM,
             EXPIRES_AT: expirationTime,
             VERSION: APP_CONFIG.BOOKMARKLET_VERSION
         };
