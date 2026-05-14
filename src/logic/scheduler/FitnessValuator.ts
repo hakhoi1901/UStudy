@@ -1,5 +1,6 @@
 import { Bitset } from './Bitset';
 import { WEIGHTS } from './Constants';
+import type { DayOffSession } from '../../utils/dayOffPreferences';
 
 export interface Preferences {
     daysOff?: (number | string)[];
@@ -27,15 +28,33 @@ export interface Chromosome {
 
 export class FitnessEvaluator {
     prefs: any;
+    dayOffRules: Array<{ day: number; session: DayOffSession }> = [];
 
     constructor(preferences: any) {
         this.prefs = { ...preferences };
-        // Chuẩn hóa daysOff thành số nguyên (0=T2, 6=CN)
-        if (this.prefs.daysOff && Array.isArray(this.prefs.daysOff)) {
-            this.prefs.daysOff = this.prefs.daysOff.map((d: any) => parseInt(d));
-        } else {
-            this.prefs.daysOff = [];
-        }
+        this.dayOffRules = this.normalizeDayOffRules(this.prefs.daysOff);
+        this.prefs.daysOff = this.dayOffRules;
+    }
+
+    normalizeDayOffRules(daysOff: any): Array<{ day: number; session: DayOffSession }> {
+        if (!Array.isArray(daysOff)) return [];
+
+        return daysOff
+            .map((item: any) => {
+                const [rawDay, rawSession] = String(item).split(':');
+                const day = Number.parseInt(rawDay, 10);
+                if (!Number.isFinite(day)) return null;
+
+                const session = rawSession === 'morning' || rawSession === 'afternoon' ? rawSession : 'all';
+                return { day, session };
+            })
+            .filter((item): item is { day: number; session: DayOffSession } => Boolean(item));
+    }
+
+    getPeriodRangeForDayOff(session: DayOffSession): [number, number] {
+        if (session === 'morning') return [0, 9];
+        if (session === 'afternoon') return [10, 19];
+        return [0, 19];
     }
 
     // --- HÀM TÍNH ĐIỂM (CORE) ---
@@ -68,15 +87,16 @@ export class FitnessEvaluator {
         // 2. SOFT CONSTRAINTS
 
         // A. Ngày nghỉ (Dùng Mask quét Bit)
-        if (this.prefs.daysOff.length > 0) {
+        if (this.dayOffRules.length > 0) {
             genes.forEach((classIdx, idx) => {
                 if (classIdx === -1) return;
                 const currentMask = subjects[idx].classes[classIdx].scheduleMask;
 
                 if (currentMask) {
-                    this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 20;
-                        const endBit = startBit + 19;
+                    this.dayOffRules.forEach(({ day, session }) => {
+                        const [startPeriodBit, endPeriodBit] = this.getPeriodRangeForDayOff(session);
+                        const startBit = day * 20 + startPeriodBit;
+                        const endBit = day * 20 + endPeriodBit;
                         for (let k = startBit; k <= endBit; k++) {
                             if (currentMask.test(k) || currentMask.test(k + 140)) {
                                 score -= WEIGHTS.PENALTY_DAY_OFF;
@@ -150,19 +170,21 @@ export class FitnessEvaluator {
         }
 
         // 2. Re-check Ngày nghỉ
-        if (this.prefs.daysOff.length > 0) {
+        if (this.dayOffRules.length > 0) {
             genes.forEach((classIdx, idx) => {
                 if (classIdx === -1) return;
                 const cls = subjects[idx].classes[classIdx];
                 const currentMask = cls.scheduleMask;
 
                 if (currentMask) {
-                    this.prefs.daysOff.forEach((dayForbidden: number) => {
-                        const startBit = dayForbidden * 20;
-                        const endBit = startBit + 19;
+                    this.dayOffRules.forEach(({ day, session }) => {
+                        const [startPeriodBit, endPeriodBit] = this.getPeriodRangeForDayOff(session);
+                        const startBit = day * 20 + startPeriodBit;
+                        const endBit = day * 20 + endPeriodBit;
                         for (let k = startBit; k <= endBit; k++) {
                             if (currentMask.test(k) || currentMask.test(k + 140)) {
-                                report.penalties.push(`Học ngày nghỉ (Thứ ${dayForbidden + 2}): ${subjects[idx].id} (${cls.id})`);
+                                const sessionLabel = session === 'all' ? 'cả ngày' : session === 'morning' ? 'buổi sáng' : 'buổi chiều';
+                                report.penalties.push(`Học ngày nghỉ ${sessionLabel} (Thứ ${day + 2}): ${subjects[idx].id} (${cls.id})`);
                                 break;
                             }
                         }

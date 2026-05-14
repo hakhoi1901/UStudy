@@ -1,9 +1,21 @@
+import type { DayOffPreference } from '../../utils/dayOffPreferences';
+
+export type ClassPreferenceLevel = 'excluded' | 'preferred' | 'required';
+
+export interface ClassPreferenceSelection {
+  excluded?: string[];
+  preferred?: string[];
+  required?: string[];
+}
+
+export type ClassPreferenceMap = Record<string, string[] | ClassPreferenceSelection>;
+
 export interface GroupMemberToken {
   nickname?: string;
   sharedCourses: string[];
   personalCourses: string[];
   busyMask: number[];
-  preferredClasses?: Record<string, string[]>;
+  preferredClasses?: ClassPreferenceMap;
   personalConfig?: SchedulePreferenceConfig;
 }
 
@@ -21,7 +33,7 @@ export interface GroupSolution {
 }
 
 export interface SchedulePreferenceConfig {
-  daysOff?: number[];
+  daysOff?: DayOffPreference[];
   session?: string;
   strategy?: string;
   noGaps?: boolean;
@@ -34,7 +46,13 @@ export interface GroupFitnessConfig extends SchedulePreferenceConfig {
   groupPreferenceWeight: number;
   personalPreferenceMissPenalty: number;
   groupPreferenceMissPenalty: number;
-  groupPreferredClasses?: Record<string, string[]>;
+  personalRequiredPreferenceWeight: number;
+  groupRequiredPreferenceWeight: number;
+  personalRequiredPreferenceMissPenalty: number;
+  groupRequiredPreferenceMissPenalty: number;
+  personalExcludedPreferenceMissPenalty: number;
+  groupExcludedPreferenceMissPenalty: number;
+  groupPreferredClasses?: ClassPreferenceMap;
 }
 
 export interface GroupScheduleItem {

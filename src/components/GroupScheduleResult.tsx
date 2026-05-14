@@ -1,12 +1,24 @@
-import { CalendarCheck, ExternalLink } from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import type { GroupScheduleOption } from '../logic/scheduler/GroupTypes';
+import type { GroupScheduleItem, GroupScheduleOption } from '../logic/scheduler/GroupTypes';
+
+export type GroupScheduleResultViewMode = 'course' | 'member';
 
 interface GroupScheduleResultProps {
   option: GroupScheduleOption;
-  onUseSchedule: (option: GroupScheduleOption, memberIndex: number) => void;
+  viewMode: GroupScheduleResultViewMode;
+}
+
+interface CourseComparisonRow {
+  courseId: string;
+  courseName: string;
+  isShared: boolean;
+  entries: Array<{
+    memberIndex: number;
+    nickname: string;
+    item: GroupScheduleItem;
+  }>;
 }
 
 function formatSchedule(schedule?: string | string[]): string {
@@ -14,7 +26,33 @@ function formatSchedule(schedule?: string | string[]): string {
   return Array.isArray(schedule) ? schedule.join(', ') : schedule;
 }
 
-export function GroupScheduleResult({ option, onUseSchedule }: GroupScheduleResultProps) {
+function buildCourseComparison(option: GroupScheduleOption): CourseComparisonRow[] {
+  const courseMap = new Map<string, CourseComparisonRow>();
+
+  option.schedules.forEach((member) => {
+    member.items.forEach((item) => {
+      const row = courseMap.get(item.courseId) ?? {
+        courseId: item.courseId,
+        courseName: item.courseName,
+        isShared: false,
+        entries: [],
+      };
+
+      row.isShared = row.isShared || item.isShared;
+      row.entries.push({ memberIndex: member.memberIndex, nickname: member.nickname, item });
+      courseMap.set(item.courseId, row);
+    });
+  });
+
+  return Array.from(courseMap.values()).sort((a, b) => {
+    if (a.isShared !== b.isShared) return a.isShared ? -1 : 1;
+    return a.courseId.localeCompare(b.courseId);
+  });
+}
+
+export function GroupScheduleResult({ option, viewMode }: GroupScheduleResultProps) {
+  const courseRows = buildCourseComparison(option);
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -27,50 +65,63 @@ export function GroupScheduleResult({ option, onUseSchedule }: GroupScheduleResu
         </div>
       </div>
 
-      <div className="space-y-5">
-        {option.schedules.map((member) => (
-          <div key={member.memberIndex} className="overflow-hidden rounded-md border border-gray-200">
-            <div className="flex flex-col gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="font-medium text-gray-900">{member.nickname}</div>
-              <Button type="button" size="sm" variant="outline" onClick={() => onUseSchedule(option, member.memberIndex)}>
-                <ExternalLink className="h-4 w-4" />
-                Dùng lịch này
-              </Button>
+      {viewMode === 'course' ? (
+        <div className="space-y-3">
+          {courseRows.map((course) => (
+            <div key={course.courseId} className="overflow-hidden rounded-md border border-gray-200">
+              <div className={`flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between ${course.isShared ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                <div className="min-w-0">
+                  <div className="font-mono text-sm font-semibold text-gray-900">{course.courseId}</div>
+                  <div className="truncate text-xs text-gray-500">{course.courseName}</div>
+                </div>
+                {course.isShared ? (
+                  <Badge className="w-fit bg-emerald-600 text-white hover:bg-emerald-600">Môn chung</Badge>
+                ) : (
+                  <Badge variant="secondary" className="w-fit">Cá nhân</Badge>
+                )}
+              </div>
+              <div className="divide-y divide-gray-100">
+                {course.entries.map(({ memberIndex, nickname, item }) => (
+                  <div key={`${course.courseId}-${memberIndex}-${item.classId}`} className="grid gap-2 px-3 py-2 text-sm md:grid-cols-[160px_180px_minmax(0,1fr)]">
+                    <div className="font-medium text-gray-900">{nickname}</div>
+                    <div className="font-mono text-xs text-gray-700">{item.classId}</div>
+                    <div className="text-gray-600">{formatSchedule(item.schedule)}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[620px] text-sm">
-                <thead className="bg-white text-left text-xs uppercase text-gray-500">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Môn</th>
-                    <th className="px-3 py-2 font-medium">Lớp</th>
-                    <th className="px-3 py-2 font-medium">Loại</th>
-                    <th className="px-3 py-2 font-medium">Lịch</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {member.items.map((item) => (
-                    <tr key={`${member.memberIndex}-${item.courseId}`} className={item.isShared ? 'bg-emerald-50' : 'bg-white'}>
-                      <td className="px-3 py-2">
-                        <div className="font-medium text-gray-900">{item.courseId}</div>
-                        <div className="text-xs text-gray-500">{item.courseName}</div>
-                      </td>
-                      <td className="px-3 py-2 font-mono text-xs">{item.classId}</td>
-                      <td className="px-3 py-2">
-                        {item.isShared ? (
-                          <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Môn chung</Badge>
-                        ) : (
-                          <Badge variant="secondary">Cá nhân</Badge>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-gray-700">{formatSchedule(item.schedule)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {option.schedules.map((member) => (
+            <div key={member.memberIndex} className="overflow-hidden rounded-md border border-gray-200">
+              <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 font-medium text-gray-900">
+                {member.nickname}
+              </div>
+              <div className="divide-y divide-gray-100">
+                {member.items.map((item) => (
+                  <div key={`${member.memberIndex}-${item.courseId}-${item.classId}`} className={`grid gap-2 px-3 py-2 text-sm md:grid-cols-[160px_180px_120px_minmax(0,1fr)] ${item.isShared ? 'bg-emerald-50' : 'bg-white'}`}>
+                    <div className="min-w-0">
+                      <div className="font-mono text-sm font-semibold text-gray-900">{item.courseId}</div>
+                      <div className="truncate text-xs text-gray-500">{item.courseName}</div>
+                    </div>
+                    <div className="font-mono text-xs text-gray-700">{item.classId}</div>
+                    <div>
+                      {item.isShared ? (
+                        <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Môn chung</Badge>
+                      ) : (
+                        <Badge variant="secondary">Cá nhân</Badge>
+                      )}
+                    </div>
+                    <div className="text-gray-600">{formatSchedule(item.schedule)}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

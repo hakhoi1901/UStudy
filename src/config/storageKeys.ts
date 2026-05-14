@@ -45,6 +45,7 @@ export const STORAGE_KEYS = {
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */
     SAVED_SCHEDULES: 'saved_schedules',
+    ACTIVE_GROUP_SCHEDULE: 'active_group_schedule',
     /** Các tùy chỉnh ghi đè thời khóa biểu (phòng, tiết, ngày nghỉ) */
     SCHEDULE_OVERRIDES: 'schedule_overrides',
 };

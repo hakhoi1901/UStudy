@@ -1,21 +1,28 @@
 import { Badge } from './ui/badge';
-import type { GroupMemberToken } from '../logic/scheduler/GroupTypes';
+import type { ClassPreferenceSelection, GroupMemberToken } from '../logic/scheduler/GroupTypes';
+import { formatDaysOff } from '../utils/dayOffPreferences';
 
 interface GroupMemberCardProps {
   member: GroupMemberToken;
   index: number;
 }
 
-function formatDaysOff(daysOff?: number[]): string {
-  if (!daysOff?.length) return 'Không chọn';
-  return daysOff.map((day) => (day === 6 ? 'CN' : `T${day + 2}`)).join(', ');
+function normalizeSelection(value: string[] | ClassPreferenceSelection): ClassPreferenceSelection {
+  if (Array.isArray(value)) return { preferred: value };
+  return value;
 }
 
 export function GroupMemberCard({ member, index }: GroupMemberCardProps) {
   const nickname = member.nickname || `Thành viên ${index + 1}`;
   const hasBusyMask = Array.isArray(member.busyMask) && member.busyMask.some((part) => part !== 0);
   const registeredCourses = Array.from(new Set([...member.sharedCourses, ...member.personalCourses]));
-  const preferredClassEntries = Object.entries(member.preferredClasses ?? {}).filter(([, classIds]) => classIds.length > 0);
+  const preferredClassEntries = Object.entries(member.preferredClasses ?? {})
+    .map(([courseId, selection]) => [courseId, normalizeSelection(selection)] as const)
+    .filter(([, selection]) => (
+      (selection.excluded?.length ?? 0) +
+      (selection.preferred?.length ?? 0) +
+      (selection.required?.length ?? 0)
+    ) > 0);
   const prefs = member.personalConfig;
   const hasPersonalSettings = Boolean(prefs || preferredClassEntries.length > 0 || hasBusyMask);
 
@@ -58,11 +65,16 @@ export function GroupMemberCard({ member, index }: GroupMemberCardProps) {
 
             {preferredClassEntries.length > 0 && (
               <div className="mt-2 border-t border-gray-200 pt-2">
-                <div className="mb-1 text-xs text-gray-400">Lớp ưu tiên</div>
+                <div className="mb-1 text-xs text-gray-400">Cấu hình lớp</div>
                 <div className="space-y-1">
-                  {preferredClassEntries.map(([courseId, classIds]) => (
+                  {preferredClassEntries.map(([courseId, selection]) => (
                     <div key={courseId} className="text-xs text-gray-600">
-                      <span className="font-mono font-medium text-gray-800">{courseId}</span>: {classIds.join(', ')}
+                      <span className="font-mono font-medium text-gray-800">{courseId}</span>:{' '}
+                      {[
+                        selection.excluded?.length ? `cấm ${selection.excluded.join(', ')}` : null,
+                        selection.preferred?.length ? `ưu tiên ${selection.preferred.join(', ')}` : null,
+                        selection.required?.length ? `bắt buộc ${selection.required.join(', ')}` : null,
+                      ].filter(Boolean).join('; ')}
                     </div>
                   ))}
                 </div>

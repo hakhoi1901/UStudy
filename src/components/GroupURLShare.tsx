@@ -29,7 +29,7 @@ export function GroupURLShare({ url, warning }: GroupURLShareProps) {
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input readOnly value={url} className="bg-white font-mono text-xs" />
-        <Button type="button" onClick={handleCopy} className="bg-[#004A98] hover:bg-[#003d7a]">
+        <Button type="button" onClick={handleCopy} className="bg-[#004A98] hover:bg-[#003d7a] text-white">
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {copied ? 'Đã copy' : 'Copy'}
         </Button>

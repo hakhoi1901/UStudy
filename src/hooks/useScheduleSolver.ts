@@ -9,6 +9,7 @@ import { maskToSections } from '../logic/scheduler/ScheduleDecoder';
 import type { ClassSection } from '../types';
 import type { Course } from '../types';
 import { STORAGE_KEYS, UI_COLORS } from '../config';
+import type { DayOffPreference } from '../utils/dayOffPreferences';
 
 // Tải dữ liệu DB tĩnh (fallback khi chưa có course_db_offline)
 import courseDbJson from '../logic/scheduler/Course_db.json';
@@ -20,7 +21,7 @@ export interface ScheduleOption {
 }
 
 export interface SolverPreferences {
-    daysOff?: number[];   // 0=T2, 1=T3, ... 5=T7
+    daysOff?: DayOffPreference[];   // 0=T2, 1=T3, ... 6=CN, or "day:morning"/"day:afternoon"
     session?: string;     // '1'=Sáng, '2'=Chiều, '0'=Không quan trọng
     strategy?: string;    // 'compress'=Dồn ngày, 'spread'=Trải đều
     noGaps?: boolean;

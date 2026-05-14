@@ -13,8 +13,9 @@ export function useSchedule(): WeeklySchedule & {
     const { data: { courses: allCoursesMeta } } = useDepartmentData();
     const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
     const metadata = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
-    const savedSchedules = readFromStorage<any>(STORAGE_KEYS.SAVED_SCHEDULES, null);
-    const groupRegistrations = savedSchedules?.activeGroupSchedule?.registrations;
+    const activeGroupSchedule = readFromStorage<any>(STORAGE_KEYS.ACTIVE_GROUP_SCHEDULE, null);
+    const legacySavedSchedules = readFromStorage<any>(STORAGE_KEYS.SAVED_SCHEDULES, null);
+    const groupRegistrations = activeGroupSchedule?.registrations ?? legacySavedSchedules?.activeGroupSchedule?.registrations;
     const courses_registered = Array.isArray(groupRegistrations) && groupRegistrations.length > 0
         ? groupRegistrations
         : studentDb?.registrations || [];

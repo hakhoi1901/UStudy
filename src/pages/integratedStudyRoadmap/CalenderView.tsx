@@ -7,6 +7,7 @@ import { type SolverPreferences, type ScheduleOption } from '../../hooks/useSche
 import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
+import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../utils/dayOffPreferences';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -830,25 +831,26 @@ export function CalendarView({
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 md:mb-3 block">Ngày muốn nghỉ</label>
                                 <div className="flex flex-wrap gap-2">
                                     {[0, 1, 2, 3, 4, 5, 6].map(day => {
-                                        const isOff = prefs.daysOff?.includes(day);
+                                        const offSession = getDayOffSession(prefs.daysOff, day);
                                         return (
                                             <button
                                                 key={day}
                                                 onClick={() => setPrefs(prev => {
-                                                    const current = prev.daysOff || [];
                                                     return {
                                                         ...prev,
-                                                        daysOff: current.includes(day) ? current.filter(d => d !== day) : [...current, day]
+                                                        daysOff: cycleDayOffSession(prev.daysOff, day)
                                                     };
                                                 })}
-                                                className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border ${isOff ? 'bg-red-500 border-red-500 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400 hover:border-red-300'}`}
+                                                className={`flex h-12 w-12 flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all md:h-14 md:w-14 ${offSession === 'all' ? 'border-red-500 bg-red-500 text-white shadow-md' : offSession === 'morning' ? 'border-amber-400 bg-amber-50 text-amber-700 shadow-sm' : offSession === 'afternoon' ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 bg-white text-gray-400 hover:border-red-300'}`}
+                                                title="Bấm lần lượt: nghỉ cả ngày, nghỉ sáng, nghỉ chiều, bỏ chọn"
                                             >
-                                                {day === 6 ? 'CN' : `T${day + 2}`}
+                                                <span>{day === 6 ? 'CN' : `T${day + 2}`}</span>
+                                                {offSession && <span className="mt-0.5 text-[9px] font-medium leading-none">{formatDayOffSession(offSession)}</span>}
                                             </button>
                                         );
                                     })}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Thuật toán sẽ phạt điểm nặng các phương án dính vào ngày đỏ.</p>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">* Bấm 1 lần nghỉ cả ngày, 2 lần nghỉ sáng, 3 lần nghỉ chiều, bấm nữa để bỏ chọn.</p>
                             </div>
                         </div>
 

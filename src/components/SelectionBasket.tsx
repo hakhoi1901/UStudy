@@ -5,6 +5,8 @@ import { useDepartmentData } from '../context/DepartmentContext';
 import { FinancialLogic } from '../logic/FinancialLogic';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
 import type { Tab } from '../pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
+import type { ClassPreferenceSelection } from '../logic/scheduler/GroupTypes';
+import type React from 'react';
 
 interface SelectionBasketProps {
     selectedCourses: Course[];
@@ -13,6 +15,8 @@ interface SelectionBasketProps {
     onRemoveCourse?: (courseId: string) => void;
     allowedClassesMap?: Record<string, string[]>;
     setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+    classPreferenceMap?: Record<string, ClassPreferenceSelection>;
+    setClassPreferenceMap?: React.Dispatch<React.SetStateAction<Record<string, ClassPreferenceSelection>>>;
     compact?: boolean;
     title?: string;
     description?: string;
@@ -27,6 +31,8 @@ export function SelectionBasket({
     onRemoveCourse,
     allowedClassesMap,
     setAllowedClassesMap,
+    classPreferenceMap,
+    setClassPreferenceMap,
     compact = false,
     title = 'Giỏ môn học',
     description,
@@ -183,6 +189,8 @@ export function SelectionBasket({
                     onClose={() => setFilterModalCourse(null)}
                     allowedClassesMap={allowedClassesMap}
                     setAllowedClassesMap={setAllowedClassesMap}
+                    classPreferenceMap={classPreferenceMap}
+                    setClassPreferenceMap={setClassPreferenceMap}
                 />
             )}
         </div>
