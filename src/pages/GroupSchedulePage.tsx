@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Check, Link2, Moon, Plus, Sun, Trash2, Users, Zap } from 'lucide-react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Check, Link2, Moon, Plus, Settings, Sun, Trash2, Users, X, Zap } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
 import { GroupScheduleResult } from '../components/GroupScheduleResult';
 import { GroupURLShare } from '../components/GroupURLShare';
+import { SelectionBasket } from '../components/SelectionBasket';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -30,6 +31,8 @@ interface GroupSchedulePageProps {
   selectedCourseIds?: Set<string>;
   allCourses?: Course[];
   allowedClassesMap?: Record<string, string[]>;
+  setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  onRemoveSelectedCourse?: (courseId: string) => void;
   embedded?: boolean;
 }
 
@@ -99,7 +102,15 @@ function loadClassOptionsByCourse(): Record<string, GroupClassOption[]> {
   }, {});
 }
 
-export function GroupSchedulePage({ onPageChange, selectedCourseIds, allCourses = [], allowedClassesMap = {}, embedded = false }: GroupSchedulePageProps) {
+export function GroupSchedulePage({
+  onPageChange,
+  selectedCourseIds,
+  allCourses = [],
+  allowedClassesMap = {},
+  setAllowedClassesMap,
+  onRemoveSelectedCourse,
+  embedded = false,
+}: GroupSchedulePageProps) {
   const {
     members,
     shareUrl,
@@ -122,14 +133,19 @@ export function GroupSchedulePage({ onPageChange, selectedCourseIds, allCourses 
   const [mergeInput, setMergeInput] = useState('');
   const [localNotice, setLocalNotice] = useState<string | null>(null);
   const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, string[]>>({});
-  const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(defaultSolverPreferences);
+  const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
   const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   useEffect(() => {
     const onHashChange = () => setMembersFromURL(window.location.hash);
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, [setMembersFromURL]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.SOLVER_PREFERENCES, groupPrefs);
+  }, [groupPrefs]);
 
   const pageState = useMemo<GroupPageState>(() => {
     if (result?.solutions.length) return 'result';
@@ -275,9 +291,15 @@ export function GroupSchedulePage({ onPageChange, selectedCourseIds, allCourses 
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-[#004A98]" />
-            <h2 className="text-lg font-semibold text-gray-900">Thêm thành viên</h2>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-[#004A98]" />
+              <h2 className="text-lg font-semibold text-gray-900">Thêm thành viên</h2>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => setIsConfigOpen(true)}>
+              <Settings className="h-4 w-4" />
+              Cấu hình
+            </Button>
           </div>
 
           <div>
@@ -291,14 +313,16 @@ export function GroupSchedulePage({ onPageChange, selectedCourseIds, allCourses 
 
           {basketCourses.length > 0 ? (
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="mb-2 text-sm font-medium text-gray-800">Môn của thành viên này</div>
-              <div className="space-y-2">
-                {basketCourses.map((course) => (
-                  <div key={course.id} className="rounded-md border border-gray-200 bg-white p-3">
-                    <div className="font-mono text-sm font-semibold text-gray-900">{getCourseCode(course)}</div>
-                    <div className="truncate text-xs text-gray-500">{course.nameVi}</div>
-                  </div>
-                ))}
+              <div>
+                <SelectionBasket
+                  compact
+                  title="Môn của thành viên này"
+                  description={`${basketCourses.length} môn lấy từ giỏ hiện tại`}
+                  selectedCourses={basketCourses}
+                  onRemoveCourse={onRemoveSelectedCourse}
+                  allowedClassesMap={allowedClassesMap}
+                  setAllowedClassesMap={setAllowedClassesMap}
+                />
               </div>
               <p className="mt-2 text-xs text-gray-500">
                 Môn trùng giữa các thành viên sẽ được ưu tiên xếp cùng lớp. Nếu không có nghiệm, hệ thống mới thử tách lớp. Các lớp đã lọc trong giỏ môn được lưu như ưu tiên cá nhân.
@@ -523,6 +547,118 @@ export function GroupSchedulePage({ onPageChange, selectedCourseIds, allCourses 
             ))}
           </div>
         </section>
+      )}
+
+      {isConfigOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-2xl sm:rounded-xl">
+            <div className="flex items-center justify-between bg-[#004A98] p-4 text-white">
+              <div className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                <h3 className="text-sm font-semibold md:text-base">Cấu hình thuật toán cá nhân</h3>
+              </div>
+              <button type="button" onClick={() => setIsConfigOpen(false)} className="rounded-lg p-1.5 transition-colors hover:bg-white/10">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="grid max-h-[70vh] grid-cols-1 gap-5 overflow-y-auto p-4 md:gap-8 md:p-6">
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500 md:mb-3">Buổi ưu tiên của nhóm</label>
+                <div className="flex rounded-xl bg-gray-100 p-1">
+                  {[
+                    { id: '0', label: 'Tự do', icon: Zap },
+                    { id: '1', label: 'Sáng', icon: Sun },
+                    { id: '2', label: 'Chiều', icon: Moon },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setGroupPrefs((current) => ({ ...current, session: item.id }))}
+                      className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all md:text-sm ${groupPrefs.session === item.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500'}`}
+                    >
+                      <item.icon className="h-3.5 w-3.5" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500 md:mb-3">Chiến thuật dồn lịch nhóm</label>
+                <div className="flex rounded-xl bg-gray-100 p-1">
+                  {[
+                    { id: 'compress', label: 'Dồn lịch' },
+                    { id: 'spread', label: 'Trải đều' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setGroupPrefs((current) => ({ ...current, strategy: item.id }))}
+                      className={`flex-1 rounded-lg py-2 text-xs font-medium transition-all md:text-sm ${groupPrefs.strategy === item.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500'}`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500 md:mb-3">Tiết trống nhóm</label>
+                <button
+                  type="button"
+                  onClick={() => setGroupPrefs((current) => ({ ...current, noGaps: !current.noGaps }))}
+                  className={`w-full rounded-xl border px-4 py-2.5 text-xs font-medium transition-all md:text-sm ${groupPrefs.noGaps ? 'border-blue-200 bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}
+                >
+                  {groupPrefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
+                </button>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500 md:mb-3">Ngày nhóm muốn nghỉ</label>
+                <div className="flex flex-wrap gap-2">
+                  {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                    const isOff = groupPrefs.daysOff?.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => setGroupPrefs((current) => {
+                          const daysOff = current.daysOff || [];
+                          return {
+                            ...current,
+                            daysOff: daysOff.includes(day) ? daysOff.filter((item) => item !== day) : [...daysOff, day],
+                          };
+                        })}
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl border text-xs font-bold transition-all ${isOff ? 'border-red-500 bg-red-500 text-white shadow-md' : 'border-gray-200 bg-white text-gray-400 hover:border-red-300'}`}
+                      >
+                        {day === 6 ? 'CN' : `T${day + 2}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4">
+              <button type="button" onClick={() => setIsConfigOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800">
+                Đóng
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfigOpen(false);
+                  if (members.length >= 2) {
+                    solve({ ...groupPrefs, groupPreferredClasses });
+                  }
+                }}
+                className="rounded-xl bg-[#004A98] px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-blue-800"
+              >
+                Lưu & Xếp lịch nhóm
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {result?.warnings.length ? (

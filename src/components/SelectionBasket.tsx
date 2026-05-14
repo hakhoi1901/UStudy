@@ -1,59 +1,64 @@
 import { useState } from 'react';
-import { X, CheckCircle2, ListFilter, AlertTriangle } from 'lucide-react';
+import { X, ListFilter } from 'lucide-react';
 import type { Course } from '../types';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { FinancialLogic } from '../logic/FinancialLogic';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
 import type { Tab } from '../pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
 
-
 interface SelectionBasketProps {
     selectedCourses: Course[];
     solve?: (courses: Course[], allowedClassesMap: Record<string, string[]>) => void;
     setActiveTab?: (tab: Tab) => void;
-    onRemoveCourse: (courseId: string) => void;
+    onRemoveCourse?: (courseId: string) => void;
     allowedClassesMap?: Record<string, string[]>;
     setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+    compact?: boolean;
+    title?: string;
+    description?: string;
 }
 
-const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034', 'BAA00100', 'BAA00021',];
-const MAX_CREDITS = 25; // Tối đa 25 tín chỉ mỗi học kỳ
+const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034', 'BAA00100', 'BAA00021'];
 
-export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemoveCourse, allowedClassesMap, setAllowedClassesMap }: SelectionBasketProps) {
+export function SelectionBasket({
+    selectedCourses,
+    solve,
+    setActiveTab,
+    onRemoveCourse,
+    allowedClassesMap,
+    setAllowedClassesMap,
+    compact = false,
+    title = 'Giỏ môn học',
+    description,
+}: SelectionBasketProps) {
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
     const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
-    const totalCredits = selectedCourses.filter(course => !ENGLISH_COURSE_IDS.includes(course.id)).reduce((sum, course) => sum + course.credits, 0);
-    const missingMetaCourses: string[] = [];
+    const totalCredits = selectedCourses
+        .filter(course => !ENGLISH_COURSE_IDS.includes(course.id))
+        .reduce((sum, course) => sum + course.credits, 0);
 
     const estimatedTuition = selectedCourses.reduce((sum, course) => {
-        const { courseFee, missingMeta } = FinancialLogic.calculateCourseFee(
-            course.code, course.credits, tuition_rates, allCoursesMeta
+        const { courseFee } = FinancialLogic.calculateCourseFee(
+            course.code,
+            course.credits,
+            tuition_rates,
+            allCoursesMeta
         );
         course.price = courseFee;
-
-        if (missingMeta) {
-            missingMetaCourses.push(course.code);
-        }
-
         return sum + courseFee;
     }, 0);
+
     const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
     return (
-        <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
-            {/* Header - Fixed */}
+        <div className={`w-full h-full bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden ${compact ? '' : 'shadow-lg'}`}>
             <div className="w-full p-4 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-gray-900 font-semibold">Giỏ môn học</h3>
+                <h3 className="text-gray-900 font-semibold">{title}</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                    {selectedCourses.length} môn học đã chọn
+                    {description ?? `${selectedCourses.length} môn học đã chọn`}
                 </p>
-                {/* <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Dữ liệu được lấy từ Portal</span>
-                </div> */}
             </div>
 
-            {/* Course List - Scrollable */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-gray-100">
                 {selectedCourses.length === 0 ? (
                     <div className="text-center py-12">
@@ -75,7 +80,7 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                                 </p>
                                 <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
                                 {course.price !== 0
-                                    ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number) + ' đ'}</p>
+                                    ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number)} đ</p>
                                     : <p className="text-xs text-red-600 truncate">Môn này không nằm trong CTĐT của bạn.</p>
                                 }
 
@@ -98,94 +103,78 @@ export function SelectionBasket({ selectedCourses, solve, setActiveTab, onRemove
                                         <ListFilter className="w-4 h-4" />
                                     </button>
                                 )}
-                                <button
-                                    onClick={() => onRemoveCourse(course.id)}
-                                    className="p-1 hover:bg-red-100 rounded text-red-600 transition-colors"
-                                    title="Xóa khỏi giỏ"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
+                                {onRemoveCourse && (
+                                    <button
+                                        onClick={() => onRemoveCourse(course.id)}
+                                        className="p-1 hover:bg-red-100 rounded text-red-600 transition-colors"
+                                        title="Xóa khỏi giỏ"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))
                 )}
             </div>
 
-            {/* Footer - Sticky (Never scrolls out of view) */}
-            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-xl">
-                {/* Credits Summary */}
-                <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600">Tổng tín chỉ:</span>
-                        <span className="text-lg font-bold text-gray-900">{totalCredits}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                            className={`h-2.5 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'
-                                }`}
-                            style={{ width: `${Math.min((totalCredits / 25) * 100, 100)}%` }}
-                        ></div>
-                    </div>
-                    {totalCredits > 24 && (
-                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                            <span>⚠️</span>
-                            <span>Vượt quá 25 tín chỉ tối đa mỗi học kỳ</span>
-                        </p>
-                    )}
-                    {totalCredits > 0 && totalCredits <= 24 && (
-                        <p className="text-xs text-gray-500 mt-1.5">
-                            Còn lại {24 - totalCredits} tín chỉ có thể đăng ký
-                        </p>
-                    )}
-                </div>
-
-                {/* Tuition Summary */}
-                <div className="mb-4">
-{/*                     
-                    {missingMetaCourses.length > 0 && (
-                        <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700">
-                            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <div className="text-xs">
-                                <p className="font-semibold mb-0.5">Không tìm thấy thông tin học phí của môn học:</p>
-                                <p className="font-mono">{missingMetaCourses.join(', ')}</p>
-                                <p className="mt-1 text-red-600">Đang tạm tính: 0₫</p>
-                            </div>
+            {!compact && (
+                <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-xl">
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-gray-600">Tổng tín chỉ:</span>
+                            <span className="text-lg font-bold text-gray-900">{totalCredits}</span>
                         </div>
-                    )} */}
-
-                    <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-                        <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
-                        <p className="text-2xl font-bold text-[#004A98]">
-                            {formatCurrency(estimatedTuition)} VNĐ
-                        </p>
-                        {/* <p className="text-[10px] text-gray-500 mt-1">VNĐ (đã bao gồm các khoản phí)</p> */}
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div
+                                className={`h-2.5 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'}`}
+                                style={{ width: `${Math.min((totalCredits / 25) * 100, 100)}%` }}
+                            />
+                        </div>
+                        {totalCredits > 24 && (
+                            <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                <span>⚠️</span>
+                                <span>Vượt quá 25 tín chỉ tối đa mỗi học kỳ</span>
+                            </p>
+                        )}
+                        {totalCredits > 0 && totalCredits <= 24 && (
+                            <p className="text-xs text-gray-500 mt-1.5">
+                                Còn lại {24 - totalCredits} tín chỉ có thể đăng ký
+                            </p>
+                        )}
                     </div>
+
+                    <div className="mb-4">
+                        <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                            <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
+                            <p className="text-2xl font-bold text-[#004A98]">
+                                {formatCurrency(estimatedTuition)} VNĐ
+                            </p>
+                        </div>
+                    </div>
+
+                    {(solve && setActiveTab) && (
+                        <button
+                            className={`w-full py-3 rounded-lg font-medium transition-all ${selectedCourses.length === 0
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-[#004A98] text-white hover:bg-[#003A78] shadow-sm hover:shadow-md active:scale-[0.98]'
+                                }`}
+                            disabled={selectedCourses.length === 0}
+                            onClick={() => {
+                                setActiveTab('calendar');
+                                solve(selectedCourses, allowedClassesMap || {});
+                            }}
+                        >
+                            Xác nhận đăng ký
+                        </button>
+                    )}
+
+                    <p className="text-[10px] text-gray-500 text-center mt-3 leading-relaxed">
+                        Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
+                    </p>
                 </div>
+            )}
 
-                {/* Confirm Button */}
-                {(solve && setActiveTab) && (
-                    <button
-                        className={`w-full py-3 rounded-lg font-medium transition-all ${selectedCourses.length === 0
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#004A98] text-white hover:bg-[#003A78] shadow-sm hover:shadow-md active:scale-[0.98]'
-                            }`}
-                        disabled={selectedCourses.length === 0}
-                        onClick={() => {
-                            setActiveTab("calendar");
-                            solve(selectedCourses, allowedClassesMap || {});
-                        }}
-                    >
-                        Xác nhận đăng ký
-                    </button>
-                )}
-
-                {/* Privacy Note */}
-                <p className="text-[10px] text-gray-500 text-center mt-3 leading-relaxed">
-                    Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
-                </p>
-            </div>
-
-            {/* Modal Lọc lớp học */}
             {(filterModalCourse && allowedClassesMap && setAllowedClassesMap) && (
                 <CourseClassFilterModal
                     courseCode={filterModalCourse.id}

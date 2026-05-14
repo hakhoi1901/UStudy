@@ -16,7 +16,11 @@ import type {
 
 const GROUP_URL_PREFIX = 'v1_';
 const MASK_PARTS = 10;
+const DEFAULT_GROUP_MAX_SOLUTIONS = 12;
+const GROUP_SEARCH_NODE_BUDGET = 25000;
+const RELAXED_CLASS_CANDIDATE_LIMIT = 18;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
+type PreferenceConstraintMode = 'strict' | 'relaxed';
 
 type ClassLike = {
   id: string;
@@ -90,11 +94,32 @@ function memberCourseSet(member: GroupMemberToken): Set<string> {
   return new Set([...uniqueCourseIds(member.sharedCourses), ...uniqueCourseIds(member.personalCourses)]);
 }
 
-function getPreferenceHits(courseId: string, classId: string, subscribers: number[], members: GroupMemberToken[]): number {
+function getPreferenceHits(courseId: string, classId: string, subscribers: number[], members: GroupMemberToken[], config?: Pick<GroupFitnessConfig, 'groupPreferredClasses'>): number {
+  const groupPreferred = config?.groupPreferredClasses?.[courseId];
+  const groupHits = groupPreferred?.includes(classId) ? Math.max(subscribers.length, 1) : 0;
   return subscribers.reduce((hits, memberIndex) => {
     const preferred = members[memberIndex]?.preferredClasses?.[courseId];
     return preferred?.includes(classId) ? hits + 1 : hits;
-  }, 0);
+  }, groupHits);
+}
+
+function classMatchesPreferenceConstraints(
+  courseId: string,
+  classId: string,
+  subscribers: number[],
+  members: GroupMemberToken[],
+  config: Pick<GroupFitnessConfig, 'groupPreferredClasses'>,
+  preferenceMode: PreferenceConstraintMode,
+): boolean {
+  if (preferenceMode === 'relaxed') return true;
+
+  const groupPreferred = config.groupPreferredClasses?.[courseId];
+  if (groupPreferred?.length && !groupPreferred.includes(classId)) return false;
+
+  return subscribers.every((memberIndex) => {
+    const personalPreferred = members[memberIndex]?.preferredClasses?.[courseId];
+    return !personalPreferred?.length || personalPreferred.includes(classId);
+  });
 }
 
 function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
@@ -220,14 +245,19 @@ export function solveGroup(
   courses: CourseWeight[],
   courseDatabase: CourseDatabase,
   members: GroupMemberToken[],
-  maxSolutions = 50,
+  maxSolutions = DEFAULT_GROUP_MAX_SOLUTIONS,
   mode: 'shared-first' | 'split' = 'shared-first',
+  config: Pick<GroupFitnessConfig, 'groupPreferredClasses'> = {},
+  preferenceMode: PreferenceConstraintMode = 'relaxed',
+  searchBudget = GROUP_SEARCH_NODE_BUDGET,
 ): GroupSolution[] {
   const solutions: GroupSolution[] = [];
   const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
+  let visitedNodes = 0;
 
   function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
     if (solutions.length >= maxSolutions) return;
+    if (visitedNodes++ >= searchBudget) return;
     if (courseIndex === courses.length) {
       solutions.push({
         assignments: new Map(assignments),
@@ -238,12 +268,14 @@ export function solveGroup(
 
     const course = courses[courseIndex];
     const availableClasses = getClasses(courseDatabase, course.courseId)
-      .sort((a, b) => getPreferenceHits(course.courseId, b.id, course.subscribers, members) - getPreferenceHits(course.courseId, a.id, course.subscribers, members));
+      .sort((a, b) => getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config))
+      .slice(0, preferenceMode === 'relaxed' ? RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
     if (availableClasses.length === 0) return;
 
     if (mode === 'split' && course.subscribers.length > 1) {
       function assignSubscriber(subscriberOffset: number, workingState: StateMatrix) {
         if (solutions.length >= maxSolutions) return;
+        if (visitedNodes++ >= searchBudget) return;
         if (subscriberOffset === course.subscribers.length) {
           dfs(courseIndex + 1, workingState, assignments);
           return;
@@ -251,11 +283,12 @@ export function solveGroup(
 
         const memberIndex = course.subscribers[subscriberOffset];
         const sortedForMember = [...availableClasses].sort((a, b) =>
-          getPreferenceHits(course.courseId, b.id, [memberIndex], members) - getPreferenceHits(course.courseId, a.id, [memberIndex], members),
-        );
+          getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config),
+        ).slice(0, preferenceMode === 'relaxed' ? RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
 
         for (const cls of sortedForMember) {
           const classMask = getClassMask(cls);
+          if (!classMatchesPreferenceConstraints(course.courseId, cls.id, [memberIndex], members, config, preferenceMode)) continue;
           if (!isClassValid(classMask, [memberIndex], workingState)) continue;
 
           const nextState = workingState.map((memberMask, idx) => {
@@ -275,6 +308,7 @@ export function solveGroup(
 
     for (const cls of availableClasses) {
       const classMask = getClassMask(cls);
+      if (!classMatchesPreferenceConstraints(course.courseId, cls.id, course.subscribers, members, config, preferenceMode)) continue;
       if (!isClassValid(classMask, course.subscribers, state)) continue;
 
       const nextState = state.map((memberMask, memberIndex) => {
@@ -330,8 +364,41 @@ export function scoreGroupSolution(
     }).length;
     return bonus + satisfied * config.groupPreferenceWeight;
   }, 0);
+  const preferenceMissPenalty = courses.reduce((penalty, course) => {
+    const groupPreferred = config.groupPreferredClasses?.[course.courseId];
+    const globalClassId = solution.assignments.get(course.courseId);
 
-  return total - fairnessPenalty + sharedBonus + personalPreferenceBonus + groupPreferenceBonus;
+    if (globalClassId) {
+      const groupPenalty = groupPreferred?.length && !groupPreferred.includes(globalClassId)
+        ? config.groupPreferenceMissPenalty * Math.max(course.subscribers.length, 1)
+        : 0;
+      const personalPenalty = course.subscribers.reduce((sum, memberIndex) => {
+        const personalPreferred = members[memberIndex]?.preferredClasses?.[course.courseId];
+        return personalPreferred?.length && !personalPreferred.includes(globalClassId)
+          ? sum + config.personalPreferenceMissPenalty
+          : sum;
+      }, 0);
+      return penalty + groupPenalty + personalPenalty;
+    }
+
+    const splitPenalty = course.subscribers.reduce((sum, memberIndex) => {
+      const memberClassId = solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
+      if (!memberClassId) return sum;
+
+      const groupPenalty = groupPreferred?.length && !groupPreferred.includes(memberClassId)
+        ? config.groupPreferenceMissPenalty
+        : 0;
+      const personalPreferred = members[memberIndex]?.preferredClasses?.[course.courseId];
+      const personalPenalty = personalPreferred?.length && !personalPreferred.includes(memberClassId)
+        ? config.personalPreferenceMissPenalty
+        : 0;
+      return sum + groupPenalty + personalPenalty;
+    }, 0);
+
+    return penalty + splitPenalty;
+  }, 0);
+
+  return total - fairnessPenalty + sharedBonus + personalPreferenceBonus + groupPreferenceBonus - preferenceMissPenalty;
 }
 
 function toScheduleOption(
@@ -405,7 +472,7 @@ export function runGroupScheduleSolver(
   dbData: unknown,
   members: GroupMemberToken[],
   config: Partial<GroupFitnessConfig> = {},
-  maxSolutions = 50,
+  maxSolutions = DEFAULT_GROUP_MAX_SOLUTIONS,
 ): GroupScheduleRunResult {
   const sanitizedMembers = members.map(sanitizeGroupMember).filter((member) => member.sharedCourses.length + member.personalCourses.length > 0);
   const warnings: string[] = [];
@@ -422,11 +489,7 @@ export function runGroupScheduleSolver(
     return { density, solutions: [], warnings };
   }
 
-  let solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first');
-  if (solutions.length === 0) {
-    warnings.push('Không có nghiệm khi bắt buộc các môn trùng nhau học cùng lớp. Đang dùng phương án dự phòng: cho phép tách lớp nếu cần.');
-    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split');
-  }
+  let solutions: GroupSolution[] = [];
   const fitnessConfig: GroupFitnessConfig = {
     daysOff: config.daysOff ?? [],
     session: config.session ?? '0',
@@ -436,8 +499,24 @@ export function runGroupScheduleSolver(
     sharedSlotBonus: config.sharedSlotBonus ?? 12,
     personalPreferenceWeight: config.personalPreferenceWeight ?? 8,
     groupPreferenceWeight: config.groupPreferenceWeight ?? 12,
+    personalPreferenceMissPenalty: config.personalPreferenceMissPenalty ?? 1000000,
+    groupPreferenceMissPenalty: config.groupPreferenceMissPenalty ?? 1000000,
     groupPreferredClasses: config.groupPreferredClasses ?? {},
   };
+
+  solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first', fitnessConfig, 'strict');
+  if (solutions.length === 0) {
+    warnings.push('Khong co nghiem khi vua giu lop uu tien vua bat buoc mon trung hoc cung lop. Dang thu tach lop nhung van giu lop uu tien.');
+    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split', fitnessConfig, 'strict');
+  }
+  if (solutions.length === 0) {
+    warnings.push('Khong co nghiem neu giu cung toan bo lop uu tien. Dang dung phuong an bat kha khang: cho phep lech lop uu tien va tru diem rat manh.');
+    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first', fitnessConfig, 'relaxed');
+    if (solutions.length === 0) {
+      warnings.push('Khong co nghiem khi bat buoc cac mon trung nhau hoc cung lop. Dang dung phuong an du phong: cho phep tach lop neu can.');
+      solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split', fitnessConfig, 'relaxed');
+    }
+  }
 
   const ranked = solutions
     .map((solution) => ({

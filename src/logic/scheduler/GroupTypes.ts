@@ -32,6 +32,8 @@ export interface GroupFitnessConfig extends SchedulePreferenceConfig {
   sharedSlotBonus: number;
   personalPreferenceWeight: number;
   groupPreferenceWeight: number;
+  personalPreferenceMissPenalty: number;
+  groupPreferenceMissPenalty: number;
   groupPreferredClasses?: Record<string, string[]>;
 }
 
