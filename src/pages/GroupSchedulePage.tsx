@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Settings, Sun, Trash2, Users, Zap } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
-import { GroupScheduleCalendarPreview } from '../components/GroupScheduleCalendarPreview';
+import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from '../components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from '../components/GroupScheduleResult';
 import { GroupURLShare } from '../components/GroupURLShare';
 import { SelectionBasket } from '../components/SelectionBasket';
@@ -141,6 +141,8 @@ export function GroupSchedulePage({
   const [activeResultIndex, setActiveResultIndex] = useState(0);
   const [activePreviewMemberIndex, setActivePreviewMemberIndex] = useState(0);
   const [showGroupCalendarPreview, setShowGroupCalendarPreview] = useState(false);
+  const [showSaveGroupScheduleModal, setShowSaveGroupScheduleModal] = useState(false);
+  const [groupScheduleName, setGroupScheduleName] = useState('');
   const [resultViewMode, setResultViewMode] = useState<GroupScheduleResultViewMode>('course');
   const [draft, setDraft] = useState<GroupMemberToken>(makeDraft);
   const [manualCourseInput, setManualCourseInput] = useState('');
@@ -184,6 +186,17 @@ export function GroupSchedulePage({
   const groupCourses = useMemo(() => buildDensityMap(members), [members]);
   const classOptionsByCourse = useMemo(() => loadClassOptionsByCourse(), []);
   const selectedOption = result?.solutions[activeResultIndex] ?? result?.solutions[0];
+  const sharedCourseCount = useMemo(() => groupCourses.filter((course) => course.isShared).length, [groupCourses]);
+  const groupClassPreferenceSummary = useMemo(() => {
+    return Object.values(groupPreferredClasses).reduce(
+      (summary, selection) => ({
+        excluded: summary.excluded + (selection.excluded?.length ?? 0),
+        preferred: summary.preferred + (selection.preferred?.length ?? 0),
+        required: summary.required + (selection.required?.length ?? 0),
+      }),
+      { excluded: 0, preferred: 0, required: 0 },
+    );
+  }, [groupPreferredClasses]);
 
   const submitDraft = () => {
     const nextDraft: GroupMemberToken = {
@@ -308,6 +321,20 @@ export function GroupSchedulePage({
       memberIndex,
     });
     onPageChange?.('schedule');
+  };
+
+  const saveSelectedGroupSchedule = () => {
+    const fallbackMemberIndex = selectedOption?.schedules[0]?.memberIndex ?? activePreviewMemberIndex;
+    const memberIndex = showGroupCalendarPreview ? activePreviewMemberIndex : fallbackMemberIndex;
+    const newSaved = buildSavedGroupSchedule(selectedOption, memberIndex, groupScheduleName);
+    if (!newSaved) return;
+
+    const savedSchedulesRaw = readFromStorage<unknown>(STORAGE_KEYS.SAVED_SCHEDULES, []);
+    const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw : [];
+    saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, [newSaved, ...savedSchedules]);
+    setShowSaveGroupScheduleModal(false);
+    setGroupScheduleName('');
+    setLocalNotice('Đã lưu lịch nhóm. Bạn có thể mở lại trong tab lịch dự kiến.');
   };
 
   const canOpenStep = (step: GroupScheduleStep) => {
@@ -689,17 +716,7 @@ export function GroupSchedulePage({
           <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} kịch bản khả dụng.</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button
-            type="button"
-            variant={showGroupCalendarPreview ? 'outline' : 'default'}
-            onClick={() => setShowGroupCalendarPreview((current) => !current)}
-            className={showGroupCalendarPreview ? 'text-white' : 'text-white bg-[#004A98] hover:bg-[#003d7a]'}
-            disabled={!result?.solutions.length}
-          >
-            <Calendar className="h-4 w-4" />
-            {showGroupCalendarPreview ? 'Xem bảng kết quả' : 'Xem lịch nhóm'}
-          </Button>
-          <div className="flex rounded-lg bg-gray-100 p-1">
+          <div className={showGroupCalendarPreview? 'hidden' : 'flex rounded-lg bg-gray-100 p-1'}>
             {[
               { id: 'course' as const, label: 'Theo môn học' },
               { id: 'member' as const, label: 'Theo thành viên' },
@@ -714,12 +731,24 @@ export function GroupSchedulePage({
               </button>
             ))}
           </div>
-          <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
-            Chỉnh cấu hình
+
+          <Button
+            type="button"
+            variant={showGroupCalendarPreview ? 'outline' : 'default'}
+            onClick={() => setShowGroupCalendarPreview((current) => !current)}
+            className={showGroupCalendarPreview ? 'text-white bg-[#004A98] hover:bg-[#003d7a]' : 'text-white bg-[#004A98] hover:bg-[#003d7a]'}
+            disabled={!result?.solutions.length}
+          >
+            <Calendar className="h-4 w-4" />
+            {showGroupCalendarPreview ? 'Xem bảng kết quả' : 'Xem lịch nhóm'}
           </Button>
+          
+          {/* <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
+            Chỉnh cấu hình
+          </Button> */}
         </div>
       </div>
-
+      
       {result?.warnings.length ? (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           {result.warnings.map((warning) => (
@@ -727,6 +756,8 @@ export function GroupSchedulePage({
           ))}
         </div>
       ) : null}
+
+      
 
       {result?.solutions.length ? (
         showGroupCalendarPreview ? (
@@ -743,27 +774,86 @@ export function GroupSchedulePage({
           />
         ) : (
           <>
-          <div className="mb-4 flex gap-2 overflow-x-auto border-b border-gray-200 pb-2">
-            {result.solutions.map((option, index) => (
-              <button
-                key={option.option}
-                type="button"
-                onClick={() => setActiveResultIndex(index)}
-                className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                  activeResultIndex === index
-                    ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Kịch bản {option.option}
-              </button>
-            ))}
+          <div className="mb-4 flex gap-2 overflow-x-auto border-b border-gray-200 pb-2 justify-between">
+            <div className="mb-4 flex gap-2">
+              {result.solutions.map((option, index) => (
+                <button
+                  key={option.option}
+                  type="button"
+                  onClick={() => setActiveResultIndex(index)}
+                  className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                    activeResultIndex === index
+                      ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Kịch bản {option.option}
+                </button>
+              ))}
+            </div>
+            {!showGroupCalendarPreview && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowSaveGroupScheduleModal(true)}
+              disabled={!selectedOption}
+            >
+              <Save className="h-4 w-4" />
+              Lưu lịch nhóm
+            </Button>
+          )}
           </div>
+          
+          
           {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} />}
           </>
         )
       ) : (
         <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-500">Chưa có kết quả. Hãy chạy xếp lịch trước.</div>
+      )}
+      
+      {showSaveGroupScheduleModal && selectedOption && (
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">
+              <h3 className="flex items-center gap-2 text-base font-bold text-gray-900">
+                <Save className="h-4 w-4 text-emerald-600" />
+                Lưu lịch nhóm
+              </h3>
+              <button type="button" onClick={() => setShowSaveGroupScheduleModal(false)} className="rounded-full p-1 transition-colors hover:bg-gray-100">
+                <X className="h-5 w-5 text-gray-400" />
+              </button>
+            </div>
+            <div className="p-4 md:p-6">
+              <label className="mb-2 block text-sm font-bold text-gray-700">Tên gợi nhớ cho lịch này</label>
+              <input
+                autoFocus
+                type="text"
+                value={groupScheduleName}
+                onChange={(event) => setGroupScheduleName(event.target.value)}
+                placeholder={`VD: Nhóm - PA ${selectedOption.option}`}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500"
+                onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
+              />
+              <p className="mt-3 text-xs italic text-gray-400">
+                Lưu toàn bộ thành viên trong kịch bản hiện tại. Khi mở lại ở tab lịch dự kiến, bạn có thể chuyển qua lại giữa các thành viên.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 md:p-5">
+              <button type="button" onClick={() => setShowSaveGroupScheduleModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800">
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={saveSelectedGroupSchedule}
+                disabled={!groupScheduleName.trim()}
+                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Xác nhận lưu
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

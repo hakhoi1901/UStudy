@@ -2,12 +2,13 @@ import { CalendarCheck } from 'lucide-react';
 
 import { Badge } from './ui/badge';
 import type { GroupScheduleItem, GroupScheduleOption } from '../logic/scheduler/GroupTypes';
-
+import { Save } from 'lucide-react';
+import { Button } from './ui/button';
 export type GroupScheduleResultViewMode = 'course' | 'member';
 
 interface GroupScheduleResultProps {
   option: GroupScheduleOption;
-  viewMode: GroupScheduleResultViewMode;
+  viewMode: GroupScheduleResultViewMode
 }
 
 interface CourseComparisonRow {
@@ -50,7 +51,7 @@ function buildCourseComparison(option: GroupScheduleOption): CourseComparisonRow
   });
 }
 
-export function GroupScheduleResult({ option, viewMode }: GroupScheduleResultProps) {
+export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProps) {
   const courseRows = buildCourseComparison(option);
 
   return (
@@ -63,6 +64,7 @@ export function GroupScheduleResult({ option, viewMode }: GroupScheduleResultPro
           </h3>
           <p className="text-sm text-gray-500">Điểm nhóm: {Math.round(option.fitness)}</p>
         </div>
+        
       </div>
 
       {viewMode === 'course' ? (

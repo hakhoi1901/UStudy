@@ -128,6 +128,8 @@ export function CalendarView({
     const [showListModal, setShowListModal] = useState(false);
     const [showStatsPanel, setShowStatsPanel] = useState(false);
     const [newScheduleName, setNewScheduleName] = useState('');
+    const [loadedGroupSchedule, setLoadedGroupSchedule] = useState<SavedSchedule['groupSchedule'] | null>(null);
+    const [activeLoadedGroupMemberIndex, setActiveLoadedGroupMemberIndex] = useState<number | null>(null);
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -187,12 +189,27 @@ export function CalendarView({
     };
 
     const handleLoadSchedule = (saved: SavedSchedule) => {
-        setSelectedCourses(new Set(saved.selectedCourses));
-        setAllowedClassesMap(saved.allowedClassesMap);
-        const restoredOption: ScheduleOption = { option: 1, fitness: 1000, classSections: saved.sessions };
+        const firstGroupMember = saved.groupSchedule?.members[0];
+        const selectedMember = firstGroupMember ?? null;
+        setLoadedGroupSchedule(saved.groupSchedule ?? null);
+        setActiveLoadedGroupMemberIndex(selectedMember?.memberIndex ?? null);
+        setSelectedCourses(new Set(selectedMember?.selectedCourses ?? saved.selectedCourses));
+        setAllowedClassesMap(selectedMember?.allowedClassesMap ?? saved.allowedClassesMap);
+        const restoredOption: ScheduleOption = { option: saved.groupSchedule?.option ?? 1, fitness: 1000, classSections: selectedMember?.sessions ?? saved.sessions };
         setOptions([restoredOption]);
         setActiveOption(0);
         setShowListModal(false);
+    };
+
+    const handleSelectLoadedGroupMember = (memberIndex: number) => {
+        const member = loadedGroupSchedule?.members.find((item) => item.memberIndex === memberIndex);
+        if (!member || !loadedGroupSchedule) return;
+
+        setActiveLoadedGroupMemberIndex(member.memberIndex);
+        setSelectedCourses(new Set(member.selectedCourses));
+        setAllowedClassesMap(member.allowedClassesMap);
+        setOptions([{ option: loadedGroupSchedule.option, fitness: 1000, classSections: member.sessions }]);
+        setActiveOption(0);
     };
 
     const handleDeleteSchedule = (id: string) => {
@@ -423,6 +440,28 @@ export function CalendarView({
                         <span className="hidden sm:inline">Lưu phương án</span>
                         <span className="sm:hidden">Lưu</span>
                     </button>
+                </div>
+            )}
+
+            {loadedGroupSchedule && loadedGroupSchedule.members.length > 1 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 bg-white p-1.5 border border-slate-200 rounded-xl shadow-sm flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                        <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Thành viên:</span>
+                        <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                            {loadedGroupSchedule.members.map((member) => (
+                                <button
+                                    key={member.memberIndex}
+                                    onClick={() => handleSelectLoadedGroupMember(member.memberIndex)}
+                                    className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all shrink-0 ${activeLoadedGroupMemberIndex === member.memberIndex
+                                        ? 'bg-emerald-600 text-white shadow-md'
+                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                    }`}
+                                >
+                                    {member.nickname}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -907,6 +946,11 @@ export function CalendarView({
                                                     <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold">
                                                         {saved.selectedCourses.length} môn
                                                     </span>
+                                                    {saved.groupSchedule && (
+                                                        <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">
+                                                            Nhóm · {saved.groupSchedule.members.length} thành viên
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5">

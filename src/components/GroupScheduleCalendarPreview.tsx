@@ -1,10 +1,12 @@
 import type { CSSProperties } from 'react';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Clock, ExternalLink } from 'lucide-react';
-import { UI_COLORS } from '../config';
+import { useState } from 'react';
+import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Clock, ExternalLink, Save, X } from 'lucide-react';
+import { STORAGE_KEYS, UI_COLORS } from '../config';
+import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import { weekDays, timePeriods } from '../constants';
 import { maskToSections } from '../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../logic/scheduler/GroupTypes';
-import type { ClassSection } from '../types';
+import type { ClassSection, SavedSchedule } from '../types';
 import { Button } from './ui/button';
 
 interface GroupScheduleCalendarPreviewProps {
@@ -30,7 +32,7 @@ function getSolidTint(hexColor: string, tint = 0.9) {
   return `rgb(${mix(red)}, ${mix(green)}, ${mix(blue)})`;
 }
 
-function getMemberSections(option: GroupScheduleOption | undefined, memberIndex: number): ClassSection[] {
+export function getGroupMemberSections(option: GroupScheduleOption | undefined, memberIndex: number): ClassSection[] {
   const memberSchedule = option?.schedules.find((schedule) => schedule.memberIndex === memberIndex);
   if (!memberSchedule) return [];
 
@@ -42,6 +44,54 @@ function getMemberSections(option: GroupScheduleOption | undefined, memberIndex:
     PALETTE[itemIndex % PALETTE.length],
     0,
   ));
+}
+
+export function buildSavedGroupSchedule(
+  option: GroupScheduleOption | undefined,
+  memberIndex: number,
+  scheduleName: string,
+): SavedSchedule | null {
+  const member = option?.schedules.find((schedule) => schedule.memberIndex === memberIndex) ?? option?.schedules[0];
+  if (!option || !member || !scheduleName.trim()) return null;
+
+  const sections = getGroupMemberSections(option, member.memberIndex);
+  if (sections.length === 0) return null;
+
+  const groupMembers = option.schedules.map((schedule) => {
+    const memberSections = getGroupMemberSections(option, schedule.memberIndex);
+    const memberCourses = Array.from(new Set(schedule.items.map((item) => item.courseId)));
+    const memberAllowedClassesMap = schedule.items.reduce<Record<string, string[]>>((acc, item) => {
+      acc[item.courseId] = Array.from(new Set([...(acc[item.courseId] ?? []), item.classId]));
+      return acc;
+    }, {});
+
+    return {
+      memberIndex: schedule.memberIndex,
+      nickname: schedule.nickname,
+      sessions: memberSections,
+      selectedCourses: memberCourses,
+      allowedClassesMap: memberAllowedClassesMap,
+    };
+  });
+
+  const selectedCourses = Array.from(new Set(member.items.map((item) => item.courseId)));
+  const allowedClassesMap = member.items.reduce<Record<string, string[]>>((acc, item) => {
+    acc[item.courseId] = Array.from(new Set([...(acc[item.courseId] ?? []), item.classId]));
+    return acc;
+  }, {});
+
+  return {
+    id: crypto.randomUUID(),
+    name: scheduleName.trim(),
+    createdAt: new Date().toISOString(),
+    sessions: sections,
+    selectedCourses,
+    allowedClassesMap,
+    groupSchedule: {
+      option: option.option,
+      members: groupMembers,
+    },
+  };
 }
 
 function getConflicts(section: ClassSection, sections: ClassSection[]): ClassSection[] {
@@ -76,11 +126,25 @@ export function GroupScheduleCalendarPreview({
   setActiveMemberIndex,
   onUseSchedule,
 }: GroupScheduleCalendarPreviewProps) {
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [scheduleName, setScheduleName] = useState('');
   const option = options[activeOptionIndex] ?? options[0];
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
   const effectiveMemberIndex = member?.memberIndex ?? 0;
-  const sections = getMemberSections(option, effectiveMemberIndex);
+  const sections = getGroupMemberSections(option, effectiveMemberIndex);
   const stats = getStats(sections);
+
+  const handleSaveSchedule = () => {
+    const newSaved = buildSavedGroupSchedule(option, effectiveMemberIndex, scheduleName);
+    if (!newSaved) return;
+
+    const savedSchedulesRaw = readFromStorage<unknown>(STORAGE_KEYS.SAVED_SCHEDULES, []);
+    const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw as SavedSchedule[] : [];
+
+    saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, [newSaved, ...savedSchedules]);
+    setShowSaveModal(false);
+    setScheduleName('');
+  };
 
   if (!option || !member) {
     return (
@@ -102,10 +166,16 @@ export function GroupScheduleCalendarPreview({
             PA {option.option} · {member.nickname} · {sections.length} lớp · {stats.totalPeriods} tiết · {stats.scheduledDays} ngày học
           </p>
         </div>
-        <Button type="button" variant="outline" onClick={() => onUseSchedule(option, effectiveMemberIndex)}>
-          <ExternalLink className="h-4 w-4" />
-          Dùng lịch đang xem
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button type="button" variant="outline" disabled={sections.length === 0} onClick={() => setShowSaveModal(true)}>
+            <Save className="h-4 w-4" />
+            Lưu lịch nhóm
+          </Button>
+          {/* <Button type="button" variant="outline" onClick={() => onUseSchedule(option, effectiveMemberIndex)}>
+            <ExternalLink className="h-4 w-4" />
+            Dùng lịch đang xem
+          </Button> */}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
@@ -403,6 +473,50 @@ export function GroupScheduleCalendarPreview({
           </div>
         </div>
       </div>
+
+      {showSaveModal && (
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">
+              <h3 className="flex items-center gap-2 text-base font-bold text-gray-900">
+                <Save className="h-4 w-4 text-emerald-600" />
+                Lưu lịch nhóm
+              </h3>
+              <button type="button" onClick={() => setShowSaveModal(false)} className="rounded-full p-1 transition-colors hover:bg-gray-100">
+                <X className="h-5 w-5 text-gray-400" />
+              </button>
+            </div>
+            <div className="p-4 md:p-6">
+              <label className="mb-2 block text-sm font-bold text-gray-700">Tên gợi nhớ cho lịch này</label>
+              <input
+                autoFocus
+                type="text"
+                value={scheduleName}
+                onChange={(event) => setScheduleName(event.target.value)}
+                placeholder={`VD: Nhóm - PA ${option.option} - ${member.nickname}`}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500"
+                onKeyDown={(event) => event.key === 'Enter' && handleSaveSchedule()}
+              />
+              <p className="mt-3 text-xs italic text-gray-400">
+                Lưu lịch của thành viên đang xem trong phương án hiện tại. Lịch này sẽ xuất hiện trong danh sách lịch đã lưu ở tab lịch dự kiến.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 md:p-5">
+              <button type="button" onClick={() => setShowSaveModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800">
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSchedule}
+                disabled={!scheduleName.trim()}
+                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Xác nhận lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
