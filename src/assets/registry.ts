@@ -105,7 +105,7 @@ const RAW_FACULTIES = [
     },
     {
         id: 'khoa-sinh',
-        name: 'Khoa Sinh học',
+        name: 'Khoa Sinh học - Công nghệ sinh học',
         majors: [
             { id: 'sinh-hoc', name: 'Sinh học', dataSource: { 'k25': 'k24' } },
             { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSource: { 'k25': 'k24' } },

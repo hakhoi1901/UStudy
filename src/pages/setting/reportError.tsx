@@ -11,7 +11,7 @@ export function ReportError() {
     const fixedSubject = APP_CONFIG.CONTACT.REPORT_SUBJECT_PREFIX;
 
     return (
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
             <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-2">
                 <MailWarning />Báo cáo lỗi
             </h2>

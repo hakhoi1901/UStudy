@@ -10,8 +10,11 @@ import {
 } from '../helpers/localStorage/save';
 
 interface SecurityLockProps {
-    onUnlock: (key: CryptoKey) => void;
+    onUnlock: (key: any) => void;
     setupMode?: boolean;
+    customVerify?: (pin: string) => Promise<boolean>;
+    customTitle?: string;
+    customSubtitle?: string;
 }
 
 type SetupStep = 'enter' | 'confirm';
@@ -47,9 +50,11 @@ const styles = `
         inset: 0;
         z-index: 99999;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px;
         font-family: 'DM Sans', sans-serif;
         background: #f2f0ec;
         background-image:
@@ -69,7 +74,7 @@ const styles = `
         position: relative;
         width: 100%;
         max-width: 428px;
-        margin: 20px;
+        margin: auto;
         background: rgba(255,255,255,0.88);
         backdrop-filter: blur(24px) saturate(180%);
         border-radius: 32px;
@@ -301,7 +306,7 @@ const styles = `
     }
 `;
 
-export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false }) => {
+export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false, customVerify, customTitle, customSubtitle }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -349,8 +354,12 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         try {
             const key = await setupPin(password);
             onUnlock(key);
-        } catch {
-            setError('Có lỗi khi thiết lập mật khẩu. Vui lòng thử lại.');
+        } catch (err: any) {
+            if (!window.crypto || !window.crypto.subtle) {
+                setError('Môi trường không bảo mật (HTTP). Vui lòng dùng App (APK) hoặc HTTPS để mã hóa.');
+            } else {
+                setError(`Có lỗi khi thiết lập: ${err?.message || 'Lỗi không xác định'}`);
+            }
             setIsVerifying(false);
         }
     }, [password, confirmPassword, onUnlock]);
@@ -359,6 +368,25 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         if (!password || isLocked || isVerifying) return;
         setIsVerifying(true);
         setError(null);
+
+        if (!window.crypto || !window.crypto.subtle) {
+            setError('Môi trường không bảo mật (HTTP). Vui lòng dùng App (APK) hoặc HTTPS.');
+            setIsVerifying(false);
+            return;
+        }
+
+        if (customVerify) {
+            const isValid = await customVerify(password);
+            if (isValid) {
+                onUnlock(null);
+            } else {
+                triggerShake();
+                setError('Mật khẩu không chính xác với file sao lưu.');
+                setIsVerifying(false);
+            }
+            return;
+        }
+
         const key = await verifyPin(password);
         if (key) {
             resetFailCount();
@@ -374,7 +402,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
                 : 'Mật khẩu không chính xác. Vui lòng thử lại.');
             setIsVerifying(false);
         }
-    }, [password, isLocked, isVerifying, onUnlock]);
+    }, [password, isLocked, isVerifying, onUnlock, customVerify]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -428,25 +456,25 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
 
                     {/* Heading */}
                     <h1 className="sec-title">
-                        {setupMode
+                        {customTitle || (setupMode
                             ? (setupStep === 'enter' ? 'Tạo mật khẩu' : 'Xác nhận mật khẩu')
                             : 'Xác thực truy cập'
-                        }
+                        )}
                     </h1>
                     <p className="sec-sub">
-                        {setupMode
+                        {customSubtitle || (setupMode
                             ? (setupStep === 'enter'
                                 ? 'Thiết lập mật khẩu để bảo vệ dữ liệu học tập của bạn.'
                                 : 'Nhập lại mật khẩu vừa tạo để xác nhận.')
                             : 'Dữ liệu của bạn đã được mã hóa. Nhập mật khẩu để mở khóa.'
-                        }
+                        )}
                     </p>
 
                     {/* Lockout */}
                     {isLocked && (
                         <div className="sec-lockout">
                             <Timer size={14} style={{ flexShrink: 0 }} />
-                            <span>Bị khóa tạm thời — thử lại sau <strong>{lockoutSeconds}s</strong></span>
+                            <span>Bị khóa tạm thời - thử lại sau <strong>{lockoutSeconds}s</strong></span>
                         </div>
                     )}
 

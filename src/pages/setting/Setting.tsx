@@ -20,18 +20,16 @@ export function Setting() {
     };
 
     return (
-        <div className="flex h-full gap-6">
-            <div className="flex-1 overflow-y-auto">
-                <div className="mb-6 items-center">
-                    <h1 className="text-gray-900 mb-2">Cài đặt</h1>
-                    <p className="text-gray-600 mb-8">Quản lý tài khoản và tùy chọn của bạn.</p>
-                </div>
+        <div className="max-w-[1600px] mx-auto w-full">
+            <div className="mb-4 md:mb-8">
+                <h1 className="text-gray-900 mb-1 md:mb-2">Cài đặt</h1>
+                <p className="text-gray-600 text-sm md:text-base">Quản lý tài khoản và tùy chọn của bạn.</p>
+            </div>
 
-                <div className="flex flex-col">
-                    <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full max-w-4xl flex flex-col">
-                        <div className="w-full">
-                            {/* Thông tin cá nhân */}
-                            <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
+            <div className="flex flex-col items-center">
+                <div className="w-full max-w-4xl flex flex-col gap-4 md:gap-6">
+                    {/* Thông tin cá nhân */}
+                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
                                 <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                     <User className="w-7 h-7" />Thông tin cá nhân
                                 </h2>
@@ -41,10 +39,10 @@ export function Setting() {
                                 </div>
                             </div>
 
-                            <SettingUserProfile />
+                    <SettingUserProfile />
 
-                            {/* Công cụ đồng bộ dữ liệu */}
-                            <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
+                    {/* Công cụ đồng bộ dữ liệu */}
+                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
                                 <div className="pb-6 border-b border-gray-200">
                                     <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                         <Bookmark className="w-5 h-5" />
@@ -62,15 +60,15 @@ export function Setting() {
                                 </div>
                             </div>
 
-                            {/* Bảo mật */}
-                            {hasData && (
-                                <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6 w-full">
+                    {/* Bảo mật */}
+                    {hasData && (
+                        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
                                     <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                         <Shield className="w-5 h-5 text-blue-600" />
                                         Bảo mật
                                     </h2>
                                     <p className="text-sm text-gray-500 mb-6">
-                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mã PIN.
+                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mật khẩu.
                                     </p>
                                     <div className="flex flex-col sm:flex-row gap-3">
                                         <button
@@ -78,7 +76,7 @@ export function Setting() {
                                             className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
                                         >
                                             <Shield className="w-4 h-4" />
-                                            Đổi mã PIN
+                                            Đổi mật khẩu
                                         </button>
                                         <button
                                             onClick={handleLockNow}
@@ -91,12 +89,12 @@ export function Setting() {
                                 </div>
                             )}
 
-                            <ReportError />
-                        </div>
-                    </div>
-
-                    <PrivacyFooter />
+                    <ReportError />
                 </div>
+            </div>
+
+            <div className="mt-8">
+                <PrivacyFooter />
             </div>
 
             {showChangePinModal && (

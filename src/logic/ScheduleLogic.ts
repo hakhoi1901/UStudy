@@ -2,11 +2,11 @@
  * ScheduleLogic.ts
  *
  * Domain Logic: Parsing và xử lý chuỗi lịch học.
- * Không phụ thuộc React — có thể test/import độc lập.
+ * Không phụ thuộc React - có thể test/import độc lập.
  */
 
 import { timePeriods } from '../constants/timetable';
-import { type ScheduleSession, type WeeklySchedule } from '../types/Schedule';
+import { type ScheduleSession, type WeeklySchedule, type ScheduleOverrides, type Holiday } from '../types/Schedule';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -135,23 +135,20 @@ export const ScheduleLogic = {
     },
 
     /**
-     * Điều chỉnh tiết bắt đầu/kết thúc cho lớp TH/BT.
-     * Lớp thực hành luôn có duration = 2.5 tiết.
+     * Tính duration thực tế từ startPeriod và endPeriod.
+     * Trong ký hiệu VN: T2(1-5) = tiết 1 đến 5 bao gồm cả tiết 5 → duration = 5.
+     * Tiết lẻ T2(3.5-5.5) → duration = 2 (thực tế 2 tiết học).
      */
     adjustPeriodsForPractical: (
-        courseType: string,
+        _courseType: string,
         startPeriod: number,
         endPeriod: number
     ): { startPeriod: number; endPeriod: number; duration: number } => {
-        if (courseType !== 'TH' && courseType !== 'BT') {
-            const duration = endPeriod - startPeriod + (startPeriod % 1 !== 0 ? 0.5 : 1);
-            return { startPeriod, endPeriod, duration };
-        }
-
-        // Lớp thực hành/bài tập luôn được tính bằng 2.5 tiết để ra chính xác tổng số tuần, 
-        // nhưng tiết bắt đầu và kết thúc lưu lại ở dạng gốc (1-2, 1-3 v.v) để thông tin UI hiện chính xác nhất.
-        const duration = 2.5;
-
+        // endPeriod nguyên = inclusive (T2(1-5) có 5 tiết)
+        // endPeriod lẻ = exclusive-end (T2(3.5-5.5) có 2 tiết)
+        const duration = Number.isInteger(endPeriod)
+            ? endPeriod - startPeriod + 1
+            : endPeriod - startPeriod;
         return { startPeriod, endPeriod, duration };
     },
 
@@ -243,16 +240,53 @@ export const ScheduleLogic = {
     },
 
     /**
+     * Tính toán tuần thực tế của môn học sau khi đã trừ đi các kỳ nghỉ/dời lịch.
+     * Trả về null nếu tuần hiện tại là tuần nghỉ của môn đó.
+     */
+    getActualWeekForCourse: (currentWeek: number, courseCode: string, holidays: Holiday[]): number | null => {
+        let shiftedWeeks = 0;
+        let isHoliday = false;
+
+        // Sắp xếp holiday theo tuần tăng dần để tính toán chính xác
+        const sortedHolidays = [...holidays].sort((a, b) => a.startWeek - b.startWeek);
+
+        for (const h of sortedHolidays) {
+            const isAffected = h.affectedCourseCodes === 'all' || h.affectedCourseCodes.includes(courseCode);
+            if (!isAffected) continue;
+
+            // Nếu currentWeek nằm trong khoảng nghỉ
+            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + h.duration) {
+                isHoliday = true;
+                break;
+            }
+
+            // Nếu currentWeek đã vượt qua kỳ nghỉ, thì "tuần nội dung" bị lùi lại
+            if (currentWeek >= h.startWeek + h.duration) {
+                shiftedWeeks += h.duration;
+            }
+        }
+
+        if (isHoliday) return null;
+        return currentWeek - shiftedWeeks;
+    },
+
+    /**
      * Xây dựng toàn bộ sessions từ danh sách đăng ký + metadata khóa học.
      * Orchestrator function thay thế mega-loop trong useSchedule.ts.
      */
     buildScheduleSessions: (
         coursesRegistered: any[],
         allCoursesMeta: any[],
-        metadata: any
+        metadata: any,
+        overrides?: ScheduleOverrides,
+        systemHolidays: Holiday[] = []
     ): WeeklySchedule => {
         const semester = metadata?.params?.registration?.sem || '1';
         const year = metadata?.params?.registration?.year || '24-25';
+
+        // Merge holidays: System holidays + User overrides
+        const combinedHolidays = [...systemHolidays, ...(overrides?.holidays || [])];
+        const activeOverrides = overrides ? { ...overrides, holidays: combinedHolidays } : { sessionOverrides: {}, weekOverrides: {}, holidays: combinedHolidays };
 
         let totalCourses = 0;
         let totalCredits = 0;
@@ -295,11 +329,21 @@ export const ScheduleLogic = {
                 if (!match) return;
 
                 const dayStr = match[1];
-                const dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
+                let dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
 
-                const rawStart = parseFloat(match[2]);
-                const rawEnd = parseFloat(match[3]);
-                const room = match[5];
+                let rawStart = parseFloat(match[2]);
+                let rawEnd = parseFloat(match[3]);
+                let room = match[5] || '';
+
+                // --- Apply Global Overrides ---
+                const sessionId = `${course.id}_${index}_${partIdx}`;
+                const override = activeOverrides.sessionOverrides?.[sessionId];
+                if (override) {
+                    if (override.room !== undefined) room = override.room;
+                    if (override.startPeriod !== undefined) rawStart = override.startPeriod;
+                    if (override.endPeriod !== undefined) rawEnd = override.endPeriod;
+                    if (override.dayOfWeek !== undefined) dayOfWeek = override.dayOfWeek;
+                }
 
                 const adjusted = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
                 const startTimeStr = ScheduleLogic.periodToTimeString(adjusted.startPeriod, true);

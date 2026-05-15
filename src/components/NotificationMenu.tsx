@@ -62,7 +62,7 @@ export function NotificationMenu() {
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col max-h-[380px]">
+                <div className="absolute right-0 mt-2 sm:w-80 w-60 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col max-h-[380px]">
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
                         <h3 className="font-semibold text-gray-900">Thông báo</h3>

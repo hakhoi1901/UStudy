@@ -1,15 +1,16 @@
 import { Select } from "../../components/Selection"
 import { useDepartmentData } from "../../context/DepartmentContext";
-import { CheckCircle, GraduationCap, Upload } from "lucide-react";
+import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAppNotification } from "../../context/NotificationContext";
 import { useCrypto } from "../../context/CryptoContext";
 import { processRawData } from "../../logic/dataProcessor";
 import { savePlain, saveSecure, populateSecureCache } from "../../helpers/localStorage/save";
+import { CACHE_POPULATED_EVENT } from "../../context/CryptoContext";
 import { SecurityLock } from "../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 
-export function SettingUserProfile() {
+export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
         facultyId, majorId, cohortId, academicYear,
         currentFaculty, currentMajor,
@@ -18,10 +19,9 @@ export function SettingUserProfile() {
         isConfigured, setIsConfigured
     } = useDepartmentData();
     const { addNotification } = useAppNotification();
-    const { cryptoKey, unlock, refreshHasData } = useCrypto();
+    const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
-    const [pendingConfig, setPendingConfig] = useState<boolean>(false);
 
     /** Lưu dữ liệu nhạy cảm đã mã hóa + populate RAM cache */
     const saveImportedSecure = async (rawData: any, metaData: any, key: CryptoKey) => {
@@ -36,6 +36,9 @@ export function SettingUserProfile() {
         populateSecureCache('student_db_full', student);
         populateSecureCache('course_db_offline', courses);
         if (metaData) populateSecureCache('import_meta', metaData);
+
+        // Báo các hook re-render (giống CryptoContext làm sau unlock)
+        window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
 
         refreshHasData();
         return student;
@@ -71,6 +74,27 @@ export function SettingUserProfile() {
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
                         if (!cryptoKey) {
+                            // Nếu backup có salt → là bản backup đã mã hóa
+                            // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu
+                            if (data['__pbkdf2_salt__']) {
+                                for (const [k, v] of Object.entries(data)) {
+                                    if (typeof v === 'string') {
+                                        localStorage.setItem(k, v);
+                                    } else {
+                                        localStorage.setItem(k, JSON.stringify(v));
+                                    }
+                                }
+                                // Sau khi reload salt + pin_verify vào localStorage,
+                                // refreshHasData() → hasData=true → SecurityGate tự chặn và hỏi mật khẩu cũ
+                                refreshHasData();
+                                addNotification({
+                                    title: 'Backup đã được tải',
+                                    message: 'Nhập mật khẩu của file backup để tiếp tục khôi phục dữ liệu.',
+                                    type: 'info'
+                                });
+                                return;
+                            }
+                            // Backup không mã hóa → yêu cầu tạo mật khẩu mới
                             setPendingImport({ type: 'FULL_DUMP', data });
                             return;
                         }
@@ -85,6 +109,8 @@ export function SettingUserProfile() {
                                 savePlain(key, data[key]);
                             }
                         }
+                        // Báo các hook re-render
+                        window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
                         refreshHasData();
 
                         addNotification({
@@ -135,10 +161,10 @@ export function SettingUserProfile() {
     };
 
     return (
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
             {pendingImport && (
                 <SecurityLock 
-                    setupMode={true} 
+                    setupMode={!hasData} 
                     onUnlock={async (key) => {
                         unlock(key);
                         const { type, data } = pendingImport;
@@ -168,27 +194,7 @@ export function SettingUserProfile() {
                 />
             )}
 
-            {pendingConfig && (
-                <SecurityLock 
-                    setupMode={true} 
-                    onUnlock={(key) => {
-                        unlock(key);
-                        setIsConfigured(true);
-                        savePlain(STORAGE_KEYS.FACULTY_ID, facultyId);
-                        savePlain(STORAGE_KEYS.MAJOR_ID, majorId);
-                        savePlain(STORAGE_KEYS.COHORT_ID, cohortId);
-                        savePlain(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
-                        
-                        addNotification({
-                            title: 'Thiết lập thành công',
-                            message: 'Thông tin chương trình đào tạo đã được lưu an toàn.',
-                            type: 'success'
-                        });
-                        
-                        setPendingConfig(false);
-                    }} 
-                />
-            )}
+
             {!isConfigured &&
                 <div className="mb-6 w-full flex flex-col items-center justify-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng bạn</h2>
@@ -271,11 +277,16 @@ export function SettingUserProfile() {
 
                     <button
                         onClick={() => {
-                            if (!cryptoKey) {
-                                setPendingConfig(true);
-                                return;
-                            }
+                            savePlain(STORAGE_KEYS.FACULTY_ID, facultyId);
+                            savePlain(STORAGE_KEYS.MAJOR_ID, majorId);
+                            savePlain(STORAGE_KEYS.COHORT_ID, cohortId);
+                            savePlain(STORAGE_KEYS.ACADEMIC_YEAR, academicYear);
                             setIsConfigured(true);
+                            addNotification({
+                                title: 'Thiết lập thành công',
+                                message: 'Thông tin chương trình đào tạo đã được lưu.',
+                                type: 'success'
+                            });
                         }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConfigured
                             ? 'bg-green-50 text-green-700 border border-green-200'
@@ -287,6 +298,23 @@ export function SettingUserProfile() {
                     </button>
                 </div>
             </div>
+            {/* Privacy link - chỉ hiện khi chưa cấu hình */}
+            {!isConfigured && (
+                <div className="mt-6 pt-5 border-t border-gray-200">
+                    <button
+                        onClick={(e) => { e.preventDefault(); onPageChange('privacy'); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors group"
+                    >
+                        <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                            <Shield className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-sm font-semibold">Bảo mật & Quyền dữ liệu</p>
+                            <p className="text-xs text-blue-500">Tìm hiểu cách chúng tôi bảo vệ dữ liệu của bạn</p>
+                        </div>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
