@@ -162,7 +162,7 @@ function AppContent() {
           </>
         )}
       </MainLayout>
-      <ChatbotWidget />
+      {isConfigured && <ChatbotWidget />}
     </>
   );
 }

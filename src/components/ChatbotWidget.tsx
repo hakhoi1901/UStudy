@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { MessageSquare, X, Send, Trash2, Bot, Sparkles, AlertCircle, Check, Mic } from 'lucide-react';
 import { GeminiService, type ChatMessage, type StudentContextData } from '../logic/ai/geminiService';
+import { AIService } from '../logic/ai/aiService';
 import { useStudentDb } from '../hooks/useStudentDb';
-import { useStudentGradeData } from '../hooks/useStudentGradeData';
+import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
 import { useSchedule } from '../hooks/useSchedule';
 
 export function ChatbotWidget() {
@@ -13,6 +14,7 @@ export function ChatbotWidget() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage] = useState<string | null>(null);
+    const [activeProvider, setActiveProvider] = useState<'gemini' | 'groq'>('gemini');
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -126,14 +128,22 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
         }
     };
 
-    // Gửi câu hỏi
+        // Gửi câu hỏi
     const handleSend = async (textToSend?: string) => {
         const queryText = (textToSend || input).trim();
         if (!queryText) return;
 
-        const savedKey = GeminiService.getApiKey();
-        if (!savedKey) {
-            setError('Vui lòng cấu hình khóa VITE_GEMINI_API_KEY trong file .env để tiếp tục trò chuyện nhé!');
+        // KIỂM TRA ĐĂNG NHẬP: Bắt buộc Sếp phải có dữ liệu (đã login/nhập file) mới cho dùng Chatbot
+        if (!name) {
+            setError('Sếp phải đăng nhập (tải file điểm/lịch học) thì em mới có dữ liệu để tư vấn được nha!');
+            return;
+        }
+
+        const provider = AIService.getProvider();
+        const hasGroqKey = !!import.meta.env.VITE_GROQ_API_KEY;
+
+        if (provider === 'groq' && !hasGroqKey) {
+            setError('Vui lòng cấu hình khóa VITE_GROQ_API_KEY trong file .env để trò chuyện với Groq nhé!');
             return;
         }
 
@@ -230,8 +240,8 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                 currentSchedule: mappedSchedule,
                 exams: mappedExams,
                 currentWeek: currentWeek,
-                semesterStartDateStr: scheduleData.semesterStartDate 
-                    ? `${String(scheduleData.semesterStartDate.getDate()).padStart(2, '0')}/${String(scheduleData.semesterStartDate.getMonth() + 1).padStart(2, '0')}/${scheduleData.semesterStartDate.getFullYear()}` 
+                semesterStartDateStr: scheduleData.semesterStartDate
+                    ? `${String(scheduleData.semesterStartDate.getDate()).padStart(2, '0')}/${String(scheduleData.semesterStartDate.getMonth() + 1).padStart(2, '0')}/${scheduleData.semesterStartDate.getFullYear()}`
                     : undefined
             };
 
@@ -239,12 +249,12 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
             console.log("=== STUDENT CONTEXT SENT TO AI ===", studentContext);
             const systemPrompt = GeminiService.buildSystemPrompt(studentContext);
 
-            // Gọi API Gemini
-            const aiReply = await GeminiService.sendMessage(
-                savedKey,
+            // Gọi AIService để gửi tin nhắn thông qua cổng chính hoặc cổng dự phòng tự động
+            const aiReply = await AIService.sendMessage(
                 systemPrompt,
                 messages, // Lịch sử trò chuyện trước đó
-                queryText // Tin nhắn mới nhất
+                queryText, // Tin nhắn mới nhất
+                (prov) => setActiveProvider(prov)
             );
 
             // Thêm phản hồi của AI vào danh sách
@@ -259,28 +269,29 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
             setMessages(finalMessages);
             GeminiService.saveChatHistory(finalMessages);
         } catch (err: any) {
-            console.error('Lỗi gọi Gemini:', err);
+            console.error('Lỗi gọi AI Service:', err);
 
             const errorMsg = err?.message || '';
             const isRateLimit = errorMsg === 'Server đang bận' ||
                 errorMsg.includes('429') ||
                 errorMsg.toLowerCase().includes('limit') ||
                 errorMsg.toLowerCase().includes('exhausted') ||
-                errorMsg.toLowerCase().includes('quota');
+                errorMsg.toLowerCase().includes('quota') ||
+                errorMsg.toLowerCase().includes('bận');
 
             if (isRateLimit) {
-                // Thêm phản hồi của AI thông báo server đang bận trực tiếp vào bong bóng chat
+                // Thêm phản hồi của AI thông báo quá tải vào bong bóng chat
                 const botMsg: ChatMessage = {
                     id: (Date.now() + 1).toString(),
                     role: 'model',
-                    content: 'Server đang bận, vui lòng thử lại sau',
+                    content: 'Hiện tại hệ thống AI đang quá tải lượt truy cập, bạn vui lòng đợi 1 phút rồi thử hỏi lại nhé! 🙇‍♂️',
                     timestamp: Date.now()
                 };
                 const finalMessages = [...updatedMessages, botMsg];
                 setMessages(finalMessages);
                 GeminiService.saveChatHistory(finalMessages);
             } else {
-                setError(err?.message || 'Có lỗi xảy ra khi truyền tin tới Google API.');
+                setError(err?.message || 'Có lỗi xảy ra khi kết nối tới dịch vụ AI.');
             }
         } finally {
             setIsLoading(false);
@@ -481,14 +492,22 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
                 }
 
-                /* Wave animation for thinking dots */
-                @keyframes ustudy-wave {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-4px); }
+                /* Facebook-style jumping & blinking dots animation */
+                @keyframes ustudy-fb-typing {
+                    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+                    30% { transform: translateY(-6px); opacity: 1; }
                 }
-                .ustudy-dot-1 { animation: ustudy-wave 1.2s infinite; }
-                .ustudy-dot-2 { animation: ustudy-wave 1.2s infinite 0.2s; }
-                .ustudy-dot-3 { animation: ustudy-wave 1.2s infinite 0.4s; }
+                .ustudy-dot-1 { animation: ustudy-fb-typing 1.2s ease-in-out infinite; }
+                .ustudy-dot-2 { animation: ustudy-fb-typing 1.2s ease-in-out infinite 0.15s; }
+                .ustudy-dot-3 { animation: ustudy-fb-typing 1.2s ease-in-out infinite 0.3s; }
+
+                @keyframes ustudy-bot-bounce {
+                    0%, 100% { transform: translateY(0) scale(1); }
+                    50% { transform: translateY(-3px) scale(1.05); }
+                }
+                .ustudy-bot-loading {
+                    animation: ustudy-bot-bounce 1.5s ease-in-out infinite;
+                }
 
                 /* Custom Premium Bubble Chat spacing & shadows */
                 .ustudy-bubble-user {
@@ -546,7 +565,7 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center border border-white/20 shrink-0">
-                                <Bot className="w-5.5 h-5.5 fill-current text-white animate-pulse" />
+                                <Bot className={`w-5.5 h-5.5 fill-current text-white ${isLoading ? 'ustudy-bot-loading' : 'animate-pulse'}`} />
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -626,11 +645,11 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                         ))}
 
                         {isLoading && (
-                            <div className="flex flex-col gap-1.5 max-w-[85%]">
-                                <div className="ustudy-bubble-bot border dark:border-slate-800 p-3.5 flex items-center justify-center gap-1.5 w-16">
-                                    <span className="w-1.5 h-1.5 bg-blue-500/80 rounded-full ustudy-dot-1"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500/80 rounded-full ustudy-dot-2"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500/80 rounded-full ustudy-dot-3"></span>
+                            <div className="flex flex-col gap-1.5 max-w-[85%] items-start">
+                                <div className="ustudy-bubble-bot border dark:border-slate-800 p-3.5 flex items-center justify-center gap-1.5 w-16 h-10 rounded-2xl shadow-sm bg-slate-50 dark:bg-slate-900">
+                                    <span className="inline-block w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full ustudy-dot-1"></span>
+                                    <span className="inline-block w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full ustudy-dot-2"></span>
+                                    <span className="inline-block w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full ustudy-dot-3"></span>
                                 </div>
                             </div>
                         )}
@@ -697,7 +716,6 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                         </form>
                         <div className="flex justify-between items-center mt-2 px-1 text-[8px] text-gray-400 font-semibold tracking-wide uppercase">
                             <span>Trợ lý học thuật UStudy</span>
-                            <span>Powered by Gemini 2.5 Flash ⚡</span>
                         </div>
                     </div>
                 </div>
@@ -725,9 +743,7 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                     </span>
                 )}
-                <div className="absolute right-15 top-1/2 -translate-y-1/2 bg-gray-900/90 backdrop-blur-md text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0 whitespace-nowrap pointer-events-none shadow-md">
-                    {isOpen ? "Đóng Chat" : "Hỏi Trợ lý UStudy 🤖"}
-                </div>
+
             </button>
         </>,
         document.body

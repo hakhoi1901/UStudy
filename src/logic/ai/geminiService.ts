@@ -1,4 +1,5 @@
 import { hcmusAcademicRulesText } from '../../assets/data/rag/hcmus_academic_rules_text';
+import { hcmusGeneralInfoText } from '../../assets/data/rag/hcmus_general_info_text';
 import { STORAGE_KEYS } from '../../config/storageKeys';
 
 export interface ChatMessage {
@@ -163,7 +164,11 @@ ${examsText}
 - Các môn học gần nhất trong bảng điểm:
 ${recentCourses || 'Chưa có dữ liệu bảng điểm'}
 
---- QUY CHẾ HỌC VỤ & KHUNG CTĐT TRA CỨU ĐƯỢC (RAG CONTEXT TĨNH) ---
+--- QUY CHẾ HỌC VỤ & THÔNG TIN TRƯỜNG TRA CỨU ĐƯỢC (RAG CONTEXT TĨNH) ---
+Dưới đây là các thông tin về quy chế và thông tin chung của trường Đại học Khoa học Tự nhiên:
+
+${hcmusGeneralInfoText}
+
 ${hcmusAcademicRulesText}
 
 --- QUY TẮC ỨNG XỬ & PHONG CÁCH CHAT ---
@@ -183,41 +188,21 @@ ${hcmusAcademicRulesText}
     }
 
     /**
-     * Gửi tin nhắn đến API Gemini
+     * Gửi tin nhắn đến Vercel Serverless Function thay vì gọi trực tiếp API Gemini để bảo mật Key
      */
     public static async sendMessage(
-        apiKey: string,
+        _apiKey: string, // Giữ lại tham số để tương thích ngược với code cũ
         systemInstruction: string,
         history: ChatMessage[],
         newMessage: string
     ): Promise<string> {
-        if (!apiKey) {
-            throw new Error('Chưa cấu hình API Key!');
-        }
-
-        const url = `${this.GEMINI_ENDPOINT}?key=${apiKey}`;
-
-        // Chuyển đổi định dạng lịch sử sang API Gemini
-        const contents = history.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.content }]
-        }));
-
-        // Thêm tin nhắn mới của user vào contents gửi đi
-        contents.push({
-            role: 'user',
-            parts: [{ text: newMessage }]
-        });
+        // Gửi request đến Vercel Serverless Function nội bộ
+        const url = '/api/chat';
 
         const requestBody = {
-            contents: contents,
-            systemInstruction: {
-                parts: [{ text: systemInstruction }]
-            },
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 2048
-            }
+            systemInstruction,
+            history,
+            newMessage
         };
 
         const response = await fetch(url, {
@@ -233,22 +218,21 @@ ${hcmusAcademicRulesText}
                 throw new Error('Server đang bận');
             }
             const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData?.error?.message || `Lỗi kết nối API (${response.status})`;
+            const errorMessage = errorData?.error || `Lỗi kết nối API Serverless (${response.status})`;
             throw new Error(errorMessage);
         }
 
         const result = await response.json();
-        const generatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!generatedText) {
+        
+        if (!result.reply) {
             throw new Error('API không trả về nội dung hợp lệ.');
         }
 
         console.log('--- CHATBOT INTERACTION ---');
         console.log('User Request:', newMessage);
-        console.log('Chatbot Response:', generatedText);
+        console.log('Chatbot Response (via Serverless):', result.reply);
         console.log('---------------------------');
 
-        return generatedText;
+        return result.reply;
     }
 }
