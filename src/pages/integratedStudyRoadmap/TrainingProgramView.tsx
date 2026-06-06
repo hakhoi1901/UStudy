@@ -37,9 +37,9 @@ export function TrainingProgramView() {
         return AcademicRulesEngine.getCourseStatus(courseId, studentDb.grades, hasBLMExemption);
     }, [studentDb, hasBLMExemption]);
 
-    // Kiểm tra nhóm môn học có tính vào GPA không
-    const isCourseExcludedFromGPA = (categoryName: string): boolean => {
-        return AcademicRulesEngine.isCategoryExcludedFromGPA(categoryName);
+    // Kiểm tra nhóm môn học có cộng lên tín chỉ tích lũy cấp cha không
+    const isCategoryExcludedFromAccumulation = (categoryName: string): boolean => {
+        return AcademicRulesEngine.isCategoryExcludedFromAccumulation(categoryName);
     };
 
     // Xử lý mở Modal Sơ đồ tiên quyết
@@ -196,7 +196,7 @@ export function TrainingProgramView() {
                             <CategoryNode
                                 key={key}
                                 category={category}
-                                isCourseExcludedFromGPA={isCourseExcludedFromGPA}
+                                isCategoryExcludedFromAccumulation={isCategoryExcludedFromAccumulation}
                                 onShowFlowchart={handleShowFlowchart}
                             />
                         ))}

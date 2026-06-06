@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Book, ShoppingCart, X } from 'lucide-react';
+import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -13,6 +13,7 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
+import { StudyPlannerDraftView } from './StudyPlannerDraftView';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
@@ -20,6 +21,7 @@ import { createPortal } from 'react-dom';
 // Danh sách các tab
 export const tabs = {
     trainingProgram: 'trainingProgram',
+    draft: 'draft',
     selection: 'selection',
     calendar: 'calendar',
 } as const;
@@ -229,6 +231,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
+                                { id: tabs.draft, label: 'Nháp kế hoạch', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
@@ -242,6 +245,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
+                                { id: tabs.draft, label: 'Nháp', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
@@ -253,6 +257,11 @@ export function IntegratedStudyRoadmap() {
                     {/* Tab 1: Chương trình đào tạo */}
                     {activeTab === 'trainingProgram' && (
                         <TrainingProgramView />
+                    )}
+
+                    {/* Tab Nháp: kéo môn vào học kỳ */}
+                    {activeTab === 'draft' && (
+                        <StudyPlannerDraftView />
                     )}
 
                     {/* Tab 2: Chọn môn học */}

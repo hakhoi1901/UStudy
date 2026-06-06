@@ -18,7 +18,7 @@ export interface CourseData {
 interface CategoryNodeProps {
     category: any;
     depth?: number;
-    isCourseExcludedFromGPA: (courseName: string) => boolean;
+    isCategoryExcludedFromAccumulation: (courseName: string) => boolean;
     onShowFlowchart: (courseId: string) => void;
 }
 
@@ -120,7 +120,7 @@ const CategoryUIComponent = React.memo(({
     );
 });
 
-export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedFromGPA, onShowFlowchart }: CategoryNodeProps) => {
+export const CategoryNode = React.memo(({ category, depth = 0, isCategoryExcludedFromAccumulation, onShowFlowchart }: CategoryNodeProps) => {
 
     const renderCategory = (cat: any, currentDepth: number): RenderResult => {
         let hasMatchingCourses = false;
@@ -144,8 +144,8 @@ export const CategoryNode = React.memo(({ category, depth = 0, isCourseExcludedF
                 if (node) hasMatchingCourses = true;
 
                 categoryEarnedCredits += earnedCredits;
-                // Logic gốc: Trừ ra nếu môn này không tính GPA
-                if (subCat.name && isCourseExcludedFromGPA(subCat.name)) {
+                // Vẫn tính trong nhóm con, nhưng không cộng lên cấp cha nếu nhóm này không tính tích lũy.
+                if (subCat.name && isCategoryExcludedFromAccumulation(subCat.name)) {
                     categoryEarnedCredits -= earnedCredits;
                 }
                 return <div key={subKey}>{node}</div>;

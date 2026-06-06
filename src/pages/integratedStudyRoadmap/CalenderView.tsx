@@ -7,10 +7,11 @@ import { type SolverPreferences, type ScheduleOption } from '../../hooks/useSche
 import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
+import type { Tab } from './IntegratedStudyRoadmap';
 
 interface CalendarViewProps {
     selectedCourses: Set<string>;
-    setActiveTab: (tab: 'trainingProgram' | 'selection' | 'calendar') => void;
+    setActiveTab: (tab: Tab) => void;
     currentSections: ClassSection[];
     activeOption: number;
     options: any[];

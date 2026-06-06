@@ -41,6 +41,8 @@ export const STORAGE_KEYS = {
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
     /** Cấu hình ưu tiên xếp lịch */
     SOLVER_PREFERENCES: 'solver_preferences',
+    /** Bản nháp kế hoạch học tập theo học kỳ */
+    STUDY_PLAN_DRAFT: 'study_plan_draft',
     /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */
