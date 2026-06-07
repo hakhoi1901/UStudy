@@ -1,194 +1,232 @@
-import React, { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Check, X } from 'lucide-react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
+import type { ClassPreferenceLevel, ClassPreferenceSelection } from '../logic/scheduler/GroupTypes';
 
-
-// định nghĩa props cho modal lọc lớp
 interface CourseClassFilterModalProps {
-    courseCode: string;
-    courseNameVi: string;
-    isOpen: boolean;
-    onClose: () => void;
-    allowedClassesMap: Record<string, string[]>;
-    setAllowedClassesMap: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  courseCode: string;
+  courseNameVi: string;
+  isOpen: boolean;
+  onClose: () => void;
+  allowedClassesMap: Record<string, string[]>;
+  setAllowedClassesMap: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  classPreferenceMap?: Record<string, ClassPreferenceSelection>;
+  setClassPreferenceMap?: React.Dispatch<React.SetStateAction<Record<string, ClassPreferenceSelection>>>;
 }
 
-/**
- * 
- * @param courseCode mã môn học
- * @param courseNameVi tên môn học
- * @param isOpen trạng thái mở/đóng modal
- * @param onClose hàm đóng modal
- * @param allowedClassesMap map chứa các lớp được phép
- * @param setAllowedClassesMap hàm set các lớp được phép
- * @returns trả về modal lọc lớp chứa danh sách các lớp và trạng thái được phép/không được phép
- * 
- * render modal lọc lớp 
- */
 export function CourseClassFilterModal({
-    courseCode, // mã môn học
-    courseNameVi, // tên môn học
-    isOpen, // trạng thái mở/đóng modal
-    onClose, // hàm đóng modal
-    allowedClassesMap, // map chứa các lớp được phép
-    setAllowedClassesMap, // hàm set các lớp được phép
+  courseCode,
+  courseNameVi,
+  isOpen,
+  onClose,
+  allowedClassesMap,
+  setAllowedClassesMap,
+  classPreferenceMap,
+  setClassPreferenceMap,
 }: CourseClassFilterModalProps) {
-    // state chứa danh sách các lớp có sẵn (mặc định là tất cả các lớp)
-    const [availableClasses, setAvailableClasses] = useState<{ id: string, schedule?: string[] }[]>([]);
+  const [availableClasses, setAvailableClasses] = useState<{ id: string; schedule?: string[] }[]>([]);
 
-    // effect xử lý khi mở modal
-    useEffect(() => {
-        if (!isOpen) return;
+  useEffect(() => {
+    if (!isOpen) return;
 
-        // đọc dữ liệu từ storage
-        const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
-        const courseData = courseDb.find((c: any) => c.id === courseCode);
+    const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
+    const courseData = courseDb.find((course: any) => course.id === courseCode);
+    setAvailableClasses(courseData?.classes ?? []);
+  }, [isOpen, courseCode]);
 
-        // set danh sách các lớp có sẵn
-        if (courseData && courseData.classes) {
-            setAvailableClasses(courseData.classes);
-        } else {
-            setAvailableClasses([]);
-        }
-    }, [isOpen, courseCode]);
+  if (!isOpen) return null;
 
-    // nếu modal không mở thì return null
-    if (!isOpen) return null;
+  const activeClasses = allowedClassesMap[courseCode]
+    ? new Set(allowedClassesMap[courseCode])
+    : new Set(availableClasses.map((courseClass) => courseClass.id));
+  const usesPreferenceMode = Boolean(classPreferenceMap && setClassPreferenceMap);
+  const classPreferenceLabels: { value: ClassPreferenceLevel | null; label: string; activeClass: string }[] = [
+    { value: 'excluded', label: 'Cấm', activeClass: 'bg-rose-600 text-white' },
+    { value: null, label: 'Chọn', activeClass: 'bg-gray-700 text-white' },
+    { value: 'preferred', label: 'Ưu tiên', activeClass: 'bg-[#004A98] text-white' },
+    { value: 'required', label: 'Bắt buộc', activeClass: 'bg-red-600 text-white' },
+  ];
 
-    // set các lớp được phép
-    const activeClasses = allowedClassesMap[courseCode]
-        ? new Set(allowedClassesMap[courseCode])
-        : new Set(availableClasses.map(c => c.id));
+  const handleToggle = (classId: string) => {
+    setAllowedClassesMap((previous) => {
+      const currentSelected = previous[courseCode] ? [...previous[courseCode]] : availableClasses.map((courseClass) => courseClass.id);
+      const nextSelected = currentSelected.includes(classId)
+        ? currentSelected.filter((id) => id !== classId)
+        : [...currentSelected, classId];
+      return { ...previous, [courseCode]: nextSelected };
+    });
+  };
 
-    // hàm xử lý khi click vào checkbox
-    const handleToggle = (classId: string) => {
-        setAllowedClassesMap(prev => {
-            const currentSelected = prev[courseCode] ? [...prev[courseCode]] : availableClasses.map(c => c.id);
-            let newSelected;
-            if (currentSelected.includes(classId)) {
-                newSelected = currentSelected.filter(id => id !== classId);
-            } else {
-                newSelected = [...currentSelected, classId];
-            }
-            return { ...prev, [courseCode]: newSelected };
-        });
-    };
+  const handleSelectAll = (selectAll: boolean) => {
+    setAllowedClassesMap((previous) => ({
+      ...previous,
+      [courseCode]: selectAll ? availableClasses.map((courseClass) => courseClass.id) : [],
+    }));
+  };
 
-    // hàm xử lý khi click vào chọn tất cả/bỏ chọn tất cả
-    const handleSelectAll = (selectAll: boolean) => {
-        setAllowedClassesMap(prev => ({
-            ...prev,
-            [courseCode]: selectAll ? availableClasses.map(c => c.id) : []
-        }));
-    };
+  const getPreferenceLevel = (classId: string): ClassPreferenceLevel | null => {
+    const selection = classPreferenceMap?.[courseCode];
+    if (selection?.excluded?.includes(classId)) return 'excluded';
+    if (selection?.required?.includes(classId)) return 'required';
+    if (selection?.preferred?.includes(classId)) return 'preferred';
+    return null;
+  };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-xl w-05 max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+  const setPreferenceLevel = (classId: string, level: ClassPreferenceLevel | null) => {
+    setClassPreferenceMap?.((current) => {
+      const excluded = new Set(current[courseCode]?.excluded ?? []);
+      const preferred = new Set(current[courseCode]?.preferred ?? []);
+      const required = new Set(current[courseCode]?.required ?? []);
+      excluded.delete(classId);
+      preferred.delete(classId);
+      required.delete(classId);
 
-                    {/* tiêu đề modal */}
-                    <div>
-                        <h3 className="font-semibold text-gray-900 leading-tight">Lọc lớp: {courseCode}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5">{courseNameVi}</p>
+      if (level === 'excluded') excluded.add(classId);
+      if (level === 'preferred') preferred.add(classId);
+      if (level === 'required') required.add(classId);
+
+      const nextSelection: ClassPreferenceSelection = {
+        excluded: Array.from(excluded).sort((a, b) => a.localeCompare(b)),
+        preferred: Array.from(preferred).sort((a, b) => a.localeCompare(b)),
+        required: Array.from(required).sort((a, b) => a.localeCompare(b)),
+      };
+
+      if (
+        (nextSelection.excluded?.length ?? 0) === 0 &&
+        (nextSelection.preferred?.length ?? 0) === 0 &&
+        (nextSelection.required?.length ?? 0) === 0
+      ) {
+        const { [courseCode]: _removed, ...rest } = current;
+        return rest;
+      }
+
+      return { ...current, [courseCode]: nextSelection };
+    });
+  };
+
+  const clearPreference = () => {
+    setClassPreferenceMap?.((current) => {
+      const { [courseCode]: _removed, ...rest } = current;
+      return rest;
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 p-4">
+          <div>
+            <h3 className="font-semibold leading-tight text-gray-900">
+              {usesPreferenceMode ? 'Cấu hình lớp' : 'Lọc lớp'}: {courseCode}
+            </h3>
+            <p className="mt-0.5 text-xs text-gray-500">{courseNameVi}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer rounded-lg p-1 text-gray-500 transition-colors hover:bg-gray-200"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          {availableClasses.length === 0 ? (
+            <div className="py-4 text-center text-sm text-gray-500">Không tìm thấy dữ liệu lớp học cho môn này.</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-gray-500">
+                  {usesPreferenceMode
+                    ? 'Chọn Cấm / Ưu tiên / Bắt buộc cho lớp của thành viên này'
+                    : 'Bỏ tick để loại trừ khỏi thuật toán xếp lịch'}
+                </span>
+                <div className="flex gap-2">
+                  {usesPreferenceMode ? (
+                    <button type="button" onClick={clearPreference} className="text-xs text-gray-500 hover:text-red-600 hover:underline">
+                      Xóa cấu hình
+                    </button>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => handleSelectAll(true)} className="text-xs text-[#004A98] hover:underline">
+                        Chọn tất cả
+                      </button>
+                      <span className="text-gray-300">|</span>
+                      <button type="button" onClick={() => handleSelectAll(false)} className="text-xs text-gray-500 hover:text-red-600 hover:underline">
+                        Bỏ chọn tất cả
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {availableClasses.sort((a, b) => a.id.localeCompare(b.id)).map((availableClass) => {
+                const isChecked = activeClasses.has(availableClass.id);
+                const preferenceLevel = getPreferenceLevel(availableClass.id);
+                const classTone = preferenceLevel === 'excluded'
+                  ? 'border-rose-300 bg-rose-50'
+                  : preferenceLevel === 'required'
+                    ? 'border-red-300 bg-red-50'
+                    : preferenceLevel === 'preferred' || isChecked
+                      ? 'border-[#004A98] bg-blue-50/50'
+                      : 'border-gray-300 bg-gray-50 hover:bg-gray-100';
+
+                return (
+                  <div key={availableClass.id} className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${classTone}`}>
+                    {!usesPreferenceMode && (
+                      <label className={`mt-0.5 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border ${isChecked ? 'border-[#004A98] bg-[#004A98]' : 'border-gray-300 bg-white'}`}>
+                        <input type="checkbox" className="hidden" checked={isChecked} onChange={() => handleToggle(availableClass.id)} />
+                        {isChecked && <Check className="h-3 w-3 text-white" />}
+                      </label>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-medium ${preferenceLevel === 'excluded' ? 'text-rose-900' : preferenceLevel === 'required' ? 'text-red-900' : isChecked || preferenceLevel === 'preferred' ? 'text-blue-900' : 'text-gray-700'}`}>
+                        {availableClass.id.replace(/_/g, ' ')}
+                      </p>
+
+                      {availableClass.schedule && availableClass.schedule.length > 0 && (
+                        <div className="mt-1 flex flex-col gap-0.5">
+                          <span className={`text-xs ${preferenceLevel === 'excluded' ? 'text-rose-700/80' : preferenceLevel === 'required' ? 'text-red-700/80' : isChecked || preferenceLevel === 'preferred' ? 'text-blue-700/80' : 'text-gray-500'}`}>
+                            {availableClass.schedule.join(', ')}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* nút đóng modal */}
-                    <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 cursor-pointer"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                <div className="p-4 flex-1 overflow-y-auto">
-
-                    {/* hiển thị danh sách các lớp */}
-                    {availableClasses.length === 0 ? (
-                        <div className="text-center text-sm py-4 text-gray-500">
-                            Không tìm thấy dữ liệu lớp học cho môn này.
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-gray-500 font-medium">Bỏ tick để loại trừ khỏi thuật toán xếp lịch</span>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleSelectAll(true)}
-                                        className="text-xs text-[#004A98] hover:underline"
-                                    >
-                                        Chọn tất cả
-                                    </button>
-                                    <span className="text-gray-300">|</span>
-                                    <button
-                                        onClick={() => handleSelectAll(false)}
-                                        className="text-xs text-gray-500 hover:text-red-600 hover:underline"
-                                    >
-                                        Bỏ chọn tất cả
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* hiển thị danh sách các lớp */}
-                            {availableClasses.sort((a, b) => a.id.localeCompare(b.id)).map((ac) => {
-                                // kiểm tra xem lớp có được phép không
-                                const isChecked = activeClasses.has(ac.id);
-                                return (
-                                    <label
-                                        key={ac.id}
-                                        className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${isChecked ? 'border-[#004A98] bg-blue-50/50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        <div className={`mt-0.5 shrink-0 flex items-center justify-center w-4 h-4 rounded border ${isChecked ? 'bg-[#004A98] border-[#004A98]' : 'bg-white border-gray-300'
-                                            }`}>
-                                            <input
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={isChecked}
-                                                onChange={() => handleToggle(ac.id)}
-                                            />
-                                            {isChecked && <Check className="w-3 h-3 text-white" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-
-                                            {/* hiển thị tên lớp */}
-                                            <p className={`text-sm font-medium ${isChecked ? 'text-blue-900' : 'text-gray-700'}`}>
-                                                {ac.id.replace(/_/g, ' ')}
-                                            </p>
-
-                                            {/* hiển thị lịch học */}
-                                            {ac.schedule && ac.schedule.length > 0 && (
-                                                <div className="mt-1 flex flex-col gap-0.5">
-                                                    {ac.schedule && ac.schedule.length > 0 && (
-                                                        <div className="mt-1 flex flex-col gap-0.5">
-                                                            {/* Nối các phần tử bằng dấu phẩy và khoảng trắng */}
-                                                            <span className={`text-xs ${isChecked ? 'text-blue-700/80' : 'text-gray-500'}`}>
-                                                                {ac.schedule.join(', ')}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </label>
-                                );
-                            })}
-                        </div>
+                    {usesPreferenceMode && (
+                      <div className="grid w-[184px] shrink-0 grid-cols-2 gap-1 rounded-lg bg-white p-1 sm:w-[244px] sm:grid-cols-4">
+                        {classPreferenceLabels.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setPreferenceLevel(availableClass.id, item.value)}
+                            className={`rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${preferenceLevel === item.value ? item.activeClass : 'text-gray-500 hover:bg-gray-100'}`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
                     )}
-                </div>
-
-                <div className="p-4 border-t border-gray-100 bg-gray-50 sm:flex sm:flex-row-reverse">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#004A98] text-base font-medium text-white hover:bg-[#003A78] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                    >
-                        Đóng
-                    </button>
-                </div>
+                  </div>
+                );
+              })}
             </div>
+          )}
         </div>
-    );
+
+        <div className="border-t border-gray-100 bg-gray-50 p-4 sm:flex sm:flex-row-reverse">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#004A98] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#003A78] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
