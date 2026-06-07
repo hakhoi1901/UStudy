@@ -19,7 +19,7 @@ import type { SolverPreferences } from '../hooks/useScheduleSolver';
 import courseDbJson from '../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../utils/dayOffPreferences';
 
-type GroupScheduleStep = 1 | 2 | 3 | 4;
+type GroupScheduleStep = 1 | 2 | 3;
 
 const defaultSolverPreferences: SolverPreferences = {
   daysOff: [],
@@ -29,10 +29,9 @@ const defaultSolverPreferences: SolverPreferences = {
 };
 
 const stepItems: Array<{ id: GroupScheduleStep; label: string }> = [
-  { id: 1, label: 'Thêm thành viên' },
-  { id: 2, label: 'Cấu hình nhóm' },
-  { id: 3, label: 'Xếp lịch' },
-  { id: 4, label: 'Kết quả' },
+  { id: 1, label: 'Nhóm' },
+  { id: 2, label: 'Ưu tiên' },
+  { id: 3, label: 'Kết quả' },
 ];
 
 interface GroupSchedulePageProps {
@@ -165,10 +164,10 @@ export function GroupSchedulePage({
 
   useEffect(() => {
     if (result?.solutions.length) {
-      setActiveStep(4);
+      setActiveStep(3);
       setActiveResultIndex(0);
       setActivePreviewMemberIndex(result.solutions[0]?.schedules[0]?.memberIndex ?? 0);
-      setShowGroupCalendarPreview(false);
+      setShowGroupCalendarPreview(true);
     }
   }, [result]);
 
@@ -308,6 +307,7 @@ export function GroupSchedulePage({
 
   const runGroupSolve = () => {
     setActiveStep(3);
+    setShowGroupCalendarPreview(true);
     solve({ ...groupPrefs, groupPreferredClasses });
   };
 
@@ -339,16 +339,16 @@ export function GroupSchedulePage({
 
   const canOpenStep = (step: GroupScheduleStep) => {
     if (step === 1) return true;
-    if (step === 2 || step === 3) return members.length > 0;
+    if (step === 2) return members.length > 0;
     return !!result?.solutions.length;
   };
 
   const renderStepper = () => (
     <div className="rounded-lg border border-gray-200 bg-white p-3">
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2">
         {stepItems.map((step) => {
           const isActive = activeStep === step.id;
-          const isDone = activeStep > step.id || (step.id === 4 && !!result?.solutions.length);
+          const isDone = activeStep > step.id || (step.id === 3 && !!result?.solutions.length);
           const isClickable = canOpenStep(step.id);
           return (
             <button
@@ -409,7 +409,7 @@ export function GroupSchedulePage({
       <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-[#004A98]" />
-          <h2 className="text-lg font-semibold text-gray-900">Thêm thành viên</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Nhóm của bạn</h2>
         </div>
 
         <div>
@@ -470,10 +470,22 @@ export function GroupSchedulePage({
         </div>
 
         <div className="flex justify-end border-t border-gray-200 pt-4">
-          <Button type="button" disabled={members.length === 0} onClick={() => setActiveStep(2)} className="bg-[#004A98] hover:bg-[#003d7a] text-white">
-            Tiếp theo
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button type="button" variant="outline" disabled={members.length === 0} onClick={() => setActiveStep(2)}>
+              <Settings className="h-4 w-4" />
+              Tùy chỉnh ưu tiên
+            </Button>
+            <Button type="button" disabled={members.length < 2 || solving} onClick={runGroupSolve} className="bg-emerald-600 text-white hover:bg-emerald-700">
+              <Calendar className="h-4 w-4" />
+              {solving ? 'Đang xếp lịch...' : 'Xếp lịch ngay'}
+            </Button>
+          </div>
         </div>
+        {members.length === 1 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Cần ít nhất 2 thành viên để xếp lịch nhóm.
+          </div>
+        )}
       </section>
 
       {renderMembersPanel()}
@@ -482,9 +494,15 @@ export function GroupSchedulePage({
 
   const renderGroupConfigStep = () => (
     <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Cấu hình nhóm trước khi xếp lịch</h2>
-        <p className="mt-1 text-sm text-gray-500">Các ưu tiên này áp dụng cho bài toán xếp lịch chung của toàn nhóm.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Ưu tiên tùy chọn</h2>
+          <p className="mt-1 text-sm text-gray-500">Có thể bỏ qua bước này. Các ưu tiên dưới đây chỉ giúp solver chọn lịch hợp gu nhóm hơn.</p>
+        </div>
+        <Button type="button" disabled={members.length < 2 || solving} onClick={runGroupSolve} className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Calendar className="h-4 w-4" />
+          {solving ? 'Đang xếp lịch...' : 'Xếp lịch nhóm'}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -664,45 +682,9 @@ export function GroupSchedulePage({
         <Button type="button" variant="outline" onClick={() => setActiveStep(1)}>
           Quay lại
         </Button>
-        <Button type="button" disabled={members.length < 2} onClick={() => setActiveStep(3)} className="bg-[#004A98] hover:bg-[#003d7a] text-white">
-          Tiếp tục xếp lịch
-        </Button>
-      </div>
-    </section>
-  );
-
-  const renderSolveStep = () => (
-    <section className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Xếp lịch</h2>
-        <p className="mt-1 text-sm text-gray-500">Kiểm tra nhanh cấu hình trước khi chạy solver nhóm.</p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="rounded-lg bg-gray-50 p-3">
-          <div className="text-xs text-gray-500">Thành viên</div>
-          <div className="mt-1 text-xl font-semibold text-gray-900">{members.length}</div>
-        </div>
-        <div className="rounded-lg bg-gray-50 p-3">
-          <div className="text-xs text-gray-500">Môn trong nhóm</div>
-          <div className="mt-1 text-xl font-semibold text-gray-900">{groupCourses.length}</div>
-        </div>
-        <div className="rounded-lg bg-gray-50 p-3">
-          <div className="text-xs text-gray-500">Buổi ưu tiên</div>
-          <div className="mt-1 text-sm font-semibold text-gray-900">{groupPrefs.session === '1' ? 'Sáng' : groupPrefs.session === '2' ? 'Chiều' : 'Tự do'}</div>
-        </div>
-        <div className="rounded-lg bg-gray-50 p-3">
-          <div className="text-xs text-gray-500">Ngày nghỉ</div>
-          <div className="mt-1 text-sm font-semibold text-gray-900">{formatDaysOff(groupPrefs.daysOff)}</div>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
-          Quay lại cấu hình
-        </Button>
-        <Button type="button" className="text-white bg-emerald-600 hover:bg-emerald-700" disabled={members.length < 2 || solving} onClick={runGroupSolve}>
-          {solving ? 'Đang xếp lịch...' : 'Xếp lịch cho nhóm'}
+        <Button type="button" disabled={members.length < 2 || solving} onClick={runGroupSolve} className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Calendar className="h-4 w-4" />
+          {solving ? 'Đang xếp lịch...' : 'Xếp lịch nhóm'}
         </Button>
       </div>
     </section>
@@ -713,7 +695,7 @@ export function GroupSchedulePage({
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Kết quả xếp lịch nhóm</h2>
-          <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} kịch bản khả dụng.</p>
+          <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} phương án khả dụng.</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className={showGroupCalendarPreview? 'hidden' : 'flex rounded-lg bg-gray-100 p-1'}>
@@ -740,12 +722,11 @@ export function GroupSchedulePage({
             disabled={!result?.solutions.length}
           >
             <Calendar className="h-4 w-4" />
-            {showGroupCalendarPreview ? 'Xem bảng kết quả' : 'Xem lịch nhóm'}
+            {showGroupCalendarPreview ? 'Xem chi tiết' : 'Xem lịch nhóm'}
           </Button>
-          
-          {/* <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
-            Chỉnh cấu hình
-          </Button> */}
+          <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
+            Chỉnh ưu tiên
+          </Button>
         </div>
       </div>
       
@@ -787,7 +768,7 @@ export function GroupSchedulePage({
                       : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  Kịch bản {option.option}
+                  Phương án {option.option}
                 </button>
               ))}
             </div>
@@ -836,7 +817,7 @@ export function GroupSchedulePage({
                 onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
               />
               <p className="mt-3 text-xs italic text-gray-400">
-                Lưu toàn bộ thành viên trong kịch bản hiện tại. Khi mở lại ở tab lịch dự kiến, bạn có thể chuyển qua lại giữa các thành viên.
+                Lưu toàn bộ thành viên trong phương án hiện tại. Khi mở lại ở tab lịch dự kiến, bạn có thể chuyển qua lại giữa các thành viên.
               </p>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 md:p-5">
@@ -863,7 +844,7 @@ export function GroupSchedulePage({
       {!embedded && (
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Xếp lịch nhóm</h1>
-          <p className="mt-1 text-sm text-gray-600">Tạo nhóm, cấu hình ưu tiên chung, chạy solver và so sánh từng kịch bản.</p>
+          <p className="mt-1 text-sm text-gray-600">Mời bạn bè, bấm xếp lịch, rồi chọn phương án phù hợp nhất cho cả nhóm.</p>
         </div>
       )}
 
@@ -885,8 +866,7 @@ export function GroupSchedulePage({
 
       {activeStep === 1 && renderMemberStep()}
       {activeStep === 2 && renderGroupConfigStep()}
-      {activeStep === 3 && renderSolveStep()}
-      {activeStep === 4 && renderResultStep()}
+      {activeStep === 3 && renderResultStep()}
     </div>
   );
 }
