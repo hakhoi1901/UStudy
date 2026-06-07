@@ -6,6 +6,7 @@ import { DepartmentProvider } from './context/DepartmentContext';
 import { CryptoProvider, CACHE_POPULATED_EVENT, useCrypto } from './context/CryptoContext';
 import { SecurityGate } from './components/SecurityGate';
 import { SecurityLock } from './components/SecurityLock';
+import { ChatbotWidget } from './components/ChatbotWidget';
 import { processRawData } from './logic/dataProcessor';
 import { APP_CONFIG } from './config';
 import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
@@ -86,6 +87,7 @@ function AppContent() {
       )}
 
       <AppRouter />
+      <ChatbotWidget />
     </>
   );
 }
