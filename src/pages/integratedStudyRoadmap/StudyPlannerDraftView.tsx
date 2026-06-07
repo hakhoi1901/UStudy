@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import {
     AlertTriangle,
+    CalendarPlus,
     CheckCircle2,
     ChevronDown,
     ChevronRight,
@@ -21,6 +23,8 @@ import { STORAGE_KEYS } from '../../config';
 import { AcademicRulesEngine } from '../../features/grades';
 
 type CourseStatus = 'passed' | 'studying' | 'failed' | 'none';
+type MobilePlannerTab = 'courses' | 'semesters';
+type MobileSheetStep = 'details' | 'semesters';
 
 interface CourseMeta {
     course_id: string;
@@ -123,12 +127,12 @@ function formatAcademicSemesterLabel(semester: ParsedSemester): string {
 function getStudyYear(semester: ParsedSemester, anchor: ParsedSemester): number {
     const offset = getSemesterSequenceValue(semester) - getSemesterSequenceValue(anchor);
     return Math.max(1, Math.floor(offset / 3) + 1);
-}
+}   
 
 function getStudySemester(semester: ParsedSemester, anchor: ParsedSemester): number {
     const offset = getSemesterSequenceValue(semester) - getSemesterSequenceValue(anchor);
-    return offset % 3 + 1
-}
+    return offset % 3 + 1;
+}   
 
 function formatSemesterLabel(semester: ParsedSemester, anchor: ParsedSemester = semester): string {
     return `Kì ${getStudySemester(semester, anchor)} - Năm ${getStudyYear(semester, anchor)}`;
@@ -360,12 +364,14 @@ function DraftCourseRow({
     rootCompleted = false,
     onDragStart,
     onRemoveFromPlan,
+    onOpenMobilePlanner,
 }: {
     course: CourseMeta;
     isPlanned: boolean;
     rootCompleted?: boolean;
     onDragStart: (courseId: string, event: DragEvent<HTMLDivElement>) => void;
     onRemoveFromPlan: (courseId: string) => void;
+    onOpenMobilePlanner: (course: CourseMeta) => boolean;
 }) {
     const [showDetails, setShowDetails] = useState(false);
     const status = course.status || 'none';
@@ -382,7 +388,10 @@ function DraftCourseRow({
         <div className="group">
             <div
                 draggable={!isLocked}
-                onClick={() => setShowDetails((value) => !value)}
+                onClick={() => {
+                    if (!isLocked && onOpenMobilePlanner(course)) return;
+                    setShowDetails((value) => !value);
+                }}
                 onDragStart={(event) => onDragStart(course.course_id, event)}
                 className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg transition-all ${getContainerStyle()} ${isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
             >
@@ -418,6 +427,19 @@ function DraftCourseRow({
                 </div>
 
                 <div className="flex items-center flex-shrink-0">
+                    {!isLocked && (
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onOpenMobilePlanner(course);
+                            }}
+                            className="mr-0.5 inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-1.5 text-[#004A98] transition-colors hover:bg-blue-100 md:hidden"
+                            title={isPlanned ? 'Đổi học kỳ' : 'Lên lịch'}
+                        >
+                            <CalendarPlus className="h-4 w-4" />
+                        </button>
+                    )}
                     {isPlanned && (
                         <button
                             type="button"
@@ -580,12 +602,14 @@ function DraftCategoryNode({
     manuallyPlannedCourseIds,
     onDragStart,
     onRemoveFromPlan,
+    onOpenMobilePlanner,
 }: {
     category: any;
     depth?: number;
     manuallyPlannedCourseIds: Set<string>;
     onDragStart: (courseId: string, event: DragEvent<HTMLDivElement>) => void;
     onRemoveFromPlan: (courseId: string) => void;
+    onOpenMobilePlanner: (course: CourseMeta) => boolean;
 }) {
     const [isExpanded, setIsExpanded] = useState(true);
     const coursesToRender = (category.coursesData || []) as CourseMeta[];
@@ -640,6 +664,7 @@ function DraftCategoryNode({
                                     rootCompleted={isCompleted}
                                     onDragStart={onDragStart}
                                     onRemoveFromPlan={onRemoveFromPlan}
+                                    onOpenMobilePlanner={onOpenMobilePlanner}
                                 />
                             ))}
                         </div>
@@ -684,6 +709,7 @@ function DraftCategoryNode({
                                             rootCompleted={optionCompleted}
                                             onDragStart={onDragStart}
                                             onRemoveFromPlan={onRemoveFromPlan}
+                                            onOpenMobilePlanner={onOpenMobilePlanner}
                                         />
                                     ))}
                                 </div>
@@ -699,6 +725,7 @@ function DraftCategoryNode({
                             manuallyPlannedCourseIds={manuallyPlannedCourseIds}
                             onDragStart={onDragStart}
                             onRemoveFromPlan={onRemoveFromPlan}
+                            onOpenMobilePlanner={onOpenMobilePlanner}
                         />
                     ))}
                 </div>
@@ -714,6 +741,9 @@ export function StudyPlannerDraftView() {
     const layoutRef = useRef<HTMLDivElement>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeDropId, setActiveDropId] = useState<string | null>(null);
+    const [mobileTab, setMobileTab] = useState<MobilePlannerTab>('courses');
+    const [mobileSheetStep, setMobileSheetStep] = useState<MobileSheetStep>('details');
+    const [selectedMobileCourseId, setSelectedMobileCourseId] = useState<string | null>(null);
     const [isResizingLayout, setIsResizingLayout] = useState(false);
     const [leftPanelPercent, setLeftPanelPercent] = useState(() => {
         const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
@@ -744,6 +774,13 @@ export function StudyPlannerDraftView() {
     const courseById = useMemo(() => {
         return new Map(courses.map((course: CourseMeta) => [course.course_id, course]));
     }, [courses]);
+
+    const selectedMobileCourse = useMemo(() => {
+        if (!selectedMobileCourseId) return null;
+        const course = courseById.get(selectedMobileCourseId);
+        if (!course) return null;
+        return { ...course, status: getCourseStatus(course.course_id) };
+    }, [courseById, getCourseStatus, selectedMobileCourseId]);
 
     const historicalDraft = useMemo(() => {
         return buildHistoricalDraft(studentDb?.grades, courseById, hasBLMExemption);
@@ -813,6 +850,14 @@ export function StudyPlannerDraftView() {
         });
         return map;
     }, [prerequisites]);
+
+    const selectedCoursePlannedSemester = useMemo(() => {
+        if (!selectedMobileCourseId) return null;
+        return draft.semesters.find((semester) => (
+            !semester.isHistorical &&
+            (draft.plan[semester.id] || []).includes(selectedMobileCourseId)
+        )) || null;
+    }, [draft.plan, draft.semesters, selectedMobileCourseId]);
 
     const getMissingPrerequisites = (courseId: string, semesterIndex: number) => {
         const rules = prereqByCourse.get(courseId) || [];
@@ -885,6 +930,19 @@ export function StudyPlannerDraftView() {
     const handleDragStart = (courseId: string, event: DragEvent<HTMLDivElement>) => {
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', courseId);
+    };
+
+    const openMobileCoursePlanner = (course: CourseMeta): boolean => {
+        if (typeof window === 'undefined' || window.innerWidth >= 1024) return false;
+
+        setSelectedMobileCourseId(course.course_id);
+        setMobileSheetStep('details');
+        return true;
+    };
+
+    const closeMobileCoursePlanner = () => {
+        setSelectedMobileCourseId(null);
+        setMobileSheetStep('details');
     };
 
     const addCourseToSemester = (courseId: string, semesterId: string) => {
@@ -971,6 +1029,13 @@ export function StudyPlannerDraftView() {
         }));
     };
 
+    const addMobileCourseToSemester = (semesterId: string) => {
+        if (!selectedMobileCourse) return;
+        addCourseToSemester(selectedMobileCourse.course_id, semesterId);
+        closeMobileCoursePlanner();
+        setMobileTab('semesters');
+    };
+
     const updateLayoutWidth = (clientX: number) => {
         const rect = layoutRef.current?.getBoundingClientRect();
         if (!rect || rect.width <= 0) return;
@@ -1016,12 +1081,30 @@ export function StudyPlannerDraftView() {
     }
 
     return (
-        <div
-            ref={layoutRef}
-            style={layoutStyle}
-            className={`animate-in fade-in grid gap-y-5 duration-500 lg:gap-x-0 lg:[grid-template-columns:var(--draft-planner-grid-template)] ${isResizingLayout ? 'select-none' : ''}`}
-        >
-            <section className="min-w-0 lg:pr-3">
+        <>
+            <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm lg:hidden">
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('courses')}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${mobileTab === 'courses' ? 'bg-[#004A98] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Môn học
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('semesters')}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${mobileTab === 'semesters' ? 'bg-[#004A98] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Học kỳ
+                </button>
+            </div>
+
+            <div
+                ref={layoutRef}
+                style={layoutStyle}
+                className={`animate-in fade-in grid gap-y-5 duration-500 lg:gap-x-0 lg:[grid-template-columns:var(--draft-planner-grid-template)] ${isResizingLayout ? 'select-none' : ''}`}
+            >
+            <section className={`${mobileTab === 'courses' ? 'block' : 'hidden'} min-w-0 lg:block lg:pr-3`}>
                 <div className="mb-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
                     <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#004A98]" />
                     <div className="min-w-0 flex-1">
@@ -1062,6 +1145,7 @@ export function StudyPlannerDraftView() {
                             manuallyPlannedCourseIds={manuallyPlannedCourseIds}
                             onDragStart={handleDragStart}
                             onRemoveFromPlan={removeCourseFromPlan}
+                            onOpenMobilePlanner={openMobileCoursePlanner}
                         />
                     ))}
                 </div>
@@ -1079,7 +1163,7 @@ export function StudyPlannerDraftView() {
                 </button>
             </div>
 
-            <aside className="lg:sticky lg:top-0 lg:max-h-[calc(100vh-11rem)] lg:pl-3">
+            <aside className={`${mobileTab === 'semesters' ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-11rem)] lg:pl-3`}>
                 <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm">
                     <div className="border-b border-gray-100 p-4">
                         <div className="mb-3 flex items-start justify-between gap-3">
@@ -1220,6 +1304,145 @@ export function StudyPlannerDraftView() {
                     </div>
                 </div>
             </aside>
-        </div>
+            </div>
+
+            {selectedMobileCourse && createPortal((
+                <div className="fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[9000] lg:hidden">
+                    <button
+                        type="button"
+                        aria-label="Đóng"
+                        onClick={closeMobileCoursePlanner}
+                        className="absolute inset-0 h-full w-full bg-gray-900/35"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl">
+                        <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-gray-300" />
+                        <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-4 py-4">
+                            <div className="min-w-0">
+                                <p className="text-xs font-semibold uppercase text-gray-500">{selectedMobileCourse.course_id}</p>
+                                <h2 className="mt-1 text-base font-bold leading-snug text-gray-900">{selectedMobileCourse.course_name_vi}</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeMobileCoursePlanner}
+                                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100"
+                                aria-label="Đóng"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {mobileSheetStep === 'details' ? (
+                            <>
+                            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="rounded-lg bg-gray-50 p-3">
+                                        <p className="text-[10px] font-medium uppercase text-gray-500">Tín chỉ</p>
+                                        <p className="mt-1 text-sm font-bold text-gray-900">{selectedMobileCourse.credits} TC</p>
+                                    </div>
+                                    <div className="rounded-lg bg-gray-50 p-3">
+                                        <p className="text-[10px] font-medium uppercase text-gray-500">Loại</p>
+                                        <p className="mt-1 truncate text-sm font-bold text-gray-900">{selectedMobileCourse.course_type || '-'}</p>
+                                    </div>
+                                    <div className="rounded-lg bg-gray-50 p-3">
+                                        <p className="text-[10px] font-medium uppercase text-gray-500">Trạng thái</p>
+                                        <div className="mt-1">
+                                            <StatusBadge
+                                                status={selectedMobileCourse.status || 'none'}
+                                                isPlanned={manuallyPlannedCourseIds.has(selectedMobileCourse.course_id)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
+                                    <div className="mb-2 flex items-center gap-2">
+                                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                        <h3 className="text-sm font-bold text-gray-900">Tiên quyết</h3>
+                                    </div>
+                                    {(() => {
+                                        const rules = prereqByCourse.get(selectedMobileCourse.course_id) || [];
+                                        if (selectedCoursePlannedSemester) {
+                                            const plannedIndex = draft.semesters.findIndex((semester) => semester.id === selectedCoursePlannedSemester.id);
+                                            const missing = getMissingPrerequisites(selectedMobileCourse.course_id, plannedIndex);
+                                            if (missing.length > 0) {
+                                                return <p className="text-xs leading-relaxed text-amber-800">Thiếu: {missing.join(', ')}</p>;
+                                            }
+                                        }
+                                        if (rules.length === 0) {
+                                            return <p className="text-xs leading-relaxed text-gray-500">Chưa có dữ liệu tiên quyết cho môn này.</p>;
+                                        }
+                                        return <p className="text-xs leading-relaxed text-gray-600">Cần học trước: {rules.map((rule) => rule.prereq_id).join(', ')}</p>;
+                                    })()}
+                                </div>
+
+                                {selectedCoursePlannedSemester && (
+                                    <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50 p-3">
+                                        <p className="text-xs font-medium text-indigo-700">Đã lên lịch ở</p>
+                                        <p className="mt-0.5 text-sm font-bold text-indigo-900">{selectedCoursePlannedSemester.label}</p>
+                                    </div>
+                                )}
+
+                            </div>
+                            <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3 shadow-[0_-8px_18px_rgba(15,23,42,0.06)]">
+                                <button
+                                    type="button"
+                                    onClick={() => setMobileSheetStep('semesters')}
+                                    className="w-full rounded-xl bg-[#004A98] px-4 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#003A78]"
+                                >
+                                    {selectedCoursePlannedSemester ? 'Đổi học kỳ' : 'Lên lịch'}
+                                </button>
+                            </div>
+                            </>
+                        ) : (
+                            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setMobileSheetStep('details')}
+                                    className="mb-3 text-sm font-semibold text-[#004A98]"
+                                >
+                                    Quay lại
+                                </button>
+                                <div className="space-y-2">
+                                    {draft.semesters
+                                        .filter((semester) => !semester.isHistorical)
+                                        .map((semester) => {
+                                            const semesterIndex = draft.semesters.findIndex((item) => item.id === semester.id);
+                                            const plannedIds = draft.plan[semester.id] || [];
+                                            const missing = getMissingPrerequisites(selectedMobileCourse.course_id, semesterIndex);
+                                            const isCurrentSemester = selectedCoursePlannedSemester?.id === semester.id;
+
+                                            return (
+                                                <button
+                                                    key={semester.id}
+                                                    type="button"
+                                                    onClick={() => addMobileCourseToSemester(semester.id)}
+                                                    className={`w-full rounded-xl border p-3 text-left transition-colors ${isCurrentSemester ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-gray-900">{semester.label}</p>
+                                                            <p className="mt-0.5 text-xs text-gray-500">{plannedIds.length} môn</p>
+                                                        </div>
+                                                        {isCurrentSemester && (
+                                                            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                                                                Đang chọn
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {missing.length > 0 && (
+                                                        <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] leading-relaxed text-amber-800">
+                                                            Thiếu: {missing.join(', ')}
+                                                        </p>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ), document.body)}
+        </>
     );
 }
