@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
@@ -17,6 +18,7 @@ import { StudyPlannerDraftView } from './StudyPlannerDraftView';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
+import { APP_ROUTES, STUDY_ROADMAP_TAB_TO_PATH, getStudyRoadmapTabFromPath } from '../../app/routes';
 
 // Danh sách các tab
 export const tabs = {
@@ -30,7 +32,12 @@ export type Tab = keyof typeof tabs;
 
 
 export function IntegratedStudyRoadmap() {
-    const [activeTab, setActiveTab] = useState<Tab>('selection');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const activeTab = getStudyRoadmapTabFromPath(location.pathname) || tabs.selection;
+    const setActiveTab = (tab: Tab) => {
+        navigate(STUDY_ROADMAP_TAB_TO_PATH[tab]);
+    };
     const [viewMode, setViewMode] = useState<'recommend' | 'all'>('all');
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
         const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
@@ -62,6 +69,12 @@ export function IntegratedStudyRoadmap() {
     useEffect(() => {
         setShowMobileBasket(false);
     }, [activeTab]);
+
+    useEffect(() => {
+        if (!getStudyRoadmapTabFromPath(location.pathname)) {
+            navigate(APP_ROUTES.studyRoadmapSelection, { replace: true });
+        }
+    }, [location.pathname, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
     const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
