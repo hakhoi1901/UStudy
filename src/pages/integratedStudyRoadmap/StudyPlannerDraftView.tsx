@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
     AlertTriangle,
     CheckCircle2,
@@ -65,6 +65,14 @@ interface ParsedSemester {
 }
 
 const DEFAULT_SEMESTER_COUNT = 12;
+const DEFAULT_LEFT_PANEL_PERCENT = 68;
+const MIN_LEFT_PANEL_PERCENT = 45;
+const MAX_LEFT_PANEL_PERCENT = 78;
+
+function clampPanelPercent(value: number): number {
+    if (!Number.isFinite(value)) return DEFAULT_LEFT_PANEL_PERCENT;
+    return Math.min(MAX_LEFT_PANEL_PERCENT, Math.max(MIN_LEFT_PANEL_PERCENT, Math.round(value)));
+}
 
 function getCurrentYearAnchor(): ParsedSemester {
     return { yearStart: new Date().getFullYear(), semester: 1 };
@@ -703,8 +711,14 @@ export function StudyPlannerDraftView() {
     const { data: { courses, categories, prerequisites } } = useDepartmentData() as ReturnType<typeof useDepartmentData> & {
         data: ReturnType<typeof useDepartmentData>['data'] & { prerequisites: PrerequisiteRule[] };
     };
+    const layoutRef = useRef<HTMLDivElement>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeDropId, setActiveDropId] = useState<string | null>(null);
+    const [isResizingLayout, setIsResizingLayout] = useState(false);
+    const [leftPanelPercent, setLeftPanelPercent] = useState(() => {
+        const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
+        return clampPanelPercent(saved);
+    });
     const [draft, setDraft] = useState<DraftStorage>(() => {
         const saved = readFromStorage<unknown>(STORAGE_KEYS.STUDY_PLAN_DRAFT, null);
         if (isDraftStorage(saved)) return saved;
@@ -748,6 +762,10 @@ export function StudyPlannerDraftView() {
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.STUDY_PLAN_DRAFT, draft);
     }, [draft]);
+
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, leftPanelPercent);
+    }, [leftPanelPercent]);
 
     const plannedCourseIds = useMemo(() => {
         return new Set(Object.values(draft.plan).flat());
@@ -953,6 +971,36 @@ export function StudyPlannerDraftView() {
         }));
     };
 
+    const updateLayoutWidth = (clientX: number) => {
+        const rect = layoutRef.current?.getBoundingClientRect();
+        if (!rect || rect.width <= 0) return;
+        const nextPercent = ((clientX - rect.left) / rect.width) * 100;
+        setLeftPanelPercent(clampPanelPercent(nextPercent));
+    };
+
+    const handleLayoutResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        setIsResizingLayout(true);
+        updateLayoutWidth(event.clientX);
+
+        const handlePointerMove = (moveEvent: PointerEvent) => {
+            updateLayoutWidth(moveEvent.clientX);
+        };
+
+        const handlePointerUp = () => {
+            setIsResizingLayout(false);
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUp);
+        };
+
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+    };
+
+    const layoutStyle = {
+        '--draft-planner-grid-template': `minmax(320px, ${leftPanelPercent}fr) 1rem minmax(300px, ${100 - leftPanelPercent}fr)`,
+    } as CSSProperties & Record<string, string>;
+
     if (courses.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-blue-200 bg-white p-8 shadow-sm">
@@ -968,8 +1016,12 @@ export function StudyPlannerDraftView() {
     }
 
     return (
-        <div className="animate-in fade-in grid gap-5 duration-500 lg:grid-cols-[minmax(0,1fr)_380px]">
-            <section className="min-w-0">
+        <div
+            ref={layoutRef}
+            style={layoutStyle}
+            className={`animate-in fade-in grid gap-y-5 duration-500 lg:gap-x-0 lg:[grid-template-columns:var(--draft-planner-grid-template)] ${isResizingLayout ? 'select-none' : ''}`}
+        >
+            <section className="min-w-0 lg:pr-3">
                 <div className="mb-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
                     <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#004A98]" />
                     <div className="min-w-0 flex-1">
@@ -1015,7 +1067,19 @@ export function StudyPlannerDraftView() {
                 </div>
             </section>
 
-            <aside className="lg:sticky lg:top-0 lg:max-h-[calc(100vh-11rem)]">
+            <div className="hidden items-stretch justify-center lg:flex">
+                <button
+                    type="button"
+                    onPointerDown={handleLayoutResizeStart}
+                    className={`group flex h-full min-h-[28rem] w-4 cursor-col-resize items-center justify-center rounded-lg transition-colors ${isResizingLayout ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
+                    title="Kéo để chỉnh chiều rộng"
+                    aria-label="Kéo để chỉnh chiều rộng danh sách môn và khung học kỳ"
+                >
+                    <span className={`h-14 w-1 rounded-full transition-colors ${isResizingLayout ? 'bg-[#004A98]' : 'bg-gray-300 group-hover:bg-gray-400'}`} />
+                </button>
+            </div>
+
+            <aside className="lg:sticky lg:top-0 lg:max-h-[calc(100vh-11rem)] lg:pl-3">
                 <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm">
                     <div className="border-b border-gray-100 p-4">
                         <div className="mb-3 flex items-start justify-between gap-3">
