@@ -1,0 +1,77 @@
+import { Info, Search, X } from 'lucide-react';
+import { DraftCategoryNode } from './DraftCategoryNode';
+import type { CourseDragStartHandler, MobilePlannerOpenHandler } from './types';
+
+interface DraftCourseListPanelProps {
+    mobileVisible: boolean;
+    searchTerm: string;
+    categories: Record<string, any>;
+    manuallyPlannedCourseIds: Set<string>;
+    onSearchTermChange: (value: string) => void;
+    onDragStart: CourseDragStartHandler;
+    onRemoveFromPlan: (courseId: string) => void;
+    onOpenMobilePlanner: MobilePlannerOpenHandler;
+}
+
+export function DraftCourseListPanel({
+    mobileVisible,
+    searchTerm,
+    categories,
+    manuallyPlannedCourseIds,
+    onSearchTermChange,
+    onDragStart,
+    onRemoveFromPlan,
+    onOpenMobilePlanner,
+}: DraftCourseListPanelProps) {
+    return (
+        <section className={`${mobileVisible ? 'block' : 'hidden'} min-w-0 lg:block lg:pr-3`}>
+            <div className="mb-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
+                <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#004A98]" />
+                <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold text-[#004A98]">Kế hoạch học tập</h3>
+                    <p className="mt-1 text-sm text-blue-800/80">
+                        Kéo môn chưa học từ chương trình đào tạo sang từng học kỳ ở khung bên phải để phác thảo lộ trình tương lai.
+                    </p>
+                    <p className="mt-1 text-sm text-blue-800/80">
+                        Tiến độ tín chỉ tạm tính cả môn đã tích lũy, môn đang học và môn đã lên lịch.
+                    </p>
+                </div>
+            </div>
+
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm theo mã môn hoặc tên môn..."
+                        value={searchTerm}
+                        onChange={(event) => onSearchTermChange(event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm shadow-sm transition-all focus:border-[#004A98] focus:outline-none focus:ring-2 focus:ring-[#004A98]/20"
+                    />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => onSearchTermChange('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-gray-100"
+                        >
+                            <X className="h-4 w-4 text-gray-500" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                {Object.entries(categories).map(([key, category]) => (
+                    <DraftCategoryNode
+                        key={key}
+                        category={category}
+                        manuallyPlannedCourseIds={manuallyPlannedCourseIds}
+                        onDragStart={onDragStart}
+                        onRemoveFromPlan={onRemoveFromPlan}
+                        onOpenMobilePlanner={onOpenMobilePlanner}
+                    />
+                ))}
+            </div>
+        </section>
+    );
+}
