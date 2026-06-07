@@ -59,11 +59,89 @@ interface GradeRecord {
     type?: string;
 }
 
-const createDefaultSemesters = (): SemesterDraft[] =>
-    Array.from({ length: 8 }, (_, index) => ({
-        id: `draft-semester-${index + 1}`,
-        label: `Học kỳ ${index + 1}`,
-    }));
+interface ParsedSemester {
+    yearStart: number;
+    semester: number;
+}
+
+const DEFAULT_SEMESTER_COUNT = 12;
+
+function getCurrentYearAnchor(): ParsedSemester {
+    return { yearStart: new Date().getFullYear(), semester: 1 };
+}
+
+function toFullYear(rawYear: string): number {
+    const year = Number(rawYear);
+    return rawYear.length === 2 ? 2000 + year : year;
+}
+
+function parseSemesterLabel(label: string): ParsedSemester | null {
+    const trimmed = label.trim();
+    if (!trimmed) return null;
+
+    const yearMatch = trimmed.match(/(\d{2,4})\s*[-–]\s*(\d{2,4})/);
+    const semesterMatch =
+        trimmed.match(/\/\s*([1-3])\b/) ||
+        trimmed.match(/học\s*kỳ\s*([1-3])/i) ||
+        trimmed.match(/hoc\s*ky\s*([1-3])/i) ||
+        trimmed.match(/hk\s*([1-3])/i);
+
+    if (!yearMatch || !semesterMatch) return null;
+
+    return {
+        yearStart: toFullYear(yearMatch[1]),
+        semester: Number(semesterMatch[1]),
+    };
+}
+
+function getSemesterSequenceValue(semester: ParsedSemester): number {
+    return semester.yearStart * 3 + semester.semester - 1;
+}
+
+function addSemesters(base: ParsedSemester, offset: number): ParsedSemester {
+    const zeroBasedSemester = base.semester - 1 + offset;
+    return {
+        yearStart: base.yearStart + Math.floor(zeroBasedSemester / 3),
+        semester: (zeroBasedSemester % 3) + 1,
+    };
+}
+
+function formatAcademicSemesterLabel(semester: ParsedSemester): string {
+    const start = String(semester.yearStart).slice(-2);
+    const end = String(semester.yearStart + 1).slice(-2);
+    return `${start}-${end}/${semester.semester}`;
+}
+
+function getStudyYear(semester: ParsedSemester, anchor: ParsedSemester): number {
+    const offset = getSemesterSequenceValue(semester) - getSemesterSequenceValue(anchor);
+    return Math.max(1, Math.floor(offset / 3) + 1);
+}
+
+function getStudySemester(semester: ParsedSemester, anchor: ParsedSemester): number {
+    const offset = getSemesterSequenceValue(semester) - getSemesterSequenceValue(anchor);
+    return offset % 3 + 1
+}
+
+function formatSemesterLabel(semester: ParsedSemester, anchor: ParsedSemester = semester): string {
+    return `Kì ${getStudySemester(semester, anchor)} - Năm ${getStudyYear(semester, anchor)}`;
+}
+
+function getSemesterId(label: string): string {
+    const parsed = parseSemesterLabel(label);
+    const idLabel = parsed ? formatAcademicSemesterLabel(parsed) : label;
+    return `semester-${normalizeSemesterId(idLabel)}`;
+}
+
+function createDefaultSemesters(anchor: ParsedSemester = getCurrentYearAnchor(), count = DEFAULT_SEMESTER_COUNT, historicalLabels = new Set<string>()): SemesterDraft[] {
+    return Array.from({ length: count }, (_, index) => {
+        const label = formatSemesterLabel(addSemesters(anchor, index), anchor);
+        return {
+            id: getSemesterId(label),
+            label,
+            isHistorical: historicalLabels.has(label),
+        };
+    });
+}
 
 function isDraftStorage(value: unknown): value is DraftStorage {
     if (!value || typeof value !== 'object') return false;
@@ -83,20 +161,21 @@ function normalizeSemesterId(label: string): string {
 }
 
 function getSemesterSortValue(label: string): number {
-    const yearMatch = label.match(/(\d{2,4})\s*[-–]\s*(\d{2,4})/);
-    const semesterMatch =
-        label.match(/học\s*kỳ\s*(\d+)/i) ||
-        label.match(/hoc\s*ky\s*(\d+)/i) ||
-        label.match(/hk\s*(\d+)/i) ||
-        label.match(/\/\s*(\d+)/);
+    const semester = parseSemesterLabel(label);
+    if (!semester) return Number.MAX_SAFE_INTEGER;
+    return getSemesterSequenceValue(semester);
+}
 
-    if (!yearMatch) return Number.MAX_SAFE_INTEGER;
+function getAnchorSemester(rawGrades: GradeRecord[] | undefined): ParsedSemester {
+    const parsedSemesters = (rawGrades || [])
+        .map((grade) => parseSemesterLabel(String(grade.semester || '')))
+        .filter((semester): semester is ParsedSemester => !!semester);
 
-    const rawYear = yearMatch[1];
-    const yearStart = rawYear.length === 2 ? 2000 + Number(rawYear) : Number(rawYear);
-    const semester = semesterMatch ? Number(semesterMatch[1]) : 0;
+    if (parsedSemesters.length === 0) return getCurrentYearAnchor();
 
-    return yearStart * 10 + semester;
+    return parsedSemesters.reduce((earliest, current) => (
+        getSemesterSequenceValue(current) < getSemesterSequenceValue(earliest) ? current : earliest
+    ));
 }
 
 function buildHistoricalDraft(rawGrades: GradeRecord[] | undefined, courseById: Map<string, CourseMeta>, hasBLMExemption: boolean): DraftStorage {
@@ -104,12 +183,15 @@ function buildHistoricalDraft(rawGrades: GradeRecord[] | undefined, courseById: 
         return { semesters: [], plan: {} };
     }
 
+    const anchor = getAnchorSemester(rawGrades);
     const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(rawGrades) as GradeRecord[];
     const semesterToCourseIds = new Map<string, string[]>();
 
     effectiveGrades.forEach((grade) => {
         const courseId = String(grade.id || '').trim();
-        const semesterLabel = String(grade.semester || '').trim();
+        const rawSemesterLabel = String(grade.semester || '').trim();
+        const parsedSemester = parseSemesterLabel(rawSemesterLabel);
+        const semesterLabel = parsedSemester ? formatSemesterLabel(parsedSemester, anchor) : rawSemesterLabel;
         if (!courseId || !semesterLabel || !courseById.has(courseId)) return;
 
         const status = AcademicRulesEngine.getCourseStatus(courseId, rawGrades, hasBLMExemption);
@@ -133,7 +215,7 @@ function buildHistoricalDraft(rawGrades: GradeRecord[] | undefined, courseById: 
             return a.localeCompare(b);
         })
         .map((label) => ({
-            id: `history-${normalizeSemesterId(label)}`,
+            id: getSemesterId(label),
             label,
             isHistorical: true,
         }));
@@ -149,21 +231,54 @@ function buildHistoricalDraft(rawGrades: GradeRecord[] | undefined, courseById: 
     };
 }
 
-function mergeHistoricalDraft(previous: DraftStorage, historical: DraftStorage): DraftStorage {
+function getGenericSemesterIndex(semester: SemesterDraft): number | null {
+    const labelMatch =
+        semester.label.match(/^(?:nháp\s*)?học\s*kỳ\s*(\d+)/i) ||
+        semester.label.match(/^(?:nhap\s*)?hoc\s*ky\s*(\d+)/i);
+    const idMatch = semester.id.match(/^draft-semester-(\d+)$/);
+    const index = Number(labelMatch?.[1] || idMatch?.[1] || 0);
+    return index > 0 ? index - 1 : null;
+}
+
+function mergeHistoricalDraft(previous: DraftStorage, scaffold: SemesterDraft[], historical: DraftStorage): DraftStorage {
     const historicalCourseIds = new Set(Object.values(historical.plan).flat());
-    if (historical.semesters.length === 0 || historicalCourseIds.size === 0) return previous;
+    const historicalPlan = historical.plan;
+    const scaffoldById = new Map(scaffold.map((semester) => [semester.id, semester]));
+    const scaffoldByLabel = new Map(scaffold.map((semester) => [semester.label, semester]));
+    const editableSemesters = scaffold.filter((semester) => !semester.isHistorical);
 
-    const historicalSemesterIds = new Set(historical.semesters.map((semester) => semester.id));
-    const remainingSemesters = previous.semesters.filter((semester) => !historicalSemesterIds.has(semester.id));
-    const mergedSemesters = [...historical.semesters, ...remainingSemesters];
+    const mergedPlan: Record<string, string[]> = Object.fromEntries(
+        scaffold.map((semester) => [
+            semester.id,
+            semester.isHistorical ? (historicalPlan[semester.id] || []) : [],
+        ])
+    );
 
-    const mergedPlan: Record<string, string[]> = { ...historical.plan };
-    remainingSemesters.forEach((semester) => {
-        mergedPlan[semester.id] = (previous.plan[semester.id] || []).filter((courseId) => !historicalCourseIds.has(courseId));
+    previous.semesters.forEach((semester) => {
+        if (semester.isHistorical) return;
+
+        const parsed = parseSemesterLabel(semester.label);
+        const canonicalLabel = parsed ? formatSemesterLabel(parsed, parsed) : null;
+        const canonicalId = parsed ? getSemesterId(formatAcademicSemesterLabel(parsed)) : null;
+        const genericIndex = getGenericSemesterIndex(semester);
+        const targetSemester =
+            (canonicalLabel ? scaffoldByLabel.get(canonicalLabel) : undefined) ||
+            (canonicalId ? scaffoldById.get(canonicalId) : undefined) ||
+            scaffoldById.get(semester.id) ||
+            (genericIndex !== null ? editableSemesters[genericIndex] : undefined);
+
+        if (!targetSemester || targetSemester.isHistorical) return;
+
+        (previous.plan[semester.id] || []).forEach((courseId) => {
+            if (historicalCourseIds.has(courseId)) return;
+            if (!mergedPlan[targetSemester.id].includes(courseId)) {
+                mergedPlan[targetSemester.id].push(courseId);
+            }
+        });
     });
 
     return {
-        semesters: mergedSemesters,
+        semesters: scaffold,
         plan: mergedPlan,
     };
 }
@@ -620,9 +735,15 @@ export function StudyPlannerDraftView() {
         return buildHistoricalDraft(studentDb?.grades, courseById, hasBLMExemption);
     }, [courseById, hasBLMExemption, studentDb]);
 
+    const semesterScaffold = useMemo(() => {
+        const anchor = getAnchorSemester(studentDb?.grades);
+        const historicalLabels = new Set(historicalDraft.semesters.map((semester) => semester.label));
+        return createDefaultSemesters(anchor, DEFAULT_SEMESTER_COUNT, historicalLabels);
+    }, [historicalDraft.semesters, studentDb]);
+
     useEffect(() => {
-        setDraft((previous) => mergeHistoricalDraft(previous, historicalDraft));
-    }, [historicalDraft]);
+        setDraft((previous) => mergeHistoricalDraft(previous, semesterScaffold, historicalDraft));
+    }, [historicalDraft, semesterScaffold]);
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.STUDY_PLAN_DRAFT, draft);
@@ -799,11 +920,17 @@ export function StudyPlannerDraftView() {
 
     const addSemester = () => {
         setDraft((previous) => {
-            const futureSemesterCount = previous.semesters.filter((semester) => !semester.isHistorical).length;
-            const nextIndex = futureSemesterCount + 1;
+            const parsedSemesters = previous.semesters
+                .map((semester) => parseSemesterLabel(semester.label))
+                .filter((semester): semester is ParsedSemester => !!semester);
+            const sortedSemesters = parsedSemesters.sort((a, b) => getSemesterSequenceValue(a) - getSemesterSequenceValue(b));
+            const anchorSemester = sortedSemesters[0] || getAnchorSemester(studentDb?.grades);
+            const lastParsedSemester = sortedSemesters[sortedSemesters.length - 1];
+            const nextSemester = addSemesters(lastParsedSemester || anchorSemester, lastParsedSemester ? 1 : previous.semesters.length);
+            const label = formatSemesterLabel(nextSemester, anchorSemester);
             const newSemester = {
-                id: `draft-semester-${Date.now()}`,
-                label: `Nháp học kỳ ${nextIndex}`,
+                id: getSemesterId(label),
+                label,
             };
 
             return {
