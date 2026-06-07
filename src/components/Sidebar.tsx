@@ -1,6 +1,7 @@
 import { Home, Map, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getPathForPage } from '../app/routes';
 
 // định nghĩa các nhóm điều hướng
 const navGroups = [
@@ -100,7 +101,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                 return (
                   <li key={item.label}>
                     <a
-                      href="#"
+                      href={getPathForPage(item.page)}
                       onClick={(e) => { e.preventDefault(); onPageChange(item.page); }}
                       className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${isActive ? 'bg-white/10' : 'hover:bg-white/5'} ${isCollapsed ? 'justify-center' : ''}`}
                       title={isCollapsed ? item.label : undefined}
@@ -198,7 +199,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                   return (
                     <li key={item.label}>
                       <a
-                        href="#"
+                        href={getPathForPage(item.page)}
                         onClick={(e) => { e.preventDefault(); handlePageChange(item.page); }}
                         style={{
                           display: 'flex',

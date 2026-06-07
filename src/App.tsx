@@ -1,52 +1,20 @@
-import { ChatbotWidget } from './components/ChatbotWidget';
-import { MainLayout } from './layouts/MainLayout';
-import { DashboardWidgets } from './pages/dashboardWidgets/DashboardWidgets';
-import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
-import { GradeManagement } from './pages/gradeManagement/GradeManagement';
-import { TuitionPage } from './pages/TuitionPage/TuitionPage';
-import { VisualSchedule } from './pages/visualSchedule/VisualSchedule';
-import { useState, useEffect, useCallback } from 'react';
-import { Setting } from './pages/setting/Setting';
-import { PrivacySecurity } from './pages/setting/PrivacySecurity';
-import { SettingUserProfile } from './pages/setting/SettingUserProfile';
-import { NotificationProvider } from './context/NotificationContext';
-import { useAppNotification } from './context/NotificationContext';
-import { DepartmentProvider, useDepartmentData } from './context/DepartmentContext';
-import { CryptoProvider } from './context/CryptoContext';
-import { useCrypto } from './context/CryptoContext';
-import { processRawData } from './logic/dataProcessor';
-import { STORAGE_KEYS } from './config/storageKeys';
-import { APP_CONFIG } from './config';
-import { ExamScheduleVi } from './pages/ExamSchedule/examSchedule';
-import { SecurityLock } from './components/SecurityLock';
-import { SecurityGate } from './components/SecurityGate';
-import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
-import { App as CapacitorApp } from '@capacitor/app';
+import { useCallback, useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { CACHE_POPULATED_EVENT } from './context/CryptoContext';
+import { AppRouter } from './app/AppRouter';
+import { NotificationProvider, useAppNotification } from './context/NotificationContext';
+import { DepartmentProvider } from './context/DepartmentContext';
+import { CryptoProvider, CACHE_POPULATED_EVENT, useCrypto } from './context/CryptoContext';
+import { SecurityGate } from './components/SecurityGate';
+import { SecurityLock } from './components/SecurityLock';
+import { processRawData } from './logic/dataProcessor';
+import { APP_CONFIG } from './config';
+import { saveSecure, populateSecureCache } from './helpers/localStorage/save';
 
 function AppContent() {
-  const { semesterNumber, academicYear, isConfigured } = useDepartmentData();
-  const selectedSemester = `Học kỳ ${semesterNumber}, ${academicYear}`;
   const { addNotification } = useAppNotification();
   const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
 
-  const [currentPage, setCurrentPage] = useState<string>(() => {
-    if (typeof window === 'undefined') return 'dashboard';
-    if (window.location.pathname === '/group' || window.location.hash.startsWith('#v1_')) return 'courses';
-    const savedPage = sessionStorage.getItem(STORAGE_KEYS.PAGE);
-    return savedPage ? savedPage : 'dashboard';
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEYS.PAGE, currentPage);
-    if (currentPage !== 'courses' && window.location.pathname === '/group') {
-      window.history.replaceState(null, '', '/');
-    }
-  }, [currentPage]);
-
-  // Lưu data an toàn sau khi đã có cryptoKey
   const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey) => {
     await saveSecure('raw_student_db', raw, key);
     const { student, courses } = processRawData(raw);
@@ -54,13 +22,11 @@ function AppContent() {
     await saveSecure('course_db_offline', courses, key);
     if (meta) await saveSecure('import_meta', meta, key);
 
-    // Cập nhật RAM cache để hooks có thể đọc ngay không cần reload
     populateSecureCache('raw_student_db', raw);
     populateSecureCache('student_db_full', student);
     populateSecureCache('course_db_offline', courses);
     if (meta) populateSecureCache('import_meta', meta);
 
-    // Báo các hook re-render (giống CryptoContext làm sau unlock)
     window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
 
     refreshHasData();
@@ -72,13 +38,12 @@ function AppContent() {
       if (!event.data || event.data.type !== 'IMPORT_FULL_DATA') return;
       const payload = event.data.payload;
 
-      // Kiểm tra version bookmarklet
       const incomingVersion = payload.version || payload.meta?.version;
       if (incomingVersion && incomingVersion !== APP_CONFIG.BOOKMARKLET_VERSION) {
         alert(`⚠️ BOOKMARKLET CŨ!\n\nPhiên bản bookmarklet của bạn (${incomingVersion}) đã cũ hơn so với hệ thống (${APP_CONFIG.BOOKMARKLET_VERSION}).\n\nVui lòng XÓA bookmark cũ và KÉO LẠI nút mới từ trang chủ để đảm bảo lấy dữ liệu chính xác nhé!`);
         addNotification({
           title: 'Cần cập nhật Bookmarklet',
-          message: `Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.`,
+          message: 'Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.',
           type: 'warning'
         });
       }
@@ -86,12 +51,10 @@ function AppContent() {
       if (!payload?.raw) return;
 
       if (!cryptoKey) {
-        // Chưa có key → lưu tạm, chờ user setup PIN
         setPendingData(payload);
         return;
       }
 
-      // Đã có key → lưu ngay
       const student = await saveImportedData(payload.raw, payload.meta, cryptoKey);
       addNotification({
         title: 'Khởi tạo thành công',
@@ -104,28 +67,8 @@ function AppContent() {
     return () => window.removeEventListener('message', handleMessage, true);
   }, [addNotification, cryptoKey, saveImportedData]);
 
-  useEffect(() => {
-    const handleBackButton = () => {
-      setCurrentPage((prevPage) => {
-        if (prevPage !== 'dashboard') {
-          return 'dashboard';
-        } else {
-          CapacitorApp.exitApp();
-          return prevPage;
-        }
-      });
-    };
-
-    CapacitorApp.addListener('backButton', handleBackButton);
-
-    return () => {
-      CapacitorApp.removeAllListeners();
-    };
-  }, []);
-
   return (
     <>
-      {/* Overlay SecurityLock khi có pendingData nhưng chưa có PIN */}
       {pendingData && !cryptoKey && (
         <SecurityLock
           setupMode={!hasData}
@@ -142,31 +85,7 @@ function AppContent() {
         />
       )}
 
-      <MainLayout
-        currentPage={isConfigured ? currentPage : (currentPage === 'privacy' ? 'privacy' : 'setup')}
-        onPageChange={setCurrentPage}
-        selectedSemester={selectedSemester}
-      >
-        {!isConfigured && currentPage !== 'privacy' ? (
-          <div className="w-full flex flex-col items-center justify-center">
-            <SettingUserProfile 
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        ) : (
-          <>
-            {currentPage === 'dashboard' && <DashboardWidgets />}
-            {currentPage === 'courses' && <IntegratedStudyRoadmap />}
-            {currentPage === 'grades' && <GradeManagement />}
-            {currentPage === 'tuition' && <TuitionPage selectedSemester={selectedSemester} />}
-            {currentPage === 'schedule' && <VisualSchedule selectedSemester={selectedSemester} />}
-            {currentPage === 'examSchedule' && <ExamScheduleVi />}
-            {currentPage === 'settings' && <Setting />}
-            {currentPage === 'privacy' && <PrivacySecurity />}
-          </>
-        )}
-      </MainLayout>
-      {isConfigured && <ChatbotWidget />}
+      <AppRouter />
     </>
   );
 }

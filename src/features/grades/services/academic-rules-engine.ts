@@ -61,6 +61,24 @@ export const AcademicRulesEngine = {
         );
     },
 
+    /**
+     * Xác định xem môn học có bị loại trừ khỏi tín chỉ tích lũy không.
+     */
+    isCourseExcludedFromAccumulation: (courseCode: string): boolean => {
+        return ACADEMIC_RULES.ACCUMULATION_EXCLUDED_COURSE_PREFIXES.some(prefix =>
+            courseCode.startsWith(prefix.id)
+        );
+    },
+
+    /**
+     * Xác định xem nhóm môn có bị loại trừ khỏi tín chỉ tích lũy khi cộng lên nhóm cha không.
+     */
+    isCategoryExcludedFromAccumulation: (categoryName: string): boolean => {
+        return ACADEMIC_RULES.ACCUMULATION_EXCLUDED_COURSE_PREFIXES.some(prefix =>
+            categoryName.startsWith(prefix.name)
+        );
+    },
+
     // ───────────── Điểm số ─────────────
 
     /**
@@ -197,11 +215,15 @@ export const AcademicRulesEngine = {
         let creditsForGPA = 0;
         let earnedCredits = 0;
 
-        const isExcluded = AcademicRulesEngine.isCourseExcludedFromGPA(code);
+        const isExcludedFromGPA = AcademicRulesEngine.isCourseExcludedFromGPA(code);
+        const isExcludedFromAccumulation = AcademicRulesEngine.isCourseExcludedFromAccumulation(code);
 
         if (status === 'passed') {
-            if (!isExcluded) {
+            if (!isExcludedFromAccumulation) {
                 earnedCredits = credits;
+            }
+
+            if (!isExcludedFromGPA) {
                 pointsForGPA = score * credits;
                 creditsForGPA = credits;
             }

@@ -8,6 +8,7 @@ import { weekDays, timePeriods } from '../../constants';
 import type { Course } from '../../types';
 import { Note } from './note.tsx'
 import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../utils/dayOffPreferences';
+import type { Tab } from './IntegratedStudyRoadmap';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -23,7 +24,7 @@ function getSolidTint(hexColor: string, tint = 0.9) {
 
 interface CalendarViewProps {
     selectedCourses: Set<string>;
-    setActiveTab: (tab: 'trainingProgram' | 'selection' | 'calendar') => void;
+    setActiveTab: (tab: Tab) => void;
     currentSections: ClassSection[];
     activeOption: number;
     options: any[];

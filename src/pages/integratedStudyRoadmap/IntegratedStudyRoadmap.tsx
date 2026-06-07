@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Book, ShoppingCart, X, Users } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Calendar, Book, ClipboardList, ShoppingCart, X, Users } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -13,14 +14,17 @@ import { NavigationBar } from './NavigationBar';
 import { TrainingProgramView } from './TrainingProgramView';
 import { SelectionView } from './SelectionView';
 import { CalendarView } from './CalenderView';
+import { StudyPlannerDraftView } from './StudyPlannerDraftView';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { GroupSchedulePage } from '../GroupSchedulePage';
 import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
+import { APP_ROUTES, STUDY_ROADMAP_TAB_TO_PATH, getStudyRoadmapTabFromPath } from '../../app/routes';
 
 // Danh sách các tab
 export const tabs = {
     trainingProgram: 'trainingProgram',
+    draft: 'draft',
     selection: 'selection',
     groupSchedule: 'groupSchedule',
     calendar: 'calendar',
@@ -30,12 +34,13 @@ export type Tab = keyof typeof tabs;
 
 
 export function IntegratedStudyRoadmap() {
-    const [activeTab, setActiveTab] = useState<Tab>(() => {
-        if (typeof window !== 'undefined' && (window.location.pathname === '/group' || window.location.hash.startsWith('#v1_'))) {
-            return 'groupSchedule';
-        }
-        return 'selection';
-    });
+    const location = useLocation();
+    const navigate = useNavigate();
+    const activeTab = getStudyRoadmapTabFromPath(location.pathname) ||
+        (location.hash.startsWith('#v1_') ? tabs.groupSchedule : tabs.selection);
+    const setActiveTab = (tab: Tab) => {
+        navigate(STUDY_ROADMAP_TAB_TO_PATH[tab]);
+    };
     const [viewMode, setViewMode] = useState<'recommend' | 'all'>('all');
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(() => {
         const saved = readFromStorage<string[]>(STORAGE_KEYS.SELECTED_BASKET, []);
@@ -67,6 +72,12 @@ export function IntegratedStudyRoadmap() {
     useEffect(() => {
         setShowMobileBasket(false);
     }, [activeTab]);
+
+    useEffect(() => {
+        if (!getStudyRoadmapTabFromPath(location.pathname)) {
+            navigate(APP_ROUTES.studyRoadmapSelection, { replace: true });
+        }
+    }, [location.pathname, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
     const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
@@ -236,6 +247,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
+                                { id: tabs.draft, label: 'Nháp kế hoạch', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
                                 { id: tabs.groupSchedule, label: 'Xếp lịch nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
                                 { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
@@ -250,6 +262,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
+                                { id: tabs.draft, label: 'Nháp', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
                                 { id: tabs.groupSchedule, label: 'Nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
                                 { id: 'calendar', label: 'Lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
@@ -262,6 +275,11 @@ export function IntegratedStudyRoadmap() {
                     {/* Tab 1: Chương trình đào tạo */}
                     {activeTab === 'trainingProgram' && (
                         <TrainingProgramView />
+                    )}
+
+                    {/* Tab Nháp: kéo môn vào học kỳ */}
+                    {activeTab === 'draft' && (
+                        <StudyPlannerDraftView />
                     )}
 
                     {/* Tab 2: Chọn môn học */}

@@ -9,7 +9,7 @@ import { BookmarkletButton } from '../../components/BookmarkletButton';
 import { ChangePinModal } from '../../components/ChangePinModal';
 import { useCrypto } from '../../context/CryptoContext';
 
-export function Setting() {
+export function Setting({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();
     const { lock, hasData } = useCrypto();
     const [showChangePinModal, setShowChangePinModal] = useState(false);
@@ -39,7 +39,7 @@ export function Setting() {
                                 </div>
                             </div>
 
-                    <SettingUserProfile />
+                    <SettingUserProfile onPageChange={onPageChange} />
 
                     {/* Công cụ đồng bộ dữ liệu */}
                     <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
