@@ -46,6 +46,8 @@ export const STORAGE_KEYS = {
     /** Danh sách các lịch đã lưu */
     SAVED_SCHEDULES: 'saved_schedules',
     ACTIVE_GROUP_SCHEDULE: 'active_group_schedule',
+    /** Lịch sử chat của chatbot */
+    CHAT_HISTORY: 'chatbot_chat_history',
     /** Các tùy chỉnh ghi đè thời khóa biểu (phòng, tiết, ngày nghỉ) */
     SCHEDULE_OVERRIDES: 'schedule_overrides',
 };

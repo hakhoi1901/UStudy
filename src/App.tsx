@@ -1,3 +1,4 @@
+import { ChatbotWidget } from './components/ChatbotWidget';
 import { MainLayout } from './layouts/MainLayout';
 import { DashboardWidgets } from './pages/dashboardWidgets/DashboardWidgets';
 import { IntegratedStudyRoadmap } from './pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
@@ -165,6 +166,7 @@ function AppContent() {
           </>
         )}
       </MainLayout>
+      {isConfigured && <ChatbotWidget />}
     </>
   );
 }
@@ -179,7 +181,10 @@ export default function App() {
             <AppContent />
           </DepartmentProvider>
         </NotificationProvider>
+        
       </SecurityGate>
+
+
     </CryptoProvider>
   );
 }
