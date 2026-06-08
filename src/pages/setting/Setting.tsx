@@ -1,10 +1,8 @@
 import { Bookmark, User, Shield, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
-import { SettingUserProfile } from './SettingUserProfile';
+import { SettingUserProfile, ImportData, ReportError } from '../../features/setting';
 import { useStudentDb } from '../../hooks/useStudentDb';
-import { ImportData } from './importData';
-import { ReportError } from './reportError';
 import { BookmarkletButton } from '../../components/BookmarkletButton';
 import { ChangePinModal } from '../../components/ChangePinModal';
 import { useCrypto } from '../../context/CryptoContext';

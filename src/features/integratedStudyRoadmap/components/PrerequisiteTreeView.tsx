@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useDepartmentData } from '../../context/DepartmentContext';
+import { useDepartmentData } from '../../../context/DepartmentContext';
 import { ChevronDown, ChevronRight, ArrowDown, Info } from 'lucide-react';
 
 interface TreeNode {

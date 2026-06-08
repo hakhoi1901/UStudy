@@ -1,13 +1,13 @@
 import { Info, Search, Filter, DatabaseBackup, X } from 'lucide-react';
-import { CategoryNode } from '../../components/CategoryNode';
-import type { CourseData } from '../../components/CategoryNode';
+import { CategoryNode } from '../../../components/CategoryNode';
+import type { CourseData } from '../../../components/CategoryNode';
 import { useState, useMemo } from 'react';
-import { useDepartmentData } from '../../context/DepartmentContext';
-import { readFromStorage } from '../../helpers/localStorage/save';
-import { STORAGE_KEYS } from '../../config';
-import { AcademicRulesEngine } from '../../features/grades';
-import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
-import type { Course } from '../../types';
+import { useDepartmentData } from '../../../context/DepartmentContext';
+import { readFromStorage } from '../../../helpers/localStorage/save';
+import { STORAGE_KEYS } from '../../../config';
+import { AcademicRulesEngine } from '../../grades';
+import { PrerequisiteFlowchart } from '../../../components/PrerequisiteFlowchart';
+import type { Course } from '../../../types';
 
 export function TrainingProgramView() {
     const [searchTerm, setSearchTerm] = useState('');

@@ -1,6 +1,6 @@
 import { Filter, Search, Info, DatabaseBackup } from 'lucide-react';
-import { CourseRow } from '../../components/CourseRow';
-import type { Course } from '../../types';
+import { CourseRow } from '../../../components/CourseRow';
+import type { Course } from '../../../types';
 
 interface SelectionViewProps {
     searchTerm: string;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { MailWarning } from "lucide-react";
-import { APP_CONFIG } from "../../config/appConfig";
+import { APP_CONFIG } from "../../../config/appConfig";
 
 export function ReportError() {
     const [errorTitle, setErrorTitle] = useState("");

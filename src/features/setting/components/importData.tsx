@@ -1,8 +1,8 @@
 import { Download, Upload, Database } from "lucide-react";
-import { verifyBackupPin, importBackupWithCurrentKey, hasSecureData } from "../../helpers/localStorage/save";
-import { SecurityLock } from "../../components/SecurityLock";
+import { verifyBackupPin, importBackupWithCurrentKey, hasSecureData } from "../../../helpers/localStorage/save";
+import { SecurityLock } from "../../../components/SecurityLock";
 import { useRef, useState } from "react";
-import { useCrypto } from "../../context/CryptoContext";
+import { useCrypto } from "../../../context/CryptoContext";
 
 export function ImportData() {
     const fileInputRef = useRef<HTMLInputElement>(null);

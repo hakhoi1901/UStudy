@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { STORAGE_KEYS } from '../../config';
-import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
+import { STORAGE_KEYS } from '../../../config';
+import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers } from 'lucide-react';
-import { type ClassSection, type SavedSchedule } from '../../types';
-import { type SolverPreferences, type ScheduleOption } from '../../hooks/useScheduleSolver';
-import { weekDays, timePeriods } from '../../constants';
-import type { Course } from '../../types';
+import { type ClassSection, type SavedSchedule } from '../../../types';
+import { type SolverPreferences, type ScheduleOption } from '../../../hooks/useScheduleSolver';
+import { weekDays, timePeriods } from '../../../constants';
+import type { Course } from '../../../types';
 import { Note } from './note.tsx'
-import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../utils/dayOffPreferences';
-import type { Tab } from './IntegratedStudyRoadmap';
+import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../../utils/dayOffPreferences';
+import type { Tab } from './../types.ts';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');

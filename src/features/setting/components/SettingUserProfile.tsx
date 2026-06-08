@@ -1,14 +1,14 @@
-import { Select } from "../../components/Selection"
-import { useDepartmentData } from "../../context/DepartmentContext";
+import { Select } from "../../../components/Selection"
+import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
-import { useAppNotification } from "../../context/NotificationContext";
-import { useCrypto } from "../../context/CryptoContext";
-import { processRawData } from "../../logic/dataProcessor";
-import { savePlain, saveSecure, populateSecureCache } from "../../helpers/localStorage/save";
-import { CACHE_POPULATED_EVENT } from "../../context/CryptoContext";
-import { SecurityLock } from "../../components/SecurityLock";
-import { STORAGE_KEYS } from "../../config/storageKeys";
+import { useAppNotification } from "../../../context/NotificationContext";
+import { useCrypto } from "../../../context/CryptoContext";
+import { processRawData } from "../../../logic/dataProcessor";
+import { savePlain, saveSecure, populateSecureCache } from "../../../helpers/localStorage/save";
+import { CACHE_POPULATED_EVENT } from "../../../context/CryptoContext";
+import { SecurityLock } from "../../../components/SecurityLock";
+import { STORAGE_KEYS } from "../../../config/storageKeys";
 
 export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
