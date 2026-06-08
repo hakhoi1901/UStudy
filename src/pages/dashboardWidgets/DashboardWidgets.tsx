@@ -9,6 +9,8 @@ import { GPACalculator } from '../../features/grades';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { buildTuitionSemesterKey, formatTuitionDeadline, getTuitionDeadline } from '../../config/tuitionDeadlines';
+import { CreditDistributionWidget } from './CreditDistributionWidget';
+import { TodayScheduleWidget } from './TodayScheduleWidget';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
@@ -298,6 +300,11 @@ export function DashboardWidgets() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] md:gap-6">
+        <CreditDistributionWidget />
+        <TodayScheduleWidget />
       </div>
 
       {/* Footer */}
