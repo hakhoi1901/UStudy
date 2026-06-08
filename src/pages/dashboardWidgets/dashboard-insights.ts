@@ -53,6 +53,10 @@ function buildCourseCategoryMap(categories: Record<string, CategoryNode>) {
   return map;
 }
 
+function getCategoryRequiredCredits(node?: CategoryNode): number {
+  return Number(node?.total_credits_required || node?.credits || node?.credits_required || 0);
+}
+
 export function buildCreditDistribution(categories: Record<string, CategoryNode>, allCoursesMeta: any[]): CreditDistributionItem[] {
   const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
   const rawGrades = Array.isArray(studentDb?.grades) ? studentDb.grades : [];
@@ -62,7 +66,20 @@ export function buildCreditDistribution(categories: Record<string, CategoryNode>
   const topLevelCategories = categories || {};
   const hasBLMExemption = AcademicRulesEngine.checkBLMExemption(rawGrades);
   const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(rawGrades);
-  const creditsByCategory = new Map<string, CreditDistributionItem>();
+  const creditsByCategory = new Map<string, CreditDistributionItem>(
+    Object.entries(topLevelCategories)
+      .filter(([key]) => key !== 'MASTER_TRANSITION')
+      .map(([key, node], index) => [
+        key,
+        {
+          key,
+          name: node.name || key,
+          credits: 0,
+          requiredCredits: getCategoryRequiredCredits(node),
+          color: CHART_COLORS[index % CHART_COLORS.length],
+        },
+      ]),
+  );
 
   effectiveGrades.forEach((grade: any) => {
     const courseId = normalizeCourseId(grade.id);
@@ -84,7 +101,7 @@ export function buildCreditDistribution(categories: Record<string, CategoryNode>
       key: categoryKey,
       name: categoryName,
       credits: 0,
-      requiredCredits: Number(categoryNode?.total_credits_required || categoryNode?.credits || 0),
+      requiredCredits: getCategoryRequiredCredits(categoryNode),
       color: CHART_COLORS[creditsByCategory.size % CHART_COLORS.length],
     };
 
@@ -92,7 +109,7 @@ export function buildCreditDistribution(categories: Record<string, CategoryNode>
     creditsByCategory.set(categoryKey, existing);
   });
 
-  return Array.from(creditsByCategory.values()).sort((a, b) => b.credits - a.credits);
+  return Array.from(creditsByCategory.values());
 }
 
 export function getTodayScheduleSessions(sessions: ScheduleSession[], now = new Date()) {

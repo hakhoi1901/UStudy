@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { ChartPie } from 'lucide-react';
 
+import { ACADEMIC_RULES } from '../../constants';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import {
   buildCreditDistribution,
@@ -10,14 +11,20 @@ import {
   type CreditDistributionItem,
 } from './dashboard-insights';
 
+const REMAINING_CREDITS_KEY = '__remaining_credits__';
+const REMAINING_CREDITS_COLOR = '#E5E7EB';
+
 function CreditTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: CreditDistributionItem }> }) {
   if (!active || !payload?.length) return null;
   const item = payload[0].payload;
+  const isRemainingCredits = item.key === REMAINING_CREDITS_KEY;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold text-gray-900">{item.name}</p>
-      <p className="text-gray-600">{item.credits} tín chỉ đã tích lũy</p>
+      <p className="text-gray-600">
+        {item.credits} tín chỉ {isRemainingCredits ? 'chưa học' : 'đã tích lũy'}
+      </p>
     </div>
   );
 }
@@ -29,6 +36,25 @@ export function CreditDistributionWidget() {
     [categories, courses],
   );
   const totalCredits = getDistributionTotal(distribution);
+  const remainingCredits = Math.max(ACADEMIC_RULES.TOTAL_CREDITS - totalCredits, 0);
+  const chartDistribution = useMemo(
+    () => {
+      const completedItems = distribution.filter((item) => item.credits > 0);
+      if (remainingCredits <= 0) return completedItems;
+
+      return [
+        ...completedItems,
+        {
+          key: REMAINING_CREDITS_KEY,
+          name: 'Chưa học',
+          credits: remainingCredits,
+          requiredCredits: 0,
+          color: REMAINING_CREDITS_COLOR,
+        },
+      ];
+    },
+    [distribution, remainingCredits],
+  );
   const completionPercent = getDistributionCompletionPercent(distribution);
 
   return (
@@ -55,15 +81,15 @@ export function CreditDistributionWidget() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={distribution}
+                  data={chartDistribution}
                   dataKey="credits"
                   nameKey="name"
                   innerRadius={58}
                   outerRadius={88}
-                  paddingAngle={2}
+                  paddingAngle={chartDistribution.length > 1 ? 2 : 0}
                   strokeWidth={0}
                 >
-                  {distribution.map((item) => (
+                  {chartDistribution.map((item) => (
                     <Cell key={item.key} fill={item.color} />
                   ))}
                 </Pie>
