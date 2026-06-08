@@ -1,5 +1,6 @@
 import pako from 'pako';
 
+import { encodeScheduleToMask } from '../Utils.js';
 import CourseDatabase from './CourseDatabase';
 import { FitnessEvaluator } from './FitnessValuator';
 import { Bitset } from './Bitset';
@@ -62,6 +63,7 @@ function normalizeMask(mask?: number[], partCount = MASK_PARTS): number[] {
 function getClassMask(cls: ClassLike): number[] {
   if (Array.isArray(cls.mask)) return normalizeMask(cls.mask);
   if (cls.scheduleMask?.parts) return normalizeMask(cls.scheduleMask.parts);
+  if (cls.schedule) return normalizeMask(encodeScheduleToMask(cls.schedule).parts);
   return normalizeMask();
 }
 
@@ -88,6 +90,55 @@ function getCourse(db: CourseDatabase, courseId: string): CourseLike | null {
 
 function getClasses(db: CourseDatabase, courseId: string): ClassLike[] {
   return getCourse(db, courseId)?.classes ?? [];
+}
+
+function getMemberCoursePackage(member: GroupMemberToken | undefined, courseId: string) {
+  const normalizedCourseId = normalizeCourseId(courseId);
+  return member?.coursePackages?.find((course) => normalizeCourseId(course.courseId) === normalizedCourseId) ?? null;
+}
+
+function normalizePackagedClass(cls: ClassLike): ClassLike {
+  return {
+    id: String(cls.id || '').trim(),
+    schedule: cls.schedule,
+    mask: getClassMask(cls),
+  };
+}
+
+function getCourseName(db: CourseDatabase, members: GroupMemberToken[], courseId: string, subscribers: number[]): string {
+  for (const memberIndex of subscribers) {
+    const coursePackage = getMemberCoursePackage(members[memberIndex], courseId);
+    if (coursePackage?.courseName) return coursePackage.courseName;
+  }
+
+  return getCourse(db, courseId)?.name || courseId;
+}
+
+function getClassesForSubscribers(
+  db: CourseDatabase,
+  courseId: string,
+  subscribers: number[],
+  members: GroupMemberToken[],
+): ClassLike[] {
+  const packagedCourses = subscribers.map((memberIndex) => getMemberCoursePackage(members[memberIndex], courseId));
+
+  if (packagedCourses.every(Boolean)) {
+    const commonClassIds = packagedCourses.reduce<Set<string> | null>((common, coursePackage) => {
+      const classIds = new Set((coursePackage?.classes ?? []).map((cls) => String(cls.id || '').trim()).filter(Boolean));
+      if (!common) return classIds;
+      return new Set([...common].filter((classId) => classIds.has(classId)));
+    }, null);
+
+    return (packagedCourses[0]?.classes ?? [])
+      .filter((cls) => commonClassIds?.has(String(cls.id || '').trim()))
+      .map((cls) => normalizePackagedClass(cls));
+  }
+
+  if (subscribers.length === 1 && packagedCourses[0]) {
+    return packagedCourses[0].classes.map((cls) => normalizePackagedClass(cls));
+  }
+
+  return getClasses(db, courseId);
 }
 
 function memberCourseSet(member: GroupMemberToken): Set<string> {
@@ -168,7 +219,7 @@ function classMatchesPreferenceConstraints(
   });
 }
 
-function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
+function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], members: GroupMemberToken[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
   return courses
     .filter((course) => {
       if (!course.subscribers.includes(memberIndex)) return false;
@@ -178,9 +229,8 @@ function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, course
     })
     .map((course) => {
       const selectedClassId = solution.assignments.get(course.courseId) ?? solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
-      const courseData = getCourse(db, course.courseId);
-      const classObj = courseData?.classes.find((cls) => cls.id === selectedClassId);
-      if (!courseData || !classObj) return null;
+      const classObj = getClassesForSubscribers(db, course.courseId, [memberIndex], members).find((cls) => cls.id === selectedClassId);
+      if (!classObj) return null;
       return {
         id: course.courseId,
         classes: [classObj],
@@ -193,11 +243,12 @@ function scoreMemberSchedule(
   solution: GroupSolution,
   db: CourseDatabase,
   courses: CourseWeight[],
+  members: GroupMemberToken[],
   memberIndex: number,
   config: GroupFitnessConfig,
   scope: 'all' | 'shared' | 'personal' = 'all',
 ): number {
-  const subjects = buildMemberSubjects(solution, db, courses, memberIndex, scope);
+  const subjects = buildMemberSubjects(solution, db, courses, members, memberIndex, scope);
   if (subjects.length === 0) return 0;
 
   const evaluator = new FitnessEvaluator({
@@ -213,15 +264,32 @@ function scoreMemberSchedule(
 export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken {
   const sharedCourses = uniqueCourseIds(member.sharedCourses);
   const personalCourses = uniqueCourseIds(member.personalCourses).filter((courseId) => !sharedCourses.includes(courseId));
+  const memberCourses = new Set([...sharedCourses, ...personalCourses]);
   const preferredClasses = normalizePreferenceMap(member.preferredClasses);
+  const coursePackages = (member.coursePackages ?? [])
+    .map((course) => ({
+      courseId: normalizeCourseId(course.courseId),
+      courseName: course.courseName?.trim() || undefined,
+      credits: course.credits,
+      classes: (course.classes ?? [])
+        .map((cls) => ({
+          id: String(cls.id || '').trim(),
+          schedule: cls.schedule,
+          mask: Array.isArray(cls.mask) ? normalizeMask(cls.mask) : undefined,
+        }))
+        .filter((cls) => cls.id),
+    }))
+    .filter((course) => memberCourses.has(course.courseId) && course.classes.length > 0);
 
   return {
+    memberId: member.memberId?.trim() || undefined,
     nickname: member.nickname?.trim() || undefined,
     sharedCourses,
     personalCourses,
     busyMask: normalizeMask(member.busyMask),
     preferredClasses,
     personalConfig: member.personalConfig,
+    coursePackages,
   };
 }
 
@@ -309,7 +377,7 @@ export function solveGroup(
     }
 
     const course = courses[courseIndex];
-    const availableClasses = getClasses(courseDatabase, course.courseId)
+    const availableClasses = getClassesForSubscribers(courseDatabase, course.courseId, course.subscribers, members)
       .sort((a, b) => getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config))
       .slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
     if (availableClasses.length === 0) return;
@@ -324,7 +392,7 @@ export function solveGroup(
         }
 
         const memberIndex = course.subscribers[subscriberOffset];
-        const sortedForMember = [...availableClasses].sort((a, b) =>
+        const sortedForMember = getClassesForSubscribers(courseDatabase, course.courseId, [memberIndex], members).sort((a, b) =>
           getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config),
         ).slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
 
@@ -376,8 +444,8 @@ export function scoreGroupSolution(
   config: GroupFitnessConfig,
 ): number {
   const memberScores = members.map((member, memberIndex) => {
-    const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'shared');
-    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, {
+    const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, members, memberIndex, config, 'shared');
+    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, members, memberIndex, {
       ...config,
       ...member.personalConfig,
     }, 'personal');
@@ -437,18 +505,17 @@ function toScheduleOption(
   const assignmentRecord: Record<string, string> = {};
 
   courses.forEach((course) => {
-    const courseData = getCourse(courseDatabase, course.courseId);
-    if (!courseData) return;
+    const courseName = getCourseName(courseDatabase, members, course.courseId, course.subscribers);
 
     const globalClassId = solution.assignments.get(course.courseId);
     if (globalClassId) {
       assignmentRecord[course.courseId] = globalClassId;
-      const classObj = courseData.classes.find((cls) => cls.id === globalClassId);
+      const classObj = getClassesForSubscribers(courseDatabase, course.courseId, course.subscribers, members).find((cls) => cls.id === globalClassId);
       if (!classObj) return;
 
       const item: GroupScheduleItem = {
         courseId: course.courseId,
-        courseName: courseData.name || course.courseId,
+        courseName,
         classId: globalClassId,
         memberIndexes: [...course.subscribers],
         isShared: course.isShared,
@@ -466,11 +533,11 @@ function toScheduleOption(
       const classId = solution.assignments.get(memberAssignmentKey(course.courseId, memberIndex));
       if (!classId) return;
       assignmentRecord[memberAssignmentKey(course.courseId, memberIndex)] = classId;
-      const classObj = courseData.classes.find((cls) => cls.id === classId);
+      const classObj = getClassesForSubscribers(courseDatabase, course.courseId, [memberIndex], members).find((cls) => cls.id === classId);
       if (!classObj) return;
       itemsByMember[memberIndex].push({
         courseId: course.courseId,
-        courseName: courseData.name || course.courseId,
+        courseName: getCourseName(courseDatabase, members, course.courseId, [memberIndex]),
         classId,
         memberIndexes: [memberIndex],
         isShared: false,
@@ -504,7 +571,9 @@ export function runGroupScheduleSolver(
   courseDatabase.loadData(typeof dbData === 'string' ? JSON.parse(dbData) : dbData);
 
   const density = buildDensityMap(sanitizedMembers).filter((course) => {
-    const exists = getClasses(courseDatabase, course.courseId).length > 0;
+    const exists = course.subscribers.some((memberIndex) =>
+      getClassesForSubscribers(courseDatabase, course.courseId, [memberIndex], sanitizedMembers).length > 0,
+    );
     if (!exists) warnings.push(`Không tìm thấy lớp học cho môn ${course.courseId}.`);
     return exists;
   });

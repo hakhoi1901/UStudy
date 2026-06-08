@@ -98,6 +98,7 @@ export function useGroupScheduler(): GroupSolverState & {
 
   const updateBrowserUrl = useCallback((nextMembers: GroupMemberToken[]) => {
     if (typeof window === 'undefined' || nextMembers.length === 0) return;
+    if (new URLSearchParams(window.location.search).has('room')) return;
     const nextUrl = encodeGroupURL(nextMembers);
     window.history.replaceState(null, '', nextUrl);
   }, []);

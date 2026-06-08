@@ -11,12 +11,27 @@ export interface ClassPreferenceSelection {
 export type ClassPreferenceMap = Record<string, string[] | ClassPreferenceSelection>;
 
 export interface GroupMemberToken {
+  memberId?: string;
   nickname?: string;
   sharedCourses: string[];
   personalCourses: string[];
   busyMask: number[];
   preferredClasses?: ClassPreferenceMap;
   personalConfig?: SchedulePreferenceConfig;
+  coursePackages?: GroupMemberCoursePackage[];
+}
+
+export interface GroupMemberClassPackage {
+  id: string;
+  schedule?: string | string[];
+  mask?: number[];
+}
+
+export interface GroupMemberCoursePackage {
+  courseId: string;
+  courseName?: string;
+  credits?: number;
+  classes: GroupMemberClassPackage[];
 }
 
 export interface CourseWeight {

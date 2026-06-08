@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
@@ -10,7 +10,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { buildDensityMap, decodeGroupURL } from '../logic/scheduler/GroupScheduler';
-import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberToken, GroupScheduleOption } from '../logic/scheduler/GroupTypes';
+import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberCoursePackage, GroupMemberToken, GroupScheduleOption } from '../logic/scheduler/GroupTypes';
 import { parseCourseInput, useGroupScheduler } from '../hooks/useGroupScheduler';
 import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
@@ -18,6 +18,15 @@ import type { Course } from '../types';
 import type { SolverPreferences } from '../hooks/useScheduleSolver';
 import courseDbJson from '../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../utils/dayOffPreferences';
+import {
+  buildGroupRoomUrl,
+  createGroupRoomId,
+  fetchGroupRoom,
+  getGroupRoomIdFromUrl,
+  getLocalGroupMemberId,
+  setGroupRoomUrl,
+  upsertGroupRoomMember,
+} from '../services/groupRoomService';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -110,6 +119,42 @@ function loadClassOptionsByCourse(): Record<string, GroupClassOption[]> {
   }, {});
 }
 
+function extractRoomId(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  try {
+    return new URL(trimmed).searchParams.get('room')?.trim().toUpperCase() || '';
+  } catch {
+    return new URLSearchParams(trimmed.startsWith('?') ? trimmed : `?${trimmed}`).get('room')?.trim().toUpperCase() || '';
+  }
+}
+
+function loadCoursePackagesByCourse(): Record<string, GroupMemberCoursePackage> {
+  const stored = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
+  const rawCourses = stored.length > 0 ? stored : (courseDbJson as any[]);
+
+  return rawCourses.reduce<Record<string, GroupMemberCoursePackage>>((acc, course) => {
+    const courseId = normalizeCourseId(course?.id || course?.code || course?.course_id);
+    if (!courseId || !Array.isArray(course?.classes)) return acc;
+
+    acc[courseId] = {
+      courseId,
+      courseName: String(course?.name || course?.nameVi || courseId),
+      credits: Number(course?.credits || 0),
+      classes: course.classes
+        .map((cls: any) => ({
+          id: String(cls?.id || cls?.classId || cls?.className || '').trim(),
+          schedule: normalizeSchedule(cls?.schedule),
+          mask: Array.isArray(cls?.mask) ? cls.mask : undefined,
+        }))
+        .filter((cls: any) => cls.id),
+    };
+
+    return acc;
+  }, {});
+}
+
 export function GroupSchedulePage({
   onPageChange,
   selectedCourseIds,
@@ -151,6 +196,10 @@ export function GroupSchedulePage({
   const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>({});
   const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
   const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState(() => getGroupRoomIdFromUrl());
+  const [roomStorage, setRoomStorage] = useState<'supabase' | 'memory' | null>(null);
+  const [roomSyncing, setRoomSyncing] = useState(false);
+  const [roomError, setRoomError] = useState<string | null>(null);
 
   useEffect(() => {
     const onHashChange = () => setMembersFromURL(window.location.hash);
@@ -161,6 +210,30 @@ export function GroupSchedulePage({
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SOLVER_PREFERENCES, groupPrefs);
   }, [groupPrefs]);
+
+  const syncRoom = useCallback(async (targetRoomId = roomId) => {
+    if (!targetRoomId) return;
+    setRoomSyncing(true);
+    setRoomError(null);
+
+    try {
+      const response = await fetchGroupRoom(targetRoomId);
+      replaceMembers(response.room.members ?? []);
+      setRoomStorage(response.storage);
+    } catch (error) {
+      setRoomError(error instanceof Error ? error.message : 'Không đồng bộ được phòng nhóm.');
+    } finally {
+      setRoomSyncing(false);
+    }
+  }, [replaceMembers, roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    syncRoom(roomId);
+    const intervalId = window.setInterval(() => syncRoom(roomId), 15000);
+    return () => window.clearInterval(intervalId);
+  }, [roomId, syncRoom]);
 
   useEffect(() => {
     if (result?.solutions.length) {
@@ -184,7 +257,9 @@ export function GroupSchedulePage({
   }, [basketCourses, manualCourseInput]);
   const groupCourses = useMemo(() => buildDensityMap(members), [members]);
   const classOptionsByCourse = useMemo(() => loadClassOptionsByCourse(), []);
+  const coursePackagesByCourse = useMemo(() => loadCoursePackagesByCourse(), []);
   const selectedOption = result?.solutions[activeResultIndex] ?? result?.solutions[0];
+  const roomShareUrl = useMemo(() => roomId ? buildGroupRoomUrl(roomId) : '', [roomId]);
   const sharedCourseCount = useMemo(() => groupCourses.filter((course) => course.isShared).length, [groupCourses]);
   const groupClassPreferenceSummary = useMemo(() => {
     return Object.values(groupPreferredClasses).reduce(
@@ -197,9 +272,35 @@ export function GroupSchedulePage({
     );
   }, [groupPreferredClasses]);
 
-  const submitDraft = () => {
+  const buildMemberCoursePackages = (courseIds: string[]) => (
+    courseIds
+      .map((courseId) => coursePackagesByCourse[courseId])
+      .filter((course): course is GroupMemberCoursePackage => Boolean(course))
+  );
+  const draftCoursePackages = useMemo(() => buildMemberCoursePackages(draftCourseIds), [draftCourseIds, coursePackagesByCourse]);
+  const missingPackageCourseIds = useMemo(
+    () => draftCourseIds.filter((courseId) => !coursePackagesByCourse[courseId]),
+    [draftCourseIds, coursePackagesByCourse],
+  );
+  const draftPackagedClassCount = useMemo(
+    () => draftCoursePackages.reduce((sum, course) => sum + course.classes.length, 0),
+    [draftCoursePackages],
+  );
+
+  const submitDraft = async () => {
+    if (draftCourseIds.length === 0) {
+      setLocalNotice('Bạn cần chọn hoặc nhập ít nhất một môn trước khi tham gia phòng.');
+      return;
+    }
+
+    if (missingPackageCourseIds.length > 0 || draftPackagedClassCount === 0) {
+      setLocalNotice(`Chưa có dữ liệu lớp học cho: ${missingPackageCourseIds.join(', ') || draftCourseIds.join(', ')}. Hãy import dữ liệu Portal trên máy này trước khi tham gia phòng.`);
+      return;
+    }
+
     const nextDraft: GroupMemberToken = {
       ...draft,
+      memberId: getLocalGroupMemberId(),
       sharedCourses: [],
       personalCourses: draftCourseIds,
       busyMask: [],
@@ -213,20 +314,45 @@ export function GroupSchedulePage({
           ) > 0),
       ),
       personalConfig: readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences),
+      coursePackages: draftCoursePackages,
     };
 
     const unknownCourses = draftCourseIds.filter((course) => knownCourseIds.size > 0 && !knownCourseIds.has(course));
     setLocalNotice(unknownCourses.length > 0 ? `Các môn chưa có trong dữ liệu lớp học: ${unknownCourses.join(', ')}.` : null);
 
-    if (addMember(nextDraft)) {
+    const nextRoomId = roomId || createGroupRoomId();
+    setRoomSyncing(true);
+    setRoomError(null);
+
+    try {
+      const response = await upsertGroupRoomMember(nextRoomId, nextDraft);
+      setRoomId(nextRoomId);
+      setGroupRoomUrl(nextRoomId);
+      replaceMembers(response.room.members ?? []);
+      setRoomStorage(response.storage);
       setDraft(makeDraft());
       setManualCourseInput('');
       setPersonalClassPreferences({});
+      setLocalNotice(`Đã đồng bộ ${nextDraft.nickname || 'bạn'} vào phòng ${nextRoomId}.`);
+    } catch (error) {
+      setRoomError(error instanceof Error ? error.message : 'Không đồng bộ được phòng nhóm.');
+      addMember(nextDraft);
+    } finally {
+      setRoomSyncing(false);
     }
   };
 
   const mergeMembersFromLink = () => {
     try {
+      const pastedRoomId = extractRoomId(mergeInput);
+      if (pastedRoomId) {
+        setRoomId(pastedRoomId);
+        setGroupRoomUrl(pastedRoomId);
+        setMergeInput('');
+        setLocalNotice(`Đang mở phòng ${pastedRoomId}.`);
+        return;
+      }
+
       const decoded = decodeGroupURL(extractHash(mergeInput));
       const existingKeys = new Set(members.map((member) => JSON.stringify({
         courses: [...member.sharedCourses, ...member.personalCourses].sort(),
@@ -400,7 +526,34 @@ export function GroupSchedulePage({
           )}
         </div>
       </div>
-      <GroupURLShare url={shareUrl} warning={urlWarning} />
+      {roomId ? (
+        <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-blue-950">Phòng đồng bộ</h3>
+              <p className="text-xs text-blue-700">Mỗi người mở link này trên máy của họ rồi bấm tham gia nhóm.</p>
+            </div>
+            <span className="rounded-full bg-white px-2 py-1 font-mono text-xs font-bold text-[#004A98]">{roomId}</span>
+          </div>
+          <div className="rounded-md border border-blue-100 bg-white px-3 py-2 font-mono text-xs text-blue-900 break-all">
+            {roomShareUrl}
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <Button type="button" variant="outline" className="bg-white" onClick={() => navigator.clipboard?.writeText(roomShareUrl)}>
+              <Link2 className="h-4 w-4" />
+              Copy link
+            </Button>
+            <Button type="button" variant="outline" className="bg-white" disabled={roomSyncing} onClick={() => syncRoom(roomId)}>
+              {roomSyncing ? 'Đang tải...' : 'Làm mới'}
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-blue-700">
+            Lưu trữ: {roomStorage === 'supabase' ? 'Supabase' : 'local dev memory'}
+          </p>
+        </div>
+      ) : (
+        <GroupURLShare url={shareUrl} warning={urlWarning} />
+      )}
     </aside>
   );
 
@@ -451,17 +604,24 @@ export function GroupSchedulePage({
         )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-gray-500">{draftCourseIds.length} môn trong form hiện tại</div>
-          <Button type="button" onClick={submitDraft} className="bg-[#004A98] hover:bg-[#003d7a] text-white">
+          <div className="text-sm text-gray-500">
+            {draftCourseIds.length} môn trong form hiện tại · {draftPackagedClassCount} lớp sẽ đồng bộ
+          </div>
+          <Button type="button" disabled={roomSyncing} onClick={submitDraft} className="bg-[#004A98] hover:bg-[#003d7a] text-white">
             <Plus className="h-4 w-4" />
-            {members.length === 0 ? 'Tạo link nhóm' : 'Tham gia nhóm'}
+            {roomSyncing ? 'Đang đồng bộ...' : roomId ? 'Tham gia phòng' : 'Tạo phòng nhóm'}
           </Button>
         </div>
+        {missingPackageCourseIds.length > 0 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Thiếu dữ liệu lớp cho {missingPackageCourseIds.join(', ')}. Máy này cần import dữ liệu Portal để gửi được danh sách lớp của bạn.
+          </div>
+        )}
 
         <div className="border-t border-gray-200 pt-4">
           <label className="mb-1 block text-sm font-medium text-gray-700">Gộp từ link nhóm khác</label>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Input value={mergeInput} onChange={(event) => setMergeInput(event.target.value)} placeholder="Dán URL hoặc #v1_..." />
+            <Input value={mergeInput} onChange={(event) => setMergeInput(event.target.value)} placeholder="Dán link phòng hoặc #v1_..." />
             <Button type="button" variant="outline" onClick={mergeMembersFromLink}>
               <Link2 className="h-4 w-4" />
               Gộp link
@@ -857,10 +1017,10 @@ export function GroupSchedulePage({
         </div>
       )}
 
-      {(solveError || localNotice) && (
+      {(solveError || localNotice || roomError) && (
         <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{solveError || localNotice}</span>
+          <span>{solveError || roomError || localNotice}</span>
         </div>
       )}
 
