@@ -3,6 +3,7 @@ import { useStudentDb } from '../../../hooks/useStudentDb';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 import { readFromStorage } from '../../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../../config';
+import { getTuitionDeadline } from '../../../config/tuitionDeadlines';
 import { FinancialLogic } from '../services/financial-logic';
 import type { TuitionCourse, TuitionSummary } from '../types';
 
@@ -22,7 +23,7 @@ export function useTuitionCalculator(selectedSemesterName: string) {
             totalFee: 0,
             advancePayment: 0,
             amountDue: 0,
-            dueDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 15).toISOString().split('T')[0],
+            dueDate: getTuitionDeadline(targetSemester),
             status: 'unpaid',
             lastUpdated: new Date().toLocaleString('vi-VN'),
             hasAdvancePayment: false,

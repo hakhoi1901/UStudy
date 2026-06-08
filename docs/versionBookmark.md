@@ -1,5 +1,12 @@
 # Lich su thay doi Bookmarklet
 
+## v0.1.2
+
+- Them hang doi concurrency gioi han trong `Bookmarklet.js`.
+- Tang toc quet chi tiet `Thuc hanh` / `Bai tap` cua danh sach lop mo bang cach chay song song toi da 3 task mac dinh.
+- Giu cac flow phu thuoc ViewState nhu hoc phi va DKHP chay tuan tu de tranh Portal tra sai state.
+- Them tai lieu chi tiet logic vao `docs/bookmarklet_logic.md`.
+
 ## v0.1.1
 
 - Tách cấu hình mặc định cho 2 nhóm dữ liệu

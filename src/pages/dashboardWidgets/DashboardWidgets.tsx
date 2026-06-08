@@ -7,9 +7,12 @@ import { ACADEMIC_RULES } from '../../constants';
 import { FinancialLogic } from '../../logic/FinancialLogic';
 import { GPACalculator } from '../../features/grades';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
+import { useDepartmentData } from '../../context/DepartmentContext';
+import { buildTuitionSemesterKey, formatTuitionDeadline, getTuitionDeadline } from '../../config/tuitionDeadlines';
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
+  const { academicYear, semesterNumber } = useDepartmentData();
 
   const {
     currentGPA,
@@ -20,25 +23,18 @@ export function DashboardWidgets() {
     hasData,
   } = useStudentGradeData();
 
-  const [tuitionDueDate, setTuitionDueDate] = useState('NaN');
+  const tuitionSemesterKey = useMemo(
+    () => buildTuitionSemesterKey(academicYear, semesterNumber),
+    [academicYear, semesterNumber],
+  );
+  const tuitionDueDate = useMemo(
+    () => formatTuitionDeadline(getTuitionDeadline(tuitionSemesterKey)),
+    [tuitionSemesterKey],
+  );
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // TODO:
-  // Viết API lấy hạn đóng học phí thật ở đây
-  useEffect(() => {
-    const fetchTuitionDueDate = async () => {
-      setTimeout(() => {
-        setTuitionDueDate('NaN');
-      }, 500);
-    };
-
-    if (hasData) {
-      fetchTuitionDueDate();
-    }
-  }, [hasData]);
 
   const safeTotalCredits = ACADEMIC_RULES.TOTAL_CREDITS;
 

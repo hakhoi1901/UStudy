@@ -18,7 +18,7 @@ Dựa trên phân tích kỹ toàn bộ codebase, dưới đây là các gợi �
 | 📊 **Phân bổ tín chỉ theo danh mục** | Pie/Donut chart: bao nhiêu TC đại cương, chuyên ngành, tự chọn. Data có sẵn trong `categories` |
 | 📅 **Lịch hôm nay** | Mini schedule: "Hôm nay bạn có 3 tiết, môn X lúc 7:30 phòng Y" |
 | 🎯 **Tiến độ tốt nghiệp** | Progress ring: Đã hoàn thành bao nhiêu % CTĐT |
-| ⏰ **Hạn đóng học phí** | Đang hardcode `tuitionDueDate = 'NaN'` ở `DashboardWidgets.tsx:14` → Cần lấy từ `useTuitionCalculator` |
+| ⏰ **Hạn đóng học phí** | Đã có cấu hình tại `src/config/tuitionDeadlines.ts`; cần cập nhật deadline theo thông báo từng học kỳ |
 
 ```
 Effort: ★★☆☆☆ (data đã có, chỉ cần thêm UI)

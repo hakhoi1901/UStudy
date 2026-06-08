@@ -49,6 +49,25 @@
 
     // Helper: Chuyển text HTML thành DOM ảo để query
     const parseHTML = (html) => new DOMParser().parseFromString(html, 'text/html');
+    const PORTAL_CONCURRENCY = Math.max(1, Math.min(Number(CONFIG.CONCURRENCY || 3), 5));
+
+    async function runWithConcurrency(items, limit, worker, onProgress) {
+        const results = new Array(items.length);
+        let nextIndex = 0;
+        let doneCount = 0;
+
+        const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+            while (nextIndex < items.length) {
+                const currentIndex = nextIndex++;
+                results[currentIndex] = await worker(items[currentIndex], currentIndex);
+                doneCount++;
+                if (onProgress) onProgress(doneCount, items.length, items[currentIndex], currentIndex);
+            }
+        });
+
+        await Promise.all(runners);
+        return results;
+    }
 
     function showPrivacyAndConfigModal() {
         return new Promise((resolve, reject) => {
@@ -402,7 +421,7 @@
     }
 
     // Cào raw rows kèm theo fetch chi tiết TH/BT
-    async function scrapeOpenClassesRaw(doc) {
+    async function scrapeOpenClassesRawSequential(doc) {
         const table = doc.getElementById('tbPDTKQ');
         if (!table) return [];
 
@@ -476,6 +495,76 @@
     // --- LOGIC FETCH TRANG VÀ POSTBACK (CORE) ---
 
     // Hàm lấy trang web bất kỳ và trả về DOM ảo
+    async function scrapeOpenClassesRaw(doc) {
+        const table = doc.getElementById('tbPDTKQ');
+        if (!table) return [];
+
+        const courseRows = Array.from(table.querySelectorAll('tr'))
+            .map((row) => ({ cells: row.querySelectorAll('td') }))
+            .filter(({ cells }) => {
+                const courseId = cells[0]?.textContent.trim();
+                return cells.length >= 9 && courseId && !/M..?\s*MH/i.test(courseId);
+            });
+
+        const rows = await runWithConcurrency(courseRows, PORTAL_CONCURRENCY, async ({ cells }) => {
+            const courseId = cells[0]?.textContent.trim();
+            let practicalClasses = [];
+            let exerciseClasses = [];
+            const detailJobs = [];
+
+            const thLink = cells[8]?.querySelector('a');
+            if (thLink) {
+                const onclickText = thLink.getAttribute('onclick') || "";
+                const matchTH = onclickText.match(/showFormDKThucHanh\("(\d+)"/);
+                if (matchTH && matchTH[1]) {
+                    detailJobs.push(fetchSubClasses(matchTH[1], 'LopThucHanh').then((items) => {
+                        practicalClasses = items;
+                    }));
+                }
+            }
+
+            const btLink = cells[9]?.querySelector('a');
+            if (btLink) {
+                const onclickText = btLink.getAttribute('onclick') || "";
+                const matchBT = onclickText.match(/showFormDKBaiTap\("(\d+)"/);
+                const matchFallback = onclickText.match(/\("(\d+)"/);
+                const finalMatchBT = matchBT || matchFallback;
+
+                if (finalMatchBT && finalMatchBT[1]) {
+                    detailJobs.push(fetchSubClasses(finalMatchBT[1], 'LopBaiTap').then((items) => {
+                        exerciseClasses = items;
+                    }));
+                }
+            }
+
+            if (detailJobs.length > 0) {
+                await Promise.all(detailJobs);
+            }
+
+            return {
+                id: courseId,
+                name: cells[1]?.textContent.trim(),
+                className: cells[2]?.textContent.trim(),
+                credits: cells[3]?.textContent.trim(),
+                capacity: cells[4]?.textContent.trim(),
+                enrolled: cells[5]?.textContent.trim(),
+                cohort: cells[6]?.textContent.trim(),
+                schedule: cells[7]?.textContent.trim(),
+                practicalGroupRaw: cells[8]?.textContent.trim(),
+                exerciseGroupRaw: cells[9] ? cells[9].textContent.trim() : "",
+                location: cells[10] ? cells[10].textContent.trim() : "",
+                practicalClasses: practicalClasses,
+                exerciseClasses: exerciseClasses
+            };
+        }, (done, total) => {
+            if (done % 3 === 0 || done === total) {
+                showLoading(`Dang quet chi tiet TH/BT: ${done}/${total}`);
+            }
+        });
+
+        return rows.filter(Boolean);
+    }
+
     async function fetchVirtualPage(url) {
         const res = await fetch(url);
         const text = await res.text();
