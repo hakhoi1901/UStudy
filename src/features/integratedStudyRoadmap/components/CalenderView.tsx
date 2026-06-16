@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
-import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers } from 'lucide-react';
+import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers, Users } from 'lucide-react';
 import { type ClassSection, type SavedSchedule } from '../../../types';
 import { type SolverPreferences, type ScheduleOption } from '../../../hooks/useScheduleSolver';
 import { weekDays, timePeriods } from '../../../constants';
@@ -38,6 +38,7 @@ interface CalendarViewProps {
     setSelectedCourses: (courses: Set<string>) => void;
     setAllowedClassesMap: (map: Record<string, string[]>) => void;
     setOptions: (options: ScheduleOption[]) => void;
+    groupScheduleContent?: ReactNode;
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
@@ -107,7 +108,11 @@ export function CalendarView({
     setSelectedCourses,
     setAllowedClassesMap,
     setOptions,
+    groupScheduleContent,
 }: CalendarViewProps) {
+    const [scheduleMode, setScheduleMode] = useState<'personal' | 'group'>(() => (
+        window.location.hash.startsWith('#v1_') ? 'group' : 'personal'
+    ));
     const [prefs, setPrefs] = useState<SolverPreferences>(() => {
         return readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, {
             daysOff: [],
@@ -224,9 +229,49 @@ export function CalendarView({
         .filter((c): c is NonNullable<typeof c> => !!c);
 
     // ── Empty state ────────────────────────────────────────────────────────────
-    if (selectedCourses.size === 0 && savedSchedules.length === 0) {
+    const renderModeSwitch = () => (
+        <div className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
+            <div className="grid grid-cols-2 gap-2">
+                {[
+                    { id: 'personal' as const, label: 'Xếp lịch cá nhân', description: 'Tự động xếp các môn trong giỏ hiện tại', icon: Calendar },
+                    { id: 'group' as const, label: 'Xếp lịch nhóm', description: 'Tạo link nhóm, gộp thành viên và xếp lịch chung', icon: Users },
+                ].map((item) => {
+                    const Icon = item.icon;
+                    const active = scheduleMode === item.id;
+
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setScheduleMode(item.id)}
+                            className={`flex min-w-0 items-start gap-3 rounded-lg border px-3 py-3 text-left transition-all ${
+                                active
+                                    ? 'border-[#004A98] bg-blue-50 text-[#004A98] shadow-sm'
+                                    : 'border-transparent bg-gray-50 text-gray-600 hover:bg-gray-100'
+                            }`}
+                        >
+                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${active ? 'bg-[#004A98] text-white' : 'bg-white text-gray-500'}`}>
+                                <Icon className="h-4 w-4" />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block text-sm font-bold">{item.label}</span>
+                                <span className={`mt-0.5 hidden text-xs md:block ${active ? 'text-blue-700' : 'text-gray-500'}`}>
+                                    {item.description}
+                                </span>
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
+    if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 md:p-12 text-center">
+                <div className="mb-6 text-left">
+                    {renderModeSwitch()}
+                </div>
                 <Calendar className="w-12 h-12 md:w-16 md:h-16 text-blue-400 mx-auto mb-3 md:mb-4" />
                 <h3 className="text-base md:text-lg text-gray-900 mb-2">Chưa chọn môn học nào</h3>
                 <p className="text-sm text-gray-600 mb-4">
@@ -254,8 +299,18 @@ export function CalendarView({
     }
 
     // ── Main render ────────────────────────────────────────────────────────────
+    if (scheduleMode === 'group') {
+        return (
+            <div className="space-y-4">
+                {renderModeSwitch()}
+                {groupScheduleContent}
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-4">
+            {renderModeSwitch()}
 
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
             <div className="p-3 md:p-4 bg-gradient-to-r from-[#004A98]/5 to-blue-50 border border-blue-100 rounded-xl">
