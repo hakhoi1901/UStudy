@@ -3,7 +3,6 @@ export const tabs = {
     trainingProgram: 'trainingProgram',
     draft: 'draft',
     selection: 'selection',
-    groupSchedule: 'groupSchedule',
     calendar: 'calendar',
 } as const;
 

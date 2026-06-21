@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Book, ClipboardList, ShoppingCart, X, Users } from 'lucide-react';
+import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { SelectionBasket } from '../../components/SelectionBasket';
 import { PrerequisiteFlowchart } from '../../components/PrerequisiteFlowchart';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -22,7 +22,6 @@ export const tabs = {
     trainingProgram: 'trainingProgram',
     draft: 'draft',
     selection: 'selection',
-    groupSchedule: 'groupSchedule',
     calendar: 'calendar',
 } as const;
 
@@ -33,7 +32,7 @@ export function IntegratedStudyRoadmap() {
     const location = useLocation();
     const navigate = useNavigate();
     const activeTab = getStudyRoadmapTabFromPath(location.pathname) ||
-        (location.hash.startsWith('#v1_') ? tabs.groupSchedule : tabs.selection);
+        (location.hash.startsWith('#v1_') ? tabs.calendar : tabs.selection);
     const setActiveTab = (tab: Tab) => {
         navigate(STUDY_ROADMAP_TAB_TO_PATH[tab]);
     };
@@ -245,8 +244,7 @@ export function IntegratedStudyRoadmap() {
                                 { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
                                 { id: tabs.draft, label: 'Nháp kế hoạch', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
-                                { id: tabs.groupSchedule, label: 'Xếp lịch nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
-                                { id: 'calendar', label: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -260,8 +258,7 @@ export function IntegratedStudyRoadmap() {
                                 { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.draft, label: 'Nháp', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
-                                { id: tabs.groupSchedule, label: 'Nhóm', icon: Users, showBadge: true, badgeCount: selectedCourses.size },
-                                { id: 'calendar', label: 'Lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: 'calendar', label: 'Xếp lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -358,18 +355,17 @@ export function IntegratedStudyRoadmap() {
                             setSelectedCourses={setSelectedCourses}
                             setAllowedClassesMap={setAllowedClassesMap}
                             setOptions={setOptions}
-                        />
-                    )}
-
-                    {activeTab === 'groupSchedule' && (
-                        <GroupSchedulePage
-                            embedded
-                            selectedCourseIds={selectedCourses}
-                            allCourses={globalAllCourses as Course[]}
-                            allowedClassesMap={allowedClassesMap}
-                            setAllowedClassesMap={setAllowedClassesMap}
-                            onRemoveSelectedCourse={handleCourseToggle}
-                            onPageChange={() => undefined}
+                            groupScheduleContent={(
+                                <GroupSchedulePage
+                                    embedded
+                                    selectedCourseIds={selectedCourses}
+                                    allCourses={globalAllCourses as Course[]}
+                                    allowedClassesMap={allowedClassesMap}
+                                    setAllowedClassesMap={setAllowedClassesMap}
+                                    onRemoveSelectedCourse={handleCourseToggle}
+                                    onPageChange={() => undefined}
+                                />
+                            )}
                         />
                     )}
                 </div>

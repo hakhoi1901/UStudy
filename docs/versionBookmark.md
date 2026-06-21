@@ -1,5 +1,11 @@
 # Lich su thay doi Bookmarklet
 
+## v0.1.3
+
+- Thu nghiem chay song song cac nhom lay du lieu optional sau khi lay bang diem xong.
+- Cac task `hoc phi`, `lich thi`, `lop mo`, `ket qua DKHP` duoc khoi dong cung luc va cho bang `Promise.all`.
+- Logic ben trong tung nhom van duoc giu nguyen de de rollback neu Portal khong on dinh khi co nhieu request song song.
+
 ## v0.1.2
 
 - Them hang doi concurrency gioi han trong `Bookmarklet.js`.

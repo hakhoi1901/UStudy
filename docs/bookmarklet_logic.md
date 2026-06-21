@@ -71,7 +71,7 @@ Neu khong co `window.opener`, bookmarklet se bao nguoi dung mo Portal bang nut d
 4. Hien modal privacy/config.
 5. Nguoi dung chon co lay hoc phi, lich thi, lop mo, ket qua DKHP hay khong.
 6. Lay bang diem day du.
-7. Neu duoc chon, lan luot lay hoc phi, lich thi, lop mo, DKHP.
+7. Neu duoc chon, khoi dong song song cac task hoc phi, lich thi, lop mo, DKHP va cho tat ca hoan tat bang `Promise.all`.
 8. Tao `rawData` va `metaData`.
 9. Gui ve tab UStudy bang:
 
@@ -112,7 +112,12 @@ Mac dinh chay 3 tac vu song song, toi da 5. Ham `runWithConcurrency(items, limit
 - Cap nhat progress sau moi task.
 - Tranh gay ap luc qua lon len Portal.
 
-Hien tai concurrency duoc ap dung cho phan quet chi tiet TH/BT cua danh sach lop mo. Cac luong phu thuoc ViewState nhu hoc phi va DKHP van giu tuan tu.
+Hien tai concurrency duoc ap dung o 2 lop:
+
+- Cap nhom du lieu: sau khi lay bang diem, cac task optional `hoc phi`, `lich thi`, `lop mo`, `ket qua DKHP` chay song song va duoc gom bang `Promise.all`.
+- Cap chi tiet lop mo: phan quet chi tiet TH/BT van dung hang doi `runWithConcurrency` de gioi han so request dong thoi.
+
+Ben trong tung nhom, cac buoc phu thuoc ViewState nhu quet tung ky hoc phi van giu thu tu noi bo cua nhom do.
 
 ## Nguon du lieu 1: Bang diem
 
