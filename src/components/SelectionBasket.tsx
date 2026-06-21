@@ -81,17 +81,17 @@ export function SelectionBasket({
                             className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors group"
                         >
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
+                                <p className="text-xs text-gray-600 truncate">
                                     {course.code}
                                 </p>
-                                <p className="text-xs text-gray-600 truncate">{course.nameVi}</p>
+                                <span className="text-sm font-medium text-gray-900 truncate">{course.nameVi}</span> 
                                 {course.price !== 0
-                                    ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number)} đ</p>
+                                    ? <p className="text-xs text-gray-600 truncate">{formatCurrency(course.price as number)} đ - {course.credits} tín chỉ</p> 
                                     : <p className="text-xs text-red-600 truncate">Môn này không nằm trong CTĐT của bạn.</p>
                                 }
 
                                 <div className="flex items-center gap-2 mt-1.5">
-                                    <span className="text-xs text-gray-500">{course.credits} tín chỉ</span>
+                                    
                                     {course.needsRetake && (
                                         <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] rounded-full">
                                             Học lại

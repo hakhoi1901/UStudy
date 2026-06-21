@@ -161,11 +161,7 @@ function classMatchesPreferenceConstraints(
   if (groupSelection.excluded.includes(classId)) return false;
   if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) return false;
 
-  return subscribers.every((memberIndex) => {
-    const personalSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[courseId]);
-    if (personalSelection.excluded.includes(classId)) return false;
-    return personalSelection.required.length === 0 || personalSelection.required.includes(classId);
-  });
+  return true;
 }
 
 function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
@@ -213,15 +209,12 @@ function scoreMemberSchedule(
 export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken {
   const sharedCourses = uniqueCourseIds(member.sharedCourses);
   const personalCourses = uniqueCourseIds(member.personalCourses).filter((courseId) => !sharedCourses.includes(courseId));
-  const preferredClasses = normalizePreferenceMap(member.preferredClasses);
 
   return {
     nickname: member.nickname?.trim() || undefined,
     sharedCourses,
     personalCourses,
-    busyMask: normalizeMask(member.busyMask),
-    preferredClasses,
-    personalConfig: member.personalConfig,
+    busyMask: Array(21).fill(0),
   };
 }
 
@@ -294,7 +287,8 @@ export function solveGroup(
   searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
 ): GroupSolution[] {
   const solutions: GroupSolution[] = [];
-  const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
+  const combinedBusyMask = Array(21).fill(0);
+  const initialState: StateMatrix = members.map(() => [...combinedBusyMask]);
   let visitedNodes = 0;
 
   function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
@@ -377,10 +371,7 @@ export function scoreGroupSolution(
 ): number {
   const memberScores = members.map((member, memberIndex) => {
     const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'shared');
-    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, {
-      ...config,
-      ...member.personalConfig,
-    }, 'personal');
+    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'personal');
     return sharedScore + personalScore;
   });
   const total = memberScores.reduce((sum, score) => sum + score, 0);
@@ -400,14 +391,6 @@ export function scoreGroupSolution(
       if (groupLevel === 'preferred') nextScore += config.groupPreferenceWeight;
       if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) nextScore -= config.groupRequiredPreferenceMissPenalty;
       if (groupSelection.preferred.length > 0 && !groupSelection.preferred.includes(classId)) nextScore -= config.groupPreferenceMissPenalty;
-
-      const personalSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[course.courseId]);
-      const personalLevel = classPreferenceLevel(personalSelection, classId);
-      if (personalLevel === 'excluded') nextScore -= config.personalExcludedPreferenceMissPenalty;
-      if (personalLevel === 'required') nextScore += config.personalRequiredPreferenceWeight;
-      if (personalLevel === 'preferred') nextScore += config.personalPreferenceWeight;
-      if (personalSelection.required.length > 0 && !personalSelection.required.includes(classId)) nextScore -= config.personalRequiredPreferenceMissPenalty;
-      if (personalSelection.preferred.length > 0 && !personalSelection.preferred.includes(classId)) nextScore -= config.personalPreferenceMissPenalty;
 
       return nextScore;
     };

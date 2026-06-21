@@ -124,27 +124,12 @@ export function GroupScheduleCalendarPreview({
   activeMemberIndex,
   setActiveOptionIndex,
   setActiveMemberIndex,
-  onUseSchedule,
 }: GroupScheduleCalendarPreviewProps) {
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [scheduleName, setScheduleName] = useState('');
   const option = options[activeOptionIndex] ?? options[0];
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
   const effectiveMemberIndex = member?.memberIndex ?? 0;
   const sections = getGroupMemberSections(option, effectiveMemberIndex);
   const stats = getStats(sections);
-
-  const handleSaveSchedule = () => {
-    const newSaved = buildSavedGroupSchedule(option, effectiveMemberIndex, scheduleName);
-    if (!newSaved) return;
-
-    const savedSchedulesRaw = readFromStorage<unknown>(STORAGE_KEYS.SAVED_SCHEDULES, []);
-    const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw as SavedSchedule[] : [];
-
-    saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, [newSaved, ...savedSchedules]);
-    setShowSaveModal(false);
-    setScheduleName('');
-  };
 
   if (!option || !member) {
     return (
@@ -155,29 +140,7 @@ export function GroupScheduleCalendarPreview({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Calendar className="h-5 w-5 text-[#004A98]" />
-            Lịch nhóm theo phương án
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            PA {option.option} · {member.nickname} · {sections.length} lớp · {stats.totalPeriods} tiết · {stats.scheduledDays} ngày học
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button type="button" variant="outline" disabled={sections.length === 0} onClick={() => setShowSaveModal(true)}>
-            <Save className="h-4 w-4" />
-            Lưu lịch nhóm
-          </Button>
-          {/* <Button type="button" variant="outline" onClick={() => onUseSchedule(option, effectiveMemberIndex)}>
-            <ExternalLink className="h-4 w-4" />
-            Dùng lịch đang xem
-          </Button> */}
-        </div>
-      </div>
-
+    <div className="space-y-4 rounded-lg">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
           <span className="shrink-0 px-1 text-xs font-medium text-gray-500">Phương án:</span>
@@ -473,50 +436,6 @@ export function GroupScheduleCalendarPreview({
           </div>
         </div>
       </div>
-
-      {showSaveModal && (
-        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-          <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">
-              <h3 className="flex items-center gap-2 text-base font-bold text-gray-900">
-                <Save className="h-4 w-4 text-emerald-600" />
-                Lưu lịch nhóm
-              </h3>
-              <button type="button" onClick={() => setShowSaveModal(false)} className="rounded-full p-1 transition-colors hover:bg-gray-100">
-                <X className="h-5 w-5 text-gray-400" />
-              </button>
-            </div>
-            <div className="p-4 md:p-6">
-              <label className="mb-2 block text-sm font-bold text-gray-700">Tên gợi nhớ cho lịch này</label>
-              <input
-                autoFocus
-                type="text"
-                value={scheduleName}
-                onChange={(event) => setScheduleName(event.target.value)}
-                placeholder={`VD: Nhóm - PA ${option.option} - ${member.nickname}`}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500"
-                onKeyDown={(event) => event.key === 'Enter' && handleSaveSchedule()}
-              />
-              <p className="mt-3 text-xs italic text-gray-400">
-                Lưu lịch của thành viên đang xem trong phương án hiện tại. Lịch này sẽ xuất hiện trong danh sách lịch đã lưu ở tab lịch dự kiến.
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 md:p-5">
-              <button type="button" onClick={() => setShowSaveModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800">
-                Hủy
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveSchedule}
-                disabled={!scheduleName.trim()}
-                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-emerald-700 disabled:opacity-50"
-              >
-                Xác nhận lưu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

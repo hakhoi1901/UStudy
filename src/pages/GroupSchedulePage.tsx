@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
@@ -207,6 +207,10 @@ export function GroupSchedulePage({
     }
     return parseCourseInput(manualCourseInput);
   }, [basketCourses, manualCourseInput]);
+  const courseNames = useMemo(() => {
+    return Object.fromEntries(allCourses.map((c) => [c.code || c.id, c.name]));
+  }, [allCourses]);
+
   const groupCourses = useMemo(() => buildDensityMap(members), [members]);
   const classOptionsByCourse = useMemo(() => loadClassOptionsByCourse(), []);
   const selectedOption = result?.solutions[activeResultIndex] ?? result?.solutions[0];
@@ -228,16 +232,6 @@ export function GroupSchedulePage({
       sharedCourses: [],
       personalCourses: draftCourseIds,
       busyMask: [],
-      preferredClasses: Object.fromEntries(
-        draftCourseIds
-          .map((courseId) => [courseId, personalClassPreferences[courseId] ?? { preferred: allowedClassesMap[courseId] ?? [] }])
-          .filter(([, selection]) => (
-            ((selection as ClassPreferenceSelection).excluded?.length ?? 0) +
-            ((selection as ClassPreferenceSelection).preferred?.length ?? 0) +
-            ((selection as ClassPreferenceSelection).required?.length ?? 0)
-          ) > 0),
-      ),
-      personalConfig: readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences),
     };
 
     const unknownCourses = draftCourseIds.filter((course) => knownCourseIds.size > 0 && !knownCourseIds.has(course));
@@ -369,38 +363,49 @@ export function GroupSchedulePage({
   };
 
   const renderStepper = () => (
-    <div className="rounded-lg border border-gray-200 bg-white p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3">
+    <div className="rounded-lg border border-gray-200 bg-white p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
       {modeSwitch && (
-        <div className="shrink-0 md:border-r md:border-gray-200 md:pr-3">
+        <div className="shrink-0 md:border-r md:border-gray-200 md:pr-4">
           {modeSwitch}
         </div>
       )}
-      <div className="flex-1 grid grid-cols-3 gap-2 w-full">
-        {stepItems.map((step) => {
+      <div className="flex-1 flex items-center justify-between w-full min-w-max px-1">
+        {stepItems.map((step, index) => {
           const isActive = activeStep === step.id;
           const isDone = activeStep > step.id || (step.id === 3 && !!result?.solutions.length);
           const isClickable = canOpenStep(step.id);
+          const isLast = index === stepItems.length - 1;
+          
           return (
-            <button
-              key={step.id}
-              type="button"
-              disabled={!isClickable}
-              onClick={() => isClickable && setActiveStep(step.id)}
-              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
-                isActive
-                  ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
-                  : isDone
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                    : 'border-gray-200 bg-white text-gray-500 disabled:opacity-50'
-              }`}
-            >
-              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                isDone ? 'bg-emerald-600 text-white' : isActive ? 'bg-[#004A98] text-white' : 'bg-gray-100 text-gray-500'
-              }`}>
-                {isDone ? <Check className="h-4 w-4" /> : step.id}
-              </span>
-              <span className="font-medium">{step.label}</span>
-            </button>
+            <Fragment key={step.id}>
+              <button
+                type="button"
+                disabled={!isClickable}
+                onClick={() => isClickable && setActiveStep(step.id)}
+                className="relative z-10 flex items-center gap-2 focus:outline-none group disabled:opacity-50 transition-opacity"
+              >
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                  isDone 
+                    ? 'bg-emerald-600 text-white shadow-sm' 
+                    : isActive 
+                      ? 'bg-[#004A98] text-white shadow-sm ring-2 ring-blue-100 ring-offset-1' 
+                      : 'bg-gray-100 text-gray-500 border border-gray-200 group-hover:bg-gray-200'
+                }`}>
+                  {isDone ? <Check className="h-4 w-4" /> : step.id}
+                </div>
+                <span className={`text-xs md:text-sm whitespace-nowrap transition-colors ${
+                  isActive ? 'text-[#004A98] font-bold' : isDone ? 'text-emerald-700 font-bold' : 'text-gray-500 font-medium'
+                }`}>
+                  {step.label}
+                </span>
+              </button>
+              
+              {!isLast && (
+                <div className={`flex-1 h-px mx-3 md:mx-4 transition-colors ${
+                  isDone ? 'bg-emerald-400' : 'bg-gray-200'
+                }`} />
+              )}
+            </Fragment>
           );
         })}
       </div>
@@ -420,17 +425,13 @@ export function GroupSchedulePage({
           ) : (
             members.map((member, index) => (
               <div key={`${member.nickname || 'member'}-${index}`} className="space-y-2">
-                <GroupMemberCard member={member} index={index} />
-                <Button type="button" size="sm" variant="ghost" className="text-red-600 hover:text-red-700" onClick={() => removeMember(index)}>
-                  <Trash2 className="h-4 w-4" />
-                  Xóa thành viên
-                </Button>
+                <GroupMemberCard member={member} index={index} courseNames={courseNames} onRemove={() => removeMember(index)} />
               </div>
             ))
           )}
         </div>
       </div>
-      <GroupURLShare url={shareUrl} warning={urlWarning} />
+      {/* <GroupURLShare url={shareUrl} warning={urlWarning} /> */}
     </aside>
   );
 
@@ -494,7 +495,7 @@ export function GroupSchedulePage({
           </Button>
         </div>
 
-        <div className="border-t border-gray-200 pt-4">
+        {/* <div className="border-t border-gray-200 pt-4">
           <label className="mb-1 block text-sm font-medium text-gray-700">Gộp từ link nhóm khác</label>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input value={mergeInput} onChange={(event) => setMergeInput(event.target.value)} placeholder="Dán URL hoặc #v1_..." />
@@ -503,20 +504,8 @@ export function GroupSchedulePage({
               Gộp link
             </Button>
           </div>
-        </div>
+        </div> */}
 
-        <div className="flex justify-end border-t border-gray-200 pt-4">
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <Button type="button" variant="outline" disabled={members.length === 0} onClick={() => setActiveStep(2)}>
-              <Settings className="h-4 w-4" />
-              Tùy chỉnh ưu tiên
-            </Button>
-            <Button type="button" disabled={members.length < 2 || solving} onClick={runGroupSolve} className="bg-emerald-600 text-white hover:bg-emerald-700">
-              <Calendar className="h-4 w-4" />
-              {solving ? 'Đang xếp lịch...' : 'Xếp lịch ngay'}
-            </Button>
-          </div>
-        </div>
         {members.length === 1 && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
             Cần ít nhất 2 thành viên để xếp lịch nhóm.
@@ -729,7 +718,7 @@ export function GroupSchedulePage({
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-gray-200 pt-4 sm:flex-row sm:justify-between">
+      {/* <div className="flex flex-col gap-2 border-t border-gray-200 pt-4 sm:flex-row sm:justify-between">
         <Button type="button" variant="outline" onClick={() => setActiveStep(1)}>
           Quay lại
         </Button>
@@ -737,7 +726,7 @@ export function GroupSchedulePage({
           <Calendar className="h-4 w-4" />
           {solving ? 'Đang xếp lịch...' : 'Xếp lịch nhóm'}
         </Button>
-      </div>
+      </div> */}
     </section>
   );
 
@@ -749,7 +738,7 @@ export function GroupSchedulePage({
           <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} phương án khả dụng.</p>
         </div>
         <div className="flex flex-row items-center justify-end gap-2">
-          {!showGroupCalendarPreview && selectedOption && (
+          {selectedOption && (
             <Button
               type="button"
               variant="default"
@@ -761,40 +750,32 @@ export function GroupSchedulePage({
             </Button>
           )}
 
-          <Button
-            type="button"
-            variant="default"
-            onClick={() => setShowGroupCalendarPreview((current) => !current)}
-            className="text-white bg-[#004A98] hover:bg-[#003d7a] shadow-sm shrink-0"
-            disabled={!result?.solutions.length}
-          >
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">{showGroupCalendarPreview ? 'Xem chi tiết' : 'Xem lịch nhóm'}</span>
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" className="shrink-0 px-2 shadow-sm">
+              <button type="button" className="inline-flex h-9 w-9 items-center justify-center whitespace-nowrap rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 shrink-0">
                 <MoreHorizontal className="h-5 w-5 text-gray-600" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {!showGroupCalendarPreview && (
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Chế độ hiển thị</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setResultViewMode('course')} className={resultViewMode === 'course' ? 'bg-blue-50 text-[#004A98]' : ''}>
-                    <LayoutList className="mr-2 h-4 w-4" />
-                    <span>Theo môn học</span>
-                    {resultViewMode === 'course' && <Check className="ml-auto h-4 w-4" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setResultViewMode('member')} className={resultViewMode === 'member' ? 'bg-blue-50 text-[#004A98]' : ''}>
-                    <UsersRound className="mr-2 h-4 w-4" />
-                    <span>Theo thành viên</span>
-                    {resultViewMode === 'member' && <Check className="ml-auto h-4 w-4" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </DropdownMenuGroup>
-              )}
+            <DropdownMenuContent align="end" className="w-56 bg-white z-[100]">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Chế độ hiển thị</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setShowGroupCalendarPreview(true)} className={showGroupCalendarPreview ? 'bg-blue-50 text-[#004A98]' : ''}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>Dạng lịch tổng quát</span>
+                  {showGroupCalendarPreview && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setShowGroupCalendarPreview(false); setResultViewMode('course'); }} className={!showGroupCalendarPreview && resultViewMode === 'course' ? 'bg-blue-50 text-[#004A98]' : ''}>
+                  <LayoutList className="mr-2 h-4 w-4" />
+                  <span>Chi tiết theo môn học</span>
+                  {!showGroupCalendarPreview && resultViewMode === 'course' && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setShowGroupCalendarPreview(false); setResultViewMode('member'); }} className={!showGroupCalendarPreview && resultViewMode === 'member' ? 'bg-blue-50 text-[#004A98]' : ''}>
+                  <UsersRound className="mr-2 h-4 w-4" />
+                  <span>Chi tiết theo thành viên</span>
+                  {!showGroupCalendarPreview && resultViewMode === 'member' && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setActiveStep(2)}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Chỉnh ưu tiên</span>
@@ -822,7 +803,6 @@ export function GroupSchedulePage({
             activeMemberIndex={activePreviewMemberIndex}
             setActiveOptionIndex={(index) => {
               setActiveResultIndex(index);
-              setActivePreviewMemberIndex(result.solutions[index]?.schedules[0]?.memberIndex ?? 0);
             }}
             setActiveMemberIndex={setActivePreviewMemberIndex}
             onUseSchedule={handleUseSchedule}
