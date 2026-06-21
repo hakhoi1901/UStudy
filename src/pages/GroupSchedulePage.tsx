@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from '../components/GroupScheduleCalendarPreview';
@@ -7,6 +7,7 @@ import { GroupScheduleResult, type GroupScheduleResultViewMode } from '../compon
 import { GroupURLShare } from '../components/GroupURLShare';
 import { SelectionBasket } from '../components/SelectionBasket';
 import { Button } from '../components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup } from '../components/ui/dropdown-menu';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { buildDensityMap, decodeGroupURL } from '../logic/scheduler/GroupScheduler';
@@ -42,6 +43,7 @@ interface GroupSchedulePageProps {
   setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
   onRemoveSelectedCourse?: (courseId: string) => void;
   embedded?: boolean;
+  modeSwitch?: React.ReactNode;
 }
 
 interface GroupClassOption {
@@ -118,6 +120,7 @@ export function GroupSchedulePage({
   setAllowedClassesMap,
   onRemoveSelectedCourse,
   embedded = false,
+  modeSwitch,
 }: GroupSchedulePageProps) {
   const {
     members,
@@ -136,13 +139,23 @@ export function GroupSchedulePage({
     getOptionRegistrations,
   } = useGroupScheduler();
 
-  const [activeStep, setActiveStep] = useState<GroupScheduleStep>(1);
+  const savedUIState = useMemo(() => {
+    return readFromStorage(STORAGE_KEYS.GROUP_SCHEDULE_UI_STATE, {
+      activeStep: 1 as GroupScheduleStep,
+      resultViewMode: 'course' as GroupScheduleResultViewMode,
+      isAdvancedOpen: false,
+      showMembersPanel: false,
+      showGroupCalendarPreview: false,
+    });
+  }, []);
+
+  const [activeStep, setActiveStep] = useState<GroupScheduleStep>(savedUIState.activeStep);
   const [activeResultIndex, setActiveResultIndex] = useState(0);
   const [activePreviewMemberIndex, setActivePreviewMemberIndex] = useState(0);
-  const [showGroupCalendarPreview, setShowGroupCalendarPreview] = useState(false);
+  const [showGroupCalendarPreview, setShowGroupCalendarPreview] = useState(savedUIState.showGroupCalendarPreview);
   const [showSaveGroupScheduleModal, setShowSaveGroupScheduleModal] = useState(false);
   const [groupScheduleName, setGroupScheduleName] = useState('');
-  const [resultViewMode, setResultViewMode] = useState<GroupScheduleResultViewMode>('course');
+  const [resultViewMode, setResultViewMode] = useState<GroupScheduleResultViewMode>(savedUIState.resultViewMode);
   const [draft, setDraft] = useState<GroupMemberToken>(makeDraft);
   const [manualCourseInput, setManualCourseInput] = useState('');
   const [mergeInput, setMergeInput] = useState('');
@@ -151,6 +164,18 @@ export function GroupSchedulePage({
   const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>({});
   const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
   const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
+  const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.GROUP_SCHEDULE_UI_STATE, {
+      activeStep,
+      resultViewMode,
+      isAdvancedOpen,
+      showMembersPanel,
+      showGroupCalendarPreview,
+    });
+  }, [activeStep, resultViewMode, isAdvancedOpen, showMembersPanel, showGroupCalendarPreview]);
 
   useEffect(() => {
     const onHashChange = () => setMembersFromURL(window.location.hash);
@@ -344,8 +369,13 @@ export function GroupSchedulePage({
   };
 
   const renderStepper = () => (
-    <div className="rounded-lg border border-gray-200 bg-white p-3">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="rounded-lg border border-gray-200 bg-white p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3">
+      {modeSwitch && (
+        <div className="shrink-0 md:border-r md:border-gray-200 md:pr-3">
+          {modeSwitch}
+        </div>
+      )}
+      <div className="flex-1 grid grid-cols-3 gap-2 w-full">
         {stepItems.map((step) => {
           const isActive = activeStep === step.id;
           const isDone = activeStep > step.id || (step.id === 3 && !!result?.solutions.length);
@@ -405,11 +435,17 @@ export function GroupSchedulePage({
   );
 
   const renderMemberStep = () => (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_560px]">
+    <div className={`grid gap-6 ${showMembersPanel ? 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : 'lg:grid-cols-1'}`}>
       <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-[#004A98]" />
-          <h2 className="text-lg font-semibold text-gray-900">Nhóm của bạn</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-[#004A98]" />
+            <h2 className="text-lg font-semibold text-gray-900">Nhóm của bạn</h2>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setShowMembersPanel(!showMembersPanel)}>
+            <Users className="mr-2 h-4 w-4" />
+            {showMembersPanel ? 'Ẩn danh sách' : `Thành viên (${members.length})`}
+          </Button>
         </div>
 
         <div>
@@ -488,7 +524,7 @@ export function GroupSchedulePage({
         )}
       </section>
 
-      {renderMembersPanel()}
+      {showMembersPanel && renderMembersPanel()}
     </div>
   );
 
@@ -545,43 +581,58 @@ export function GroupSchedulePage({
             ))}
           </div>
         </div>
+      </div>
 
-        <div>
-          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">Tiết trống nhóm</label>
-          <button
-            type="button"
-            onClick={() => setGroupPrefs((current) => ({ ...current, noGaps: !current.noGaps }))}
-            className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${groupPrefs.noGaps ? 'border-blue-200 bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}
-          >
-            {groupPrefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
-          </button>
-        </div>
+      <div className="border-t border-gray-200 pt-3">
+        <button
+          type="button"
+          onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#004A98] transition-colors w-full text-left"
+        >
+          {isAdvancedOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          Cài đặt nâng cao
+        </button>
+        
+        {isAdvancedOpen && (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">Tiết trống nhóm</label>
+              <button
+                type="button"
+                onClick={() => setGroupPrefs((current) => ({ ...current, noGaps: !current.noGaps }))}
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${groupPrefs.noGaps ? 'border-blue-200 bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}
+              >
+                {groupPrefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
+              </button>
+            </div>
 
-        <div>
-          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">Ngày nhóm muốn nghỉ</label>
-          <div className="flex flex-wrap gap-2">
-            {[0, 1, 2, 3, 4, 5, 6].map((day) => {
-              const offSession = getDayOffSession(groupPrefs.daysOff, day);
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => setGroupPrefs((current) => {
-                    return {
-                      ...current,
-                      daysOff: cycleDayOffSession(current.daysOff, day),
-                    };
-                  })}
-                  className={`flex h-12 w-12 flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all ${offSession === 'all' ? 'border-red-500 bg-red-500 text-white shadow-md' : offSession === 'morning' ? 'border-amber-400 bg-amber-50 text-amber-700 shadow-sm' : offSession === 'afternoon' ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 bg-white text-gray-400 hover:border-red-300'}`}
-                  title="Bấm lần lượt: nghỉ cả ngày, nghỉ sáng, nghỉ chiều, bỏ chọn"
-                >
-                  <span>{day === 6 ? 'CN' : `T${day + 2}`}</span>
-                  {offSession && <span className="mt-0.5 text-[9px] font-medium leading-none">{formatDayOffSession(offSession)}</span>}
-                </button>
-              );
-            })}
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">Ngày nhóm muốn nghỉ</label>
+              <div className="flex flex-wrap gap-2">
+                {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                  const offSession = getDayOffSession(groupPrefs.daysOff, day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setGroupPrefs((current) => {
+                        return {
+                          ...current,
+                          daysOff: cycleDayOffSession(current.daysOff, day),
+                        };
+                      })}
+                      className={`flex h-12 w-12 flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all ${offSession === 'all' ? 'border-red-500 bg-red-500 text-white shadow-md' : offSession === 'morning' ? 'border-amber-400 bg-amber-50 text-amber-700 shadow-sm' : offSession === 'afternoon' ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 bg-white text-gray-400 hover:border-red-300'}`}
+                      title="Bấm lần lượt: nghỉ cả ngày, nghỉ sáng, nghỉ chiều, bỏ chọn"
+                    >
+                      <span>{day === 6 ? 'CN' : `T${day + 2}`}</span>
+                      {offSession && <span className="mt-0.5 text-[9px] font-medium leading-none">{formatDayOffSession(offSession)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="space-y-3 border-t border-gray-200 pt-4">
@@ -697,36 +748,59 @@ export function GroupSchedulePage({
           <h2 className="text-lg font-semibold text-gray-900">Kết quả xếp lịch nhóm</h2>
           <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} phương án khả dụng.</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className={showGroupCalendarPreview? 'hidden' : 'flex rounded-lg bg-gray-100 p-1'}>
-            {[
-              { id: 'course' as const, label: 'Theo môn học' },
-              { id: 'member' as const, label: 'Theo thành viên' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setResultViewMode(item.id)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${resultViewMode === item.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-row items-center justify-end gap-2">
+          {!showGroupCalendarPreview && selectedOption && (
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => setShowSaveGroupScheduleModal(true)}
+              className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shrink-0"
+            >
+              <Save className="h-4 w-4" />
+              <span className="hidden sm:inline">Lưu lịch</span>
+            </Button>
+          )}
 
           <Button
             type="button"
-            variant={showGroupCalendarPreview ? 'outline' : 'default'}
+            variant="default"
             onClick={() => setShowGroupCalendarPreview((current) => !current)}
-            className={showGroupCalendarPreview ? 'text-white bg-[#004A98] hover:bg-[#003d7a]' : 'text-white bg-[#004A98] hover:bg-[#003d7a]'}
+            className="text-white bg-[#004A98] hover:bg-[#003d7a] shadow-sm shrink-0"
             disabled={!result?.solutions.length}
           >
             <Calendar className="h-4 w-4" />
-            {showGroupCalendarPreview ? 'Xem chi tiết' : 'Xem lịch nhóm'}
+            <span className="hidden sm:inline">{showGroupCalendarPreview ? 'Xem chi tiết' : 'Xem lịch nhóm'}</span>
           </Button>
-          <Button type="button" variant="outline" onClick={() => setActiveStep(2)}>
-            Chỉnh ưu tiên
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" className="shrink-0 px-2 shadow-sm">
+                <MoreHorizontal className="h-5 w-5 text-gray-600" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {!showGroupCalendarPreview && (
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Chế độ hiển thị</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setResultViewMode('course')} className={resultViewMode === 'course' ? 'bg-blue-50 text-[#004A98]' : ''}>
+                    <LayoutList className="mr-2 h-4 w-4" />
+                    <span>Theo môn học</span>
+                    {resultViewMode === 'course' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setResultViewMode('member')} className={resultViewMode === 'member' ? 'bg-blue-50 text-[#004A98]' : ''}>
+                    <UsersRound className="mr-2 h-4 w-4" />
+                    <span>Theo thành viên</span>
+                    {resultViewMode === 'member' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </DropdownMenuGroup>
+              )}
+              <DropdownMenuItem onClick={() => setActiveStep(2)}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Chỉnh ưu tiên</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
@@ -772,23 +846,12 @@ export function GroupSchedulePage({
                 </button>
               ))}
             </div>
-            {!showGroupCalendarPreview && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowSaveGroupScheduleModal(true)}
-              disabled={!selectedOption}
-            >
-              <Save className="h-4 w-4" />
-              Lưu lịch nhóm
-            </Button>
-          )}
           </div>
           
           
           {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} />}
           </>
-        )
+          )
       ) : (
         <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-500">Chưa có kết quả. Hãy chạy xếp lịch trước.</div>
       )}

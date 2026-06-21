@@ -1,6 +1,7 @@
 import { Badge } from './ui/badge';
 import type { ClassPreferenceSelection, GroupMemberToken } from '../logic/scheduler/GroupTypes';
 import { formatDaysOff } from '../utils/dayOffPreferences';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
 interface GroupMemberCardProps {
   member: GroupMemberToken;
@@ -30,61 +31,67 @@ export function GroupMemberCard({ member, index }: GroupMemberCardProps) {
   const strategyLabel = prefs?.strategy === 'spread' ? 'Trải đều' : 'Dồn lịch';
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <div className="rounded-lg border border-gray-200 bg-white p-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-gray-900">{nickname}</div>
-          <div className="text-xs text-gray-500">{registeredCourses.length} môn</div>
+          <div className="text-xs text-gray-500">Đã chọn: {registeredCourses.length} môn</div>
         </div>
-        {hasPersonalSettings && <Badge variant="outline">Có cấu hình</Badge>}
+        {hasPersonalSettings && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Có cấu hình</Badge>}
       </div>
 
-      <div className="space-y-3">
-        <div>
-          <div className="mb-1.5 text-xs font-medium text-gray-500">Môn đăng ký</div>
-          <div className="flex flex-wrap gap-1.5">
-            {registeredCourses.length > 0 ? (
-              registeredCourses.map((course) => (
-                <Badge key={course} variant="secondary">{course}</Badge>
-              ))
-            ) : (
-              <span className="text-xs text-gray-400">Chưa chọn</span>
-            )}
-          </div>
-        </div>
-
-        {hasPersonalSettings && (
-          <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
-            <div className="mb-2 text-xs font-medium text-gray-600">Cấu hình cá nhân</div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-              <div><span className="text-gray-400">Buổi:</span> {sessionLabel}</div>
-              <div><span className="text-gray-400">Kiểu:</span> {strategyLabel}</div>
-              <div><span className="text-gray-400">Tiết trống:</span> {prefs?.noGaps ? 'Hạn chế' : 'Cho phép'}</div>
-              <div><span className="text-gray-400">Ngày nghỉ:</span> {formatDaysOff(prefs?.daysOff)}</div>
-            </div>
-
-            {preferredClassEntries.length > 0 && (
-              <div className="mt-2 border-t border-gray-200 pt-2">
-                <div className="mb-1 text-xs text-gray-400">Cấu hình lớp</div>
-                <div className="space-y-1">
-                  {preferredClassEntries.map(([courseId, selection]) => (
-                    <div key={courseId} className="text-xs text-gray-600">
-                      <span className="font-mono font-medium text-gray-800">{courseId}</span>:{' '}
-                      {[
-                        selection.excluded?.length ? `cấm ${selection.excluded.join(', ')}` : null,
-                        selection.preferred?.length ? `ưu tiên ${selection.preferred.join(', ')}` : null,
-                        selection.required?.length ? `bắt buộc ${selection.required.join(', ')}` : null,
-                      ].filter(Boolean).join('; ')}
-                    </div>
-                  ))}
-                </div>
+      <Accordion type="single" collapsible className="w-full mt-1">
+        <AccordionItem value="details" className="border-none">
+          <AccordionTrigger className="py-1.5 text-xs font-medium text-gray-500 hover:no-underline">
+            Môn học ({registeredCourses.length})
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1.5">
+                {registeredCourses.length > 0 ? (
+                  registeredCourses.map((course) => (
+                    <span key={course} className="text-xs font-mono text-gray-700">{course}</span>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-400">Chưa chọn</span>
+                )}
               </div>
-            )}
 
-            {hasBusyMask && <div className="mt-2 text-xs text-gray-500">Có lịch bận ngoài nhóm.</div>}
-          </div>
-        )}
-      </div>
+              {hasPersonalSettings && (
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+                  <div className="mb-2 text-xs font-medium text-gray-600">Cấu hình cá nhân</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div><span className="text-gray-400">Buổi:</span> {sessionLabel}</div>
+                    <div><span className="text-gray-400">Kiểu:</span> {strategyLabel}</div>
+                    <div><span className="text-gray-400">Tiết trống:</span> {prefs?.noGaps ? 'Hạn chế' : 'Cho phép'}</div>
+                    <div><span className="text-gray-400">Ngày nghỉ:</span> {formatDaysOff(prefs?.daysOff)}</div>
+                  </div>
+
+                  {preferredClassEntries.length > 0 && (
+                    <div className="mt-2 border-t border-gray-200 pt-2">
+                      <div className="mb-1 text-xs text-gray-400">Cấu hình lớp</div>
+                      <div className="space-y-1">
+                        {preferredClassEntries.map(([courseId, selection]) => (
+                          <div key={courseId} className="text-xs text-gray-600">
+                            <span className="font-mono font-medium text-gray-800">{courseId}</span>:{' '}
+                            {[
+                              selection.excluded?.length ? `cấm ${selection.excluded.join(', ')}` : null,
+                              selection.preferred?.length ? `ưu tiên ${selection.preferred.join(', ')}` : null,
+                              selection.required?.length ? `bắt buộc ${selection.required.join(', ')}` : null,
+                            ].filter(Boolean).join('; ')}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {hasBusyMask && <div className="mt-2 text-xs text-gray-500">Có lịch bận ngoài nhóm.</div>}
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
