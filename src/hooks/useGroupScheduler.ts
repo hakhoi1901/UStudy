@@ -210,6 +210,7 @@ export function useGroupScheduler(): GroupSolverState & {
     replaceMembers,
     solve,
     clearResult,
+    setResult,
     getOptionRegistrations,
   };
 }

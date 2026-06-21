@@ -90,6 +90,7 @@ export function buildSavedGroupSchedule(
     groupSchedule: {
       option: option.option,
       members: groupMembers,
+      rawOption: option,
     },
   };
 }

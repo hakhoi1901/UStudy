@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, Fragment } from 'react';
-import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound, List } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from '../components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from '../components/GroupScheduleResult';
+import { SavedSchedulesModal } from '../components/SavedSchedulesModal';
 import { GroupURLShare } from '../components/GroupURLShare';
 import { SelectionBasket } from '../components/SelectionBasket';
 import { Button } from '../components/ui/button';
@@ -15,7 +16,7 @@ import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberToken, 
 import { parseCourseInput, useGroupScheduler } from '../hooks/useGroupScheduler';
 import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
-import type { Course } from '../types';
+import type { Course, SavedSchedule } from '../types';
 import type { SolverPreferences } from '../hooks/useScheduleSolver';
 import courseDbJson from '../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../utils/dayOffPreferences';
@@ -136,6 +137,7 @@ export function GroupSchedulePage({
     replaceMembers,
     solve,
     clearResult,
+    setResult,
     getOptionRegistrations,
   } = useGroupScheduler();
 
@@ -160,6 +162,11 @@ export function GroupSchedulePage({
   const [manualCourseInput, setManualCourseInput] = useState('');
   const [mergeInput, setMergeInput] = useState('');
   const [localNotice, setLocalNotice] = useState<string | null>(null);
+  
+  const [showListModal, setShowListModal] = useState(false);
+  const [savedSchedules, setSavedSchedules] = useState<SavedSchedule[]>(() => {
+    return readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []);
+  });
   const [personalClassPreferences, setPersonalClassPreferences] = useState<Record<string, ClassPreferenceSelection>>({});
   const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>({});
   const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
@@ -351,9 +358,37 @@ export function GroupSchedulePage({
     const savedSchedulesRaw = readFromStorage<unknown>(STORAGE_KEYS.SAVED_SCHEDULES, []);
     const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw : [];
     saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, [newSaved, ...savedSchedules]);
+    setSavedSchedules([newSaved, ...savedSchedules]);
     setShowSaveGroupScheduleModal(false);
     setGroupScheduleName('');
-    setLocalNotice('Đã lưu lịch nhóm. Bạn có thể mở lại trong tab lịch dự kiến.');
+    setLocalNotice('Đã lưu lịch nhóm. Bạn có thể xem lại trong Lịch đã lưu.');
+  };
+
+  const handleLoadSchedule = (saved: SavedSchedule) => {
+    if (!saved.groupSchedule) {
+      if (window.confirm('Đây là lịch cá nhân. Bạn có muốn sang tab Lịch dự kiến để xem không?')) {
+        alert('Vui lòng mở tab Lịch dự kiến để tải lịch này.');
+      }
+      return;
+    }
+    if (!saved.groupSchedule.rawOption) {
+      alert('Lịch này được lưu ở phiên bản cũ và không thể mở lại trực tiếp trong Lịch nhóm. Vui lòng mở tab Lịch dự kiến (cá nhân) để xem chi tiết nhé!');
+      return;
+    }
+
+    setResult({
+      density: [],
+      warnings: [],
+      solutions: [saved.groupSchedule.rawOption]
+    } as any);
+    setActiveResultIndex(0);
+    setShowListModal(false);
+  };
+
+  const handleDeleteSchedule = (id: string) => {
+    const updated = savedSchedules.filter(s => s.id !== id);
+    setSavedSchedules(updated);
+    saveToStorage(STORAGE_KEYS.SAVED_SCHEDULES, updated);
   };
 
   const canOpenStep = (step: GroupScheduleStep) => {
@@ -750,6 +785,22 @@ export function GroupSchedulePage({
             </Button>
           )}
 
+          <button
+            onClick={() => {
+              setSavedSchedules(readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []));
+              setShowListModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] border border-[#004A98]/30 rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm shadow-sm h-9"
+          >
+            <List className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Lịch đã lưu</span>
+            {savedSchedules.length > 0 && (
+              <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
+                {savedSchedules.length}
+              </span>
+            )}
+          </button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="inline-flex h-9 w-9 items-center justify-center whitespace-nowrap rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 shrink-0">
@@ -879,6 +930,14 @@ export function GroupSchedulePage({
           </div>
         </div>
       )}
+
+      <SavedSchedulesModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        savedSchedules={savedSchedules}
+        onLoadSchedule={handleLoadSchedule}
+        onDeleteSchedule={handleDeleteSchedule}
+      />
     </section>
   );
 

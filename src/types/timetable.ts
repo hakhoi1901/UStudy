@@ -38,5 +38,6 @@ export interface SavedSchedule {
             selectedCourses: string[];
             allowedClassesMap: Record<string, string[]>;
         }>;
+        rawOption?: any; // GroupScheduleOption
     };
 }
