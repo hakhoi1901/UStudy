@@ -1,4 +1,4 @@
-import { LogOut, ChevronDown, LogIn } from 'lucide-react';
+import { LogOut, ChevronDown, LogIn, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LogoutConfirmModal } from './LogoutConfirmModal';
 import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
@@ -171,6 +171,16 @@ export function Header({
 
                 {/* Divider - ẩn trên mobile */}
                 <div className="hidden md:block h-10 w-px bg-gray-200"></div>
+
+                {/* Open Portal Button */}
+                <button
+                  onClick={handleLogin}
+                  className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-gray-200 focus:ring-offset-2"
+                  title="Mở HCMUS Portal để đồng bộ dữ liệu"
+                >
+                  <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
+                  <span className="hidden md:inline" style={{ fontWeight: 500 }}>Mở Portal</span>
+                </button>
 
                 {/* Log Out Button */}
                 <button
