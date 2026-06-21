@@ -54,4 +54,6 @@ export const STORAGE_KEYS = {
     CHAT_HISTORY: 'chatbot_chat_history',
     /** Các tùy chỉnh ghi đè thời khóa biểu (phòng, tiết, ngày nghỉ) */
     SCHEDULE_OVERRIDES: 'schedule_overrides',
+    /** Thành viên nhóm (lưu tạm) */
+    GROUP_SCHEDULER_MEMBERS: 'group_scheduler_members',
 };

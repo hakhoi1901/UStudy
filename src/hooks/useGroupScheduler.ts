@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { STORAGE_KEYS } from '../config';
-import { readFromStorage } from '../helpers/localStorage/save';
+import { readFromStorage, saveToStorage } from '../helpers/localStorage/save';
 import {
   decodeGroupURL,
   encodeGroupURL,
@@ -68,19 +68,27 @@ export function useGroupScheduler(): GroupSolverState & {
 } {
   const [members, setMembers] = useState<GroupMemberToken[]>(() => {
     try {
-      return decodeGroupURL(getBrowserHash());
+      const decoded = decodeGroupURL(getBrowserHash());
+      if (decoded.length > 0) return decoded;
     } catch {
-      return [];
+      // Ignore URL error initially if we fallback to storage
     }
+    return readFromStorage<GroupMemberToken[]>(STORAGE_KEYS.GROUP_SCHEDULER_MEMBERS, []);
   });
   const [decodeError, setDecodeError] = useState<string | null>(() => {
+    const hash = getBrowserHash();
+    if (!hash || hash === '#') return null;
     try {
-      decodeGroupURL(getBrowserHash());
+      decodeGroupURL(hash);
       return null;
     } catch (error) {
       return error instanceof GroupURLDecodeError ? error.message : 'Link nhóm không hợp lệ.';
     }
   });
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_MEMBERS, members);
+  }, [members]);
   const [solving, setSolving] = useState(false);
   const [result, setResult] = useState<GroupScheduleRunResult | null>(null);
   const [solveError, setSolveError] = useState<string | null>(null);
