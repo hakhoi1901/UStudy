@@ -20,7 +20,7 @@ interface ExamData {
 
 export function ExamScheduleVi() {
     const { exams } = useStudentDb();
-    const { academicYear, semesterNumber } = useDepartmentData();
+    const { academicYear, semesterNumber } = useDepartmentData();   
 
     const [selectedType, setSelectedType] = useState<'all' | 'Giữa kỳ' | 'Cuối kỳ'>('all');
     const [selectedLocation, setSelectedLocation] = useState<string>('all');
@@ -195,17 +195,19 @@ export function ExamScheduleVi() {
                                             </span>
                                         </div>
                                         <p className="text-xs md:text-sm text-gray-900 font-medium mb-1 md:mb-1.5 truncate md:whitespace-normal">{upcomingExams[0].courseName}</p>
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-4 text-[10px] md:text-xs text-gray-400">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-4 text-[10px] md:text-xs text-gray-600 font-medium">
+                                            <span className="flex items-center gap-1 text-gray-700">
+                                                <Calendar className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#004A98]" />
                                                 {formatDate(upcomingExams[0].examDate)}
                                             </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-3 md:w-3.5 h-3 md:h-3.5" />
+
+                                            <span className="flex items-center gap-1 text-gray-700">
+                                                <Clock className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#004A98]" />
                                                 {upcomingExams[0].examTime.split(' - ')[0]}
                                             </span>
-                                            <span className="flex items-center gap-1">
-                                                <MapPin className="w-3 md:w-3.5 h-3 md:h-3.5" />
+
+                                            <span className="flex items-center gap-1 text-gray-700">
+                                                <MapPin className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#004A98]" />
                                                 {upcomingExams[0].room}
                                             </span>
                                         </div>

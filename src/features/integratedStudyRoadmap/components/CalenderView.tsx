@@ -309,44 +309,119 @@ export function CalendarView({
         <div className="space-y-4">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
             <div className="p-2 md:p-3 bg-gradient-to-r from-[#004A98]/5 to-blue-50 border border-blue-100 rounded-xl">
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                    <div className="flex items-center gap-3">
-                        {renderModeSwitch()}
-                        <div className="h-6 w-px bg-blue-200 hidden md:block"></div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                        <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
-                            {currentSections.length > 0
-                                ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
-                                : `${selectedCourses.size} môn đã chọn`}
-                        </p>
-                        <p className="hidden md:block text-xs text-blue-600 mt-0.5">
-                            Thuật toán di truyền tự động chọn lớp tốt nhất, tránh trùng lịch.
-                        </p>
-                    </div>
+                <div className="flex flex-col gap-2 md:gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            {renderModeSwitch()}
+                            <div className="h-6 w-px bg-blue-200 hidden md:block"></div>
 
-                    <button
-                        onClick={() => setIsConfigOpen(true)}
-                        className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm border border-[#004A98]/20 shadow-sm"
-                        title="Cấu hình ưu tiên"
-                    >
-                        <Settings className="w-3.5 h-3.5" />
-                        <span className="hidden md:inline font-medium">Cấu hình</span>
-                    </button>
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
+                                    {currentSections.length > 0
+                                        ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
+                                        : `${selectedCourses.size} môn đã chọn`}
+                                </p>
 
-                    <button
-                        onClick={() => setShowListModal(true)}
-                        className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] border border-[#004A98]/30 rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm shadow-sm"
-                    >
-                        <List className="w-3.5 h-3.5" />
-                        <span className="hidden md:inline">Lịch đã lưu</span>
-                        {savedSchedules.length > 0 && (
-                            <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
-                                {savedSchedules.length}
-                            </span>
-                        )}
-                    </button>
+                                <p className="hidden md:block text-xs text-blue-600 mt-0.5">
+                                    Thuật toán di truyền tự động chọn lớp tốt nhất, tránh trùng lịch.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={() => setIsConfigOpen(true)}
+                                className="
+                                    flex items-center gap-1.5
+                                    h-9
+                                    px-2 md:px-4
+                                    bg-white
+                                    text-[#004A98]
+                                    rounded-lg
+                                    hover:bg-blue-50
+                                    transition-colors
+                                    border border-[#004A98]/20
+                                    shadow-sm
+                                    shrink-0
+                                "
+                                title="Cấu hình ưu tiên"
+                            >
+                                <Settings className="w-3.5 h-3.5" />
+
+                                <span className="hidden md:inline font-medium">
+                                    Cấu hình
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => setShowListModal(true)}
+                                className="
+                                    flex items-center gap-1.5
+                                    h-9
+                                    px-2 md:px-4
+                                    bg-white
+                                    text-[#004A98]
+                                    border border-[#004A98]/30
+                                    rounded-lg
+                                    hover:bg-blue-50
+                                    transition-colors
+                                    shadow-sm
+                                    shrink-0
+                                "
+                            >
+                                <List className="w-3.5 h-3.5" />
+
+                                <span className="hidden md:inline">
+                                    Lịch đã lưu
+                                </span>
+
+                                {savedSchedules.length > 0 && (
+                                    <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
+                                        {savedSchedules.length > 99
+                                            ? "99+"
+                                            : savedSchedules.length}
+                                    </span>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() =>
+                                    solve(
+                                        coursesToSchedule,
+                                        allowedClassesMap,
+                                        prefs
+                                    )
+                                }
+                                disabled={solving}
+                                className="
+                                    flex items-center gap-1.5
+                                    h-9
+                                    px-3 md:px-5
+                                    bg-[#004A98]
+                                    text-white
+                                    rounded-lg
+                                    hover:bg-[#003A78]
+                                    active:scale-95
+                                    transition-all
+                                    disabled:opacity-60
+                                    disabled:cursor-not-allowed
+                                    font-semibold
+                                    shadow-md
+                                    shrink-0
+                                "
+                            >
+                                <Cpu className="w-3.5 h-3.5" />
+
+                                <span className="hidden sm:inline">
+                                    {solving ? "Đang xếp..." : "Xếp lịch"}
+                                </span>
+
+                                <span className="sm:hidden">
+                                    {solving ? "..." : "Xếp"}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
 
                     {/* {stats && (
                         <button
@@ -361,16 +436,6 @@ export function CalendarView({
                             <span className="hidden md:inline">{showStatsPanel ? 'Ẩn thống kê' : 'Thống kê'}</span>
                         </button>
                     )} */}
-
-                    <button
-                        onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
-                        disabled={solving}
-                        className="flex items-center gap-1.5 px-4 md:px-5 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-xs md:text-sm font-semibold shadow-md"
-                    >
-                        <Cpu className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{solving ? 'Đang xếp...' : 'Xếp lịch'}</span>
-                        <span className="sm:hidden">{solving ? '...' : 'Xếp'}</span>
-                    </button>
                 </div>
             </div>
 

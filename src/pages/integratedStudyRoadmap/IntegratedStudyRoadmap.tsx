@@ -147,15 +147,13 @@ export function IntegratedStudyRoadmap() {
 
             {/* Drawer */}
             <div
-                className="md:hidden fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl"
+                className="md:hidden flex flex-col fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl"
                 style={{
                     // Để trên bottom nav (64px)
                     bottom: '64px',
                     maxHeight: '80vh',
                     transform: showMobileBasket ? 'translateY(0)' : 'translateY(110%)',
-                    transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
-                    display: 'flex',
-                    flexDirection: 'column',
+                    transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
                 }}
             >
                 {/* Handle + Header */}
