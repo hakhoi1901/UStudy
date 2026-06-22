@@ -274,7 +274,7 @@ export function CalendarView({
                         )}
                     </button>
 
-                    {stats && (
+                    {/* {stats && (
                         <button
                             onClick={() => setShowStatsPanel(prev => !prev)}
                             className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-lg border transition-all shrink-0 text-xs md:text-sm shadow-sm ${
@@ -286,7 +286,7 @@ export function CalendarView({
                             <BarChart2 className="w-3.5 h-3.5" />
                             <span className="hidden md:inline">{showStatsPanel ? 'Ẩn thống kê' : 'Thống kê'}</span>
                         </button>
-                    )}
+                    )} */}
 
                     <button
                         onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
