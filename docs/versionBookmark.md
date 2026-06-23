@@ -12,3 +12,8 @@
 - Có fallback ngược:
   nếu không có config riêng thì bookmarklet vẫn dùng `CONFIG.TARGET_YEAR` và `CONFIG.TARGET_SEM`.
 - Sửa default fallback trong `Bookmarklet.js` tu `TARGET_SEM = "1"` thành `TARGET_SEM = "2"` để đồng bộ với config app hiện tại
+
+
+## v0.1.4.
+
+- Chuyển học kỳ mặc định sang học kỳ 3 - 2025-2026.
