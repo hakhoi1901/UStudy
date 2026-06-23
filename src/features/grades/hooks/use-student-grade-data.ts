@@ -70,9 +70,16 @@ export function useStudentGradeData() {
 
         // ── Tuition estimation: delegate to FinancialLogic ──
         const importMeta = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
-        const { estimatedTuition, tuitionSource } = FinancialLogic.estimateTuitionFromSources(
-            studentDb, importMeta, allCoursesMeta, tuitionRates, selectedSemesterKey
+        const tuitionData = FinancialLogic.calculateTuitionData(
+            selectedSemesterKey,
+            undefined,
+            studentDb,
+            importMeta,
+            tuitionRates,
+            allCoursesMeta
         );
+        const estimatedTuition = tuitionData.summary.totalFee;
+        const tuitionSource = tuitionData.source;
 
         setIsReady(true);
         return {
