@@ -13,7 +13,8 @@
         CLASS_TARGET_YEAR: "25-26",
         CLASS_TARGET_SEM: "2",
         REG_TARGET_YEAR: "25-26",
-        REG_TARGET_SEM: "2"
+        REG_TARGET_SEM: "2",
+        CONCURRENCY: "10"
     };
 
     //  Kiểm tra hạn sử dụng 30 ngày
@@ -49,6 +50,25 @@
 
     // Helper: Chuyển text HTML thành DOM ảo để query
     const parseHTML = (html) => new DOMParser().parseFromString(html, 'text/html');
+    const PORTAL_CONCURRENCY = Math.max(1, Math.min(Number(CONFIG.CONCURRENCY || 3), 5));
+
+    async function runWithConcurrency(items, limit, worker, onProgress) {
+        const results = new Array(items.length);
+        let nextIndex = 0;
+        let doneCount = 0;
+
+        const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+            while (nextIndex < items.length) {
+                const currentIndex = nextIndex++;
+                results[currentIndex] = await worker(items[currentIndex], currentIndex);
+                doneCount++;
+                if (onProgress) onProgress(doneCount, items.length, items[currentIndex], currentIndex);
+            }
+        });
+
+        await Promise.all(runners);
+        return results;
+    }
 
     function showPrivacyAndConfigModal() {
         return new Promise((resolve, reject) => {
@@ -402,7 +422,7 @@
     }
 
     // Cào raw rows kèm theo fetch chi tiết TH/BT
-    async function scrapeOpenClassesRaw(doc) {
+    async function scrapeOpenClassesRawSequential(doc) {
         const table = doc.getElementById('tbPDTKQ');
         if (!table) return [];
 
@@ -476,6 +496,76 @@
     // --- LOGIC FETCH TRANG VÀ POSTBACK (CORE) ---
 
     // Hàm lấy trang web bất kỳ và trả về DOM ảo
+    async function scrapeOpenClassesRaw(doc) {
+        const table = doc.getElementById('tbPDTKQ');
+        if (!table) return [];
+
+        const courseRows = Array.from(table.querySelectorAll('tr'))
+            .map((row) => ({ cells: row.querySelectorAll('td') }))
+            .filter(({ cells }) => {
+                const courseId = cells[0]?.textContent.trim();
+                return cells.length >= 9 && courseId && !/M..?\s*MH/i.test(courseId);
+            });
+
+        const rows = await runWithConcurrency(courseRows, PORTAL_CONCURRENCY, async ({ cells }) => {
+            const courseId = cells[0]?.textContent.trim();
+            let practicalClasses = [];
+            let exerciseClasses = [];
+            const detailJobs = [];
+
+            const thLink = cells[8]?.querySelector('a');
+            if (thLink) {
+                const onclickText = thLink.getAttribute('onclick') || "";
+                const matchTH = onclickText.match(/showFormDKThucHanh\("(\d+)"/);
+                if (matchTH && matchTH[1]) {
+                    detailJobs.push(fetchSubClasses(matchTH[1], 'LopThucHanh').then((items) => {
+                        practicalClasses = items;
+                    }));
+                }
+            }
+
+            const btLink = cells[9]?.querySelector('a');
+            if (btLink) {
+                const onclickText = btLink.getAttribute('onclick') || "";
+                const matchBT = onclickText.match(/showFormDKBaiTap\("(\d+)"/);
+                const matchFallback = onclickText.match(/\("(\d+)"/);
+                const finalMatchBT = matchBT || matchFallback;
+
+                if (finalMatchBT && finalMatchBT[1]) {
+                    detailJobs.push(fetchSubClasses(finalMatchBT[1], 'LopBaiTap').then((items) => {
+                        exerciseClasses = items;
+                    }));
+                }
+            }
+
+            if (detailJobs.length > 0) {
+                await Promise.all(detailJobs);
+            }
+
+            return {
+                id: courseId,
+                name: cells[1]?.textContent.trim(),
+                className: cells[2]?.textContent.trim(),
+                credits: cells[3]?.textContent.trim(),
+                capacity: cells[4]?.textContent.trim(),
+                enrolled: cells[5]?.textContent.trim(),
+                cohort: cells[6]?.textContent.trim(),
+                schedule: cells[7]?.textContent.trim(),
+                practicalGroupRaw: cells[8]?.textContent.trim(),
+                exerciseGroupRaw: cells[9] ? cells[9].textContent.trim() : "",
+                location: cells[10] ? cells[10].textContent.trim() : "",
+                practicalClasses: practicalClasses,
+                exerciseClasses: exerciseClasses
+            };
+        }, (done, total) => {
+            if (done % 3 === 0 || done === total) {
+                showLoading(`Dang quet chi tiet TH/BT: ${done}/${total}`);
+            }
+        });
+
+        return rows.filter(Boolean);
+    }
+
     async function fetchVirtualPage(url) {
         const res = await fetch(url);
         const text = await res.text();
@@ -566,7 +656,7 @@
 
         showLoading("Đang tải Bảng điểm đầy đủ...");
         // Lấy Học phí
-        if (config.getTuition) {
+        const tuitionTask = config.getTuition ? (async () => {
             showLoading("Bắt đầu quét Học phí toàn diện...");
             let docHocPhiBase = await fetchVirtualPage(URLS.HOCPHI);
 
@@ -642,10 +732,11 @@
                 }
             }
             tuitionData = allTuition;
-        }
+            return tuitionData;
+        })() : Promise.resolve(tuitionData);
 
-        // 3. Xử lý Lịch thi (BẢN VÉT LƯỚI TOÀN DIỆN - ĐA TẦNG NĂM-KỲ)
-        if (config.getExam) {
+        // 3. Xử lý Lịch thi (SONG SONG TOÀN DIỆN - mỗi cặp năm/kỳ độc lập nhau)
+        const examTask = config.getExam ? (async () => {
             showLoading(`Đang khởi động tiến trình quét Lịch Thi toàn diện...`);
             let docThiBase = await fetchVirtualPage(URLS.LICHTHI);
 
@@ -665,93 +756,91 @@
             const semOptions = ["1", "2", "3"];
             const allExams = {};
 
-            let count = 0;
-            const totalScans = yearOptions.length * semOptions.length;
-
-            // B2: Vòng lặp Brute-force
+            // B2: Tạo danh sách tất cả cặp (năm, kỳ) để chạy song song
+            const scanPairs = [];
             for (const year of yearOptions) {
                 for (const sem of semOptions) {
-                    count++;
-                    showLoading(`Đang dò tìm Lịch thi [Năm ${year} - HK ${sem}] (${count}/${totalScans})...`);
-
-                    try {
-                        // NHỊP 1: Dọn đường (GET request)
-                        const targetUrl = `${URLS.LICHTHI}&nh=${year}&hk=${sem}`;
-                        const getRes = await fetch(targetUrl);
-                        const prefilledDoc = parseHTML(await getRes.text());
-
-                        // Lấy mớ ViewState mới nhất
-                        const viewState = prefilledDoc.getElementById('__VIEWSTATE')?.value;
-                        const viewStateGen = prefilledDoc.getElementById('__VIEWSTATEGENERATOR')?.value;
-                        const eventValidation = prefilledDoc.getElementById('__EVENTVALIDATION')?.value;
-
-                        if (!viewState) continue; // Nếu lỡ đứt mạng thì bỏ qua kỳ này
-
-                        // NHỊP 2: Đóng gói Payload CHUẨN XÁC
-                        const formData = new URLSearchParams();
-
-                        // Core ASP.NET
-                        formData.append('__EVENTTARGET', '');
-                        formData.append('__EVENTARGUMENT', '');
-                        formData.append('__VIEWSTATE', viewState);
-                        if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
-                        if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
-
-                        // Móc nối toàn bộ các thẻ input râu ria khác (trừ Obout)
-                        prefilledDoc.querySelectorAll('input[type="hidden"]').forEach(el => {
-                            if (el.name && !el.name.includes('cboNamHoc') && !el.name.includes('cboHocKy') && !el.name.startsWith('__')) {
-                                formData.append(el.name, el.value);
-                            }
-                        });
-
-                        // Ghi đè bằng tay bộ parameter của Obout (Đã kiểm chứng từ Network Tab)
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB', year);
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiSIS', '1');
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi', year);
-
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB', sem);
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiSIS', '1');
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi', sem);
-
-                        formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXemLichThi', 'Xem Lịch Thi');
-
-                        // NHỊP 3: Bắn POST
-                        const postRes = await fetch(targetUrl, {
-                            method: 'POST',
-                            body: formData,
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                        });
-
-                        const finalDoc = parseHTML(await postRes.text());
-
-                        // Bóc tách bảng dữ liệu
-                        const partialData = scrapeBackgroundData(finalDoc, 'EXAM');
-
-                        // CHỈ LƯU VÀO DATA NẾU CÓ THỰC SỰ CÓ LỊCH THI
-                        if (partialData.midterm.length > 0 || partialData.final.length > 0) {
-                            const key = `${year}-${sem}`; // Tạo key đa tầng, vd: "24-25-2"
-
-                            // Gắn nhãn năm/kỳ
-                            partialData.midterm.forEach(item => { item.year = year; item.semester = sem; });
-                            partialData.final.forEach(item => { item.year = year; item.semester = sem; });
-
-                            allExams[key] = {
-                                midterm: partialData.midterm,
-                                final: partialData.final
-                            };
-                        }
-
-                    } catch (err) {
-                        console.warn(`Lỗi lịch thi ${year} HK${sem}:`, err);
-                    }
+                    scanPairs.push({ year, sem });
                 }
             }
+            const totalScans = scanPairs.length;
+
+            // B3: Worker cho mỗi cặp (năm, kỳ) - mỗi cặp tự fetch ViewState riêng nên không conflict
+            const scanWorker = async ({ year, sem }) => {
+                try {
+                    // NHỊP 1: Dọn đường (GET request - mỗi worker tự lấy ViewState riêng)
+                    const targetUrl = `${URLS.LICHTHI}&nh=${year}&hk=${sem}`;
+                    const getRes = await fetch(targetUrl);
+                    const prefilledDoc = parseHTML(await getRes.text());
+
+                    const viewState = prefilledDoc.getElementById('__VIEWSTATE')?.value;
+                    const viewStateGen = prefilledDoc.getElementById('__VIEWSTATEGENERATOR')?.value;
+                    const eventValidation = prefilledDoc.getElementById('__EVENTVALIDATION')?.value;
+
+                    if (!viewState) return null;
+
+                    // NHỊP 2: Đóng gói Payload CHUẨN XÁC
+                    const formData = new URLSearchParams();
+                    formData.append('__EVENTTARGET', '');
+                    formData.append('__EVENTARGUMENT', '');
+                    formData.append('__VIEWSTATE', viewState);
+                    if (viewStateGen) formData.append('__VIEWSTATEGENERATOR', viewStateGen);
+                    if (eventValidation) formData.append('__EVENTVALIDATION', eventValidation);
+
+                    prefilledDoc.querySelectorAll('input[type="hidden"]').forEach(el => {
+                        if (el.name && !el.name.includes('cboNamHoc') && !el.name.includes('cboHocKy') && !el.name.startsWith('__')) {
+                            formData.append(el.name, el.value);
+                        }
+                    });
+
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiTB', year);
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi$ob_CbocboNamHoc_gvDKHPLichThiSIS', '1');
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboNamHoc_gvDKHPLichThi', year);
+
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiTB', sem);
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi$ob_CbocboHocKy_gvDKHPLichThiSIS', '1');
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$cboHocKy_gvDKHPLichThi', sem);
+
+                    formData.append('ctl00$ContentPlaceHolder1$ctl00$btnXemLichThi', 'Xem Lịch Thi');
+
+                    // NHỊP 3: Bắn POST
+                    const postRes = await fetch(targetUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+
+                    const finalDoc = parseHTML(await postRes.text());
+                    const partialData = scrapeBackgroundData(finalDoc, 'EXAM');
+
+                    if (partialData.midterm.length > 0 || partialData.final.length > 0) {
+                        partialData.midterm.forEach(item => { item.year = year; item.semester = sem; });
+                        partialData.final.forEach(item => { item.year = year; item.semester = sem; });
+                        return { key: `${year}-${sem}`, data: { midterm: partialData.midterm, final: partialData.final } };
+                    }
+                    return null;
+                } catch (err) {
+                    console.warn(`Lỗi lịch thi ${year} HK${sem}:`, err);
+                    return null;
+                }
+            };
+
+            // B4: Chạy song song với concurrency limit
+            const EXAM_CONCURRENCY = Math.max(1, Math.min(Number(CONFIG.CONCURRENCY || 4), 6));
+            const results = await runWithConcurrency(scanPairs, EXAM_CONCURRENCY, scanWorker,
+                (done, total, item) => {
+                    showLoading(`Đang dò Lịch thi [${item.year} - HK${item.sem}] (${done}/${total})...`);
+                }
+            );
+
+            results.forEach(r => { if (r) allExams[r.key] = r.data; });
 
             examData = allExams;
-        }
+            return examData;
+        })() : Promise.resolve(examData);
 
         // 4. Xử lý Lớp Mở
-        if (config.getClass) {
+        const classTask = config.getClass ? (async () => {
             showLoading(`Đang truy cập Lớp mở HK${config.classSem}/${config.classYear}...`);
 
             let docLopMo = await fetchVirtualPage(URLS.LOPMO);
@@ -773,10 +862,11 @@
 
             showLoading(`Đang cào dữ liệu lớp mở...`);
             courses = await scrapeOpenClassesRaw(docLopMo);
-        }
+            return courses;
+        })() : Promise.resolve(courses);
 
         // 5. Xử lý Kết quả ĐKHP
-        if (config.getReg) {
+        const registrationTask = config.getReg ? (async () => {
             showLoading(`Đang lấy Kết quả ĐKHP HK${config.regSem}/${config.regYear}...`);
 
             let docDKHP = await fetchVirtualPage(URLS.DKHP);
@@ -818,7 +908,10 @@
             }
 
             registrations = scrapeRegisteredCourses(docDKHP);
-        }
+            return registrations;
+        })() : Promise.resolve(registrations);
+
+        await Promise.all([tuitionTask, examTask, classTask, registrationTask]);
 
         hideLoading();
 
@@ -882,4 +975,3 @@
     }
 
 })();
-
