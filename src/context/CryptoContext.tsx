@@ -77,12 +77,9 @@ export function CryptoProvider({ children }: { children: React.ReactNode }) {
                 })
             );
 
-            // Báo các hook cần re-render (stamp update)
-            window.dispatchEvent(
-                new MessageEvent('message', {
-                    data: { type: CACHE_POPULATED_EVENT }
-                })
-            );
+            // Dùng postMessage thay vì dispatchEvent(new MessageEvent) để đảm bảo event vào queue async
+            // Giúp React có đủ thời gian mount các component và gắn listener
+            window.postMessage({ type: CACHE_POPULATED_EVENT }, '*');
         })();
     }, [cryptoKey]);
 
