@@ -11,6 +11,7 @@ export const APP_CONFIG = {
      * Danh sách học kỳ hiển thị trên dropdown
      */
     AVAILABLE_SEMESTERS: [
+        'Học kỳ 3, 2025-2026',
         'Học kỳ 2, 2025-2026',
         'Học kỳ 1, 2025-2026',
         'Học kỳ 3, 2024-2025',
@@ -22,22 +23,22 @@ export const APP_CONFIG = {
      * Cấu hình học kỳ mặc định toàn app
      */
     DEFAULT_ACADEMIC_YEAR: '2025-2026',
-    DEFAULT_SEMESTER: 2,
+    DEFAULT_SEMESTER: 3,
 
     /**
      * Năm/Học kỳ mặc định cho Bookmarklet
      */
     DEFAULT_TARGET_YEAR: "25-26",
-    DEFAULT_TARGET_SEM: "2",
+    DEFAULT_TARGET_SEM: "3",
     DEFAULT_CLASS_TARGET_YEAR: "25-26",
-    DEFAULT_CLASS_TARGET_SEM: "2",
+    DEFAULT_CLASS_TARGET_SEM: "3",
     DEFAULT_REG_TARGET_YEAR: "25-26",
-    DEFAULT_REG_TARGET_SEM: "2",
+    DEFAULT_REG_TARGET_SEM: "3",
 
     /**
      * Phiên bản hiện tại của Bookmarklet
      */
-    BOOKMARKLET_VERSION: '0.1.3',
+    BOOKMARKLET_VERSION: '0.1.4',
 
     /**
      * Thông tin liên hệ và báo cáo
