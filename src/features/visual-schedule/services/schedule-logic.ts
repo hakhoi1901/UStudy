@@ -35,7 +35,7 @@ export type ScheduleColor = 'blue' | 'green' | 'yellow' | 'purple';
  * - T2(1-5) - F301: Room (optional)
  * - T3 (3.5-5.5) - Phòng TH: Room name with space (optional)
  */
-const SCHEDULE_REGEX = /T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^,:]+))?/g;
+const SCHEDULE_REGEX = /T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^,;:]+))?/g;
 
 /**
  * Regex đơn giản chỉ match phần Tx(n-m), dùng cho dataProcessor (không cần room).
@@ -43,7 +43,7 @@ const SCHEDULE_REGEX = /T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^,:]+))?/g;
 const SCHEDULE_REGEX_SIMPLE = /T(\d|CN)\(([\d.]+)-([\d.]+)\)/g;
 
 /** Regex cho parse từng phần schedule (non-global, dùng cho match đơn) */
-const SCHEDULE_PART_REGEX = /T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^:]+)(?::\s*(.*))?)?/;
+const SCHEDULE_PART_REGEX = /T(\d|CN)\s*\(([\d.]+)-([\d.]+)\)(?:\s*-\s*([^:;]+)(?::\s*(.*))?)?/;
 
 // ─── Core Functions ─────────────────────────────────────────────────
 
@@ -314,7 +314,7 @@ export const ScheduleLogic = {
             const exerciseHours = parseInt(meta?.exercise_hours as any) || 0;
 
             const scheduleStr = course.schedule || '';
-            const scheduleParts = scheduleStr.split(',').map((s: string) => s.trim()).filter(Boolean);
+            const scheduleParts = scheduleStr.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
 
             if (scheduleParts.length > 0 && course.courseType === 'LT') {
                 totalCourses++;
@@ -333,7 +333,7 @@ export const ScheduleLogic = {
 
                 let rawStart = parseFloat(match[2]);
                 let rawEnd = parseFloat(match[3]);
-                let room = match[5] || '';
+                let room = (match[5] || match[4] || '').trim();
 
                 // --- Apply Global Overrides ---
                 const sessionId = `${course.id}_${index}_${partIdx}`;
