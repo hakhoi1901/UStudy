@@ -89,17 +89,18 @@ export function DraftSemesterPanel({
                                     onAddCourseToSemester(courseId, semester.id);
                                     onActiveDropIdChange(null);
                                 }}
-                                className={`rounded-lg border bg-gray-50 p-3 transition-all ${activeDropId === semester.id
-                                    ? 'border-[#004A98] bg-blue-50 ring-2 ring-[#004A98]/15'
-                                    : 'border-gray-200'
-                                    }`}
+                                className={`rounded-lg bg-white transition-all p-2 ${
+                                    activeDropId === semester.id
+                                        ? "border-[#004A98] ring-2 ring-[#004A98]/10"
+                                        : "border-gray-200"
+                                }`}
                             >
                                 <div className="mb-2 flex items-center justify-between gap-2">
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2">
                                             <h3 className="text-sm font-bold text-gray-900">{semester.label}</h3>
                                             {semester.isHistorical && (
-                                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-[#004A98]">
+                                                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#004A98] text-white">
                                                     Từ dữ liệu
                                                 </span>
                                             )}
@@ -121,7 +122,7 @@ export function DraftSemesterPanel({
                                         {semester.isHistorical ? 'Chưa có dữ liệu môn trong kỳ này' : 'Thả môn vào đây'}
                                     </div>
                                 ) : (
-                                    <div className="space-y-2">
+                                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
                                         {plannedIds.map((courseId) => {
                                             const course = courseById.get(courseId);
                                             if (!course) return null;
@@ -132,14 +133,14 @@ export function DraftSemesterPanel({
                                                     key={courseId}
                                                     draggable={!semester.isHistorical}
                                                     onDragStart={(event) => onDragStart(courseId, event)}
-                                                    className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm"
-                                                >
+                                                    className="border-b border-gray-200 bg-white px-3 py-2.5 last:border-b-0"                                               >
                                                     <div className="flex items-start gap-2">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs font-bold text-gray-900">{course.course_id}</span>
-                                                                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
-                                                                    {course.credits} TC
+                                                                <span className="text-[11px] font-semibold tabular-nums text-gray-500">
+                                                                    {course.credits}
+                                                                    <span className="ml-1 font-medium text-gray-400">TC</span>
                                                                 </span>
                                                             </div>
                                                             <p className="mt-0.5 truncate text-xs font-medium text-gray-600">

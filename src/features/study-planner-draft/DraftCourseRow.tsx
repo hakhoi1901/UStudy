@@ -24,12 +24,24 @@ export function DraftCourseRow({
     const status = course.status || 'none';
     const isLocked = status === 'passed' || status === 'studying' || rootCompleted;
     const getContainerStyle = () => {
-        if (isPlanned) return 'border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100 shadow-sm';
-        if (status === 'passed' || rootCompleted) return 'border-green-300 bg-green-50/80 hover:bg-green-100 shadow-sm';
-        if (status === 'failed') return 'border-red-200 bg-red-50 hover:bg-red-100';
-        if (status === 'studying') return 'border-blue-200 bg-blue-50/50 hover:bg-blue-50';
-        return 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300';
-    };
+    if (isPlanned) {
+        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-indigo-500";
+    }
+
+    if (status === "passed" || rootCompleted) {
+        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-emerald-500";
+    }
+
+    if (status === "failed") {
+        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-red-500";
+    }
+
+    if (status === "studying") {
+        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-blue-500";
+    }
+
+    return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-gray-300";
+};
 
     return (
         <div className="group">
@@ -40,7 +52,7 @@ export function DraftCourseRow({
                     setShowDetails((value) => !value);
                 }}
                 onDragStart={(event) => onDragStart(course.course_id, event)}
-                className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg transition-all ${getContainerStyle()} ${isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
+                className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg ${getContainerStyle()} ${isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} ${showDetails ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'}`}
             >
                 <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
                     <div className="md:w-24 flex-shrink-0">
@@ -56,14 +68,16 @@ export function DraftCourseRow({
                 </div>
 
                 <div className="hidden md:block w-16 flex-shrink-0 text-center">
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium whitespace-nowrap">
+                    <span className="px-2 py-1 text-gray-700 text-xs rounded font-medium whitespace-nowrap">
                         {course.credits} TC
                     </span>
                 </div>
 
                 <div className="hidden md:block w-10 flex-shrink-0">
-                    <span className="px-1 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-medium inline-block truncate w-full text-center" title={course.course_type}>
-                        {course.course_type || '-'}
+                    <span className="px-1 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500" title={course.course_type}>
+                        {course.course_type
+                            ? course.course_type.slice(0, 2)
+                            : "-"}
                     </span>
                 </div>
 
@@ -110,39 +124,17 @@ export function DraftCourseRow({
                         className="p-1 md:p-1.5 hover:bg-gray-200/60 rounded transition-colors"
                         title="Xem chi tiết"
                     >
-                        {showDetails ? (
-                            <ChevronUp className="w-4 h-4 text-gray-600" />
-                        ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-600" />
-                        )}
+                        
+                        <ChevronUp className={showDetails ? "w-4 h-4 text-gray-600" : "rotate-180 w-4 h-4 text-gray-600"} />
+                        
                     </button>
                 </div>
             </div>
 
             {showDetails && (
-                <div className="mt-2 hidden rounded-lg border border-gray-200 bg-gray-50 px-3 py-3 text-sm md:block">
-                    <div className="grid grid-cols-2 gap-3 border-b border-gray-200 pb-3 md:grid-cols-4">
-                        <div>
-                            <p className="text-[10px] font-medium uppercase text-gray-500">Tín chỉ</p>
-                            <p className="mt-1 text-xs font-semibold text-gray-900">{course.credits} TC</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-medium uppercase text-gray-500">Loại môn</p>
-                            <p className="mt-1 text-xs font-semibold text-gray-900">{course.course_type || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-medium uppercase text-gray-500">Trạng thái</p>
-                            <div className="mt-1">
-                                <StatusBadge status={status} rootCompleted={rootCompleted} isPlanned={isPlanned} />
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-medium uppercase text-gray-500">Danh mục</p>
-                            <p className="mt-1 truncate text-xs font-semibold text-gray-900">{course.category || '-'}</p>
-                        </div>
-                    </div>
+                <div className="hidden rounded-b-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm md:block">
 
-                    <div className="grid grid-cols-3 gap-3 border-b border-gray-200 py-3">
+                    <div className="grid grid-cols-4 gap-3 border-b border-gray-200 py-3">
                         <div>
                             <p className="text-[10px] font-medium uppercase text-gray-500">Lý thuyết</p>
                             <p className="mt-1 text-xs font-semibold text-gray-900">{course.theory_hours || 0} tiết</p>
@@ -154,6 +146,10 @@ export function DraftCourseRow({
                         <div>
                             <p className="text-[10px] font-medium uppercase text-gray-500">Bài tập</p>
                             <p className="mt-1 text-xs font-semibold text-gray-900">{course.exercise_hours || 0} tiết</p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-medium uppercase text-gray-500">Danh mục</p>
+                            <p className="mt-1 truncate text-xs font-semibold text-gray-900">{course.category || '-'}</p>
                         </div>
                     </div>
 

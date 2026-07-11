@@ -1,4 +1,3 @@
-import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import type { CourseStatus } from './types';
 
 interface StatusBadgeProps {
@@ -7,57 +6,63 @@ interface StatusBadgeProps {
     isPlanned?: boolean;
 }
 
+type DisplayStatus = CourseStatus | 'planned' | 'rootCompleted';
+
+const STATUS_META: Record<DisplayStatus, {
+    label: string;
+    mobileLabel: string;
+    barClass: string;
+    textClass: string;
+}> = {
+    planned: {
+        label: 'Đã lên lịch',
+        mobileLabel: 'Đã lịch',
+        barClass: 'bg-indigo-500',
+        textClass: 'text-indigo-700',
+    },
+    passed: {
+        label: 'Đã tích lũy',
+        mobileLabel: 'Đạt',
+        barClass: 'bg-emerald-500',
+        textClass: 'text-emerald-700',
+    },
+    studying: {
+        label: 'Đang học',
+        mobileLabel: 'Đang học',
+        barClass: 'bg-blue-500',
+        textClass: 'text-[#004A98]',
+    },
+    failed: {
+        label: 'Học lại',
+        mobileLabel: 'Học lại',
+        barClass: 'bg-rose-500',
+        textClass: 'text-rose-700',
+    },
+    rootCompleted: {
+        label: 'Hoàn thành',
+        mobileLabel: 'Xong',
+        barClass: 'bg-emerald-500',
+        textClass: 'text-emerald-700',
+    },
+    none: {
+        label: 'Chưa học',
+        mobileLabel: 'Chưa',
+        barClass: 'bg-gray-300',
+        textClass: 'text-gray-500',
+    },
+};
+
 export function StatusBadge({ status, rootCompleted = false, isPlanned = false }: StatusBadgeProps) {
-    if (isPlanned) {
-        return (
-            <span className="flex items-center justify-center gap-1 w-full px-1 md:px-2 py-0.5 md:py-1 bg-indigo-100 text-indigo-700 text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-                <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" />
-                <span className="hidden md:inline">Đã lên lịch</span>
-                <span className="md:hidden">Đã lịch</span>
-            </span>
-        );
-    }
-
-    if (status === 'passed') {
-        return (
-            <span className="flex items-center justify-center gap-1 w-full px-1 md:px-2 py-0.5 md:py-1 bg-green-100 text-green-700 text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-                <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" />
-                <span className="hidden md:inline">Đã tích lũy</span>
-                <span className="md:hidden">Đạt</span>
-            </span>
-        );
-    }
-
-    if (status === 'studying') {
-        return (
-            <span className="flex items-center justify-center gap-1 w-full px-1 md:px-2 py-0.5 md:py-1 bg-blue-100 text-[#004A98] text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-                <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" />
-                Đang học
-            </span>
-        );
-    }
-
-    if (status === 'failed') {
-        return (
-            <span className="flex items-center justify-center gap-1 w-full px-1 md:px-2 py-0.5 md:py-1 bg-red-100 text-red-700 text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-                <XCircle className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" />
-                Học lại
-            </span>
-        );
-    }
-
-    if (rootCompleted) {
-        return (
-            <span className="flex items-center justify-center gap-1 w-full px-1 md:px-2 py-0.5 md:py-1 bg-green-100 text-green-700 text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-                Hoàn thành
-            </span>
-        );
-    }
+    const displayStatus: DisplayStatus = isPlanned ? 'planned' : rootCompleted ? 'rootCompleted' : status;
+    const meta = STATUS_META[displayStatus];
 
     return (
-        <span className="block w-full text-center px-1 md:px-2 py-0.5 md:py-1 bg-gray-100 text-gray-500 text-[9px] md:text-xs rounded-full font-medium whitespace-nowrap">
-            <span className="hidden md:inline">Chưa học</span>
-            <span className="md:hidden">Chưa</span>
+        <span className="inline-flex w-full items-center gap-2 text-left">
+            <span className={`h-4 w-1 rounded-full ${meta.barClass}`} />
+            <span className={`text-[11px] font-semibold md:text-sm ${meta.textClass}`}>
+                <span className="hidden md:inline">{meta.label}</span>
+                <span className="md:hidden">{meta.mobileLabel}</span>
+            </span>
         </span>
     );
 }

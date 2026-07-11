@@ -42,7 +42,7 @@ export function DraftCategoryNode({
             <button
                 type="button"
                 onClick={() => setIsExpanded((value) => !value)}
-                className="flex w-full items-start gap-2 text-left"
+                className="flex w-full items-start gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-gray-50"
             >
                 {isExpanded ? (
                     <ChevronDown className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
@@ -50,14 +50,27 @@ export function DraftCategoryNode({
                     <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
                 )}
                 <div className="min-w-0 flex-1">
-                    <h3 className={`${depth === 0 ? 'text-sm font-bold text-[#004A98]' : 'text-sm font-semibold text-gray-800'} flex items-center gap-1.5`}>
-                        {category.name || 'Danh mục chưa tên'}
-                        {isCompleted && <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500" />}
-                    </h3>
+                    <h3
+    className={`flex items-center gap-1.5 ${
+        depth === 0
+            ? isCompleted
+                ? 'text-sm font-bold text-emerald-700'
+                : 'text-sm font-bold text-[#004A98]'
+            : isCompleted
+                ? 'text-sm font-semibold text-emerald-700'
+                : 'text-sm font-semibold text-gray-800'
+    }`}
+>
+    {category.name || 'Danh mục chưa tên'}
+
+    {isCompleted && (
+        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+    )}
+</h3>
                     {category.note && <p className="mt-0.5 text-xs text-gray-500">{category.note}</p>}
                 </div>
                 {requiredCredits > 0 && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${isCompleted ? 'bg-green-100 text-green-700' : 'bg-[#004A98] text-white'}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#004A98] text-white`}>
                         {displayCredits} / {requiredCredits} TC
                     </span>
                 )}
