@@ -449,14 +449,14 @@ export function GroupSchedulePage({
 
   const renderMembersPanel = () => (
     <aside className="space-y-4">
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="ustudy-card p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Thành viên</h2>
           <span className="text-sm text-gray-500">{members.length}</span>
         </div>
         <div className="space-y-3">
           {members.length === 0 ? (
-            <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-500">Chưa có thành viên nào.</div>
+            <div className="ustudy-muted-panel text-sm text-gray-500">Chưa có thành viên nào.</div>
           ) : (
             members.map((member, index) => (
               <div key={`${member.nickname || 'member'}-${index}`} className="space-y-2">
@@ -472,7 +472,7 @@ export function GroupSchedulePage({
 
   const renderMemberStep = () => (
     <div className={`grid gap-6 ${showMembersPanel ? 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : 'lg:grid-cols-1'}`}>
-      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
+    <section className="ustudy-card space-y-4 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-[#004A98]" />
@@ -494,7 +494,7 @@ export function GroupSchedulePage({
         </div>
 
         {basketCourses.length > 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div className="ustudy-muted-panel border border-gray-200 p-3">
             <SelectionBasket
               compact
               title="Môn của thành viên này"
@@ -553,7 +553,7 @@ export function GroupSchedulePage({
   );
 
   const renderGroupConfigStep = () => (
-    <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
+      <section className="ustudy-card space-y-4 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Ưu tiên tùy chọn</h2>
@@ -665,7 +665,7 @@ export function GroupSchedulePage({
           <p className="mt-1 text-xs text-gray-500">Ưu tiên nhóm có trọng số cao hơn ưu tiên cá nhân. Lớp bắt buộc sẽ bị phạt rất nặng nếu solver phải chọn lệch.</p>
         </div>
         {groupCourses.length === 0 ? (
-          <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-500">Chưa có môn nào trong nhóm.</div>
+          <div className="ustudy-muted-panel text-sm text-gray-500">Chưa có môn nào trong nhóm.</div>
         ) : (
           groupCourses.map((course) => (
             <div key={course.courseId} className="grid gap-3 rounded-md border border-gray-200 p-3 lg:grid-cols-[350px_minmax(0,1fr)]">
@@ -766,7 +766,7 @@ export function GroupSchedulePage({
   );
 
   const renderResultStep = () => (
-    <section className="rounded-lg border border-gray-200 bg-white p-4">
+    <section className="ustudy-card p-4">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Kết quả xếp lịch nhóm</h2>
@@ -778,7 +778,7 @@ export function GroupSchedulePage({
               type="button"
               variant="default"
               onClick={() => setShowSaveGroupScheduleModal(true)}
-              className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shrink-0"
+              className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 shrink-0"
             >
               <Save className="h-4 w-4" />
               <span className="hidden sm:inline">Lưu lịch</span>
@@ -790,12 +790,12 @@ export function GroupSchedulePage({
               setSavedSchedules(readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []));
               setShowListModal(true);
             }}
-            className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white text-[#004A98] border border-[#004A98]/30 rounded-lg hover:bg-blue-50 transition-colors shrink-0 text-xs md:text-sm shadow-sm h-9"
+            className="ustudy-button-outline h-9 shrink-0 px-3 text-xs md:px-4 md:text-sm"
           >
             <List className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Lịch đã lưu</span>
             {savedSchedules.length > 0 && (
-              <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
+              <span className="ustudy-badge-count text-[10px] font-bold">
                 {savedSchedules.length}
               </span>
             )}
@@ -803,7 +803,7 @@ export function GroupSchedulePage({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="inline-flex h-9 w-9 items-center justify-center whitespace-nowrap rounded-md border border-gray-200 bg-white shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 shrink-0">
+              <button type="button" className="ustudy-action-icon h-9 w-9 shrink-0 border border-gray-200 bg-white shadow-sm">
                 <MoreHorizontal className="h-5 w-5 text-gray-600" />
               </button>
             </DropdownMenuTrigger>

@@ -57,8 +57,8 @@ function StatCard({
     accent?: string; // tailwind bg class
 }) {
     return (
-        <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-sm flex-1 min-w-0">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent ?? 'bg-blue-50'}`}>
+        <div className="ustudy-card flex min-w-0 flex-1 items-center gap-3 px-4 py-3">
+            <div className={`ustudy-icon-badge h-9 w-9 md:h-9 md:w-9 ${accent ?? 'bg-blue-50'}`}>
                 <Icon className={`h-4 w-4 ${accent ? 'text-white' : 'text-[#004A98]'}`} />
             </div>
             <div className="min-w-0">
@@ -236,7 +236,7 @@ export function CalendarView({
 
     // ── Empty state ────────────────────────────────────────────────────────────
     const renderModeSwitch = () => (
-        <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-1 shrink-0">
+        <div className="inline-flex shrink-0 items-center rounded-lg border border-gray-200 bg-slate-50 p-1">
             <button
                 type="button"
                 onClick={() => setScheduleMode('personal')}
@@ -264,7 +264,7 @@ export function CalendarView({
 
     if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 md:p-12 text-center">
+            <div className="ustudy-card p-8 text-center md:p-12">
                 <div className="mb-6 flex justify-center">
                     {renderModeSwitch()}
                 </div>
@@ -276,14 +276,14 @@ export function CalendarView({
                 <div className="flex flex-col gap-3 items-center">
                     <button
                         onClick={() => setActiveTab('selection')}
-                        className="px-6 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-colors w-full sm:w-auto text-sm"
+                        className="ustudy-button-primary w-full sm:w-auto"
                     >
                         Đi đến Chọn môn
                     </button>
                     {savedSchedules.length > 0 && (
                         <button
                             onClick={() => setShowListModal(true)}
-                            className="flex items-center justify-center gap-2 px-6 py-2 bg-white text-[#004A98] border border-[#004A98] rounded-lg hover:bg-blue-50 transition-colors w-full sm:w-auto text-sm"
+                            className="ustudy-button-outline w-full sm:w-auto"
                         >
                             <List className="w-4 h-4" />
                             Xem lịch đã lưu ({savedSchedules.length})
@@ -308,7 +308,7 @@ export function CalendarView({
     return (
         <div className="space-y-4">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
-            <div className="p-2 md:p-3 bg-gradient-to-r from-[#004A98]/5 to-blue-50 border border-blue-100 rounded-xl">
+            <div className="ustudy-card bg-gradient-to-r from-[#004A98]/5 to-blue-50 p-2 md:p-3">
                 <div className="flex flex-col gap-2 md:gap-3">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -376,7 +376,7 @@ export function CalendarView({
                                 </span>
 
                                 {savedSchedules.length > 0 && (
-                                    <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-[10px] rounded-full font-bold">
+                                    <span className="ustudy-badge-count text-[10px] font-bold">
                                         {savedSchedules.length > 99
                                             ? "99+"
                                             : savedSchedules.length}
@@ -449,7 +449,7 @@ export function CalendarView({
 
             {/* ═══ Stats panel (chỉ hiện khi có lịch) ══════════════════════ */}
             {stats && showStatsPanel && (
-                <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                <div className="ustudy-card overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
                         <BarChart2 className="w-3.5 h-3.5 text-[#004A98]" />
@@ -522,7 +522,7 @@ export function CalendarView({
             {/* ═══ Option navigator ══════════════════════════════════════════ */}
             {options.length > 1 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex items-center gap-2 bg-white p-1.5 border border-slate-200 rounded-xl shadow-sm flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                    <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
                         <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Phương án:</span>
                         <button
                             onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
@@ -555,7 +555,7 @@ export function CalendarView({
                     <button
                         onClick={() => setShowSaveModal(true)}
                         disabled={currentSections.length === 0}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 shrink-0 text-xs md:text-sm font-semibold shadow-sm"
+                        className="ustudy-button-success shrink-0 text-xs md:text-sm"
                     >
                         <Save className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Lưu phương án</span>
@@ -566,7 +566,7 @@ export function CalendarView({
 
             {loadedGroupSchedule && loadedGroupSchedule.members.length > 1 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex items-center gap-2 bg-white p-1.5 border border-slate-200 rounded-xl shadow-sm flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                    <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
                         <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Thành viên:</span>
                         <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                             {loadedGroupSchedule.members.map((member) => (
@@ -587,7 +587,7 @@ export function CalendarView({
             )}
 
             {/* ═══ Timetable grid ════════════════════════════════════════════ */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="ustudy-card overflow-hidden">
                 {/* Grid header */}
                 <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
                     <div className="flex items-center gap-2 min-w-0">

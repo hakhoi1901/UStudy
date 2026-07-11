@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { X, ListFilter } from 'lucide-react';
+import { BookOpen, X, ListFilter } from 'lucide-react';
 import type { Course } from '../types';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { FinancialLogic } from '../logic/FinancialLogic';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
-import type { Tab } from '../pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
+import type { Tab } from '../features/integratedStudyRoadmap/types';
 import type { ClassPreferenceSelection } from '../logic/scheduler/GroupTypes';
 import type React from 'react';
 
@@ -57,19 +57,19 @@ export function SelectionBasket({
     const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
     return (
-        <div className={`w-full h-full bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden ${compact ? '' : 'shadow-lg'}`}>
-            <div className="w-full p-4 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-gray-900 font-semibold">{title}</h3>
-                <p className="text-sm text-gray-600 mt-1">
+        <div className={`ustudy-card flex h-full w-full flex-col overflow-hidden ${compact ? '' : 'shadow-lg'}`}>
+            <div className="w-full flex-shrink-0 border-b border-gray-200 p-4">
+                <h3 className="ustudy-card-title">{title}</h3>
+                <p className="ustudy-card-subtitle mt-1">
                     {description ?? `${selectedCourses.length} môn học đã chọn`}
                 </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-gray-100">
+            <div className="ustudy-scrollbar flex-1 space-y-3 overflow-y-auto p-4">
                 {selectedCourses.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">📚</span>
+                    <div className="ustudy-empty-state flex-col">
+                        <div className="ustudy-icon-badge ustudy-icon-primary-soft mx-auto mb-3 h-12 w-12 md:h-12 md:w-12">
+                            <BookOpen className="h-5 w-5" />
                         </div>
                         <p className="text-gray-400 text-sm">Chưa có môn học nào được chọn</p>
                         <p className="text-gray-400 text-xs mt-1">Chọn môn từ danh sách bên trái</p>
@@ -78,7 +78,7 @@ export function SelectionBasket({
                     selectedCourses.map((course) => (
                         <div
                             key={course.id}
-                            className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors group"
+                            className="ustudy-list-item group flex items-start gap-2"
                         >
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs text-gray-600 truncate">
@@ -103,7 +103,7 @@ export function SelectionBasket({
                                 {(allowedClassesMap && setAllowedClassesMap) && (
                                     <button
                                         onClick={() => setFilterModalCourse(course)}
-                                        className="p-1 hover:bg-blue-100 rounded text-blue-600 transition-colors"
+                                        className="ustudy-action-icon ustudy-action-icon-primary h-7 w-7"
                                         title="Lọc lớp học"
                                     >
                                         <ListFilter className="w-4 h-4" />
@@ -112,7 +112,7 @@ export function SelectionBasket({
                                 {onRemoveCourse && (
                                     <button
                                         onClick={() => onRemoveCourse(course.id)}
-                                        className="p-1 hover:bg-red-100 rounded text-red-600 transition-colors"
+                                        className="ustudy-action-icon ustudy-action-icon-danger h-7 w-7"
                                         title="Xóa khỏi giỏ"
                                     >
                                         <X className="w-4 h-4" />
@@ -125,7 +125,7 @@ export function SelectionBasket({
             </div>
 
             {!compact && (
-                <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-xl">
+                <div className="flex-shrink-0 rounded-b-xl border-t border-gray-200 bg-white p-4">
                     <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm text-gray-600">Tổng tín chỉ:</span>
@@ -151,7 +151,7 @@ export function SelectionBasket({
                     </div>
 
                     <div className="mb-4">
-                        <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                        <div className="ustudy-muted-panel border border-blue-100 bg-blue-50">
                             <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
                             <p className="text-2xl font-bold text-[#004A98]">
                                 {formatCurrency(estimatedTuition)} VNĐ
@@ -162,8 +162,8 @@ export function SelectionBasket({
                     {(solve && setActiveTab) && (
                         <button
                             className={`w-full py-3 rounded-lg font-medium transition-all ${selectedCourses.length === 0
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#004A98] text-white hover:bg-[#003A78] shadow-sm hover:shadow-md active:scale-[0.98]'
+                                ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                                : 'ustudy-button-primary'
                                 }`}
                             disabled={selectedCourses.length === 0}
                             onClick={() => {

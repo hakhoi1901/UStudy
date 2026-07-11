@@ -72,12 +72,12 @@ export function DashboardWidgets() {
   // Không có dữ liệu
   if (!hasData) {
     return (
-      <div className="px-1 md:px-0">
-        <h1 className="mb-1 text-xl font-bold text-gray-900 md:mb-2 md:text-2xl">
+      <div className="ustudy-page-shell">
+        <h1 className="ustudy-page-title">
           Tổng quan
         </h1>
 
-        <p className="mb-6 text-sm text-gray-600 md:mb-8 md:text-base">
+        <p className="mb-6 ustudy-page-description md:mb-8">
           Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
         </p>
 
@@ -87,14 +87,14 @@ export function DashboardWidgets() {
   }
 
   return (
-    <div className="px-1 md:px-0">
+    <div className="ustudy-page-shell">
       {/* Header */}
-      <div className="mb-4 md:mb-6">
-        <h1 className="mb-1 text-xl font-bold text-gray-900 md:mb-2 md:text-2xl">
+      <div className="ustudy-page-header">
+        <h1 className="ustudy-page-title">
           Trang tổng quan
         </h1>
 
-        <p className="text-sm text-gray-600 md:text-base">
+        <p className="ustudy-page-description">
           Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
         </p>
       </div>
@@ -103,19 +103,19 @@ export function DashboardWidgets() {
       <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 md:grid-cols-3 md:gap-6">
 
         {/* GPA */}
-        <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
-          <div className="mb-4 flex items-center gap-2 md:mb-6 md:gap-3">
+        <div className="ustudy-card ustudy-card-padding">
+          <div className="ustudy-card-header">
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#004A98] md:h-10 md:w-10">
+            <div className="ustudy-icon-badge ustudy-icon-primary">
               <TrendingUp className="h-4 w-4 text-white md:h-5 md:w-5" />
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 md:text-base">
+              <h3 className="ustudy-card-title">
                 GPA hiện tại
               </h3>
 
-              <p className="text-xs text-gray-600 md:text-sm">
+              <p className="ustudy-card-subtitle">
                 Thang điểm 10
               </p>
             </div>
@@ -171,9 +171,9 @@ export function DashboardWidgets() {
 
           {/* GPA Classification */}
           <div className="min-w-0 border-t border-gray-100 pt-3 md:pt-4">
-            <div className="flex items-center justify-between text-xs md:text-sm">
+            <div className="ustudy-stat-row">
 
-              <span className="text-gray-600">
+              <span className="ustudy-stat-label">
                 Xếp loại
               </span>
 
@@ -185,19 +185,19 @@ export function DashboardWidgets() {
         </div>
 
         {/* Credits */}
-        <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
-          <div className="mb-4 flex items-center gap-2 md:mb-6 md:gap-3">
+        <div className="ustudy-card ustudy-card-padding">
+          <div className="ustudy-card-header">
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 md:h-10 md:w-10">
+            <div className="ustudy-icon-badge ustudy-icon-success">
               <BookOpen className="h-4 w-4 text-white md:h-5 md:w-5" />
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 md:text-base">
+              <h3 className="ustudy-card-title">
                 Tín chỉ tích lũy
               </h3>
 
-              <p className="text-xs text-gray-600 md:text-sm">
+              <p className="ustudy-card-subtitle">
                 Tiến độ hoàn thành
               </p>
             </div>
@@ -234,8 +234,8 @@ export function DashboardWidgets() {
           {/* Stats */}
           <div className="space-y-2 border-t border-gray-100 pt-3 md:space-y-3 md:pt-4">
 
-            <div className="flex items-center justify-between text-xs md:text-sm">
-              <span className="text-gray-600">
+            <div className="ustudy-stat-row">
+              <span className="ustudy-stat-label">
                 Đã tích lũy
               </span>
 
@@ -244,8 +244,8 @@ export function DashboardWidgets() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-xs md:text-sm">
-              <span className="text-gray-600">
+            <div className="ustudy-stat-row">
+              <span className="ustudy-stat-label">
                 Còn lại
               </span>
 
@@ -258,9 +258,9 @@ export function DashboardWidgets() {
 
         {/* Tuition */}
         <div className="rounded-xl bg-gradient-to-br from-[#004A98] to-[#0066CC] p-4 text-white shadow-lg md:p-6">
-          <div className="mb-4 flex items-center gap-2 md:mb-6 md:gap-3">
+          <div className="ustudy-card-header">
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 md:h-10 md:w-10">
+            <div className="ustudy-icon-badge bg-white/20 text-white">
               <DollarSign className="h-4 w-4 text-white md:h-5 md:w-5" />
             </div>
 
@@ -288,7 +288,7 @@ export function DashboardWidgets() {
 
           {/* Due date */}
           <div className="border-t border-white/20 pt-3 md:pt-4">
-            <div className="flex items-center justify-between text-xs md:text-sm">
+            <div className="ustudy-stat-row">
 
               <span className="text-blue-100">
                 Hạn đóng học phí

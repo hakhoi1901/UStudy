@@ -480,16 +480,16 @@ export function ExamScheduleVi() {
                         </colgroup>
                         <thead className="bg-[#004A98] text-white sticky top-0 z-10">
                             <tr>
-                                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tên môn học</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Lớp</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ngày thi</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Giờ thi</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phòng</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Địa điểm</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Loại</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ghi chú</th>
+                                <th className="px-3 py-4 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Mã môn</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Tên môn học</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Lớp</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Ngày thi</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Giờ thi</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Phòng</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Địa điểm</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Loại</th>
+                                <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -507,8 +507,8 @@ export function ExamScheduleVi() {
                     `}
                                     >
                                         <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
-                                        <td className="px-3 py-3 text-sm font-mono font-semibold text-[#004A98] break-all">{exam.courseCode}</td>
-                                        <td className="px-3 py-3 text-sm text-gray-900">
+                                        <td className="px-3 py-3 text-sm text-gray-900">{exam.courseCode}</td>
+                                        <td className="px-3 py-3 text-sm font-semibold">
                                             <div className="line-clamp-2 leading-relaxed" title={exam.courseName}>
                                                 {exam.courseName}
                                             </div>
@@ -527,19 +527,29 @@ export function ExamScheduleVi() {
                                         <td className="px-3 py-3 text-sm font-medium text-gray-900">{exam.room}</td>
                                         <td className="px-3 py-3 text-sm text-gray-600">
                                             <div className="flex items-center gap-1">
-                                                <MapPin className="w-4 h-4 text-gray-400" />
                                                 {exam.location.replace('Cơ sở ', '')}
                                             </div>
                                         </td>
                                         <td className="px-3 py-3">
-                                            <span
-                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${exam.examType === 'Giữa kỳ'
-                                                    ? 'bg-amber-100 text-amber-800'
-                                                    : 'bg-red-100 text-red-800'
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={`h-4 w-1 rounded-full ${
+                                                        exam.examType === "Giữa kỳ"
+                                                            ? "bg-green-700"
+                                                            : "bg-blue-800"
                                                     }`}
-                                            >
-                                                {exam.examType}
-                                            </span>
+                                                />
+
+                                                <span
+                                                    className={`text-sm font-medium ${
+                                                        exam.examType === "Giữa kỳ"
+                                                            ? "text-green-700"
+                                                            : "text-blue-800"
+                                                    }`}
+                                                >
+                                                    {exam.examType}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-3 py-3 text-sm text-gray-600">
                                             {exam.notes && (

@@ -16,14 +16,14 @@ export function MainLayout({
   selectedSemester
 }: MainLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="ustudy-app-shell">
       <Sidebar currentPage={currentPage} onPageChange={onPageChange} />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="ustudy-main-column">
         <Header selectedSemester={selectedSemester} showSemesterSelector={currentPage === 'tuition'} />
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 relative">
-          <div className="p-4 md:p-6 max-w-[1600px] mx-auto w-full">
+        <main className="ustudy-main-scroll">
+          <div className="ustudy-page-container">
             {children}
           </div>
         </main>

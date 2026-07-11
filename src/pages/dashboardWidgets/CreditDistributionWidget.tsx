@@ -58,10 +58,10 @@ export function CreditDistributionWidget() {
   const completionPercent = getDistributionCompletionPercent(distribution);
 
   return (
-    <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+    <section className="ustudy-card ustudy-panel-padding">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+          <div className="ustudy-icon-badge ustudy-icon-primary-soft">
             <ChartPie className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -69,7 +69,7 @@ export function CreditDistributionWidget() {
             <p className="text-xs text-gray-500">Theo danh mục chương trình đào tạo</p>
           </div>
         </div>
-        <div className="rounded-lg bg-gray-50 px-3 py-2 text-right">
+        <div className="ustudy-muted-panel text-right">
           <p className="text-base font-bold text-gray-900">{totalCredits}</p>
           <p className="text-[10px] font-medium uppercase text-gray-500">TC</p>
         </div>
@@ -126,7 +126,7 @@ export function CreditDistributionWidget() {
           </div>
         </div>
       ) : (
-        <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 text-center text-sm text-gray-500">
+        <div className="ustudy-empty-state">
           Chưa có tín chỉ đã hoàn thành để phân bổ.
         </div>
       )}

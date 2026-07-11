@@ -1,9 +1,11 @@
-import type { Tab } from './IntegratedStudyRoadmap';
+import type { ElementType } from 'react';
+
+import type { Tab } from '../types';
 
 export type NavTab = {
     id: Tab;
     label: string;
-    icon: React.ElementType;
+    icon: ElementType;
     showBadge?: boolean;
     badgeCount?: number;
 };
@@ -11,18 +13,14 @@ export type NavTab = {
 export function NavigationBar({
     tabs,
     activeTab,
-    setActiveTab
+    setActiveTab,
 }: {
     tabs: NavTab[];
     activeTab: Tab;
     setActiveTab: (tab: Tab) => void;
 }) {
     return (
-        // overflow-x-auto để scroll ngang trên mobile, ẩn scrollbar
-        <div
-            className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-        >
+        <div className="ustudy-tabs">
             {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -30,17 +28,14 @@ export function NavigationBar({
                 return (
                     <button
                         key={tab.id}
+                        type="button"
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${isActive
-                                ? 'border-[#004A98] text-[#004A98]'
-                                : 'border-transparent text-gray-600 hover:text-gray-900'
-                            }`}
+                        className={`ustudy-tab ${isActive ? 'ustudy-tab-active' : ''}`}
                     >
-                        <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-                        {/* Label: ẩn trên mobile rất nhỏ, hiện từ sm trở lên */}
-                        <span className="font-medium text-sm md:text-base">{tab.label}</span>
+                        <Icon className="h-4 w-4 shrink-0 md:h-5 md:w-5" />
+                        <span>{tab.label}</span>
                         {tab.showBadge && tab.badgeCount !== undefined && tab.badgeCount > 0 && (
-                            <span className="px-1.5 py-0.5 bg-[#004A98] text-white text-xs rounded-full min-w-[20px] text-center">
+                            <span className="ustudy-badge-count">
                                 {tab.badgeCount}
                             </span>
                         )}

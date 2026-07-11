@@ -90,59 +90,76 @@ export function GradeHistoryTable({
             </div>
 
             {/* Desktop: Table view */}
-            <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+            <div className="hidden overflow-x-auto md:block">
+                <table className="w-full table-fixed">
+                    <colgroup>
+                        <col className="w-[14%]" />
+                        <col className="w-[37%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[11%]" />
+                        <col className="w-[11%]" />
+                        <col className="w-[15%]" />
+                    </colgroup>
+
+                    <thead className="border-b border-gray-200 bg-gray-50">
                         <tr>
                             <th
-                                className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('code')}
+                                className="cursor-pointer select-none px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("code")}
                             >
                                 <div className="flex items-center gap-2">
-                                    Mã môn {getSortIcon('code')}
+                                    Mã môn
+                                    {getSortIcon("code")}
                                 </div>
                             </th>
+
                             <th
-                                className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('nameVi')}
+                                className="cursor-pointer select-none px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("nameVi")}
                             >
                                 <div className="flex items-center gap-2">
-                                    Tên môn học {getSortIcon('nameVi')}
+                                    Tên môn học
+                                    {getSortIcon("nameVi")}
                                 </div>
                             </th>
+
                             <th
-                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('semester')}
-                            >
-                                <div className="relative flex items-center justify-center w-full">
-                                    <span>Học kỳ</span>
-                                    <span className="absolute right-0">{getSortIcon('semester')}</span>
-                                </div>
-                            </th>
-                            <th
-                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('credits')}
-                            >
-                                <div className="relative flex items-center justify-center w-full">
-                                    <span>Tín chỉ</span>
-                                    <span className="absolute right-0">{getSortIcon('credits')}</span>
-                                </div>
-                            </th>
-                            <th
-                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('grade')}
-                            >
-                                <div className="relative flex items-center justify-center w-full">
-                                    <span>Điểm</span>
-                                    <span className="absolute right-0">{getSortIcon('grade')}</span>
-                                </div>
-                            </th>
-                            <th
-                                className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors group select-none"
-                                onClick={() => requestSort('status')}
+                                className="cursor-pointer select-none px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("semester")}
                             >
                                 <div className="flex items-center justify-center gap-2">
-                                    Trạng thái {getSortIcon('status')}
+                                    Học kỳ
+                                    {getSortIcon("semester")}
+                                </div>
+                            </th>
+
+                            <th
+                                className="cursor-pointer select-none px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("credits")}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    Tín chỉ
+                                    {getSortIcon("credits")}
+                                </div>
+                            </th>
+
+                            <th
+                                className="cursor-pointer select-none px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("grade")}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    Điểm
+                                    {getSortIcon("grade")}
+                                </div>
+                            </th>
+
+                            <th
+                                className="cursor-pointer select-none px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600 transition-colors hover:bg-gray-100"
+                                onClick={() => requestSort("status")}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    Trạng thái
+                                    {getSortIcon("status")}
                                 </div>
                             </th>
                         </tr>
@@ -150,7 +167,10 @@ export function GradeHistoryTable({
 
                     <tbody className="divide-y divide-gray-200">
                         {sortedHistory.map((course, idx) => (
-                            <GradeHistoryRow key={`${course.code}-${idx}`} course={course} />
+                            <GradeHistoryRow
+                                key={`${course.code}-${idx}`}
+                                course={course}
+                            />
                         ))}
                     </tbody>
                 </table>

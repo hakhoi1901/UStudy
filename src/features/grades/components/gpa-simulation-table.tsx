@@ -62,6 +62,9 @@ export function GPASimulationTable({
                                     <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
                                         Tên môn học
                                     </th>
+                                    <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                                        Trạng thái
+                                    </th>
                                     <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
                                         Tín chỉ
                                     </th>
@@ -75,29 +78,59 @@ export function GPASimulationTable({
                             </thead>
 
                             <tbody className="divide-y divide-gray-200">
-                                {courses.map((course) => (
+                                {courses.map((course) => {
+                                    const classification =
+                                        course.projectedGrade !== null
+                                            ? getClassification(course.projectedGrade)
+                                            : null;
+
+                                    const classificationClass =
+                                        course.projectedGrade === null
+                                            ? "text-gray-400"
+                                            : course.projectedGrade >= 9
+                                                ? "text-emerald-700"
+                                                : course.projectedGrade >= 8
+                                                    ? "text-blue-700"
+                                                    : course.projectedGrade >= 7
+                                                        ? "text-amber-700"
+                                                        : "text-orange-700";
+                             return (
                                     <tr key={course.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                        <td className="px-4 py-3 text-sm text-gray-900">
                                             {course.id}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">
+                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span>{course.name}</span>
-                                                {course.source === 'ongoing' ? (
-                                                    <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                                                        Đang học
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
-                                                        Đã đăng ký
-                                                    </span>
-                                                )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900 text-center">
-                                            <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
-                                                {course.credits !== null ? `${course.credits} TC` : '-'}
-                                            </span>
+                                        <td className="px-4 py-4 text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={`h-4 w-1 rounded-full ${
+                                                        course.source === "ongoing"
+                                                            ? "bg-emerald-500"
+                                                            : "bg-blue-500"
+                                                    }`}
+                                                />
+
+                                                <span className="font-medium text-gray-700">
+                                                    {course.source === "ongoing"
+                                                        ? "Đang học"
+                                                        : "Đã đăng ký"}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-4 text-center text-sm">
+                                            {course.credits !== null ? (
+                                                <>
+                                                    <span className="font-semibold tabular-nums text-gray-800">
+                                                        {course.credits} TC
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-gray-400">—</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <input
@@ -105,32 +138,40 @@ export function GPASimulationTable({
                                                 min="0"
                                                 max="10"
                                                 step="0.1"
-                                                value={course.projectedGrade ?? ''}
+                                                value={course.projectedGrade ?? ""}
                                                 placeholder="-"
                                                 onChange={(e) => {
                                                     const val = e.target.value;
-                                                    handleGradeChange(course.code, val === '' ? null : (parseFloat(val) || 0));
+
+                                                    if (val === "") {
+                                                        handleGradeChange(course.code, null);
+                                                        return;
+                                                    }
+
+                                                    const numberValue = Number(val);
+
+                                                    if (Number.isNaN(numberValue)) return;
+
+                                                    handleGradeChange(
+                                                        course.code,
+                                                        Math.min(10, Math.max(0, numberValue))
+                                                    );
                                                 }}
-                                                className="w-20 px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                                                className="w-20 rounded-lg border border-gray-200 bg-gray-100 px-2 py-1.5 text-center text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#004A98]"
                                             />
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-center">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${course.projectedGrade === null ? 'bg-gray-100 text-gray-400' :
-                                                course.projectedGrade >= 9.0 ? 'bg-green-100 text-green-700' :
-                                                    course.projectedGrade >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                                                        course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-orange-100 text-orange-700'
-                                                }`}>
-                                                {course.projectedGrade !== null ? getClassification(course.projectedGrade) : '-'}
+                                        <td className="px-4 py-4 text-center text-sm">
+                                            <span className={`font-semibold ${classificationClass}`}>
+                                                {classification ?? "Chưa có"}
                                             </span>
                                         </td>
                                     </tr>
-                                ))}
+                                )})}
                             </tbody>
 
                             <tfoot className="bg-gray-50 border-t border-gray-200">
                                 <tr>
-                                    <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-gray-900">
+                                    <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-gray-900">
                                         Tổng kết
                                     </td>
                                     <td className="px-4 py-3 text-sm text-center font-semibold">

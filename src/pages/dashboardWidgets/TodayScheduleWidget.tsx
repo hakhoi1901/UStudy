@@ -22,10 +22,10 @@ export function TodayScheduleWidget() {
   const summary = useMemo(() => summarizeTodaySessions(todaySessions), [todaySessions]);
 
   return (
-    <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+    <section className="ustudy-card ustudy-panel-padding">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+          <div className="ustudy-icon-badge ustudy-icon-success-soft">
             <CalendarDays className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -34,7 +34,7 @@ export function TodayScheduleWidget() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-right">
+        <div className="ustudy-muted-panel text-right">
           <p className="text-base font-bold text-emerald-700">{summary.totalPeriods}</p>
           <p className="text-[10px] font-medium uppercase text-emerald-600">tiết</p>
         </div>
@@ -84,7 +84,7 @@ export function TodayScheduleWidget() {
           )}
         </div>
       ) : (
-        <div className="flex min-h-[220px] flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 text-center">
+        <div className="ustudy-empty-state flex-col">
           <CalendarDays className="mb-3 h-8 w-8 text-gray-300" />
           <p className="text-sm font-semibold text-gray-700">Hôm nay không có lịch học</p>
           <p className="mt-1 max-w-xs text-xs text-gray-500">

@@ -147,7 +147,7 @@ export function IntegratedStudyRoadmap() {
 
             {/* Drawer */}
             <div
-                className="md:hidden flex flex-col fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl"
+                className="md:hidden ustudy-card fixed left-0 right-0 bottom-0 z-50 flex flex-col rounded-t-2xl shadow-2xl"
                 style={{
                     // Để trên bottom nav (64px)
                     bottom: '64px',
@@ -161,19 +161,19 @@ export function IntegratedStudyRoadmap() {
                     <div className="flex justify-center pt-3 pb-1">
                         <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
                     </div>
-                    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
                         <div className="flex items-center gap-2">
                             <ShoppingCart className="w-5 h-5 text-[#004A98]" />
                             <span className="font-semibold text-gray-900">Giỏ môn học</span>
                             {selectedCourses.size > 0 && (
-                                <span className="px-2 py-0.5 bg-[#004A98] text-white text-xs rounded-full font-medium">
+                                <span className="ustudy-badge-count">
                                     {selectedCourses.size}
                                 </span>
                             )}
                         </div>
                         <button
                             onClick={() => setShowMobileBasket(false)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                            className="ustudy-action-icon"
                         >
                             <X className="w-4 h-4 text-gray-600" />
                         </button>
@@ -201,7 +201,7 @@ export function IntegratedStudyRoadmap() {
             {/* FAB button - chỉ hiện khi đang ở tab selection và chưa mở drawer */}
             {activeTab === 'selection' && !showMobileBasket && (
                 <button
-                    className="md:hidden fixed z-35 bg-[#004A98] text-white rounded-full shadow-lg active:scale-95 transition-all flex items-center gap-2"
+                    className="md:hidden fixed z-35 flex items-center gap-2 rounded-full bg-[#004A98] text-white shadow-lg transition-all active:scale-95"
                     style={{
                         bottom: '80px', // trên bottom nav
                         right: '16px',
@@ -227,10 +227,10 @@ export function IntegratedStudyRoadmap() {
 
     return (
         <>
-            <div className="flex gap-6 min-h-screen" style={{ isolation: 'isolate' }}>
+            <div className="ustudy-page-shell flex min-h-screen gap-6" style={{ isolation: 'isolate' }}>
                 {/* Nội dung chính */}
                 <div className="flex-1 w-full min-w-0">
-                    <div className="mb-6">
+                    <div className="ustudy-page-header">
                         <h1 className="text-gray-900 mb-2">Lộ trình học tập</h1>
                         <p className="text-gray-600">Chọn môn học và xem lịch trực quan với phát hiện xung đột thời gian.</p>
                     </div>
