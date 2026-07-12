@@ -73,7 +73,7 @@ export function DocumentContributionModal({
                 style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
             >
                 {/* Header với HCMUS Gradient */}
-                <div className="flex-none bg-gradient-to-r from-[#004A98] to-[#0066CC] p-6 relative overflow-hidden">
+                <div className="flex-none bg-gradient-to-br from-[#004A98] to-[#0066CC] p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                     <div className="relative flex items-center justify-between">
                         <div>

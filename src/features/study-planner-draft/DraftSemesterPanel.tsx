@@ -134,16 +134,16 @@ export function DraftSemesterPanel({
                                                     draggable={!semester.isHistorical}
                                                     onDragStart={(event) => onDragStart(courseId, event)}
                                                     className="border-b border-gray-200 bg-white px-3 py-2.5 last:border-b-0"                                               >
-                                                    <div className="flex items-start gap-2">
+                                                    <div className="flex items-start gap-2 ">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-bold text-gray-900">{course.course_id}</span>
+                                                                <span className="text-xs font-bold text-gray-900 pt-1">{course.course_id}</span>
                                                                 <span className="text-[11px] font-semibold tabular-nums text-gray-500">
                                                                     {course.credits}
                                                                     <span className="ml-1 font-medium text-gray-400">TC</span>
                                                                 </span>
                                                             </div>
-                                                            <p className="mt-0.5 truncate text-xs font-medium text-gray-600">
+                                                            <p className="mt-1 truncate text-xs font-medium text-gray-600">
                                                                 {course.course_name_vi}
                                                             </p>
                                                         </div>

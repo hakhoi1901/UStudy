@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { CalendarPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { CalendarPlus, ChevronDown, ChevronUp, ExternalLink, Trash2 } from 'lucide-react';
+import { courseLinks } from '../../assets/data/courseLinks';
+import { DocumentContributionModal } from '../../components/DocumentContributionModal';
 import { StatusBadge } from './StatusBadge';
 import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } from './types';
 
@@ -21,6 +23,7 @@ export function DraftCourseRow({
     onOpenMobilePlanner,
 }: DraftCourseRowProps) {
     const [showDetails, setShowDetails] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const status = course.status || 'none';
     const isLocked = status === 'passed' || status === 'studying' || rootCompleted;
     const getContainerStyle = () => {
@@ -159,8 +162,44 @@ export function DraftCourseRow({
                             {course.description || 'Chưa có ghi chú cho môn học này.'}
                         </p>
                     </div>
+
+                    <div className="mt-3 border-t border-gray-200 pt-3">
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500">Tài liệu tham khảo</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-3">
+                            {courseLinks[course.course_id] ? (
+                                <a
+                                    href={courseLinks[course.course_id]}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-[#004A98] transition-colors hover:bg-blue-100 hover:text-[#003d7a]"
+                                >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Mở thư mục Drive tài liệu
+                                </a>
+                            ) : (
+                                <span className="text-xs italic text-gray-500">Chưa có tài liệu cho môn học này.</span>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(true)}
+                                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-green-700 transition-colors hover:border-green-600 hover:bg-green-50"
+                                title="Đóng góp tài liệu, đề thi, bài tập cho môn này"
+                            >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                Đóng góp tài liệu
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
+
+            <DocumentContributionModal
+                courseId={course.course_id}
+                courseName={course.course_name_vi}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }

@@ -30,7 +30,7 @@ export function SelectionView({
     return (
         <div>
             {/* Tìm kiếm và lọc */}
-            <div className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6">
+            <div className="flex items-center gap-2 m-1 md:gap-4 mb-4 md:mb-6">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                     <input

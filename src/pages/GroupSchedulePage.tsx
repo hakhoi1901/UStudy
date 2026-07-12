@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState, Fragment } from 'react';
-import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound, List } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Link2, Moon, Plus, Save, Settings, Sun, Trash2, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound, List, Info } from 'lucide-react';
 
 import { GroupMemberCard } from '../components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from '../components/GroupScheduleCalendarPreview';
@@ -542,8 +542,17 @@ export function GroupSchedulePage({
         </div> */}
 
         {members.length === 1 && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Cần ít nhất 2 thành viên để xếp lịch nhóm.
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 md:gap-3">
+              <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                  <p className="text-xs md:text-sm text-blue-900 font-medium">
+                      Cần ít nhất 2 thành viên để xếp lịch nhóm
+                  </p>
+                  {/* Mô tả chi tiết: ẩn trên mobile */}
+                  <p className="hidden md:block text-xs text-blue-700 mt-1">
+                      Chuyển sang tab "chọn môn & học phí" để chọn môn 
+                  </p>
+              </div>
           </div>
         )}
       </section>

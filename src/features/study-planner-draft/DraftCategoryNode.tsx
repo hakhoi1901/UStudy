@@ -38,7 +38,7 @@ export function DraftCategoryNode({
     if (!hasContent) return null;
 
     return (
-        <div className={depth === 0 ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm md:p-4' : 'border-l-2 border-gray-100 pl-3'}>
+        <div className={depth === 0 ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm md:p-4' : 'border-l-2 border-gray-100 pl-5'}>
             <button
                 type="button"
                 onClick={() => setIsExpanded((value) => !value)}
@@ -51,22 +51,22 @@ export function DraftCategoryNode({
                 )}
                 <div className="min-w-0 flex-1">
                     <h3
-    className={`flex items-center gap-1.5 ${
-        depth === 0
-            ? isCompleted
-                ? 'text-sm font-bold text-emerald-700'
-                : 'text-sm font-bold text-[#004A98]'
-            : isCompleted
-                ? 'text-sm font-semibold text-emerald-700'
-                : 'text-sm font-semibold text-gray-800'
-    }`}
->
-    {category.name || 'Danh mục chưa tên'}
+                        className={`flex items-center gap-1.5 ${
+                            depth === 0
+                                ? isCompleted
+                                    ? 'text-sm font-bold text-emerald-700'
+                                    : 'text-sm font-bold text-[#004A98]'
+                                : isCompleted
+                                    ? 'text-sm font-semibold text-emerald-700'
+                                    : 'text-sm font-semibold text-gray-800'
+                        }`}
+                    >
+                        {category.name || 'Danh mục chưa tên'}
 
-    {isCompleted && (
-        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
-    )}
-</h3>
+                        {isCompleted && (
+                            <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+                        )}
+                    </h3>
                     {category.note && <p className="mt-0.5 text-xs text-gray-500">{category.note}</p>}
                 </div>
                 {requiredCredits > 0 && (

@@ -25,15 +25,18 @@ export function DraftCourseListPanel({
 }: DraftCourseListPanelProps) {
     return (
         <section className={`${mobileVisible ? 'block' : 'hidden'} min-w-0 lg:block lg:pr-3`}>
-            <div className="mb-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
-                <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#004A98]" />
-                <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-[#004A98]">Kế hoạch học tập</h3>
-                    <p className="mt-1 text-sm text-blue-800/80">
-                        Kéo môn chưa học từ chương trình đào tạo sang từng học kỳ ở khung bên phải để phác thảo lộ trình tương lai.
+            <div className="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 md:gap-3">
+                <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                    <p className="text-xs md:text-sm text-blue-900 font-medium">
+                        Kế hoạch học tập
                     </p>
-                    <p className="mt-1 text-sm text-blue-800/80">
+                    {/* Mô tả chi tiết: ẩn trên mobile */}
+                    <p className="hidden md:block text-xs text-blue-700 mt-1">
                         Tiến độ tín chỉ tạm tính cả môn đã tích lũy, môn đang học và môn đã lên lịch.
+                    </p>
+                    <p className="hidden md:block text-xs text-blue-700 mt-1">
+                        Kéo môn chưa học từ chương trình đào tạo sang từng học kỳ ở khung bên phải để phác thảo lộ trình tương lai.
                     </p>
                 </div>
             </div>
