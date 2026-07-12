@@ -195,17 +195,14 @@ function getGenericSemesterIndex(semester: SemesterDraft): number | null {
 
 export function mergeHistoricalDraft(previous: DraftStorage, scaffold: SemesterDraft[], historical: DraftStorage): DraftStorage {
     const historicalCourseIds = new Set(Object.values(historical.plan).flat());
-    const historicalPlan = historical.plan;
     const scaffoldById = new Map(scaffold.map((semester) => [semester.id, semester]));
     const scaffoldByLabel = new Map(scaffold.map((semester) => [semester.label, semester]));
     const editableSemesters = scaffold.filter((semester) => !semester.isHistorical);
-
+    const mergedSemesters = [...historical.semesters];
     const mergedPlan: Record<string, string[]> = Object.fromEntries(
-        scaffold.map((semester) => [
-            semester.id,
-            semester.isHistorical ? (historicalPlan[semester.id] || []) : [],
-        ])
+        historical.semesters.map((semester) => [semester.id, historical.plan[semester.id] || []])
     );
+    const semesterIds = new Set(mergedSemesters.map((semester) => semester.id));
 
     previous.semesters.forEach((semester) => {
         if (semester.isHistorical) return;
@@ -220,18 +217,23 @@ export function mergeHistoricalDraft(previous: DraftStorage, scaffold: SemesterD
             scaffoldById.get(semester.id) ||
             (genericIndex !== null ? editableSemesters[genericIndex] : undefined);
 
-        if (!targetSemester || targetSemester.isHistorical) return;
+        const mergedSemester = targetSemester && !targetSemester.isHistorical ? targetSemester : semester;
+        if (semesterIds.has(mergedSemester.id)) return;
+
+        semesterIds.add(mergedSemester.id);
+        mergedSemesters.push(mergedSemester);
+        mergedPlan[mergedSemester.id] = [];
 
         (previous.plan[semester.id] || []).forEach((courseId) => {
             if (historicalCourseIds.has(courseId)) return;
-            if (!mergedPlan[targetSemester.id].includes(courseId)) {
-                mergedPlan[targetSemester.id].push(courseId);
+            if (!mergedPlan[mergedSemester.id].includes(courseId)) {
+                mergedPlan[mergedSemester.id].push(courseId);
             }
         });
     });
 
     return {
-        semesters: scaffold,
+        semesters: mergedSemesters.sort((a, b) => getSemesterSortValue(a.label) - getSemesterSortValue(b.label)),
         plan: mergedPlan,
     };
 }

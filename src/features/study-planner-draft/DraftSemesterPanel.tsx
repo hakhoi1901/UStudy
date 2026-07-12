@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap } from 'lucide-react';
+import { AlertTriangle, LayoutDashboard, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap, MoreVertical } from 'lucide-react';
 import type { CourseDragStartHandler, CourseMeta, DraftStorage } from './types';
 
 interface DraftSemesterPanelProps {
@@ -15,6 +15,7 @@ interface DraftSemesterPanelProps {
     onRemoveCourseFromSemester: (courseId: string, semesterId: string) => void;
     onAddSemester: () => void;
     onClearDraft: () => void;
+    onOpenPreview: () => void;
     onDragStart: CourseDragStartHandler;
     // New: manage a whole semester group
     onRenameSemester?: (semesterId: string, newLabel: string) => void;
@@ -34,6 +35,7 @@ export function DraftSemesterPanel({
     onRemoveCourseFromSemester,
     onAddSemester,
     onClearDraft,
+    onOpenPreview,
     onDragStart,
     onRenameSemester,
     onDeleteSemester,
@@ -58,6 +60,8 @@ export function DraftSemesterPanel({
         }
         cancelEditing();
     };
+
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
     return (
         <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-11rem)] lg:pl-3`}>
@@ -107,24 +111,61 @@ export function DraftSemesterPanel({
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={onAddSemester}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
-                                title="Thêm học kỳ"
-                            >
-                                <Plus className="h-4.5 w-4.5" />
-                            </button>
+    <button
+        type="button"
+        onClick={onOpenPreview}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+        title="Xem trực quan kế hoạch"
+    >
+        <LayoutDashboard className="h-4.5 w-4.5" />
+    </button>
 
-                            <button
-                                type="button"
-                                onClick={onClearDraft}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
-                                title="Đặt lại kế hoạch"
-                            >
-                                <RotateCcw className="h-4.5 w-4.5" />
-                            </button>
-                        </div>
+    <div className="relative">
+        <button
+            type="button"
+            onClick={() => setIsMoreMenuOpen((value) => !value)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+            title="Thêm tùy chọn"
+            aria-expanded={isMoreMenuOpen}
+            aria-haspopup="menu"
+        >
+            <MoreVertical className="h-4.5 w-4.5" />
+        </button>
+
+        {isMoreMenuOpen && (
+            <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+            >
+                <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                        onAddSemester();
+                        setIsMoreMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                    <Plus className="h-4 w-4 text-gray-500" />
+                    Thêm học kỳ
+                </button>
+
+                <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                        onClearDraft();
+                        setIsMoreMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                >
+                    <RotateCcw className="h-4 w-4" />
+                    Đặt lại kế hoạch
+                </button>
+            </div>
+        )}
+    </div>
+</div>
                     </div>
                 </div>
 

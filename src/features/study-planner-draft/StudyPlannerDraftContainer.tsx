@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { DatabaseBackup } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { STORAGE_KEYS } from '../../config';
@@ -24,6 +24,8 @@ import {
 } from './semester-utils';
 import type { CourseMeta, CourseStatus, DraftStorage, MobilePlannerTab, MobileSheetStep, ParsedSemester, PrerequisiteRule } from './types';
 
+const StudyPlanPreview = lazy(() => import('./StudyPlanPreview'));
+
 export function StudyPlannerDraftContainer() {
     const { data: { courses, categories, prerequisites } } = useDepartmentData() as ReturnType<typeof useDepartmentData> & {
         data: ReturnType<typeof useDepartmentData>['data'] & { prerequisites: PrerequisiteRule[] };
@@ -37,6 +39,8 @@ export function StudyPlannerDraftContainer() {
     const [selectedMobileCourseId, setSelectedMobileCourseId] = useState<string | null>(null);
     const [selectedMobileCourseRootCompleted, setSelectedMobileCourseRootCompleted] = useState(false);
     const [isResizingLayout, setIsResizingLayout] = useState(false);
+    const [rightView, setRightView] = useState<'plan' | 'preview'>('plan');
+    const studentDb = useMemo(() => readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null), []);
     const [leftPanelPercent, setLeftPanelPercent] = useState(() => {
         const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
         return clampPanelPercent(saved);
@@ -45,14 +49,13 @@ export function StudyPlannerDraftContainer() {
         const saved = readFromStorage<unknown>(STORAGE_KEYS.STUDY_PLAN_DRAFT, null);
         if (isDraftStorage(saved)) return saved;
 
-        const semesters = createDefaultSemesters();
+        const semesters = createDefaultSemesters(getAnchorSemester(studentDb?.grades));
         return {
             semesters,
             plan: Object.fromEntries(semesters.map((semester) => [semester.id, []])),
         };
     });
 
-    const studentDb = useMemo(() => readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null), []);
     const hasBLMExemption = useMemo(() => {
         if (!studentDb?.grades) return false;
         return AcademicRulesEngine.checkBLMExemption(studentDb.grades);
@@ -322,6 +325,20 @@ export function StudyPlannerDraftContainer() {
         });
     };
 
+    const deleteSemester = (semesterId: string) => {
+        setDraft((previous) => {
+            const semester = previous.semesters.find((item) => item.id === semesterId);
+            if (!semester || semester.isHistorical) return previous;
+
+            const { [semesterId]: _removedPlan, ...remainingPlan } = previous.plan;
+
+            return {
+                semesters: previous.semesters.filter((item) => item.id !== semesterId),
+                plan: remainingPlan,
+            };
+        });
+    };
+
     const clearDraft = () => {
         setDraft((previous) => ({
             ...previous,
@@ -380,6 +397,26 @@ export function StudyPlannerDraftContainer() {
                     Chương trình đào tạo cho chuyên ngành và khóa học này hiện đang trong quá trình thu thập.
                 </p>
             </div>
+        );
+    }
+
+    if (rightView === 'preview') {
+        return (
+            <Suspense
+                fallback={(
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500 shadow-sm">
+                        Đang mở bản xem trực quan...
+                    </div>
+                )}
+            >
+                <StudyPlanPreview
+                    draft={draft}
+                    courseById={courseById}
+                    getAccumulationCredits={getAccumulationCredits}
+                    getMissingPrerequisites={getMissingPrerequisites}
+                    onBackToPlan={() => setRightView('plan')}
+                />
+            </Suspense>
         );
     }
 
@@ -442,7 +479,9 @@ export function StudyPlannerDraftContainer() {
                     onAddCourseToSemester={addCourseToSemester}
                     onRemoveCourseFromSemester={removeCourseFromSemester}
                     onAddSemester={addSemester}
+                    onDeleteSemester={deleteSemester}
                     onClearDraft={clearDraft}
+                    onOpenPreview={() => setRightView('preview')}
                     onDragStart={handleDragStart}
                 />
             </div>
