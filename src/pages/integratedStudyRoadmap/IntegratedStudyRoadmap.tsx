@@ -10,7 +10,7 @@ import { NoDataCard } from '../../components/nodataCard';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { getConflicts } from '../../logic/ScheduleValidator';
-import { NavigationBar, TrainingProgramView, SelectionView, CalendarView, StudyPlannerDraftView } from '../../features/integratedStudyRoadmap';
+import { NavigationBar, TrainingProgramView, SelectionView, CalendarView, StudyPlanView } from '../../features/integratedStudyRoadmap';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { GroupSchedulePage } from '../GroupSchedulePage';
 import type { Course } from '../../types';
@@ -20,7 +20,7 @@ import { APP_ROUTES, STUDY_ROADMAP_TAB_TO_PATH, getStudyRoadmapTabFromPath } fro
 // Danh sách các tab
 export const tabs = {
     trainingProgram: 'trainingProgram',
-    draft: 'draft',
+    studyPlan: 'studyPlan',
     selection: 'selection',
     calendar: 'calendar',
 } as const;
@@ -240,7 +240,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 // { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
-                                { id: tabs.draft, label: 'kế hoạch học tập', icon: Book },
+                                { id: tabs.studyPlan, label: 'kế hoạch học tập', icon: Book },
                                 { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
@@ -254,7 +254,7 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
-                                { id: tabs.draft, label: 'Nháp', icon: ClipboardList },
+                                { id: tabs.studyPlan, label: 'Kế hoạch', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Xếp lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
@@ -268,9 +268,9 @@ export function IntegratedStudyRoadmap() {
                         <TrainingProgramView />
                     )}
 
-                    {/* Tab Nháp: kéo môn vào học kỳ */}
-                    {activeTab === 'draft' && (
-                        <StudyPlannerDraftView />
+                    {/* Tab Kế hoạch học tập: kéo môn vào học kỳ */}
+                    {activeTab === 'studyPlan' && (
+                        <StudyPlanView />
                     )}
 
                     {/* Tab 2: Chọn môn học */}

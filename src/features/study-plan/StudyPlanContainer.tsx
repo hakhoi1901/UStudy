@@ -4,29 +4,29 @@ import { useDepartmentData } from '../../context/DepartmentContext';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { AcademicRulesEngine } from '../grades';
-import { DraftCourseListPanel } from './DraftCourseListPanel';
-import { DraftSemesterPanel } from './DraftSemesterPanel';
+import { StudyPlanCourseListPanel } from './StudyPlanCourseListPanel';
+import { StudyPlanSemesterPanel } from './StudyPlanSemesterPanel';
 import { MobileCoursePlannerSheet } from './MobileCoursePlannerSheet';
 import {
     DEFAULT_LEFT_PANEL_PERCENT,
     DEFAULT_SEMESTER_COUNT,
     addSemesters,
-    buildHistoricalDraft,
+    buildHistoricalStudyPlan,
     clampPanelPercent,
     createDefaultSemesters,
     formatSemesterLabel,
     getAnchorSemester,
     getSemesterId,
     getSemesterSequenceValue,
-    isDraftStorage,
-    mergeHistoricalDraft,
+    isStudyPlanStorage,
+    mergeHistoricalStudyPlan,
     parseSemesterLabel,
 } from './semester-utils';
-import type { CourseMeta, CourseStatus, DraftStorage, MobilePlannerTab, MobileSheetStep, ParsedSemester, PrerequisiteRule } from './types';
+import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, MobileSheetStep, ParsedSemester, PrerequisiteRule } from './types';
 
 const StudyPlanPreview = lazy(() => import('./StudyPlanPreview'));
 
-export function StudyPlannerDraftContainer() {
+export function StudyPlanContainer() {
     const { data: { courses, categories, prerequisites } } = useDepartmentData() as ReturnType<typeof useDepartmentData> & {
         data: ReturnType<typeof useDepartmentData>['data'] & { prerequisites: PrerequisiteRule[] };
     };
@@ -42,12 +42,12 @@ export function StudyPlannerDraftContainer() {
     const [rightView, setRightView] = useState<'plan' | 'preview'>('plan');
     const studentDb = useMemo(() => readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null), []);
     const [leftPanelPercent, setLeftPanelPercent] = useState(() => {
-        const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
+        const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
         return clampPanelPercent(saved);
     });
-    const [draft, setDraft] = useState<DraftStorage>(() => {
-        const saved = readFromStorage<unknown>(STORAGE_KEYS.STUDY_PLAN_DRAFT, null);
-        if (isDraftStorage(saved)) return saved;
+    const [studyPlan, setStudyPlan] = useState<StudyPlanStorage>(() => {
+        const saved = readFromStorage<unknown>(STORAGE_KEYS.STUDY_PLAN, null);
+        if (isStudyPlanStorage(saved)) return saved;
 
         const semesters = createDefaultSemesters(getAnchorSemester(studentDb?.grades));
         return {
@@ -77,39 +77,39 @@ export function StudyPlannerDraftContainer() {
         return { ...course, status: getCourseStatus(course.course_id) };
     }, [courseById, getCourseStatus, selectedMobileCourseId]);
 
-    const historicalDraft = useMemo(() => {
-        return buildHistoricalDraft(studentDb?.grades, courseById, hasBLMExemption);
+    const historicalStudyPlan = useMemo(() => {
+        return buildHistoricalStudyPlan(studentDb?.grades, courseById, hasBLMExemption);
     }, [courseById, hasBLMExemption, studentDb]);
 
     const semesterScaffold = useMemo(() => {
         const anchor = getAnchorSemester(studentDb?.grades);
-        const historicalLabels = new Set(historicalDraft.semesters.map((semester) => semester.label));
+        const historicalLabels = new Set(historicalStudyPlan.semesters.map((semester) => semester.label));
         return createDefaultSemesters(anchor, DEFAULT_SEMESTER_COUNT, historicalLabels);
-    }, [historicalDraft.semesters, studentDb]);
+    }, [historicalStudyPlan.semesters, studentDb]);
 
     useEffect(() => {
-        setDraft((previous) => mergeHistoricalDraft(previous, semesterScaffold, historicalDraft));
-    }, [historicalDraft, semesterScaffold]);
+        setStudyPlan((previous) => mergeHistoricalStudyPlan(previous, semesterScaffold, historicalStudyPlan));
+    }, [historicalStudyPlan, semesterScaffold]);
 
     useEffect(() => {
-        saveToStorage(STORAGE_KEYS.STUDY_PLAN_DRAFT, draft);
-    }, [draft]);
+        saveToStorage(STORAGE_KEYS.STUDY_PLAN, studyPlan);
+    }, [studyPlan]);
 
     useEffect(() => {
-        saveToStorage(STORAGE_KEYS.STUDY_PLAN_DRAFT_LAYOUT, leftPanelPercent);
+        saveToStorage(STORAGE_KEYS.STUDY_PLAN_LAYOUT, leftPanelPercent);
     }, [leftPanelPercent]);
 
     const plannedCourseIds = useMemo(() => {
-        return new Set(Object.values(draft.plan).flat());
-    }, [draft.plan]);
+        return new Set(Object.values(studyPlan.plan).flat());
+    }, [studyPlan.plan]);
 
     const manuallyPlannedCourseIds = useMemo(() => {
         const ids = new Set<string>();
 
-        draft.semesters
+        studyPlan.semesters
             .filter((semester) => !semester.isHistorical)
             .forEach((semester) => {
-                (draft.plan[semester.id] || []).forEach((courseId) => {
+                (studyPlan.plan[semester.id] || []).forEach((courseId) => {
                     const status = getCourseStatus(courseId);
                     if (status !== 'passed' && status !== 'studying') {
                         ids.add(courseId);
@@ -118,7 +118,7 @@ export function StudyPlannerDraftContainer() {
             });
 
         return ids;
-    }, [draft.plan, draft.semesters, getCourseStatus]);
+    }, [studyPlan.plan, studyPlan.semesters, getCourseStatus]);
 
     const getAccumulationCredits = useMemo(() => (courseId: string) => {
         const course = courseById.get(courseId);
@@ -148,11 +148,11 @@ export function StudyPlannerDraftContainer() {
 
     const selectedCoursePlannedSemester = useMemo(() => {
         if (!selectedMobileCourseId) return null;
-        return draft.semesters.find((semester) => (
+        return studyPlan.semesters.find((semester) => (
             !semester.isHistorical &&
-            (draft.plan[semester.id] || []).includes(selectedMobileCourseId)
+            (studyPlan.plan[semester.id] || []).includes(selectedMobileCourseId)
         )) || null;
-    }, [draft.plan, draft.semesters, selectedMobileCourseId]);
+    }, [studyPlan.plan, studyPlan.semesters, selectedMobileCourseId]);
 
     const selectedMobileCourseLocked = Boolean(
         selectedMobileCourse &&
@@ -168,8 +168,8 @@ export function StudyPlannerDraftContainer() {
         if (rules.length === 0) return [];
 
         const completedBefore = new Set<string>();
-        draft.semesters.slice(0, semesterIndex).forEach((semester) => {
-            (draft.plan[semester.id] || []).forEach((plannedId) => completedBefore.add(plannedId));
+        studyPlan.semesters.slice(0, semesterIndex).forEach((semester) => {
+            (studyPlan.plan[semester.id] || []).forEach((plannedId) => completedBefore.add(plannedId));
         });
 
         return rules
@@ -253,11 +253,11 @@ export function StudyPlannerDraftContainer() {
 
     const addCourseToSemester = (courseId: string, semesterId: string) => {
         if (!courseById.has(courseId)) return;
-        if (draft.semesters.find((semester) => semester.id === semesterId)?.isHistorical) return;
+        if (studyPlan.semesters.find((semester) => semester.id === semesterId)?.isHistorical) return;
         const status = getCourseStatus(courseId);
         if (status === 'passed' || status === 'studying') return;
 
-        setDraft((previous) => ({
+        setStudyPlan((previous) => ({
             ...previous,
             plan: Object.fromEntries(
                 previous.semesters.map((semester) => {
@@ -275,7 +275,7 @@ export function StudyPlannerDraftContainer() {
     };
 
     const removeCourseFromPlan = (courseId: string) => {
-        setDraft((previous) => ({
+        setStudyPlan((previous) => ({
             ...previous,
             plan: Object.fromEntries(
                 previous.semesters.map((semester) => [
@@ -289,9 +289,9 @@ export function StudyPlannerDraftContainer() {
     };
 
     const removeCourseFromSemester = (courseId: string, semesterId: string) => {
-        if (draft.semesters.find((semester) => semester.id === semesterId)?.isHistorical) return;
+        if (studyPlan.semesters.find((semester) => semester.id === semesterId)?.isHistorical) return;
 
-        setDraft((previous) => ({
+        setStudyPlan((previous) => ({
             ...previous,
             plan: {
                 ...previous.plan,
@@ -301,7 +301,7 @@ export function StudyPlannerDraftContainer() {
     };
 
     const addSemester = () => {
-        setDraft((previous) => {
+        setStudyPlan((previous) => {
             const parsedSemesters = previous.semesters
                 .map((semester) => parseSemesterLabel(semester.label))
                 .filter((semester): semester is ParsedSemester => !!semester);
@@ -326,7 +326,7 @@ export function StudyPlannerDraftContainer() {
     };
 
     const deleteSemester = (semesterId: string) => {
-        setDraft((previous) => {
+        setStudyPlan((previous) => {
             const semester = previous.semesters.find((item) => item.id === semesterId);
             if (!semester || semester.isHistorical) return previous;
 
@@ -339,12 +339,12 @@ export function StudyPlannerDraftContainer() {
         });
     };
 
-    const clearDraft = () => {
-        setDraft((previous) => ({
+    const clearStudyPlan = () => {
+        setStudyPlan((previous) => ({
             ...previous,
             plan: Object.fromEntries(previous.semesters.map((semester) => [
                 semester.id,
-                semester.isHistorical ? (historicalDraft.plan[semester.id] || previous.plan[semester.id] || []) : [],
+                semester.isHistorical ? (historicalStudyPlan.plan[semester.id] || previous.plan[semester.id] || []) : [],
             ])),
         }));
     };
@@ -383,7 +383,7 @@ export function StudyPlannerDraftContainer() {
     };
 
     const layoutStyle = {
-        '--draft-planner-grid-template': `minmax(320px, ${leftPanelPercent}fr) 1rem minmax(300px, ${100 - leftPanelPercent}fr)`,
+        '--study-plan-grid-template': `minmax(320px, ${leftPanelPercent}fr) 1rem minmax(300px, ${100 - leftPanelPercent}fr)`,
     } as CSSProperties & Record<string, string>;
 
     if (courses.length === 0) {
@@ -410,7 +410,7 @@ export function StudyPlannerDraftContainer() {
                 )}
             >
                 <StudyPlanPreview
-                    draft={draft}
+                    studyPlan={studyPlan}
                     courseById={courseById}
                     categories={categories}
                     getAccumulationCredits={getAccumulationCredits}
@@ -443,9 +443,9 @@ export function StudyPlannerDraftContainer() {
             <div
                 ref={layoutRef}
                 style={layoutStyle}
-                className={`animate-in fade-in grid gap-y-5 duration-500 lg:gap-x-0 lg:[grid-template-columns:var(--draft-planner-grid-template)] ${isResizingLayout ? 'select-none' : ''}`}
+                className={`animate-in fade-in grid gap-y-5 duration-500 lg:gap-x-0 lg:[grid-template-columns:var(--study-plan-grid-template)] ${isResizingLayout ? 'select-none' : ''}`}
             >
-                <DraftCourseListPanel
+                <StudyPlanCourseListPanel
                     mobileVisible={mobileTab === 'courses'}
                     searchTerm={searchTerm}
                     categories={preprocessedCategories}
@@ -468,9 +468,9 @@ export function StudyPlannerDraftContainer() {
                     </button>
                 </div>
 
-                <DraftSemesterPanel
+                <StudyPlanSemesterPanel
                     mobileVisible={mobileTab === 'semesters'}
-                    draft={draft}
+                    studyPlan={studyPlan}
                     courseById={courseById}
                     activeDropId={activeDropId}
                     plannedStats={plannedStats}
@@ -481,7 +481,7 @@ export function StudyPlannerDraftContainer() {
                     onRemoveCourseFromSemester={removeCourseFromSemester}
                     onAddSemester={addSemester}
                     onDeleteSemester={deleteSemester}
-                    onClearDraft={clearDraft}
+                    onClearStudyPlan={clearStudyPlan}
                     onOpenPreview={() => setRightView('preview')}
                     onDragStart={handleDragStart}
                 />
@@ -489,7 +489,7 @@ export function StudyPlannerDraftContainer() {
 
             <MobileCoursePlannerSheet
                 course={selectedMobileCourse}
-                draft={draft}
+                studyPlan={studyPlan}
                 sheetStep={mobileSheetStep}
                 rootCompleted={selectedMobileCourseRootCompleted}
                 isLocked={selectedMobileCourseLocked}

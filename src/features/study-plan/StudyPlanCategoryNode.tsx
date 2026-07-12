@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { AcademicRulesEngine } from '../grades';
 import { getCategoryCreditProgress, getRequiredCredits, sumCoursePlanCredits } from './credit-progress';
-import { DraftCourseRow } from './DraftCourseRow';
+import { StudyPlanCourseRow } from './StudyPlanCourseRow';
 import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } from './types';
 
-interface DraftCategoryNodeProps {
+interface StudyPlanCategoryNodeProps {
     category: any;
     depth?: number;
     manuallyPlannedCourseIds: Set<string>;
@@ -14,14 +14,14 @@ interface DraftCategoryNodeProps {
     onOpenMobilePlanner: MobilePlannerOpenHandler;
 }
 
-export function DraftCategoryNode({
+export function StudyPlanCategoryNode({
     category,
     depth = 0,
     manuallyPlannedCourseIds,
     onDragStart,
     onRemoveFromPlan,
     onOpenMobilePlanner,
-}: DraftCategoryNodeProps) {
+}: StudyPlanCategoryNodeProps) {
     const [isExpanded, setIsExpanded] = useState(true);
     const coursesToRender = (category.coursesData || []) as CourseMeta[];
     const childCategories = category.breakdown ? Object.entries(category.breakdown) : [];
@@ -81,7 +81,7 @@ export function DraftCategoryNode({
                     {coursesToRender.length > 0 && (
                         <div className="space-y-2">
                             {coursesToRender.map((course) => (
-                                <DraftCourseRow
+                                <StudyPlanCourseRow
                                     key={course.course_id}
                                     course={course}
                                     isPlanned={manuallyPlannedCourseIds.has(course.course_id)}
@@ -126,7 +126,7 @@ export function DraftCategoryNode({
                                 </div>
                                 <div className="space-y-2">
                                     {optionCourses.map((course) => (
-                                        <DraftCourseRow
+                                        <StudyPlanCourseRow
                                             key={course.course_id}
                                             course={course}
                                             isPlanned={manuallyPlannedCourseIds.has(course.course_id)}
@@ -142,7 +142,7 @@ export function DraftCategoryNode({
                     })}
 
                     {childCategories.map(([key, child]) => (
-                        <DraftCategoryNode
+                        <StudyPlanCategoryNode
                             key={String(key)}
                             category={child}
                             depth={depth + 1}

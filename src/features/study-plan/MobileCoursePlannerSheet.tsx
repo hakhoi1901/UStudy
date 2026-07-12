@@ -1,16 +1,16 @@
 import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
-import type { CourseMeta, DraftStorage, MobileSheetStep, PrerequisiteRule, SemesterDraft } from './types';
+import type { CourseMeta, StudyPlanStorage, MobileSheetStep, PrerequisiteRule, StudyPlanSemester } from './types';
 
 interface MobileCoursePlannerSheetProps {
     course: CourseMeta | null;
-    draft: DraftStorage;
+    studyPlan: StudyPlanStorage;
     sheetStep: MobileSheetStep;
     rootCompleted: boolean;
     isLocked: boolean;
     manuallyPlannedCourseIds: Set<string>;
-    selectedPlannedSemester: SemesterDraft | null;
+    selectedPlannedSemester: StudyPlanSemester | null;
     prereqByCourse: Map<string, PrerequisiteRule[]>;
     getMissingPrerequisites: (courseId: string, semesterIndex: number) => string[];
     onClose: () => void;
@@ -20,7 +20,7 @@ interface MobileCoursePlannerSheetProps {
 
 export function MobileCoursePlannerSheet({
     course,
-    draft,
+    studyPlan,
     sheetStep,
     rootCompleted,
     isLocked,
@@ -119,7 +119,7 @@ export function MobileCoursePlannerSheet({
                                 {(() => {
                                     const rules = prereqByCourse.get(course.course_id) || [];
                                     if (selectedPlannedSemester) {
-                                        const plannedIndex = draft.semesters.findIndex((semester) => semester.id === selectedPlannedSemester.id);
+                                        const plannedIndex = studyPlan.semesters.findIndex((semester) => semester.id === selectedPlannedSemester.id);
                                         const missing = getMissingPrerequisites(course.course_id, plannedIndex);
                                         if (missing.length > 0) {
                                             return <p className="text-xs leading-relaxed text-amber-800">Thiếu: {missing.join(', ')}</p>;
@@ -162,11 +162,11 @@ export function MobileCoursePlannerSheet({
                             Quay lại
                         </button>
                         <div className="space-y-2">
-                            {draft.semesters
+                            {studyPlan.semesters
                                 .filter((semester) => !semester.isHistorical)
                                 .map((semester) => {
-                                    const semesterIndex = draft.semesters.findIndex((item) => item.id === semester.id);
-                                    const plannedIds = draft.plan[semester.id] || [];
+                                    const semesterIndex = studyPlan.semesters.findIndex((item) => item.id === semester.id);
+                                    const plannedIds = studyPlan.plan[semester.id] || [];
                                     const missing = getMissingPrerequisites(course.course_id, semesterIndex);
                                     const isCurrentSemester = selectedPlannedSemester?.id === semester.id;
 

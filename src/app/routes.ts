@@ -9,14 +9,14 @@ export type PageId =
     | 'privacy'
     | 'setup';
 
-export type StudyRoadmapTabId = 'trainingProgram' | 'draft' | 'selection' | 'calendar';
+export type StudyRoadmapTabId = 'trainingProgram' | 'studyPlan' | 'selection' | 'calendar';
 
 export const APP_ROUTES = {
     root: '/',
     dashboard: '/dashboard',
     studyRoadmap: '/study-roadmap',
     studyRoadmapProgram: '/study-roadmap/program',
-    studyRoadmapDraft: '/study-roadmap/draft',
+    studyRoadmapStudyPlan: '/study-roadmap/study-plan',
     studyRoadmapSelection: '/study-roadmap/selection',
     studyRoadmapGroup: '/study-roadmap/group',
     legacyGroupSchedule: '/group',
@@ -44,7 +44,7 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
 
 export const STUDY_ROADMAP_TAB_TO_PATH: Record<StudyRoadmapTabId, string> = {
     trainingProgram: APP_ROUTES.studyRoadmapProgram,
-    draft: APP_ROUTES.studyRoadmapDraft,
+    studyPlan: APP_ROUTES.studyRoadmapStudyPlan,
     selection: APP_ROUTES.studyRoadmapSelection,
     calendar: APP_ROUTES.studyRoadmapCalendar,
 };
@@ -72,7 +72,7 @@ export function getPathForPage(page: string): string {
 
 export function getStudyRoadmapTabFromPath(pathname: string): StudyRoadmapTabId | null {
     if (/^\/study-roadmap\/program\/?$/.test(pathname)) return 'trainingProgram';
-    if (/^\/study-roadmap\/draft\/?$/.test(pathname)) return 'draft';
+    if (/^\/study-roadmap\/study-plan\/?$/.test(pathname) || /^\/study-roadmap\/draft\/?$/.test(pathname)) return 'studyPlan';
     if (/^\/study-roadmap\/selection\/?$/.test(pathname)) return 'selection';
     if (/^\/study-roadmap\/group\/?$/.test(pathname) || /^\/group\/?$/.test(pathname)) return 'calendar';
     if (/^\/study-roadmap\/calendar\/?$/.test(pathname)) return 'calendar';

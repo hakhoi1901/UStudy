@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState, type ElementType } from 'react';
 import { AlertTriangle, ArrowLeft, BookOpen, CheckCircle2, Route, Sigma } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Line, Cell, ComposedChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { getRequiredCredits } from './credit-progress';
-import type { CourseMeta, DraftStorage } from './types';
+import type { CourseMeta, StudyPlanStorage } from './types';
 import { ACADEMIC_RULES } from '../../constants/academic'
 
     
 
 
 interface StudyPlanPreviewProps {
-    draft: DraftStorage;
+    studyPlan: StudyPlanStorage;
     courseById: Map<string, CourseMeta>;
     categories: Record<string, any>;
     getAccumulationCredits: (courseId: string) => number;
@@ -78,17 +78,30 @@ function SummaryItem({
     );
 }
 
-function ProgressRing({ value, total }: { value: number; total: number }) {
+function ProgressRing({ value, plannedValue, total }: { value: number; plannedValue: number; total: number }) {
     const radius = 48;
     const circumference = 2 * Math.PI * radius;
     const percent = total > 0 ? Math.min(100, Math.round((value / total) * 100)) : 0;
+    const plannedPercent = total > 0 ? Math.min(100, Math.round(((value + plannedValue) / total) * 100)) : 0;
     const strokeDashoffset = circumference - (percent / 100) * circumference;
+    const plannedStrokeDashoffset = circumference - (plannedPercent / 100) * circumference;
 
     return (
         <div className="flex items-center justify-center">
             <div className="relative h-36 w-36">
                 <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" role="img" aria-label={`${percent}% tín chỉ đã tích lũy`}>
                     <circle cx="60" cy="60" r={radius} fill="none" stroke="#E5E7EB" strokeWidth="10" />
+                    <circle
+                        cx="60"
+                        cy="60"
+                        r={radius}
+                        fill="none"
+                        stroke="#004A98"
+                        strokeLinecap="round"
+                        strokeWidth="10"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={plannedStrokeDashoffset}
+                    />
                     <circle
                         cx="60"
                         cy="60"
@@ -111,7 +124,7 @@ function ProgressRing({ value, total }: { value: number; total: number }) {
 }
 
 export function StudyPlanPreview({
-    draft,
+    studyPlan,
     courseById,
     categories,
     getAccumulationCredits,
@@ -119,23 +132,23 @@ export function StudyPlanPreview({
     onBackToPlan,
 }: StudyPlanPreviewProps) {
     const firstEditableSemesterId = useMemo(
-        () => draft.semesters.find((semester) => !semester.isHistorical)?.id ?? null,
-        [draft.semesters]
+        () => studyPlan.semesters.find((semester) => !semester.isHistorical)?.id ?? null,
+        [studyPlan.semesters]
     );
 
-    const [activeSemesterId, setActiveSemesterId] = useState<string | null>(draft.semesters[0]?.id ?? null);
+    const [activeSemesterId, setActiveSemesterId] = useState<string | null>(studyPlan.semesters[0]?.id ?? null);
 
     useEffect(() => {
-        if (!draft.semesters.some((semester) => semester.id === activeSemesterId)) {
-            setActiveSemesterId(draft.semesters[0]?.id ?? null);
+        if (!studyPlan.semesters.some((semester) => semester.id === activeSemesterId)) {
+            setActiveSemesterId(studyPlan.semesters[0]?.id ?? null);
         }
-    }, [activeSemesterId, draft.semesters]);
+    }, [activeSemesterId, studyPlan.semesters]);
 
     const semesterRows = useMemo(() => {
         let cumulativeCredits = 0;
 
-        return draft.semesters.map((semester, semesterIndex) => {
-            const courseIds = draft.plan[semester.id] || [];
+        return studyPlan.semesters.map((semester, semesterIndex) => {
+            const courseIds = studyPlan.plan[semester.id] || [];
             const credits = courseIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
             cumulativeCredits += credits;
             const warningCourseIds = courseIds.filter((courseId) => getMissingPrerequisites(courseId, semesterIndex).length > 0);
@@ -156,7 +169,7 @@ export function StudyPlanPreview({
                 statusStyle: STATUS_STYLE[status],
             };
         });
-    }, [draft.plan, draft.semesters, firstEditableSemesterId, getAccumulationCredits, getMissingPrerequisites]);
+    }, [studyPlan.plan, studyPlan.semesters, firstEditableSemesterId, getAccumulationCredits, getMissingPrerequisites]);
 
     const coursePlanState = useMemo(() => {
         const earned = new Set<string>();
@@ -269,12 +282,15 @@ export function StudyPlanPreview({
         const earnedCredits = semesterRows
             .filter((row) => row.semester.isHistorical)
             .reduce((sum, row) => sum + row.credits, 0);
+        const plannedCredits = semesterRows
+            .filter((row) => !row.semester.isHistorical)
+            .reduce((sum, row) => sum + row.credits, 0);
         const completedCourses = semesterRows
             .filter((row) => row.semester.isHistorical)
             .reduce((sum, row) => sum + row.courseIds.length, 0);
         const warnings = semesterRows.reduce((sum, row) => sum + row.warningCourseIds.length, 0);
 
-        return { totalCourses, totalCredits, earnedCredits, completedCourses, warnings };
+        return { totalCourses, totalCredits, earnedCredits, plannedCredits, completedCourses, warnings };
     }, [semesterRows]);
 
     const chartData = useMemo(
@@ -308,7 +324,7 @@ export function StudyPlanPreview({
                 </div>
 
                 <div className="space-y-4 bg-gray-50/60 p-4">
-                    {draft.semesters.length === 0 ? (
+                    {studyPlan.semesters.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center text-sm text-gray-500">
                             Chưa có học kỳ nào để xem trực quan.
                         </div>
@@ -319,10 +335,11 @@ export function StudyPlanPreview({
                                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                         <h3 className="mb-3 text-sm font-bold text-gray-900">Tiến độ tích lũy</h3>
                                         <div className="grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3">
-                                            <ProgressRing value={summary.earnedCredits} total={ACADEMIC_RULES.TOTAL_CREDITS} />
+                                            <ProgressRing value={summary.earnedCredits} plannedValue={summary.plannedCredits} total={ACADEMIC_RULES.TOTAL_CREDITS} />
                                             <div className="space-y-3 text-sm">
                                                 <div><p className="text-xs text-gray-500">Đã tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
-                                                <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits)} TC</p></div>
+                                                <div><p className="text-xs text-gray-500">Đã lên kế hoạch</p><p className="mt-0.5 font-bold text-[#004A98]">{summary.plannedCredits} TC</p></div>
+                                                <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits - summary.plannedCredits)} TC</p></div>
                                             </div>
                                         </div>
                                     </div>

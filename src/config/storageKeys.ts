@@ -42,9 +42,9 @@ export const STORAGE_KEYS = {
     /** Cấu hình ưu tiên xếp lịch */
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản nháp kế hoạch học tập theo học kỳ */
-    STUDY_PLAN_DRAFT: 'study_plan_draft',
+    STUDY_PLAN: 'study_plan_draft',
     /** Tỷ lệ chiều rộng danh sách môn/khung học kỳ trong bản nháp */
-    STUDY_PLAN_DRAFT_LAYOUT: 'study_plan_draft_layout',
+    STUDY_PLAN_LAYOUT: 'study_plan_draft_layout',
     /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */

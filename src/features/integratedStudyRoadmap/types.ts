@@ -1,7 +1,7 @@
 // Danh sách các tab
 export const tabs = {
     trainingProgram: 'trainingProgram',
-    draft: 'draft',
+    studyPlan: 'studyPlan',
     selection: 'selection',
     calendar: 'calendar',
 } as const;

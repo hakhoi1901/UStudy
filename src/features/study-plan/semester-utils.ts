@@ -1,5 +1,5 @@
 import { AcademicRulesEngine } from '../grades';
-import type { CourseMeta, DraftStorage, GradeRecord, ParsedSemester, SemesterDraft } from './types';
+import type { CourseMeta, StudyPlanStorage, GradeRecord, ParsedSemester, StudyPlanSemester } from './types';
 
 export const DEFAULT_SEMESTER_COUNT = 12;
 export const DEFAULT_LEFT_PANEL_PERCENT = 68;
@@ -92,7 +92,7 @@ export function createDefaultSemesters(
     anchor: ParsedSemester = getCurrentYearAnchor(),
     count = DEFAULT_SEMESTER_COUNT,
     historicalLabels = new Set<string>()
-): SemesterDraft[] {
+): StudyPlanSemester[] {
     return Array.from({ length: count }, (_, index) => {
         const label = formatSemesterLabel(addSemesters(anchor, index), anchor);
         return {
@@ -103,10 +103,10 @@ export function createDefaultSemesters(
     });
 }
 
-export function isDraftStorage(value: unknown): value is DraftStorage {
+export function isStudyPlanStorage(value: unknown): value is StudyPlanStorage {
     if (!value || typeof value !== 'object') return false;
-    const draft = value as DraftStorage;
-    return Array.isArray(draft.semesters) && !!draft.plan && typeof draft.plan === 'object';
+    const studyPlan = value as StudyPlanStorage;
+    return Array.isArray(studyPlan.semesters) && !!studyPlan.plan && typeof studyPlan.plan === 'object';
 }
 
 export function getSemesterSortValue(label: string): number {
@@ -127,11 +127,11 @@ export function getAnchorSemester(rawGrades: GradeRecord[] | undefined): ParsedS
     ));
 }
 
-export function buildHistoricalDraft(
+export function buildHistoricalStudyPlan(
     rawGrades: GradeRecord[] | undefined,
     courseById: Map<string, CourseMeta>,
     hasBLMExemption: boolean
-): DraftStorage {
+): StudyPlanStorage {
     if (!rawGrades || rawGrades.length === 0) {
         return { semesters: [], plan: {} };
     }
@@ -184,16 +184,16 @@ export function buildHistoricalDraft(
     };
 }
 
-function getGenericSemesterIndex(semester: SemesterDraft): number | null {
+function getGenericSemesterIndex(semester: StudyPlanSemester): number | null {
     const labelMatch =
         semester.label.match(/^(?:nháp\s*)?học\s*kỳ\s*(\d+)/i) ||
         semester.label.match(/^(?:nhap\s*)?hoc\s*ky\s*(\d+)/i);
-    const idMatch = semester.id.match(/^draft-semester-(\d+)$/);
+    const idMatch = semester.id.match(/^studyPlan-semester-(\d+)$/);
     const index = Number(labelMatch?.[1] || idMatch?.[1] || 0);
     return index > 0 ? index - 1 : null;
 }
 
-export function mergeHistoricalDraft(previous: DraftStorage, scaffold: SemesterDraft[], historical: DraftStorage): DraftStorage {
+export function mergeHistoricalStudyPlan(previous: StudyPlanStorage, scaffold: StudyPlanSemester[], historical: StudyPlanStorage): StudyPlanStorage {
     const historicalCourseIds = new Set(Object.values(historical.plan).flat());
     const scaffoldById = new Map(scaffold.map((semester) => [semester.id, semester]));
     const scaffoldByLabel = new Map(scaffold.map((semester) => [semester.label, semester]));

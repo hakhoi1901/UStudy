@@ -1,8 +1,8 @@
 import { Info, Search, X } from 'lucide-react';
-import { DraftCategoryNode } from './DraftCategoryNode';
+import { StudyPlanCategoryNode } from './StudyPlanCategoryNode';
 import type { CourseDragStartHandler, MobilePlannerOpenHandler } from './types';
 
-interface DraftCourseListPanelProps {
+interface StudyPlanCourseListPanelProps {
     mobileVisible: boolean;
     searchTerm: string;
     categories: Record<string, any>;
@@ -13,7 +13,7 @@ interface DraftCourseListPanelProps {
     onOpenMobilePlanner: MobilePlannerOpenHandler;
 }
 
-export function DraftCourseListPanel({
+export function StudyPlanCourseListPanel({
     mobileVisible,
     searchTerm,
     categories,
@@ -22,7 +22,7 @@ export function DraftCourseListPanel({
     onDragStart,
     onRemoveFromPlan,
     onOpenMobilePlanner,
-}: DraftCourseListPanelProps) {
+}: StudyPlanCourseListPanelProps) {
     return (
         <section className={`${mobileVisible ? 'block' : 'hidden'} min-w-0 lg:block lg:pr-3`}>
             <div className="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 md:gap-3">
@@ -65,7 +65,7 @@ export function DraftCourseListPanel({
 
             <div className="space-y-4">
                 {Object.entries(categories).map(([key, category]) => (
-                    <DraftCategoryNode
+                    <StudyPlanCategoryNode
                         key={key}
                         category={category}
                         manuallyPlannedCourseIds={manuallyPlannedCourseIds}

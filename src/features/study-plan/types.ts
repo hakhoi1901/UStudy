@@ -17,14 +17,14 @@ export interface CourseMeta {
     status?: CourseStatus;
 }
 
-export interface SemesterDraft {
+export interface StudyPlanSemester {
     id: string;
     label: string;
     isHistorical?: boolean;
 }
 
-export interface DraftStorage {
-    semesters: SemesterDraft[];
+export interface StudyPlanStorage {
+    semesters: StudyPlanSemester[];
     plan: Record<string, string[]>;
 }
 

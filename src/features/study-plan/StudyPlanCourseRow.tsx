@@ -5,7 +5,7 @@ import { DocumentContributionModal } from '../../components/DocumentContribution
 import { StatusBadge } from './StatusBadge';
 import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } from './types';
 
-interface DraftCourseRowProps {
+interface StudyPlanCourseRowProps {
     course: CourseMeta;
     isPlanned: boolean;
     rootCompleted?: boolean;
@@ -14,14 +14,14 @@ interface DraftCourseRowProps {
     onOpenMobilePlanner: MobilePlannerOpenHandler;
 }
 
-export function DraftCourseRow({
+export function StudyPlanCourseRow({
     course,
     isPlanned,
     rootCompleted = false,
     onDragStart,
     onRemoveFromPlan,
     onOpenMobilePlanner,
-}: DraftCourseRowProps) {
+}: StudyPlanCourseRowProps) {
     const [showDetails, setShowDetails] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const status = course.status || 'none';

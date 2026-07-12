@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { AlertTriangle, LayoutDashboard, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap, MoreVertical } from 'lucide-react';
-import type { CourseDragStartHandler, CourseMeta, DraftStorage } from './types';
+import { AlertTriangle, LayoutDashboard, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap, MoreVertical, Maximize } from 'lucide-react';
+import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
 
-interface DraftSemesterPanelProps {
+interface StudyPlanSemesterPanelProps {
     mobileVisible: boolean;
-    draft: DraftStorage;
+    studyPlan: StudyPlanStorage;
     courseById: Map<string, CourseMeta>;
     activeDropId: string | null;
     plannedStats: { courses: number; credits: number };
@@ -14,7 +14,7 @@ interface DraftSemesterPanelProps {
     onAddCourseToSemester: (courseId: string, semesterId: string) => void;
     onRemoveCourseFromSemester: (courseId: string, semesterId: string) => void;
     onAddSemester: () => void;
-    onClearDraft: () => void;
+    onClearStudyPlan: () => void;
     onOpenPreview: () => void;
     onDragStart: CourseDragStartHandler;
     // New: manage a whole semester group
@@ -22,9 +22,9 @@ interface DraftSemesterPanelProps {
     onDeleteSemester?: (semesterId: string) => void;
 }
 
-export function DraftSemesterPanel({
+export function StudyPlanSemesterPanel({
     mobileVisible,
-    draft,
+    studyPlan,
     courseById,
     activeDropId,
     plannedStats,
@@ -34,12 +34,12 @@ export function DraftSemesterPanel({
     onAddCourseToSemester,
     onRemoveCourseFromSemester,
     onAddSemester,
-    onClearDraft,
+    onClearStudyPlan,
     onOpenPreview,
     onDragStart,
     onRenameSemester,
     onDeleteSemester,
-}: DraftSemesterPanelProps) {
+}: StudyPlanSemesterPanelProps) {
     const [editingSemesterId, setEditingSemesterId] = useState<string | null>(null);
     const [editingLabel, setEditingLabel] = useState('');
 
@@ -117,7 +117,7 @@ export function DraftSemesterPanel({
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
         title="Xem trực quan kế hoạch"
     >
-        <LayoutDashboard className="h-4.5 w-4.5" />
+        <Maximize className="h-4.5 w-4.5" />
     </button>
 
     <div className="relative">
@@ -154,7 +154,7 @@ export function DraftSemesterPanel({
                     type="button"
                     role="menuitem"
                     onClick={() => {
-                        onClearDraft();
+                        onClearStudyPlan();
                         setIsMoreMenuOpen(false);
                     }}
                     className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
@@ -171,8 +171,8 @@ export function DraftSemesterPanel({
 
                 {/* Semester groups */}
                 <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50/60 p-4">
-                    {draft.semesters.map((semester, semesterIndex) => {
-                        const plannedIds = draft.plan[semester.id] || [];
+                    {studyPlan.semesters.map((semester, semesterIndex) => {
+                        const plannedIds = studyPlan.plan[semester.id] || [];
                         const totalCredits = plannedIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
                         const warningCount = plannedIds.filter((courseId) => getMissingPrerequisites(courseId, semesterIndex).length > 0).length;
                         const isEditingThis = editingSemesterId === semester.id;
