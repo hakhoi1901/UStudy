@@ -32,7 +32,7 @@ export function DraftCourseRow({
     }
 
     if (status === "passed" || rootCompleted) {
-        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-emerald-500";
+        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-emerald-600";
     }
 
     if (status === "failed") {

@@ -77,7 +77,7 @@ export function DraftCategoryNode({
             </button>
 
             {isExpanded && (
-                <div className="mt-3 space-y-3">
+                <div className="mt-3 space-y-4">
                     {coursesToRender.length > 0 && (
                         <div className="space-y-2">
                             {coursesToRender.map((course) => (
