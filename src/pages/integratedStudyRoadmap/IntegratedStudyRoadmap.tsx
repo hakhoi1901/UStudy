@@ -253,7 +253,7 @@ export function IntegratedStudyRoadmap() {
                     <div className="md:hidden">
                         <NavigationBar
                             tabs={[
-                                { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
+                                // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Xếp lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },

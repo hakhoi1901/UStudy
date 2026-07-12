@@ -45,6 +45,7 @@ export const STORAGE_KEYS = {
     STUDY_PLAN: 'study_plan_draft',
     /** Tỷ lệ chiều rộng danh sách môn/khung học kỳ trong bản nháp */
     STUDY_PLAN_LAYOUT: 'study_plan_draft_layout',
+    STUDY_PLAN_CATEGORY_EXPANSION: 'study_plan_category_expansion',
     /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */

@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Info, Search, X } from 'lucide-react';
 import { StudyPlanCategoryNode } from './StudyPlanCategoryNode';
+import { STORAGE_KEYS } from '../../config';
+import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import type { CourseDragStartHandler, MobilePlannerOpenHandler } from './types';
 
 interface StudyPlanCourseListPanelProps {
@@ -23,6 +26,21 @@ export function StudyPlanCourseListPanel({
     onRemoveFromPlan,
     onOpenMobilePlanner,
 }: StudyPlanCourseListPanelProps) {
+    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
+        return readFromStorage<Record<string, boolean>>(STORAGE_KEYS.STUDY_PLAN_CATEGORY_EXPANSION, {});
+    });
+
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.STUDY_PLAN_CATEGORY_EXPANSION, expandedCategories);
+    }, [expandedCategories]);
+
+    const handleCategoryExpandedChange = (categoryKey: string, expanded: boolean) => {
+        setExpandedCategories((current) => ({
+            ...current,
+            [categoryKey]: expanded,
+        }));
+    };
+
     return (
         <section className={`${mobileVisible ? 'block' : 'hidden'} min-w-0 lg:block lg:pr-3`}>
             <div className="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 md:gap-3">
@@ -67,7 +85,10 @@ export function StudyPlanCourseListPanel({
                 {Object.entries(categories).map(([key, category]) => (
                     <StudyPlanCategoryNode
                         key={key}
+                        categoryKey={key}
                         category={category}
+                        expandedCategories={expandedCategories}
+                        onCategoryExpandedChange={handleCategoryExpandedChange}
                         manuallyPlannedCourseIds={manuallyPlannedCourseIds}
                         onDragStart={onDragStart}
                         onRemoveFromPlan={onRemoveFromPlan}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { AcademicRulesEngine } from '../grades';
 import { getCategoryCreditProgress, getRequiredCredits, sumCoursePlanCredits } from './credit-progress';
@@ -7,7 +6,10 @@ import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } fro
 
 interface StudyPlanCategoryNodeProps {
     category: any;
+    categoryKey: string;
     depth?: number;
+    expandedCategories: Record<string, boolean>;
+    onCategoryExpandedChange: (categoryKey: string, expanded: boolean) => void;
     manuallyPlannedCourseIds: Set<string>;
     onDragStart: CourseDragStartHandler;
     onRemoveFromPlan: (courseId: string) => void;
@@ -16,13 +18,16 @@ interface StudyPlanCategoryNodeProps {
 
 export function StudyPlanCategoryNode({
     category,
+    categoryKey,
     depth = 0,
+    expandedCategories,
+    onCategoryExpandedChange,
     manuallyPlannedCourseIds,
     onDragStart,
     onRemoveFromPlan,
     onOpenMobilePlanner,
 }: StudyPlanCategoryNodeProps) {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const isExpanded = expandedCategories[categoryKey] ?? true;
     const coursesToRender = (category.coursesData || []) as CourseMeta[];
     const childCategories = category.breakdown ? Object.entries(category.breakdown) : [];
     const optionCategories = Array.isArray(category.options) ? category.options : [];
@@ -41,7 +46,7 @@ export function StudyPlanCategoryNode({
         <div className={depth === 0 ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm md:p-4' : 'border-l-2 border-gray-100 pl-5'}>
             <button
                 type="button"
-                onClick={() => setIsExpanded((value) => !value)}
+                onClick={() => onCategoryExpandedChange(categoryKey, !isExpanded)}
                 className="flex w-full items-start gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-gray-50"
             >
                 {isExpanded ? (
@@ -144,8 +149,11 @@ export function StudyPlanCategoryNode({
                     {childCategories.map(([key, child]) => (
                         <StudyPlanCategoryNode
                             key={String(key)}
+                            categoryKey={`${categoryKey}.${String(key)}`}
                             category={child}
                             depth={depth + 1}
+                            expandedCategories={expandedCategories}
+                            onCategoryExpandedChange={onCategoryExpandedChange}
                             manuallyPlannedCourseIds={manuallyPlannedCourseIds}
                             onDragStart={onDragStart}
                             onRemoveFromPlan={onRemoveFromPlan}

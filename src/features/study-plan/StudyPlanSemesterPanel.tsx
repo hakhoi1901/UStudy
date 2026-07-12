@@ -64,7 +64,7 @@ export function StudyPlanSemesterPanel({
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
     return (
-        <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-11rem)] lg:pl-3`}>
+        <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:pl-3`}>
             <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm">
                 {/* Header */}
                 <div className="rounded-t-xl border-b border-white/10 bg-gradient-to-br from-[#0058B2] to-[#0066CC] p-4 shadow-sm">
