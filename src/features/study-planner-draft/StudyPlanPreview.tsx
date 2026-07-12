@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, type ElementType } from 'react';
 import { AlertTriangle, ArrowLeft, BookOpen, CheckCircle2, Route, Sigma } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Line, Cell, ComposedChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { getRequiredCredits } from './credit-progress';
 import type { CourseMeta, DraftStorage } from './types';
 import { ACADEMIC_RULES } from '../../constants/academic'
+
+    
+
 
 interface StudyPlanPreviewProps {
     draft: DraftStorage;
@@ -274,12 +277,18 @@ export function StudyPlanPreview({
         return { totalCourses, totalCredits, earnedCredits, completedCourses, warnings };
     }, [semesterRows]);
 
-    const chartData = useMemo(() => semesterRows.map((row) => ({
-        id: row.semester.id,
-        label: row.semester.label,
-        credits: row.credits,
-        color: row.statusStyle.color,
-    })), [semesterRows]);
+    const chartData = useMemo(
+    () =>
+        semesterRows.map((row) => ({
+            id: row.semester.id,
+            label: row.semester.label,
+            credits: row.credits,
+            cumulativeCredits: row.cumulativeCredits,
+            color: row.statusStyle.color,
+            courses: row.courseIds.length,
+        })),
+    [semesterRows]
+);
 
     const activeRow = semesterRows.find((row) => row.semester.id === activeSemesterId) ?? semesterRows[0] ?? null;
 
@@ -305,7 +314,7 @@ export function StudyPlanPreview({
                         </div>
                     ) : (
                         <>
-                            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,1.4fr)]">
+                            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.8fr)_minmax(320px,1.4fr)]">
                                 <div className="space-y-4">
                                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                         <h3 className="mb-3 text-sm font-bold text-gray-900">Tiến độ tích lũy</h3>
@@ -340,37 +349,155 @@ export function StudyPlanPreview({
                                     </div>
                                 </div>
                                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                                    <h3 className="mb-3 text-sm font-bold text-gray-900">Tín chỉ theo học kỳ</h3>
-                                    <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
-                                        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />Đã hoàn thành</span>
-                                        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-blue-700" />Hiện tại</span>
-                                        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />Dự kiến</span>
+                                    <h3 className="mb-3 text-sm font-bold text-gray-900">
+                                        Tín chỉ theo học kỳ
+                                    </h3>
+
+                                    <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                                            Đã hoàn thành
+                                        </span>
+
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-2.5 w-2.5 rounded-sm bg-blue-700" />
+                                            Hiện tại
+                                        </span>
+
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />
+                                            Dự kiến
+                                        </span>
+
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-0.5 w-4 bg-[#004A98]" />
+                                            Tín chỉ tích lũy
+                                        </span>
                                     </div>
-                                    <div className="h-65">
+
+                                    <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={chartData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                <XAxis dataKey="label" hide />
-                                                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                                                <Tooltip
-                                                    cursor={{ fill: 'rgba(0, 88, 178, 0.06)' }}
-                                                    formatter={(value) => [`${value ?? 0} TC`, 'Tín chỉ']}
-                                                    labelFormatter={(label) => {
-                                                        const row = chartData.find((item) => item.label === label);
-                                                        return row ? `${row.label} · ${semesterRows.find((item) => item.semester.id === row.id)?.courseIds.length ?? 0} môn` : String(label);
+                                            <ComposedChart
+                                                data={chartData}
+                                                margin={{
+                                                    top: 12,
+                                                    right: 8,
+                                                    left: -12,
+                                                    bottom: 0,
+                                                }}
+                                            >
+                                                <CartesianGrid
+                                                    strokeDasharray="3 3"
+                                                    vertical={false}
+                                                />
+
+                                                <XAxis
+                                                    dataKey="label"
+                                                    tick={{ fontSize: 10 }}
+                                                    interval={0}
+                                                />
+
+                                                {/* Trục trái: tín chỉ từng học kỳ */}
+                                                <YAxis
+                                                    yAxisId="semester"
+                                                    orientation="left"
+                                                    allowDecimals={false}
+                                                    tick={{ fontSize: 11 }}
+                                                    domain={[0, "dataMax + 4"]}
+                                                    label={{
+                                                        value: "TC / học kỳ",
+                                                        angle: -90,
+                                                        position: "insideLeft",
+                                                        style: {
+                                                            fontSize: 10,
+                                                            fill: "#6B7280",
+                                                        },
                                                     }}
                                                 />
-                                                <Bar dataKey="credits" radius={[6, 6, 0, 0]}>
+
+                                                {/* Trục phải: tín chỉ tích lũy */}
+                                                <YAxis
+                                                    yAxisId="cumulative"
+                                                    orientation="right"
+                                                    allowDecimals={false}
+                                                    tick={{ fontSize: 11 }}
+                                                    domain={[0, ACADEMIC_RULES.TOTAL_CREDITS]}
+                                                    label={{
+                                                        value: "TC tích lũy",
+                                                        angle: 90,
+                                                        position: "insideRight",
+                                                        style: {
+                                                            fontSize: 10,
+                                                            fill: "#6B7280",
+                                                        },
+                                                    }}
+                                                />
+
+                                                <Tooltip
+                                                    cursor={{
+                                                        fill: "rgba(0, 88, 178, 0.05)",
+                                                    }}
+                                                    labelFormatter={(_, payload) => {
+                                                        const item = payload?.[0]?.payload;
+
+                                                        return item
+                                                            ? `${item.label} · ${item.courses} môn`
+                                                            : "";
+                                                    }}
+                                                    formatter={(value, name) => {
+                                                        if (name === "credits") {
+                                                            return [
+                                                                `${value ?? 0} TC`,
+                                                                "Tín chỉ kỳ này",
+                                                            ];
+                                                        }
+
+                                                        if (name === "cumulativeCredits") {
+                                                            return [
+                                                                `${value ?? 0} TC`,
+                                                                "Tín chỉ tích lũy",
+                                                            ];
+                                                        }
+
+                                                        return [value, name];
+                                                    }}
+                                                />
+
+                                                <Bar
+                                                    yAxisId="semester"
+                                                    dataKey="credits"
+                                                    radius={[6, 6, 0, 0]}
+                                                    maxBarSize={36}
+                                                >
                                                     {chartData.map((entry) => (
-                                                        <Cell key={entry.id} fill={entry.color} />
+                                                        <Cell
+                                                            key={entry.id}
+                                                            fill={entry.color}
+                                                        />
                                                     ))}
                                                 </Bar>
-                                            </BarChart>
+
+                                                <Line
+                                                    yAxisId="cumulative"
+                                                    type="monotone"
+                                                    dataKey="cumulativeCredits"
+                                                    stroke="#004A98"
+                                                    strokeWidth={2.5}
+                                                    dot={{
+                                                        r: 4,
+                                                        fill: "#FFFFFF",
+                                                        stroke: "#004A98",
+                                                        strokeWidth: 2,
+                                                    }}
+                                                    activeDot={{
+                                                        r: 6,
+                                                        fill: "#004A98",
+                                                    }}
+                                                />
+                                            </ComposedChart>
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
-
-                                
                             </div>
 
                             <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
