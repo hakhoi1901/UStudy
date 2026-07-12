@@ -412,6 +412,7 @@ export function StudyPlannerDraftContainer() {
                 <StudyPlanPreview
                     draft={draft}
                     courseById={courseById}
+                    categories={categories}
                     getAccumulationCredits={getAccumulationCredits}
                     getMissingPrerequisites={getMissingPrerequisites}
                     onBackToPlan={() => setRightView('plan')}

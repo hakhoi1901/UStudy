@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState, type ElementType } from 'react';
 import { AlertTriangle, ArrowLeft, BookOpen, CheckCircle2, Route, Sigma } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { getRequiredCredits } from './credit-progress';
 import type { CourseMeta, DraftStorage } from './types';
-
-const TOTAL_PROGRAM_CREDITS = 132;
+import { ACADEMIC_RULES } from '../../constants/academic'
 
 interface StudyPlanPreviewProps {
     draft: DraftStorage;
     courseById: Map<string, CourseMeta>;
+    categories: Record<string, any>;
     getAccumulationCredits: (courseId: string) => number;
     getMissingPrerequisites: (courseId: string, semesterIndex: number) => string[];
     onBackToPlan: () => void;
@@ -109,6 +110,7 @@ function ProgressRing({ value, total }: { value: number; total: number }) {
 export function StudyPlanPreview({
     draft,
     courseById,
+    categories,
     getAccumulationCredits,
     getMissingPrerequisites,
     onBackToPlan,
@@ -153,6 +155,111 @@ export function StudyPlanPreview({
         });
     }, [draft.plan, draft.semesters, firstEditableSemesterId, getAccumulationCredits, getMissingPrerequisites]);
 
+    const coursePlanState = useMemo(() => {
+        const earned = new Set<string>();
+        const planned = new Set<string>();
+
+        semesterRows.forEach((semesterRow) => {
+            semesterRow.courseIds.forEach((courseId) => {
+                if (semesterRow.semester.isHistorical) {
+                    earned.add(courseId);
+                    planned.delete(courseId);
+                    return;
+                }
+
+                if (!earned.has(courseId)) {
+                    planned.add(courseId);
+                }
+            });
+        });
+
+        return { earned, planned };
+    }, [semesterRows]);
+
+    const collectCategoryCourseIds = (category: any, courseIds = new Set<string>()) => {
+        if (Array.isArray(category.courses)) {
+            category.courses.forEach((courseId: string) => courseIds.add(courseId));
+        }
+
+        if (category.breakdown) {
+            Object.values(category.breakdown).forEach((childCategory: any) => {
+                collectCategoryCourseIds(childCategory, courseIds);
+            });
+        }
+
+        if (Array.isArray(category.options)) {
+            category.options.forEach((option: any) => {
+                collectCategoryCourseIds(option, courseIds);
+            });
+        }
+
+        return courseIds;
+    };
+
+    const knowledgeBlockRows = useMemo(() => {
+        return Object.entries(categories)
+            .map(([key, category]) => {
+                const requiredCredits = getRequiredCredits(category);
+                if (requiredCredits <= 0) return null;
+
+                return {
+                    key,
+                    label: category.name || key,
+                    requiredCredits,
+                    courseIds: collectCategoryCourseIds(category),
+                };
+            })
+            .filter((block): block is {
+                key: string;
+                label: string;
+                requiredCredits: number;
+                courseIds: Set<string>;
+            } => block !== null)
+            .map((block) => {
+                let earnedCredits = 0;
+                let plannedCredits = 0;
+
+                block.courseIds.forEach((courseId) => {
+                    const credits = getAccumulationCredits(courseId);
+                    if (coursePlanState.earned.has(courseId)) {
+                        earnedCredits += credits;
+                        return;
+                    }
+
+                    if (coursePlanState.planned.has(courseId)) {
+                        plannedCredits += credits;
+                    }
+                });
+
+            const remainingCredits = Math.max(
+                0,
+                block.requiredCredits - earnedCredits - plannedCredits
+            );
+
+            const progressPercent =
+                block.requiredCredits > 0
+                    ? Math.min(
+                        100,
+                        Math.round(
+                            (earnedCredits / block.requiredCredits) * 100
+                        )
+                    )
+                    : 0;
+
+            return {
+                ...block,
+                earnedCredits,
+                plannedCredits,
+                remainingCredits,
+                progressPercent,
+            };
+        });
+    }, [categories, coursePlanState, getAccumulationCredits]);
+
+    const totalProgramCredits = useMemo(() => {
+        return knowledgeBlockRows.reduce((sum, block) => sum + block.requiredCredits, 0);
+    }, [knowledgeBlockRows]);
+    
     const summary = useMemo(() => {
         const totalCourses = semesterRows.reduce((sum, row) => sum + row.courseIds.length, 0);
         const totalCredits = semesterRows.reduce((sum, row) => sum + row.credits, 0);
@@ -198,22 +305,15 @@ export function StudyPlanPreview({
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                                <SummaryItem icon={BookOpen} label="Tổng môn" value={summary.totalCourses} />
-                                <SummaryItem icon={Sigma} label="TC dự kiến" value={`${summary.totalCredits} TC`} tone="violet" />
-                                <SummaryItem icon={CheckCircle2} label="Đã tích lũy" value={`${summary.earnedCredits} TC`} tone="green" />
-                                <SummaryItem icon={AlertTriangle} label="Cảnh báo" value={summary.warnings} tone="amber" />
-                            </div>
-
                             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,1.4fr)]">
                                 <div className="space-y-4">
                                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                         <h3 className="mb-3 text-sm font-bold text-gray-900">Tiến độ tích lũy</h3>
                                         <div className="grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3">
-                                            <ProgressRing value={summary.earnedCredits} total={TOTAL_PROGRAM_CREDITS} />
+                                            <ProgressRing value={summary.earnedCredits} total={ACADEMIC_RULES.TOTAL_CREDITS} />
                                             <div className="space-y-3 text-sm">
-                                                <div><p className="text-xs text-gray-500">Đã tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {TOTAL_PROGRAM_CREDITS} TC</p></div>
-                                                <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, TOTAL_PROGRAM_CREDITS - summary.earnedCredits)} TC</p></div>
+                                                <div><p className="text-xs text-gray-500">Đã tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
+                                                <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits)} TC</p></div>
                                             </div>
                                         </div>
                                     </div>
@@ -243,6 +343,7 @@ export function StudyPlanPreview({
                                     <h3 className="mb-3 text-sm font-bold text-gray-900">Tín chỉ theo học kỳ</h3>
                                     <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
                                         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />Đã hoàn thành</span>
+                                        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-blue-700" />Hiện tại</span>
                                         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />Dự kiến</span>
                                     </div>
                                     <div className="h-65">
@@ -268,9 +369,103 @@ export function StudyPlanPreview({
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
+
+                                
                             </div>
 
-                            
+                            <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                                    <div className="border-b border-gray-200 px-5 py-4">
+                                        <h3 className="text-base font-bold text-gray-900">
+                                            Tiến độ theo khối kiến thức
+                                        </h3>
+
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            So sánh số tín chỉ yêu cầu, đã tích lũy và đã được xếp vào kế hoạch.
+                                        </p>
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full min-w-[760px]">
+                                            <thead className="border-b border-gray-200 bg-gray-50">
+                                                <tr>
+                                                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Khối kiến thức
+                                                    </th>
+
+                                                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Yêu cầu
+                                                    </th>
+
+                                                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Đã học
+                                                    </th>
+
+                                                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Đã lên lịch
+                                                    </th>
+
+                                                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Còn thiếu
+                                                    </th>
+
+                                                    <th className="w-52 px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                                        Tiến độ
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody className="divide-y divide-gray-200">
+                                                {knowledgeBlockRows.map((block) => (
+                                                    <tr
+                                                        key={block.key}
+                                                        className="transition-colors hover:bg-gray-50"
+                                                    >
+                                                        <td className="px-5 py-4 text-sm font-semibold text-gray-900">
+                                                            {block.label}
+                                                        </td>
+
+                                                        <td className="px-4 py-4 text-center text-sm font-semibold tabular-nums text-gray-700">
+                                                            {block.requiredCredits} TC
+                                                        </td>
+
+                                                        <td className="px-4 py-4 text-center text-sm font-semibold tabular-nums text-emerald-700">
+                                                            {block.earnedCredits} TC
+                                                        </td>
+
+                                                        <td className="px-4 py-4 text-center text-sm font-semibold tabular-nums text-[#004A98]">
+                                                            {block.plannedCredits} TC
+                                                        </td>
+
+                                                        <td className="px-4 py-4 text-center text-sm font-semibold tabular-nums text-gray-500">
+                                                            {block.remainingCredits} TC
+                                                        </td>
+
+                                                        <td className="px-5 py-4">
+                                                            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                                                                <span className="text-gray-500">
+                                                                    Đã tích lũy
+                                                                </span>
+
+                                                                <span className="font-semibold tabular-nums text-gray-700">
+                                                                    {block.progressPercent}%
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+                                                                <div
+                                                                    className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                                                                    style={{
+                                                                        width: `${block.progressPercent}%`,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
 
                             <div>
                                 <div className="mb-3 flex items-start gap-2 pt-2">
@@ -294,7 +489,7 @@ export function StudyPlanPreview({
                                             const progressPercent = Math.min(
                                                 100,
                                                 Math.round(
-                                                    (row.cumulativeCredits / TOTAL_PROGRAM_CREDITS) * 100
+                                                    (row.cumulativeCredits / ACADEMIC_RULES.TOTAL_CREDITS) * 100
                                                 )
                                             );
 
