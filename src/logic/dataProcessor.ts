@@ -87,6 +87,7 @@ interface RawRegistration {
     courseType: string;
     schedule: string;
     startWeek: string;
+    semester?: string;
 }
 
 interface RawData {

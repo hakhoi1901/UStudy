@@ -366,7 +366,36 @@
     }
 
     // Cào Kết quả ĐKHP (Target: Virtual Document)
-    function scrapeRegisteredCourses(doc) {
+    function getRegistrationPeriod(doc) {
+        const heading = Array.from(doc.querySelectorAll('h1, h2, h3'))
+            .map((element) => element.textContent?.trim() || '')
+            .find((text) => /\d{2,4}-\d{2,4}\s*\/\s*(?:HK\s*)?[1-3]\b/i.test(text));
+        const headingMatch = heading?.match(/(\d{2,4}-\d{2,4})\s*\/\s*(?:HK\s*)?([1-3])\b/i);
+        if (headingMatch) {
+            return {
+                year: headingMatch[1],
+                sem: headingMatch[2],
+                semester: `${headingMatch[1]}/${headingMatch[2]}`,
+            };
+        }
+
+        const readValue = (name, id) => (
+            doc.querySelector(`input[name="${name}"]`)?.value?.trim() ||
+            doc.getElementById(id)?.value?.trim() ||
+            ''
+        );
+        const year = readValue(
+            'ctl00$ContentPlaceHolder1$ctl00$cboNamHoc',
+            'ctl00_ContentPlaceHolder1_ctl00_cboNamHoc'
+        );
+        const sem = readValue(
+            'ctl00$ContentPlaceHolder1$ctl00$cboHocKy',
+            'ctl00_ContentPlaceHolder1_ctl00_cboHocKy'
+        );
+        return { year, sem, semester: year && sem ? `${year}/${sem}` : '' };
+    }
+
+    function scrapeRegisteredCourses(doc, semester) {
         try {
             const table = doc.getElementById('tbSVKQ');
             if (!table) return [];
@@ -392,7 +421,8 @@
                         regType,
                         courseType,
                         schedule,
-                        startWeek
+                        startWeek,
+                        semester
                     });
                 }
             });
@@ -649,6 +679,7 @@
         let examData = { midterm: [], final: [] };
         let courses = [];
         let registrations = [];
+        let registrationPeriod = { year: '', sem: '', semester: '' };
 
         // 2. Lấy dữ liệu cơ bản (Điểm - Bắt buộc)
         const docDiemFull = await getFullGradesPage();
@@ -907,7 +938,8 @@
                 docDKHP = parseHTML(await res.text());
             }
 
-            registrations = scrapeRegisteredCourses(docDKHP);
+            registrationPeriod = getRegistrationPeriod(docDKHP);
+            registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
             return registrations;
         })() : Promise.resolve(registrations);
 
@@ -937,7 +969,7 @@
                 tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
                 exam: config.getExam ? { year: config.examYear, sem: config.examSem } : null,
                 class: config.getClass ? { year: config.classYear, sem: config.classSem } : null,
-                registration: config.getReg ? { year: config.regYear, sem: config.regSem } : null,
+                registration: config.getReg ? registrationPeriod : null,
             }
         };
 

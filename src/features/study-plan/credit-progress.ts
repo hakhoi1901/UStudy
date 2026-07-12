@@ -2,7 +2,30 @@ import { AcademicRulesEngine } from '../grades';
 import type { CourseMeta } from './types';
 
 export function getRequiredCredits(category: any): number {
+    const specializationRequirements = getSpecializationChildren(category)
+        .map((child) => getRequiredCredits(child));
+    if (specializationRequirements.length > 0) {
+        return Math.max(...specializationRequirements);
+    }
+
     return category.total_credits_required || category.credits || category.credits_required || 0;
+}
+
+function normalizeCategoryName(name: unknown): string {
+    return String(name || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\u0111/g, 'd')
+        .toLowerCase();
+}
+
+function isSpecializationCategory(category: any): boolean {
+    return normalizeCategoryName(category?.name).includes('chuyen nganh');
+}
+
+function getSpecializationChildren(category: any): any[] {
+    if (!isSpecializationCategory(category) || !category?.breakdown) return [];
+    return Object.values(category.breakdown).filter((child: any) => isSpecializationCategory(child));
 }
 
 export function getCoursePlanCredits(
@@ -56,18 +79,35 @@ export function getCategoryCreditProgress(
     }
 
     if (category.breakdown) {
-        Object.values(category.breakdown).forEach((child: any) => {
-            const childProgress = getCategoryCreditProgress(child, manuallyPlannedCourseIds);
-            const childEarnedCredits = childProgress.earnedCredits;
-            const childPlannedCredits = childProgress.plannedCredits;
-            earnedCredits += childEarnedCredits;
-            plannedCredits += childPlannedCredits;
+        const childProgresses = Object.values(category.breakdown).map((child: any) => ({
+            child,
+            progress: getCategoryCreditProgress(child, manuallyPlannedCourseIds),
+        }));
 
-            if (child.name && AcademicRulesEngine.isCategoryExcludedFromAccumulation(child.name)) {
-                earnedCredits -= childEarnedCredits;
-                plannedCredits -= childPlannedCredits;
-            }
-        });
+        const specializationChildren = childProgresses.filter(({ child }) => isSpecializationCategory(child));
+        if (specializationChildren.length > 0) {
+            const highestProgress = specializationChildren.reduce((highest, current) => (
+                current.progress.earnedCredits + current.progress.plannedCredits >
+                highest.earnedCredits + highest.plannedCredits
+                    ? current.progress
+                    : highest
+            ), { earnedCredits: 0, plannedCredits: 0 });
+
+            earnedCredits += highestProgress.earnedCredits;
+            plannedCredits += highestProgress.plannedCredits;
+        } else {
+            childProgresses.forEach(({ child, progress: childProgress }) => {
+                const childEarnedCredits = childProgress.earnedCredits;
+                const childPlannedCredits = childProgress.plannedCredits;
+                earnedCredits += childEarnedCredits;
+                plannedCredits += childPlannedCredits;
+
+                if (child.name && AcademicRulesEngine.isCategoryExcludedFromAccumulation(child.name)) {
+                    earnedCredits -= childEarnedCredits;
+                    plannedCredits -= childPlannedCredits;
+                }
+            });
+        }
     }
 
     if (Array.isArray(category.options)) {

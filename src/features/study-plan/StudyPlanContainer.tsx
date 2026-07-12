@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { DatabaseBackup } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
+import { useStudentDb } from '../../hooks/useStudentDb';
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { AcademicRulesEngine } from '../grades';
@@ -15,9 +16,11 @@ import {
     clampPanelPercent,
     createDefaultSemesters,
     formatSemesterLabel,
+    formatStudyPlanSemesterLabel,
     getAnchorSemester,
     getSemesterId,
     getSemesterSequenceValue,
+    getStudyPlanSemesterIndex,
     isStudyPlanStorage,
     mergeHistoricalStudyPlan,
     parseSemesterLabel,
@@ -40,7 +43,7 @@ export function StudyPlanContainer() {
     const [selectedMobileCourseRootCompleted, setSelectedMobileCourseRootCompleted] = useState(false);
     const [isResizingLayout, setIsResizingLayout] = useState(false);
     const [rightView, setRightView] = useState<'plan' | 'preview'>('plan');
-    const studentDb = useMemo(() => readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null), []);
+    const { rawObject: studentDb } = useStudentDb();
     const [leftPanelPercent, setLeftPanelPercent] = useState(() => {
         const saved = readFromStorage<number>(STORAGE_KEYS.STUDY_PLAN_LAYOUT, DEFAULT_LEFT_PANEL_PERCENT);
         return clampPanelPercent(saved);
@@ -61,10 +64,19 @@ export function StudyPlanContainer() {
         return AcademicRulesEngine.checkBLMExemption(studentDb.grades);
     }, [studentDb]);
 
+    const registeredCourseIds = useMemo(() => new Set(
+        (studentDb?.registrations || [])
+            .map((registration: { id?: string }) => String(registration.id || '').trim())
+            .filter(Boolean)
+    ), [studentDb]);
+
     const getCourseStatus = useMemo(() => (courseId: string): CourseStatus => {
-        if (!studentDb?.grades) return 'none';
-        return AcademicRulesEngine.getCourseStatus(courseId, studentDb.grades, hasBLMExemption);
-    }, [studentDb, hasBLMExemption]);
+        const gradeStatus = studentDb?.grades
+            ? AcademicRulesEngine.getCourseStatus(courseId, studentDb.grades, hasBLMExemption)
+            : 'none';
+        if (gradeStatus === 'passed') return 'passed';
+        return registeredCourseIds.has(courseId) ? 'studying' : gradeStatus;
+    }, [studentDb, hasBLMExemption, registeredCourseIds]);
 
     const courseById = useMemo(() => {
         return new Map(courses.map((course: CourseMeta) => [course.course_id, course]));
@@ -78,7 +90,12 @@ export function StudyPlanContainer() {
     }, [courseById, getCourseStatus, selectedMobileCourseId]);
 
     const historicalStudyPlan = useMemo(() => {
-        return buildHistoricalStudyPlan(studentDb?.grades, courseById, hasBLMExemption);
+        return buildHistoricalStudyPlan(
+            studentDb?.grades,
+            courseById,
+            hasBLMExemption,
+            studentDb?.registrations
+        );
     }, [courseById, hasBLMExemption, studentDb]);
 
     const semesterScaffold = useMemo(() => {
@@ -302,6 +319,27 @@ export function StudyPlanContainer() {
 
     const addSemester = () => {
         setStudyPlan((previous) => {
+            const studyPlanIndices = previous.semesters
+                .map((semester) => getStudyPlanSemesterIndex(semester.label))
+                .filter((index): index is number => index !== null);
+            const lastStudyPlanIndex = studyPlanIndices.length > 0 ? Math.max(...studyPlanIndices) : null;
+
+            if (lastStudyPlanIndex !== null) {
+                const label = formatStudyPlanSemesterLabel(lastStudyPlanIndex + 1);
+                const newSemester = {
+                    id: getSemesterId(label),
+                    label,
+                };
+
+                return {
+                    semesters: [...previous.semesters, newSemester],
+                    plan: {
+                        ...previous.plan,
+                        [newSemester.id]: [],
+                    },
+                };
+            }
+
             const parsedSemesters = previous.semesters
                 .map((semester) => parseSemesterLabel(semester.label))
                 .filter((semester): semester is ParsedSemester => !!semester);

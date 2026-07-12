@@ -71,6 +71,24 @@ export function formatSemesterLabel(semester: ParsedSemester, anchor: ParsedSeme
     return `Kì ${getStudySemester(semester, anchor)} - Năm ${getStudyYear(semester, anchor)}`;
 }
 
+/** Converts the displayed "Kì X - Năm Y" label into a zero-based study-plan position. */
+export function getStudyPlanSemesterIndex(label: string): number | null {
+    const normalized = normalizeSemesterId(label);
+    const match = normalized.match(/^(?:nhap-)?(?:hoc-ky|ki)-(\d+)(?:-nam-(\d+))?$/);
+    if (!match) return null;
+
+    const semester = Number(match[1]);
+    const year = Number(match[2] || 1);
+    if (semester < 1 || semester > 3 || year < 1) return null;
+
+    return (year - 1) * 3 + semester - 1;
+}
+
+export function formatStudyPlanSemesterLabel(index: number): string {
+    const safeIndex = Math.max(0, Math.floor(index));
+    return `Kì ${(safeIndex % 3) + 1} - Năm ${Math.floor(safeIndex / 3) + 1}`;
+}
+
 export function normalizeSemesterId(label: string): string {
     return label
         .trim()
@@ -110,14 +128,20 @@ export function isStudyPlanStorage(value: unknown): value is StudyPlanStorage {
 }
 
 export function getSemesterSortValue(label: string): number {
+    const studyPlanIndex = getStudyPlanSemesterIndex(label);
+    if (studyPlanIndex !== null) return studyPlanIndex;
+
     const semester = parseSemesterLabel(label);
     if (!semester) return Number.MAX_SAFE_INTEGER;
     return getSemesterSequenceValue(semester);
 }
 
-export function getAnchorSemester(rawGrades: GradeRecord[] | undefined): ParsedSemester {
-    const parsedSemesters = (rawGrades || [])
-        .map((grade) => parseSemesterLabel(String(grade.semester || '')))
+export function getAnchorSemester(
+    rawGrades: GradeRecord[] | undefined,
+    rawRegistrations: Array<{ semester?: string }> | undefined = []
+): ParsedSemester {
+    const parsedSemesters = [...(rawGrades || []), ...(rawRegistrations || [])]
+        .map((record) => parseSemesterLabel(String(record.semester || '')))
         .filter((semester): semester is ParsedSemester => !!semester);
 
     if (parsedSemesters.length === 0) return getCurrentYearAnchor();
@@ -130,25 +154,22 @@ export function getAnchorSemester(rawGrades: GradeRecord[] | undefined): ParsedS
 export function buildHistoricalStudyPlan(
     rawGrades: GradeRecord[] | undefined,
     courseById: Map<string, CourseMeta>,
-    hasBLMExemption: boolean
+    hasBLMExemption: boolean,
+    rawRegistrations: Array<{ id?: string; semester?: string }> | undefined = []
 ): StudyPlanStorage {
-    if (!rawGrades || rawGrades.length === 0) {
+    if ((!rawGrades || rawGrades.length === 0) && (!rawRegistrations || rawRegistrations.length === 0)) {
         return { semesters: [], plan: {} };
     }
 
-    const anchor = getAnchorSemester(rawGrades);
+    const anchor = getAnchorSemester(rawGrades, rawRegistrations);
     const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(rawGrades) as GradeRecord[];
     const semesterToCourseIds = new Map<string, string[]>();
+    const registrationSemesterLabels = new Set<string>();
 
-    effectiveGrades.forEach((grade) => {
-        const courseId = String(grade.id || '').trim();
-        const rawSemesterLabel = String(grade.semester || '').trim();
+    const addCourseToSemester = (courseId: string, rawSemesterLabel: string, isRegistration = false) => {
         const parsedSemester = parseSemesterLabel(rawSemesterLabel);
         const semesterLabel = parsedSemester ? formatSemesterLabel(parsedSemester, anchor) : rawSemesterLabel;
         if (!courseId || !semesterLabel || !courseById.has(courseId)) return;
-
-        const status = AcademicRulesEngine.getCourseStatus(courseId, rawGrades, hasBLMExemption);
-        if (status === 'none') return;
 
         if (!semesterToCourseIds.has(semesterLabel)) {
             semesterToCourseIds.set(semesterLabel, []);
@@ -158,6 +179,24 @@ export function buildHistoricalStudyPlan(
         if (!coursesInSemester.includes(courseId)) {
             coursesInSemester.push(courseId);
         }
+
+        if (isRegistration) registrationSemesterLabels.add(semesterLabel);
+    };
+
+    effectiveGrades.forEach((grade) => {
+        const courseId = String(grade.id || '').trim();
+        const rawSemesterLabel = String(grade.semester || '').trim();
+        const status = AcademicRulesEngine.getCourseStatus(courseId, rawGrades, hasBLMExemption);
+        if (status === 'none') return;
+        addCourseToSemester(courseId, rawSemesterLabel);
+    });
+
+    (rawRegistrations || []).forEach((registration) => {
+        addCourseToSemester(
+            String(registration.id || '').trim(),
+            String(registration.semester || '').trim(),
+            true
+        );
     });
 
     const semesters = Array.from(semesterToCourseIds.keys())
@@ -171,6 +210,7 @@ export function buildHistoricalStudyPlan(
             id: getSemesterId(label),
             label,
             isHistorical: true,
+            isCurrent: registrationSemesterLabels.has(label),
         }));
 
     return {
@@ -185,6 +225,9 @@ export function buildHistoricalStudyPlan(
 }
 
 function getGenericSemesterIndex(semester: StudyPlanSemester): number | null {
+    const studyPlanIndex = getStudyPlanSemesterIndex(semester.label);
+    if (studyPlanIndex !== null) return studyPlanIndex;
+
     const labelMatch =
         semester.label.match(/^(?:nháp\s*)?học\s*kỳ\s*(\d+)/i) ||
         semester.label.match(/^(?:nhap\s*)?hoc\s*ky\s*(\d+)/i);

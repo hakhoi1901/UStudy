@@ -38,7 +38,7 @@ export const APP_CONFIG = {
     /**
      * Phiên bản hiện tại của Bookmarklet
      */
-    BOOKMARKLET_VERSION: '0.1.4',
+    BOOKMARKLET_VERSION: '0.1.5',
 
     /**
      * Thông tin liên hệ và báo cáo

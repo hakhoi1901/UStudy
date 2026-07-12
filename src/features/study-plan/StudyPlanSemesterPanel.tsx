@@ -241,7 +241,7 @@ export function StudyPlanSemesterPanel({
                                                     <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
                                                     {semester.isHistorical && (
                                                         <span className="rounded-full bg-[#004A98] px-2 py-0.5 text-[10px] font-medium text-white">
-                                                            Từ dữ liệu
+                                                            {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
                                                         </span>
                                                     )}
                                                 </div>
@@ -330,7 +330,10 @@ export function StudyPlanSemesterPanel({
 
                                                         {missingPrereqs.length > 0 && (
                                                             <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] leading-relaxed text-amber-800">
-                                                                Thiếu: {missingPrereqs.join(', ')}
+                                                                Chưa học môn tiên quyết: {missingPrereqs.map((prereqId) => {
+                                                                    const prereq = courseById.get(prereqId);
+                                                                    return prereq ? `${prereqId} - ${prereq.course_name_vi}` : prereqId;
+                                                                }).join(', ')}
                                                             </div>
                                                         )}
                                                     </div>

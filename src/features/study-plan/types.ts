@@ -21,6 +21,7 @@ export interface StudyPlanSemester {
     id: string;
     label: string;
     isHistorical?: boolean;
+    isCurrent?: boolean;
 }
 
 export interface StudyPlanStorage {

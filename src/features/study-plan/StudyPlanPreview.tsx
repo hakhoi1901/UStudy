@@ -152,7 +152,9 @@ export function StudyPlanPreview({
             const credits = courseIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
             cumulativeCredits += credits;
             const warningCourseIds = courseIds.filter((courseId) => getMissingPrerequisites(courseId, semesterIndex).length > 0);
-            const status: SemesterStatus = semester.isHistorical
+            const status: SemesterStatus = semester.isCurrent
+                ? 'current'
+                : semester.isHistorical
                 ? 'completed'
                 : semester.id === firstEditableSemesterId
                     ? 'current'
@@ -320,7 +322,7 @@ export function StudyPlanPreview({
                         Quay lại chỉnh sửa
                     </button>
                     <h2 className="text-2xl font-bold text-gray-900">Tổng quan kế hoạch học tập</h2>
-                    <p className="mt-1 text-sm text-gray-500">Theo dõi tiến độ tín chỉ, học kỳ và các cảnh báo tiên quyết.</p>
+                    <p className="mt-1 text-sm text-gray-500">Theo dõi tiến độ tín chỉ, học kỳ và các cảnh báo tiên quyết. Các số liệu tại đây bao gồm các môn đã được đăng ký ở kỳ hiện tại</p>
                 </div>
 
                 <div className="space-y-4 bg-gray-50/60 p-4">
@@ -330,14 +332,14 @@ export function StudyPlanPreview({
                         </div>
                     ) : (
                         <>
-                            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.8fr)_minmax(320px,1.4fr)]">
+                            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.6fr)_minmax(320px,1.6fr)]">
                                 <div className="space-y-4">
                                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                         <h3 className="mb-3 text-sm font-bold text-gray-900">Tiến độ tích lũy</h3>
                                         <div className="grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3">
                                             <ProgressRing value={summary.earnedCredits} plannedValue={summary.plannedCredits} total={ACADEMIC_RULES.TOTAL_CREDITS} />
                                             <div className="space-y-3 text-sm">
-                                                <div><p className="text-xs text-gray-500">Đã tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
+                                                <div><p className="text-xs text-gray-500">Đang tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
                                                 <div><p className="text-xs text-gray-500">Đã lên kế hoạch</p><p className="mt-0.5 font-bold text-[#004A98]">{summary.plannedCredits} TC</p></div>
                                                 <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits - summary.plannedCredits)} TC</p></div>
                                             </div>
