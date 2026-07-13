@@ -21,10 +21,10 @@ export function GPASimulationTable({
         <div className="ustudy-card">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-gray-100 px-4 py-3 md:px-5">
                 <ArrowUpNarrowWideIcon className="h-5 w-5 text-[#004A98]" />
-                <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA kỳ tiếp theo</h3>
-                <span className="text-xs text-gray-500">
-                    {courses.length} môn · {courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} tín chỉ
-                </span>
+                <div>
+                    <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA kỳ tiếp theo</h3>
+                    <p className="mt-0.5 text-xs text-gray-500">{courses.length} môn · {courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} tín chỉ</p>
+                </div>
             </div>
 
             <div className="overflow-x-auto">

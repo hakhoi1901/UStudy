@@ -140,11 +140,20 @@ export interface GPAPullInputSectionProps {
     setTargetGPAInput: (val: string) => void;
     targetGpaError: string | null;
     minTargetGpa: number;
-    mode: 'all' | 'foundationMajor';
-    setMode: (mode: 'all' | 'foundationMajor') => void;
+    mode: 'all' | 'foundationMajor' | 'currentSemester';
+    setMode: (mode: 'all' | 'foundationMajor' | 'currentSemester') => void;
     isFoundationMajorModeUnavailable: boolean;
     onCalculate: () => void;
     isCalculateDisabled: boolean;
+    isGuidanceActive: boolean;
+    baseResult: { requiredAverage?: number } | null;
+    semesterStats: {
+        newRequiredAvgAfter: number | null;
+    } | null;
+    scopeName: string;
+    projectedScopeGPA: number;
+    projectedScopeCredits: number;
+    decimals: number;
 }
 
 export interface GPAPullManualRetakeProps {
@@ -190,12 +199,7 @@ export interface GPAPullRetakeSuggestionsProps {
 
 export interface GPAPullSemesterTableProps {
     nextSemester: GPAPullSemester;
-    semesterStats: {
-        semesterGpa: number;
-        usedCredits: number;
-        newRequiredAvgAfter: number | null;
-        trend: 'ahead' | 'behind' | 'onTrack' | null;
-    } | null;
-    baseResult: { requiredAverage?: number } | null;
     decimals: number;
+    isGuidanceActive: boolean;
+    onGradeChange: (courseCode: string, grade: number | null) => void;
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SectionTabs } from '../../components/ui/section-tabs';
-import { FileDown, BarChart2, History } from 'lucide-react';
+import { FileDown } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TranscriptPDF } from '../../components/TranscriptPDF';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
@@ -13,19 +13,14 @@ import {
   GPAPerSemesterTable,
   GradeHistoryTable,
   RetakeCourses,
-  GPASimulationTable,
   GPAPullTool,
   useGradeManagement
 } from '../../features/grades';
 
 type GradeMainTab = 'overview' | 'target' | 'history';
-type GradeWorkspaceTab = 'target' | 'simulation';
 
 const isGradeMainTab = (value: unknown): value is GradeMainTab =>
   value === 'overview' || value === 'target' || value === 'history';
-
-const isGradeWorkspaceTab = (value: unknown): value is GradeWorkspaceTab =>
-  value === 'target' || value === 'simulation';
 
 export function GradeManagement() {
   const {
@@ -61,18 +56,10 @@ export function GradeManagement() {
     const saved = readFromStorage<unknown>(STORAGE_KEYS.GRADE_MAIN_TAB, 'overview');
     return isGradeMainTab(saved) ? saved : 'overview';
   });
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<GradeWorkspaceTab>(() => {
-    const saved = readFromStorage<unknown>(STORAGE_KEYS.GRADE_GPA_WORKSPACE_TAB, 'target');
-    return isGradeWorkspaceTab(saved) ? saved : 'target';
-  });
 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.GRADE_MAIN_TAB, activeMainTab);
   }, [activeMainTab]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.GRADE_GPA_WORKSPACE_TAB, activeWorkspaceTab);
-  }, [activeWorkspaceTab]);
 
   const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
@@ -188,46 +175,17 @@ export function GradeManagement() {
 
         {activeMainTab === 'target' && (
           <div className="space-y-4">
-            <div className="flex overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-1" role="tablist" aria-label="Kế hoạch GPA">
-              {[
-                { id: 'target' as const, label: 'Mục tiêu GPA tốt nghiệp' },
-                { id: 'simulation' as const, label: 'Mô phỏng kỳ tiếp theo' },
-              ].map((tab) => {
-                const isActive = activeWorkspaceTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveWorkspaceTab(tab.id)}
-                    className={`min-w-max flex-1 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors ${isActive ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {activeWorkspaceTab === 'target' ? (
-              <GPAPullTool
-                gradesHistory={gradesHistory}
-                getClassification={getClassification}
-                simulatorCourses={simulatorCourses}
-                handleGradeChange={handleGradeChange}
-                currentGPA={currentGPA}
-                accumulatedCredits={accumulatedCredits}
-                totalCredits={totalCredits}
-              />
-            ) : (
-              <GPASimulationTable
-                courses={simulatorCourses}
-                semesterGPA={semesterGPA}
-                cumulativeGPA={cumulativeGPA}
-                getClassification={getClassification}
-                handleGradeChange={handleGradeChange}
-              />
-            )}
+            <GPAPullTool
+              gradesHistory={gradesHistory}
+              getClassification={getClassification}
+              simulatorCourses={simulatorCourses}
+              handleGradeChange={handleGradeChange}
+              currentGPA={currentGPA}
+              accumulatedCredits={accumulatedCredits}
+              totalCredits={totalCredits}
+              semesterGPA={semesterGPA}
+              cumulativeGPA={cumulativeGPA}
+            />
           </div>
         )}
 

@@ -37,7 +37,7 @@ export function useGPAPull({
 }: UseGPAPullProps) {
     const [targetGPAInput, setTargetGPAInput] = useState<string>('');
     const [expanded, setExpanded] = useState(true);
-    const [mode, setMode] = useState<'all' | 'foundationMajor'>('all');
+    const [mode, setMode] = useState<'all' | 'foundationMajor' | 'currentSemester'>('all');
     const [draftProjectedGrades, setDraftProjectedGrades] = useState<Record<string, string>>({});
     const [draftProjectedGradeErrors] = useState<Record<string, string>>({});
     const [manualRetakeTargets, setManualRetakeTargets] = useState<Record<string, number>>({});
@@ -157,11 +157,45 @@ export function useGPAPull({
         };
     }, [scopedGradesHistory]);
 
+    const currentSemesterCredits = useMemo(() => {
+        return simulatorCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+    }, [simulatorCourses]);
     const scopedTotalCredits = isFoundationMajorScopeActive ? foundationMajorTotalCredits : (ACADEMIC_RULES.TOTAL_CREDITS ?? totalCredits);
     const displayCurrentGPA = isFoundationMajorScopeActive ? scopedCurrentSnapshot.gpa : currentGPA;
     const displayAccumulatedCredits = isFoundationMajorScopeActive ? scopedCurrentSnapshot.earnedCredits : accumulatedCredits;
     const scopeLabelSuffix = isFoundationMajorScopeActive ? ' (Cơ sở ngành)' : '';
-    const scopeName = isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
+    const scopeName = mode === 'currentSemester' ? 'Kỳ này' : isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
+
+    const projectedScopeCourses = useMemo(() => {
+        const scopeCourses = isFoundationMajorScopeActive
+            ? simulatorCourses.filter((course) => isFoundationCategory(courseCategoryByCode.get(normalizeCourseCode(course.code))))
+            : simulatorCourses;
+
+        return scopeCourses.filter((course) => course.projectedGrade !== null && course.credits !== null);
+    }, [simulatorCourses, isFoundationMajorScopeActive, courseCategoryByCode]);
+
+    const projectedScopeCredits = useMemo(() => {
+        return projectedScopeCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+    }, [projectedScopeCourses]);
+
+    const projectedScopeGPA = useMemo(() => {
+        if (mode === 'currentSemester') {
+            const totalPoints = projectedScopeCourses.reduce(
+                (sum, course) => sum + (course.projectedGrade ?? 0) * (course.credits ?? 0),
+                0
+            );
+            return projectedScopeCredits > 0 ? totalPoints / projectedScopeCredits : 0;
+        }
+
+        return GPACalculator.calculateProjectedGPA(
+            scopedGradesHistory,
+            projectedScopeCourses.map((course) => ({
+                code: course.code,
+                credits: course.credits ?? 0,
+                projectedGrade: course.projectedGrade!,
+            }))
+        );
+    }, [mode, scopedGradesHistory, projectedScopeCourses, projectedScopeCredits]);
 
     /**
      * Tính toán số điểm trung bình cần thiết (Required Average).
@@ -171,13 +205,30 @@ export function useGPAPull({
      */
     const baseResult = useMemo(() => {
         if (targetGPA === null) return null;
+        if (mode === 'currentSemester') {
+            if (currentSemesterCredits <= 0) {
+                return {
+                    success: false,
+                    impossible: true,
+                    message: 'Chưa có học phần nào trong kỳ hiện tại để tính GPA.',
+                };
+            }
+            return {
+                success: true,
+                remainingCredits: currentSemesterCredits,
+                requiredAverage: targetGPA,
+                currentPoints: 0,
+                currentCredits: 0,
+                message: 'Đã tính mục tiêu GPA cho học kỳ hiện tại.',
+            };
+        }
         return GPACalculator.calculateRequiredAverageForTargetGPAInScope(
             scopedGradesHistory,
             targetGPA,
             scopedTotalCredits,
             scopeName
         );
-    }, [scopedGradesHistory, targetGPA, scopedTotalCredits, scopeName]);
+    }, [scopedGradesHistory, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
 
     /**
      * Dự báo học kỳ tiếp theo dựa trên dữ liệu Simulator.
@@ -680,6 +731,8 @@ export function useGPAPull({
         displayAccumulatedCredits,
         scopeLabelSuffix,
         scopeName,
+        projectedScopeGPA,
+        projectedScopeCredits,
         baseResult,
         nextSemester,
         maxAchievableGpaAtGraduation,

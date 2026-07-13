@@ -3,29 +3,13 @@ import type { GPAPullSemesterTableProps } from '../../types';
 
 export function GPAPullSemesterTable({
     nextSemester,
-    semesterStats,
-    baseResult,
-    decimals
+    decimals,
+    isGuidanceActive,
+    onGradeChange,
 }: GPAPullSemesterTableProps) {
     return (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-200 px-4 py-3 md:px-5">
-                <div className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-[#004A98]" />
-                    <h4 className="text-sm font-semibold text-gray-800">Dự kiến Học kỳ tới</h4>
-                    <div className="group relative">
-                        <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-[11px] rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none">
-                            Dựa trên các môn bạn đang học hoặc đã đăng ký trong Simulator. Hệ thống đề xuất điểm để đạt mục tiêu.
-                        </div>
-                    </div>
-                </div>
-
-                <div className="text-right text-sm">
-                    <p className="font-semibold text-[#004A98]">GPA cần đạt: {baseResult?.requiredAverage?.toFixed(decimals) ?? '-'}</p>
-                    {semesterStats && <p className="mt-0.5 text-xs text-gray-500">GPA sau kỳ: {semesterStats.semesterGpa.toFixed(decimals)}</p>}
-                </div>
-            </div>
+        <div className="overflow-hidden bg-white">
+            
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -34,17 +18,18 @@ export function GPAPullSemesterTable({
                             <th className="px-4 py-3 text-xs font-semibold text-gray-500">Môn học</th>
                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500">TC</th>
                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500">Tình trạng</th>
-                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500">Điểm đề xuất</th>
+                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500">Điểm dự kiến</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {nextSemester.courses.map((course) => {
                             const isLocked = course.isLocked;
-                            const displayGrade = isLocked && course.lockedGrade != null
+                            const manualGrade = isLocked && course.lockedGrade != null
                                 ? course.lockedGrade
                                 : course.projectedGrade != null
                                     ? course.projectedGrade
-                                    : course.suggestedGrade;
+                                    : null;
+                            const displayGrade = manualGrade ?? (isGuidanceActive ? course.suggestedGrade : null);
 
                             const gradeClass = isLocked
                                 ? 'text-gray-400'
@@ -67,20 +52,40 @@ export function GPAPullSemesterTable({
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <span className="text-xs font-medium text-gray-600">
-                                            {course.source === 'ongoing' ? 'Đang học' : course.source === 'registration' ? 'Đăng ký' : 'Tương lai'} · {isLocked ? 'Cố định' : 'Đề xuất'}
+                                            {course.source === 'ongoing' ? 'Đang học' : course.source === 'registration' ? 'Đăng ký' : 'Tương lai'} · {manualGrade !== null ? 'Đã nhập' : isGuidanceActive ? 'Gợi ý' : 'Chưa nhập'}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                        <span className={`text-base font-bold tabular-nums ${gradeClass}`}>
-                                            {displayGrade != null ? displayGrade.toFixed(decimals) : '-'}
-                                        </span>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="10"
+                                                step="0.1"
+                                                value={manualGrade ?? ''}
+                                                placeholder={isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(decimals) : '-'}
+                                                onChange={(event) => {
+                                                    const value = event.target.value;
+                                                    if (value === '') {
+                                                        onGradeChange(course.code, null);
+                                                        return;
+                                                    }
+                                                    const grade = Number(value);
+                                                    if (!Number.isFinite(grade)) return;
+                                                    onGradeChange(course.code, Math.max(0, Math.min(10, grade)));
+                                                }}
+                                                className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-center text-sm font-semibold tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                                aria-label={`Điểm dự kiến ${course.name}`}
+                                            />
+                                            {manualGrade === null && displayGrade != null && <span className={`text-sm font-bold tabular-nums ${gradeClass}`}>≈ {displayGrade.toFixed(decimals)}</span>}
+                                        </div>
                                     </td>
                                 </tr>
                             );
                         })}
                     </tbody>
                     <tfoot className="bg-gray-50/80 border-t border-gray-200">
-                        <tr><td colSpan={3} className="px-4 py-3 text-right text-xs font-semibold text-gray-500">Tổng tín chỉ kỳ tới</td><td className="px-4 py-3 text-center text-sm font-bold text-gray-800">{nextSemester.totalCredits} TC</td></tr>
+                        <tr><td colSpan={3} className="px-4 py-3 text-right text-xs font-semibold text-gray-500">Tổng tín chỉ kỳ này</td><td className="px-4 py-3 text-center text-sm font-bold text-gray-800">{nextSemester.totalCredits} TC</td></tr>
                     </tfoot>
                 </table>
             </div>
