@@ -33,6 +33,7 @@ architecture.md
 
 data.json
 temp/*
+localstorage.json
 
 *.txt
 

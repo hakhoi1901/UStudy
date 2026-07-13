@@ -87,6 +87,10 @@ export interface RoomSearchResult {
   roomName?: string;
 }
 
+export interface CampusRoomSuggestion extends RoomSearchResult {
+  aliases?: string[];
+}
+
 function createFloors(count: number): CampusFloor[] {
   return Array.from({ length: count }, (_, index) => ({
     number: index + 1,
@@ -265,11 +269,11 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
             { id: 'F106', type: 'room', code: 'F106', x: 430, y: 70, width: 98, height: 98, label: 'F106', fill: '#F3E8FF' },
             { id: 'F105', type: 'room', code: 'F105', x: 430, y: 170, width: 98, height: 98, label: 'F105', fill: '#F3E8FF' },
             
-            { id: 'NSV-F1-1', type: 'room', code: 'NSV-F1-1', x: 480, y: 320, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NSV-F1-2', type: 'room', code: 'NSV-F1-2', x: 480, y: 320, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
             { id: 'stairs-north', type: 'area', x: 430, y: 320, width: 48, height: 48, label: 'Cầu thang', fill: '#DBEAFE' },
             { id: 'F104', type: 'room', code: 'F104', x: 430, y: 370, width: 98, height: 98, label: 'F104', fill: '#F3E8FF' },
             { id: 'F103', type: 'room', code: 'F103', x: 430, y: 470, width: 98, height: 98, label: 'F103', fill: '#F3E8FF' },
-            { id: 'NSV-F1-2', type: 'room', code: 'NSV-F1-2', x: 480, y: 570, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NSV-F1-1', type: 'room', code: 'NSV-F1-1', x: 480, y: 570, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
             { id: 'stair-south', type: 'area', x: 430, y: 570, width: 48, height: 48, label: 'Cầu thang', fill: '#DBEAFE' },
             
             { id: 'F102', type: 'room', code: 'F102', x: 430, y: 670, width: 100, height: 78, label: 'F102', fill: '#F3E8FF' },
@@ -376,6 +380,50 @@ export function getFloorRooms(floor: CampusFloor): CampusRoom[] {
     .map(({ code, label, aliases, roomType }) => ({ code, name: label, aliases, type: roomType })) ?? [];
 
   return [...floor.rooms, ...roomsInPlan.filter((room) => !floor.rooms.some((item) => item.code === room.code))];
+}
+
+export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestion[] {
+  const query = normalizeSearchText(input);
+  if (!query) return [];
+
+  const matches: Array<CampusRoomSuggestion & { score: number }> = [];
+
+  for (const building of CAMPUS_BUILDINGS) {
+    for (const floor of building.floors) {
+      for (const room of getFloorRooms(floor)) {
+        const code = normalizeSearchText(room.code);
+        const names = [room.name, ...(room.aliases || [])]
+          .filter((value): value is string => Boolean(value));
+        const normalizedNames = names.map(normalizeSearchText);
+
+        const score = code === query
+          ? 0
+          : code.startsWith(query)
+            ? 1
+            : normalizedNames.some((value) => value.startsWith(query))
+              ? 2
+              : code.includes(query) || normalizedNames.some((value) => value.includes(query))
+                ? 3
+                : -1;
+
+        if (score === -1) continue;
+        matches.push({
+          buildingId: building.id,
+          floor: floor.number,
+          roomNumber: room.code,
+          fullCode: room.code,
+          roomName: room.name,
+          aliases: room.aliases,
+          score,
+        });
+      }
+    }
+  }
+
+  return matches
+    .sort((left, right) => left.score - right.score || left.fullCode.localeCompare(right.fullCode))
+    .slice(0, limit)
+    .map(({ score: _score, ...room }) => room);
 }
 
 export function findCampusRoom(input: string): RoomSearchResult | null {

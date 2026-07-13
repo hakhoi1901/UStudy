@@ -15,8 +15,8 @@ import {
 
 import { useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import { CAMPUS_BUILDINGS, findCampusRoom, getFloorRooms } from './campus-data';
-import type { BuildingId, CampusBuilding, RoomSearchResult } from './campus-data';
+import { CAMPUS_BUILDINGS, findCampusRoom, getFloorRooms, searchCampusRooms } from './campus-data';
+import type { BuildingId, CampusBuilding, CampusRoomSuggestion, RoomSearchResult } from './campus-data';
 import { FloorPlanView } from './FloorPlanView';
 
 type Building = {
@@ -313,6 +313,7 @@ export default function CampusMap() {
   const [searchResult, setSearchResult] =
     useState<RoomSearchResult | null>(null);
   const [error, setError] = useState('');
+  const [isSearchSuggestionOpen, setIsSearchSuggestionOpen] = useState(false);
   const [view, setView] = useState<'campus' | 'floor'>('campus');
   const [isRoomListOpen, setIsRoomListOpen] = useState(false);
 
@@ -337,6 +338,11 @@ export default function CampusMap() {
     [selectedBuilding.floors]
   );
 
+  const searchSuggestions = useMemo(
+    () => searchCampusRooms(searchValue),
+    [searchValue]
+  );
+
   function selectBuilding(building: CampusBuilding) {
     setSelectedBuildingId(building.id);
     setSelectedFloor(1);
@@ -359,9 +365,11 @@ export default function CampusMap() {
     return;
   }
 
-  const building = CAMPUS_BUILDINGS.find(
-    (item) => item.id === parsed.buildingId
-  );
+  selectRoom(parsed);
+}
+
+  function selectRoom(parsed: RoomSearchResult | CampusRoomSuggestion) {
+  const building = CAMPUS_BUILDINGS.find((item) => item.id === parsed.buildingId);
 
   if (!building) {
     setError('Không tìm thấy tòa tương ứng.');
@@ -381,12 +389,14 @@ export default function CampusMap() {
   setSelectedFloor(parsed.floor);
   setSearchResult(parsed);
   setError('');
+  setIsSearchSuggestionOpen(false);
 }
 
   function clearSearch() {
     setSearchValue('');
     setSearchResult(null);
     setError('');
+    setIsSearchSuggestionOpen(false);
   }
 
   if (view === 'floor') {
@@ -422,7 +432,7 @@ export default function CampusMap() {
               </p>
             </div>
           </div>
-
+          
           <form
             onSubmit={handleSearch}
             className="relative w-full xl:max-w-xl"
@@ -434,7 +444,13 @@ export default function CampusMap() {
               onChange={(event) => {
                 setSearchValue(event.target.value);
                 setError('');
+                setIsSearchSuggestionOpen(true);
               }}
+              onFocus={() => setIsSearchSuggestionOpen(true)}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={isSearchSuggestionOpen && searchSuggestions.length > 0}
+              aria-controls="room-search-suggestions"
               placeholder="Nhập mã phòng, ví dụ A305 hoặc NĐH504"
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-28 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#004A98] focus:bg-white focus:ring-4 focus:ring-blue-100"
             />
@@ -456,6 +472,41 @@ export default function CampusMap() {
             >
               Tìm phòng
             </button>
+
+            {isSearchSuggestionOpen && searchValue.trim() && searchSuggestions.length > 0 && (
+              <div
+                id="room-search-suggestions"
+                role="listbox"
+                className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl"
+              >
+                {searchSuggestions.map((suggestion) => {
+                  const building = CAMPUS_BUILDINGS.find((item) => item.id === suggestion.buildingId);
+                  return (
+                    <button
+                      key={`${suggestion.buildingId}-${suggestion.floor}-${suggestion.fullCode}`}
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setSearchValue(suggestion.fullCode);
+                        selectRoom(suggestion);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-blue-50"
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#004A98]">
+                        <DoorOpen className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {suggestion.roomName && <p className="font-mono text-sm font-semibold text-slate-900">{suggestion.roomName}</p>}
+                        <p className="mt-0.5 truncate text-xs text-slate-500">{suggestion.fullCode}</p>
+                      </div>
+                      <span className="shrink-0 text-xs font-medium text-slate-500">{building?.shortLabel} · Tầng {suggestion.floor}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </form>
         </div>
 
