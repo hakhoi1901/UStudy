@@ -5,6 +5,8 @@ import { useDepartmentData } from '../../../context/DepartmentContext';
 import { ScheduleLogic } from '../services/schedule-logic';
 import { type WeeklySchedule, type ScheduleOverrides, type Holiday } from '../types';
 
+const EMPTY_OVERRIDES: ScheduleOverrides = { sessionOverrides: {}, weekOverrides: {}, holidays: [] };
+
 export function useSchedule(): WeeklySchedule & {
     overrides: ScheduleOverrides;
     systemHolidays: Holiday[];
@@ -15,6 +17,8 @@ export function useSchedule(): WeeklySchedule & {
     const metadata = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
     const activeGroupSchedule = readFromStorage<any>(STORAGE_KEYS.ACTIVE_GROUP_SCHEDULE, null);
     const legacySavedSchedules = readFromStorage<any>(STORAGE_KEYS.SAVED_SCHEDULES, null);
+    const registrationMeta = metadata?.params?.registration;
+    const overridesStorageKey = `${STORAGE_KEYS.SCHEDULE_OVERRIDES}:${registrationMeta?.year || 'unknown'}:${registrationMeta?.sem || 'unknown'}`;
     const groupRegistrations = activeGroupSchedule?.registrations ?? legacySavedSchedules?.activeGroupSchedule?.registrations;
     const courses_registered = Array.isArray(groupRegistrations) && groupRegistrations.length > 0
         ? groupRegistrations
@@ -24,9 +28,12 @@ export function useSchedule(): WeeklySchedule & {
 
     // Dùng useState để tránh reload trang khi cập nhật overrides
     const [overrides, setOverrides] = useState<ScheduleOverrides>(() => {
-        const stored = readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, { sessionOverrides: {}, weekOverrides: {}, holidays: [] });
-        return stored || { sessionOverrides: {}, weekOverrides: {}, holidays: [] };
+        return readFromStorage<ScheduleOverrides>(overridesStorageKey, EMPTY_OVERRIDES) || EMPTY_OVERRIDES;
     });
+
+    useEffect(() => {
+        setOverrides(readFromStorage<ScheduleOverrides>(overridesStorageKey, EMPTY_OVERRIDES) || EMPTY_OVERRIDES);
+    }, [overridesStorageKey]);
 
     useEffect(() => {
         fetch('/holidays.json')
@@ -46,7 +53,7 @@ export function useSchedule(): WeeklySchedule & {
     }, [courses_registered, metadata, allCoursesMeta, overrides, systemHolidays]);
 
     const updateOverrides = (newOverrides: ScheduleOverrides) => {
-        saveToStorage(STORAGE_KEYS.SCHEDULE_OVERRIDES, newOverrides);
+        saveToStorage(overridesStorageKey, newOverrides);
         setOverrides(newOverrides); // Cập nhật state trực tiếp, không reload
     };
 

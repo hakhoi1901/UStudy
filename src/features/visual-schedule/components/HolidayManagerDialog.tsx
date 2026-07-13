@@ -22,12 +22,20 @@ function HolidayManagerDialog({
     const [duration, setDuration] = useState('1');
     const [affected, setAffected] = useState<'all' | string>('all');
     const [reason, setReason] = useState('Nghỉ thi');
+    const [error, setError] = useState<string | null>(null);
 
     const addHoliday = () => {
+        const parsedStartWeek = Number.parseInt(startWeek, 10);
+        const parsedDuration = Number.parseInt(duration, 10);
+        if (!Number.isInteger(parsedStartWeek) || parsedStartWeek < 1 || !Number.isInteger(parsedDuration) || parsedDuration < 1) {
+            setError('Tuần bắt đầu và số tuần nghỉ phải là số nguyên dương.');
+            return;
+        }
+
         const newHoliday: Holiday = {
             id: Math.random().toString(36).substr(2, 9),
-            startWeek: parseInt(startWeek),
-            duration: parseInt(duration),
+            startWeek: parsedStartWeek,
+            duration: parsedDuration,
             affectedCourseCodes: affected === 'all' ? 'all' : [affected],
             reason
         };
@@ -36,6 +44,7 @@ function HolidayManagerDialog({
             ...overrides,
             holidays: [...overrides.holidays, newHoliday]
         });
+        setError(null);
     };
 
     const removeHoliday = (id: string) => {
@@ -63,11 +72,11 @@ function HolidayManagerDialog({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <Label className="text-sm font-medium text-gray-700">Từ tuần nào</Label>
-                            <Input type="number" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} className="h-10 rounded-md" />
+                            <Input type="number" min="1" step="1" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} className="h-10 rounded-md" />
                         </div>
                         <div className="space-y-1.5">
                             <Label className="text-sm font-medium text-gray-700">Số tuần nghỉ</Label>
-                            <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="h-10 rounded-md" />
+                            <Input type="number" min="1" step="1" value={duration} onChange={(e) => setDuration(e.target.value)} className="h-10 rounded-md" />
                         </div>
                     </div>
 
@@ -91,6 +100,7 @@ function HolidayManagerDialog({
                     <Button onClick={addHoliday} className="w-full bg-[#004A98] hover:bg-[#003d7a] text-white rounded-md h-10 gap-2 transition-colors">
                         <Plus className="w-4 h-4" /> Thêm kỳ nghỉ
                     </Button>
+                    {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
                 </div>
 
                 {/* Danh sách hiện tại */}

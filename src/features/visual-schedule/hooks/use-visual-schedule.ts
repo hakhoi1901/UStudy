@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSchedule } from './use-schedule';
 import { useCourseData } from '../../../hooks/useCourseData';
 import { ScheduleLogic } from '../services/schedule-logic';
@@ -31,6 +31,26 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
     }), [SEMESTER_3_SCHEDULE_BASE, selectedSemester, overrides, updateOverrides]);
 
     const { semesterStartDate } = schedule;
+
+    const totalWeeks = useMemo(() => {
+        const scheduledWeeks = Math.max(0, ...schedule.sessions.map((session) => session.totalWeeks || 0));
+        const datedWeeks = semesterStartDate
+            ? Math.max(0, ...schedule.sessions.map((session) => {
+                if (!session.endDateParsed) return 0;
+                return Math.floor((session.endDateParsed.getTime() - semesterStartDate.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+            }))
+            : 0;
+        const baseWeeks = Math.max(scheduledWeeks, datedWeeks, 1);
+        const holidayWeeks = [...(schedule.systemHolidays || []), ...schedule.overrides.holidays]
+            .filter((holiday) => holiday.startWeek <= baseWeeks)
+            .reduce((sum, holiday) => sum + holiday.duration, 0);
+
+        return baseWeeks + holidayWeeks;
+    }, [schedule.sessions, schedule.systemHolidays, schedule.overrides.holidays, semesterStartDate]);
+
+    useEffect(() => {
+        setCurrentWeek((week) => Math.min(Math.max(1, week), totalWeeks));
+    }, [totalWeeks]);
 
     const displaySessions = useMemo(() => {
         return schedule.sessions.filter(session => {
@@ -159,7 +179,7 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
     const { isToday, currentPeriod } = getCurrentDayAndTime();
 
     const handlePreviousWeek = () => currentWeek > 1 && setCurrentWeek(currentWeek - 1);
-    const handleNextWeek = () => currentWeek < 25 && setCurrentWeek(currentWeek + 1);
+    const handleNextWeek = () => currentWeek < totalWeeks && setCurrentWeek(currentWeek + 1);
     const handleExport = () => exportCalendar(schedule);
 
     return {
@@ -167,6 +187,7 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
         hasData,
         schedule,
         currentWeek,
+        totalWeeks,
         weekRangeStr,
         displaySessions,
         stats,

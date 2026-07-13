@@ -12,6 +12,7 @@ import { ExamScheduleVi } from '../pages/ExamSchedule/examSchedule';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
+import CampusMap from '../features/campus-map/campusmap.tsx';
 import { APP_ROUTES, getPageIdFromPath, getPathForPage } from './routes';
 
 function RequireConfigured({ isConfigured }: { isConfigured: boolean }) {
@@ -87,6 +88,7 @@ function RoutedApp() {
                     <Route path={APP_ROUTES.grades} element={<GradeManagement />} />
                     <Route path={APP_ROUTES.tuition} element={<TuitionPage selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.schedule} element={<VisualSchedule selectedSemester={selectedSemester} />} />
+                    <Route path={APP_ROUTES.campusMap} element={<CampusMap />} />
                     <Route path={APP_ROUTES.examSchedule} element={<ExamScheduleVi />} />
                     <Route path={APP_ROUTES.settings} element={<Setting onPageChange={handlePageChange} />} />
                 </Route>
