@@ -240,9 +240,9 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 // { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
-                                { id: tabs.studyPlan, label: 'kế hoạch học tập', icon: Book },
-                                { id: 'selection', label: 'Chọn môn & Học phí', icon: ShoppingCart },
-                                { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: tabs.studyPlan, label: 'Kế hoạch học tập', description: 'Tiến độ và lộ trình theo học kỳ', icon: Book },
+                                { id: 'selection', label: 'Chọn môn & Học phí', description: 'Chọn học phần và xem chi phí dự kiến', icon: ShoppingCart },
+                                { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', description: 'Tạo phương án lịch cá nhân hoặc nhóm', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -254,9 +254,9 @@ export function IntegratedStudyRoadmap() {
                         <NavigationBar
                             tabs={[
                                 // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
-                                { id: tabs.studyPlan, label: 'Kế hoạch', icon: ClipboardList },
-                                { id: 'selection', label: 'Chọn môn', icon: ShoppingCart },
-                                { id: 'calendar', label: 'Xếp lịch', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
+                                { id: 'selection', label: 'Chọn môn', description: 'Học phần và học phí', icon: ShoppingCart },
+                                { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}

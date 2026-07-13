@@ -6,6 +6,7 @@ import { SectionTabs } from '../../../components/ui/section-tabs';
 export type NavTab = {
     id: Tab;
     label: string;
+    description?: string;
     icon: ElementType;
     showBadge?: boolean;
     badgeCount?: number;
@@ -28,6 +29,7 @@ export function NavigationBar({
             tabs={tabs.map((tab) => ({
                 id: tab.id,
                 label: tab.label,
+                description: tab.description,
                 icon: tab.icon,
                 badgeCount: tab.showBadge ? tab.badgeCount : undefined,
             }))}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Info } from 'lucide-react';
 import { useGPAPull } from '../hooks/use-gpa-pull';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
@@ -24,6 +25,7 @@ export function GPAPullTool({
     accumulatedCredits,
     totalCredits,
 }: GPAPullToolProps) {
+    const [hasCalculated, setHasCalculated] = useState(false);
     const {
         // State & Computed
         targetGPAInput, setTargetGPAInput,
@@ -71,7 +73,7 @@ export function GPAPullTool({
     });
 
     return (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3 md:px-5">
                 <h3 className="text-sm font-semibold text-gray-800">Mục tiêu GPA tốt nghiệp</h3>
                 <span title="Ước tính GPA trung bình cần đạt cho các tín chỉ còn lại để chạm mục tiêu đã nhập.">
@@ -82,40 +84,23 @@ export function GPAPullTool({
             <div className="space-y-5 px-4 py-4 md:px-5">
                     <GPAPullInputSection
                         targetGPAInput={targetGPAInput}
-                        setTargetGPAInput={setTargetGPAInput}
+                        setTargetGPAInput={(value) => {
+                            setTargetGPAInput(value);
+                            setHasCalculated(false);
+                        }}
                         targetGpaError={targetGpaError}
                         minTargetGpa={minTargetGpa}
+                        mode={mode}
+                        setMode={(nextMode) => {
+                            setMode(nextMode);
+                            setHasCalculated(false);
+                        }}
+                        isFoundationMajorModeUnavailable={isFoundationMajorModeUnavailable}
+                        onCalculate={() => setHasCalculated(true)}
+                        isCalculateDisabled={Boolean(targetGpaError) || targetGPA === null}
                     />
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setMode('all')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${mode === 'all'
-                                    ? 'bg-[#004A98] text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                    }`}
-                            >
-                                Tính toàn khóa
-                            </button>
-                            <button
-                                onClick={() => setMode('foundationMajor')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${mode === 'foundationMajor'
-                                    ? 'bg-[#004A98] text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                    }`}
-                            >
-                                Tính Cơ sở ngành
-                            </button>
-                        </div>
-                        {isFoundationMajorModeUnavailable && (
-                            <p className="text-[10px] text-orange-600 font-medium">
-                                * Chưa có dữ liệu danh mục môn học để lọc riêng Cơ sở ngành.
-                            </p>
-                        )}
-                    </div>
-
-                    {baseResult && (
+                    {hasCalculated && baseResult && (
                         <div className="space-y-6 pt-2 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
                             <GPAPullResultSummary
                                 targetGPA={targetGPA}

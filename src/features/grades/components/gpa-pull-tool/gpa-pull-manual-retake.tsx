@@ -1,4 +1,5 @@
-import { BookOpen, Search, Plus, X, Trash2, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, Search, Plus, X, Trash2, HelpCircle, ChevronDown } from 'lucide-react';
 import type { GPAPullManualRetakeProps } from '../../types';
 
 export function GPAPullManualRetake({
@@ -26,22 +27,29 @@ export function GPAPullManualRetake({
     scopeName
 }: GPAPullManualRetakeProps) {
     const pendingRetakeCount = pendingRetakeCodeSet.size;
+    const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+        <div className="rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between px-4 py-3">
+                <button type="button" onClick={() => setIsExpanded((current) => !current)} className="flex items-center gap-2 text-left">
                     <BookOpen className="w-5 h-5 text-[#004A98]" />
-                    <h4 className="text-sm font-semibold text-gray-800">Môn học cải thiện (Manual)</h4>
+                    <div>
+                        <h4 className="text-sm font-semibold text-gray-800">Môn học cải thiện</h4>
+                        {!isExpanded && <p className="mt-0.5 text-xs text-gray-500">{manualRetakeItems.length > 0 ? `${manualRetakeItems.length} môn đã chọn.` : 'Chưa có môn cải thiện nào được chọn.'}</p>}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
+                {isExpanded && <div className="flex items-center gap-2">
                     <div className="group relative">
                         <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-[11px] rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none">
                             Thêm các môn bạn dự định học cải thiện để xem GPA mục tiêu thay đổi thế nào.
                         </div>
                     </div>
-                </div>
+                </div>}
 
-                <div className="relative" ref={retakePickerRef}>
+                {isExpanded && <div className="relative" ref={retakePickerRef}>
                     <button
                         onClick={() => setIsRetakePickerOpen(!isRetakePickerOpen)}
                         className="px-3 py-1.5 bg-[#004A98] text-white text-xs font-medium rounded-lg hover:bg-[#003d7e] transition-colors flex items-center gap-1.5 shadow-sm"
@@ -128,10 +136,10 @@ export function GPAPullManualRetake({
                             </div>
                         </div>
                     )}
-                </div>
+                </div>}
             </div>
 
-            {manualRetakeItems.length > 0 ? (
+            {isExpanded && (manualRetakeItems.length > 0 ? (
                 <div className="space-y-3">
                     <div className="overflow-hidden border border-gray-200 rounded-xl bg-white shadow-sm">
                         <table className="w-full text-left border-collapse">
@@ -220,17 +228,7 @@ export function GPAPullManualRetake({
                         </table>
                     </div>
                 </div>
-            ) : (
-                <div className="p-8 border-2 border-dashed border-gray-100 rounded-xl text-center bg-gray-50/50">
-                    <p className="text-sm text-gray-400">Chưa có môn học cải thiện nào được chọn.</p>
-                    <button
-                        onClick={() => setIsRetakePickerOpen(true)}
-                        className="mt-2 text-xs font-semibold text-[#004A98] hover:underline"
-                    >
-                        Bấm để thêm ngay
-                    </button>
-                </div>
-            )}
+            ) : <p className="border-t border-gray-100 px-4 py-3 text-sm text-gray-500">Chưa có môn cải thiện nào được chọn.</p>)}
         </div>
     );
 }

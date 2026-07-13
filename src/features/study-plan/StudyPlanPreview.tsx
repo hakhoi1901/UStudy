@@ -617,23 +617,18 @@ export function StudyPlanPreview({
                                     </div>
                                 </section>
 
-                            <div>
-                                <div className="mb-3 flex items-start gap-2 pt-2">
+                            <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                                <div className="flex flex-col gap-2 border-b border-gray-200 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">
-                                            Timeline học kỳ
-                                        </h3>
-
-                                        <p className="mt-0.5 text-xs text-gray-500">
-                                            Theo dõi số tín chỉ từng kỳ và tiến độ tích lũy toàn chương trình.
-                                        </p>
+                                        <h3 className="text-base font-semibold text-gray-900">Timeline học kỳ</h3>
+                                        <p className="mt-1 text-sm text-gray-500">Chọn một học kỳ để xem các học phần và tiến độ tích lũy.</p>
                                     </div>
+                                    {activeRow && <span className="shrink-0 text-sm font-medium text-[#004A98]">Đang xem: {activeRow.semester.label}</span>}
                                 </div>
 
-                                <div className="overflow-x-auto scrollbar-hide pb-2">
-                                    <div className="relative flex min-w-max snap-x snap-mandatory gap-2 px-1 pt-4">
-                                        {/* Đường timeline */}
-                                        <div className="absolute left-6 right-6 top-[23px] h-px bg-gray-200" />
+                                <div className="overflow-x-auto bg-gray-50 px-4 py-5 sm:px-5">
+                                    <div className="relative flex min-w-max snap-x snap-mandatory gap-3 pt-4">
+                                        <div className="absolute left-6 right-6 top-[21px] h-px bg-gray-200" />
 
                                         {semesterRows.map((row) => {
                                             const progressPercent = Math.min(
@@ -653,104 +648,128 @@ export function StudyPlanPreview({
                                                     onClick={() =>
                                                         setActiveSemesterId(row.semester.id)
                                                     }
-                                                    className="relative z-10 w-52 shrink-0 snap-start text-left"
+                                                    className="relative z-10 w-52 shrink-0 snap-start pt-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#004A98] focus-visible:ring-offset-2"
                                                 >
-                                                    {/* Chấm timeline */}
-                                                        <span
-                                                            className={`mb-2 ml-4 block h-3.5 w-3.5 rounded-full ring-4 ring-white transition-transform ${
-                                                                row.statusStyle.dotClass
-                                                            } ${isActive ? "scale-110" : ""}`}
-                                                        />
+                                                    <span className={`absolute left-4 top-0 h-3.5 w-3.5 rounded-full ring-4 ring-gray-50 transition-transform ${row.statusStyle.dotClass} ${isActive ? 'scale-110' : ''}`} />
 
-                                                        {/* Nội dung học kỳ */}
-                                                        <span
-                                                            className={`flex min-h-[116px] flex-col rounded-xl border px-4 py-4 transition-all ${
-                                                                isActive
-                                                                    ? "border-[#004A98] bg-blue-50/40 shadow-sm"
-                                                                    : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
-                                                            }`}
-                                                        >
-                                                            <span className="block">
-                                                                <span className="block truncate text-base font-bold text-gray-900">
-                                                                    {row.semester.label}
-                                                                </span>
-
-                                                                <span className="mt-1 block text-xs font-medium text-gray-500">
+                                                    <span className={`flex min-h-[148px] flex-col rounded-xl border p-4 transition-colors ${isActive ? 'border-[#004A98] bg-[#EAF3FF] shadow-sm' : 'border-gray-200 bg-white hover:border-[#0058B2] hover:bg-white'}`}>
+                                                        <span className="flex items-start justify-between gap-2">
+                                                            <span className="min-w-0">
+                                                                <span className="block truncate text-sm font-semibold text-gray-900">{row.semester.label}</span>
+                                                                <span className={`mt-1 inline-flex items-center gap-1.5 text-xs font-medium ${row.statusStyle.textClass}`}>
+                                                                    <span className={`h-1.5 w-1.5 rounded-full ${row.statusStyle.dotClass}`} />
                                                                     {row.statusStyle.label}
                                                                 </span>
                                                             </span>
-
-                                                            <span className="my-3 block h-px bg-gray-200" />
-
-                                                            <span className="grid grid-cols-2 gap-4">
-                                                                <span>
-                                                                    <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                                                                        Số môn
-                                                                    </span>
-
-                                                                    <span className="mt-1 block text-sm font-bold tabular-nums text-gray-900">
-                                                                        {row.courseIds.length}
-                                                                    </span>
-                                                                </span>
-
-                                                                <span className="text-right">
-                                                                    <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                                                                        Số tín chỉ
-                                                                    </span>
-
-                                                                    <span className="mt-1 block text-sm font-bold tabular-nums text-gray-900">
-                                                                        {row.credits} TC
-                                                                    </span>
-                                                                </span>
-                                                            </span>
-
-                                                            <span className="mt-4 block">
-                                                                <span className="mb-1.5 flex items-center justify-between text-[11px] text-gray-500">
-                                                                    <span>Tiến độ tích lũy</span>
-
-                                                                    <span className="font-semibold tabular-nums text-gray-700">
-                                                                        {progressPercent}%
-                                                                    </span>
-                                                                </span>
-
-                                                                <span className="block h-1.5 overflow-hidden rounded-full bg-gray-100">
-                                                                    <span
-                                                                        className="block h-full rounded-full bg-[#0066CC] transition-all"
-                                                                        style={{ width: `${progressPercent}%` }}
-                                                                    />
-                                                                </span>
-                                                            </span>
+                                                            <span className="text-xs font-semibold tabular-nums text-gray-500">{progressPercent}%</span>
                                                         </span>
+
+                                                        <span className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
+                                                            <span><span className="block text-[11px] text-gray-500">Học phần</span><span className="mt-0.5 block text-sm font-semibold tabular-nums text-gray-900">{row.courseIds.length} môn</span></span>
+                                                            <span className="text-right"><span className="block text-[11px] text-gray-500">Tín chỉ kỳ</span><span className="mt-0.5 block text-sm font-semibold tabular-nums text-gray-900">{row.credits} TC</span></span>
+                                                        </span>
+
+                                                        <span className="mt-auto block pt-3">
+                                                            <span className="mb-1 flex justify-between text-[11px] text-gray-500"><span>Tích lũy</span><span className="font-semibold tabular-nums text-gray-700">{row.cumulativeCredits} TC</span></span>
+                                                            <span className="block h-1.5 overflow-hidden rounded-full bg-gray-200"><span className="block h-full rounded-full bg-[#004A98] transition-all" style={{ width: `${progressPercent}%` }} /></span>
+                                                        </span>
+                                                    </span>
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
-                            </div>
+                            </section>
 
-                            <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
-                                <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
-                                    <div>
-                                        <h3 className="text-base font-bold text-gray-900">{activeRow?.semester.label || 'Chi tiết học kỳ'}</h3>
-                                        {activeRow && <p className="mt-1 text-sm text-gray-500">{activeRow.courseIds.length} môn · {activeRow.credits} tín chỉ · <span className={activeRow.statusStyle.textClass}>{activeRow.statusStyle.label}</span></p>}
+                            <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                                <div className="flex flex-col gap-4 border-b border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <h3 className="truncate text-base font-semibold text-gray-900">
+                                                {activeRow?.semester.label || "Chi tiết học kỳ"}
+                                            </h3>
+                                            {activeRow && (
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-1 text-xs font-medium shadow-sm ring-1 ring-inset ring-gray-200 ${activeRow.statusStyle.textClass}`}>
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${activeRow.statusStyle.dotClass}`} />
+                                                    {activeRow.statusStyle.label}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="mt-1 text-sm text-gray-500">Danh sách học phần của học kỳ đang chọn.</p>
                                     </div>
+
+                                    {activeRow && (
+                                        <div className="flex shrink-0 divide-x divide-gray-200 rounded-lg border border-gray-200 bg-white text-sm shadow-sm">
+                                            <div className="px-3 py-2">
+                                                <p className="text-[11px] text-gray-500">Học phần</p>
+                                                <p className="mt-0.5 font-semibold tabular-nums text-gray-900">{activeRow.courseIds.length} môn</p>
+                                            </div>
+                                            <div className="px-3 py-2">
+                                                <p className="text-[11px] text-gray-500">Tín chỉ</p>
+                                                <p className="mt-0.5 font-semibold tabular-nums text-gray-900">{activeRow.credits} TC</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Empty state */}
                                 {!activeRow || activeRow.courseIds.length === 0 ? (
-                                    <div className="px-5 py-10 text-center text-sm text-gray-500">Học kỳ này chưa có môn nào.</div>
+                                    <div className="flex flex-col items-center px-5 py-10 text-center">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+                                            <BookOpen className="h-5 w-5 text-gray-400" />
+                                        </div>
+
+                                        <p className="mt-3 text-sm font-medium text-gray-700">
+                                            Học kỳ này chưa có môn nào
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            Quay lại kế hoạch để thêm môn học vào học kỳ này.
+                                        </p>
+                                    </div>
                                 ) : (
-                                    <div className="grid divide-y divide-gray-200 md:grid-cols-2 md:divide-x md:divide-y-0">
+                                    <div className="divide-y divide-gray-200">
                                         {activeRow.courseIds.map((courseId) => {
                                             const course = courseById.get(courseId);
-                                            const missing = getMissingPrerequisites(courseId, activeRow.semesterIndex);
+                                            const missing = getMissingPrerequisites(
+                                                courseId,
+                                                activeRow.semesterIndex
+                                            );
+
                                             if (!course) return null;
-                                            const accumulationCredits = getAccumulationCredits(courseId);
+
+                                            const accumulationCredits =
+                                                getAccumulationCredits(courseId);
+
                                             return (
-                                                <div key={courseId} className="px-5 py-3.5">
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        <div className="min-w-0"><p className="text-sm font-semibold text-gray-900">{course.course_id}</p><p className="mt-0.5 text-sm text-gray-600">{course.course_name_vi}</p></div>
-                                                        {accumulationCredits > 0 ? <span className="shrink-0 text-sm font-semibold tabular-nums text-gray-500">{accumulationCredits} TC</span> : <span className="shrink-0 text-xs text-gray-400">Không tính TC</span>}
+                                                <div
+                                                    key={courseId}
+                                                    className="grid gap-2 px-4 py-4 transition-colors hover:bg-gray-50 sm:grid-cols-[112px_minmax(0,1fr)_auto] sm:items-start sm:gap-4 sm:px-5"
+                                                >
+                                                    <p className="text-xs font-semibold text-[#004A98] sm:pt-0.5">
+                                                        {course.course_id}
+                                                    </p>
+
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-semibold leading-5 text-gray-900" title={course.course_name_vi}>
+                                                            {course.course_name_vi}
+                                                        </p>
+
+                                                        {missing.length > 0 && (
+                                                            <div className="mt-2 flex items-start gap-2 text-xs text-amber-800">
+                                                                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                                                                <span><span className="font-semibold">Thiếu tiên quyết:</span> {missing.join(", ")}</span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    {missing.length > 0 && <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-800"><AlertTriangle className="h-3 w-3" />Thiếu: {missing.join(', ')}</div>}
+
+                                                    <div className="text-left sm:text-right">
+                                                        {accumulationCredits > 0 ? (
+                                                            <><span className="text-sm font-bold tabular-nums text-gray-900">{accumulationCredits}</span><span className="ml-1 text-xs font-medium text-gray-500">TC</span></>
+                                                        ) : (
+                                                            <span className="text-xs font-medium text-gray-400">Không tính TC</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}

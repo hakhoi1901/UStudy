@@ -140,6 +140,11 @@ export interface GPAPullInputSectionProps {
     setTargetGPAInput: (val: string) => void;
     targetGpaError: string | null;
     minTargetGpa: number;
+    mode: 'all' | 'foundationMajor';
+    setMode: (mode: 'all' | 'foundationMajor') => void;
+    isFoundationMajorModeUnavailable: boolean;
+    onCalculate: () => void;
+    isCalculateDisabled: boolean;
 }
 
 export interface GPAPullManualRetakeProps {
