@@ -135,6 +135,10 @@ export function StudyPlanPreview({
         () => studyPlan.semesters.find((semester) => !semester.isHistorical)?.id ?? null,
         [studyPlan.semesters]
     );
+    const hasImportedCurrentSemester = useMemo(
+        () => studyPlan.semesters.some((semester) => semester.isCurrent),
+        [studyPlan.semesters]
+    );
 
     const [activeSemesterId, setActiveSemesterId] = useState<string | null>(studyPlan.semesters[0]?.id ?? null);
 
@@ -156,7 +160,7 @@ export function StudyPlanPreview({
                 ? 'current'
                 : semester.isHistorical
                 ? 'completed'
-                : semester.id === firstEditableSemesterId
+                : !hasImportedCurrentSemester && semester.id === firstEditableSemesterId
                     ? 'current'
                     : 'planned';
 
@@ -171,7 +175,7 @@ export function StudyPlanPreview({
                 statusStyle: STATUS_STYLE[status],
             };
         });
-    }, [studyPlan.plan, studyPlan.semesters, firstEditableSemesterId, getAccumulationCredits, getMissingPrerequisites]);
+    }, [studyPlan.plan, studyPlan.semesters, firstEditableSemesterId, getAccumulationCredits, getMissingPrerequisites, hasImportedCurrentSemester]);
 
     const coursePlanState = useMemo(() => {
         const earned = new Set<string>();

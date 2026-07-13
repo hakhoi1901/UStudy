@@ -35,6 +35,7 @@ data.json
 temp/*
 
 *.txt
+SKILL.md 
 
 android/
 build/*

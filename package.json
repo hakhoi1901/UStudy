@@ -55,7 +55,8 @@
         "tailwind-merge": "*",
         "tailwindcss-animate": "^1.0.7",
         "tsc": "^2.0.4",
-        "vaul": "^1.1.2"
+        "vaul": "^1.1.2",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@capacitor/cli": "^8.3.3",

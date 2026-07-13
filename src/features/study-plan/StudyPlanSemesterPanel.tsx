@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, LayoutDashboard, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap, MoreVertical, Maximize } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { AlertTriangle, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, Pencil, Check, X, GraduationCap, MoreVertical, Maximize } from 'lucide-react';
 import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
 
 interface StudyPlanSemesterPanelProps {
@@ -20,6 +21,13 @@ interface StudyPlanSemesterPanelProps {
     // New: manage a whole semester group
     onRenameSemester?: (semesterId: string, newLabel: string) => void;
     onDeleteSemester?: (semesterId: string) => void;
+}
+
+type CourseListExportFormat = 'txt' | 'csv' | 'xlsx';
+
+function escapeCsvCell(value: string | number): string {
+    const text = String(value);
+    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 export function StudyPlanSemesterPanel({
@@ -62,6 +70,62 @@ export function StudyPlanSemesterPanel({
     };
 
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+
+    const exportCourseList = (format: CourseListExportFormat) => {
+        const rows = studyPlan.semesters.flatMap((semester) => (
+            (studyPlan.plan[semester.id] || []).map((courseId) => {
+                const course = courseById.get(courseId);
+                return {
+                    semester: semester.label,
+                    courseId,
+                    courseName: course?.course_name_vi || '',
+                    credits: Number(course?.credits) || 0,
+                    status: semester.isCurrent ? 'Đang học' : semester.isHistorical ? 'Đã hoàn thành' : 'Dự kiến',
+                };
+            })
+        ));
+        const fileName = `ke-hoach-hoc-tap-${new Date().toISOString().slice(0, 10)}`;
+
+        if (format === 'xlsx') {
+            const worksheet = XLSX.utils.json_to_sheet(rows.map((row) => ({
+                'Học kỳ': row.semester,
+                'Mã môn': row.courseId,
+                'Tên môn': row.courseName,
+                'Tín chỉ': row.credits,
+                'Trạng thái': row.status,
+            })));
+            worksheet['!cols'] = [{ wch: 18 }, { wch: 14 }, { wch: 42 }, { wch: 10 }, { wch: 18 }];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Kế hoạch học tập');
+            XLSX.writeFile(workbook, `${fileName}.xlsx`);
+        } else {
+            const content = format === 'csv'
+                ? [
+                    ['Học kỳ', 'Mã môn', 'Tên môn', 'Tín chỉ', 'Trạng thái'].map(escapeCsvCell).join(','),
+                    ...rows.map((row) => [row.semester, row.courseId, row.courseName, row.credits, row.status].map(escapeCsvCell).join(',')),
+                ].join('\r\n')
+                : studyPlan.semesters.map((semester) => {
+                    const courses = (studyPlan.plan[semester.id] || []).map((courseId) => {
+                        const course = courseById.get(courseId);
+                        return `- ${courseId} | ${course?.course_name_vi || 'Chưa có tên môn'} | ${Number(course?.credits) || 0} TC`;
+                    });
+                    return `${semester.label}\r\n${courses.length > 0 ? courses.join('\r\n') : '- Chưa có môn'}`;
+                }).join('\r\n\r\n');
+            const blob = new Blob([format === 'csv' ? `\uFEFF${content}` : content], {
+                type: format === 'csv' ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8',
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${fileName}.${format}`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        setIsExportMenuOpen(false);
+        setIsMoreMenuOpen(false);
+    };
 
     return (
         <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:pl-3`}>
@@ -111,66 +175,92 @@ export function StudyPlanSemesterPanel({
                         </div>
 
                         <div className="flex items-center gap-2">
-    <button
-        type="button"
-        onClick={onOpenPreview}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
-        title="Xem trực quan kế hoạch"
-    >
-        <Maximize className="h-4.5 w-4.5" />
-    </button>
+                            <button
+                                type="button"
+                                onClick={onOpenPreview}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                                title="Xem trực quan kế hoạch"
+                            >
+                                <Maximize className="h-4.5 w-4.5" />
+                            </button>
 
-    <div className="relative">
-        <button
-            type="button"
-            onClick={() => setIsMoreMenuOpen((value) => !value)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
-            title="Thêm tùy chọn"
-            aria-expanded={isMoreMenuOpen}
-            aria-haspopup="menu"
-        >
-            <MoreVertical className="h-4.5 w-4.5" />
-        </button>
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsMoreMenuOpen((value) => !value)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                                    title="Thêm tùy chọn"
+                                    aria-expanded={isMoreMenuOpen}
+                                    aria-haspopup="menu"
+                                >
+                                    <MoreVertical className="h-4.5 w-4.5" />
+                                </button>
 
-        {isMoreMenuOpen && (
-            <div
-                role="menu"
-                className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-            >
-                <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                        onAddSemester();
-                        setIsMoreMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                    <Plus className="h-4 w-4 text-gray-500" />
-                    Thêm học kỳ
-                </button>
+                                {isMoreMenuOpen && (
+                                    <div
+                                        role="menu"
+                                        className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                                    >
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={() => {
+                                                onAddSemester();
+                                                setIsMoreMenuOpen(false);
+                                            }}
+                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                                        >
+                                            <Plus className="h-4 w-4 text-gray-500" />
+                                            Thêm học kỳ
+                                        </button>
 
-                <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                        onClearStudyPlan();
-                        setIsMoreMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                >
-                    <RotateCcw className="h-4 w-4" />
-                    Đặt lại kế hoạch
-                </button>
-            </div>
-        )}
-    </div>
-</div>
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={() => setIsExportMenuOpen((value) => !value)}
+                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                                            aria-expanded={isExportMenuOpen}
+                                        >
+                                            <Download className="h-4 w-4 text-gray-500" />
+                                            Xuất danh sách môn
+                                            <ChevronRight className={`ml-auto h-4 w-4 text-gray-400 transition-transform ${isExportMenuOpen ? 'rotate-90' : ''}`} />
+                                        </button>
+
+                                        {isExportMenuOpen && (
+                                            <div className="border-y border-gray-100 bg-gray-50 py-1">
+                                                <button type="button" onClick={() => exportCourseList('txt')} className="flex w-full items-center gap-3 px-5 py-2 text-left text-xs font-medium text-gray-600 hover:bg-white">
+                                                    <FileText className="h-3.5 w-3.5" /> TXT
+                                                </button>
+                                                <button type="button" onClick={() => exportCourseList('csv')} className="flex w-full items-center gap-3 px-5 py-2 text-left text-xs font-medium text-gray-600 hover:bg-white">
+                                                    <FileText className="h-3.5 w-3.5" /> CSV
+                                                </button>
+                                                <button type="button" onClick={() => exportCourseList('xlsx')} className="flex w-full items-center gap-3 px-5 py-2 text-left text-xs font-medium text-gray-600 hover:bg-white">
+                                                    <FileSpreadsheet className="h-3.5 w-3.5" /> XLSX
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={() => {
+                                                onClearStudyPlan();
+                                                setIsMoreMenuOpen(false);
+                                            }}
+                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                            Đặt lại kế hoạch
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Semester groups */}
-                <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50/60 p-4">
+                <div className="flex-1 space-y-4 scrollbar-hide overflow-y-auto bg-gray-50/60 p-4">
                     {studyPlan.semesters.map((semester, semesterIndex) => {
                         const plannedIds = studyPlan.plan[semester.id] || [];
                         const totalCredits = plannedIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);

@@ -65,7 +65,8 @@ export function sumCoursePlanCredits(
 
 export function getCategoryCreditProgress(
     category: any,
-    manuallyPlannedCourseIds: Set<string>
+    manuallyPlannedCourseIds: Set<string>,
+    countedCourseIds = new Set<string>()
 ): { earnedCredits: number; plannedCredits: number } {
     let earnedCredits = 0;
     let plannedCredits = 0;
@@ -73,7 +74,12 @@ export function getCategoryCreditProgress(
 
     if (category.allCoursesData || category.coursesData) {
         const coursesForCredits = (category.allCoursesData || category.coursesData) as CourseMeta[];
-        const ownProgress = sumCoursePlanCredits(coursesForCredits, manuallyPlannedCourseIds, countExcludedInThisCategory);
+        const uncountedCourses = coursesForCredits.filter((course) => {
+            if (countedCourseIds.has(course.course_id)) return false;
+            countedCourseIds.add(course.course_id);
+            return true;
+        });
+        const ownProgress = sumCoursePlanCredits(uncountedCourses, manuallyPlannedCourseIds, countExcludedInThisCategory);
         earnedCredits += ownProgress.earnedCredits;
         plannedCredits += ownProgress.plannedCredits;
     }
@@ -81,7 +87,7 @@ export function getCategoryCreditProgress(
     if (category.breakdown) {
         const childProgresses = Object.values(category.breakdown).map((child: any) => ({
             child,
-            progress: getCategoryCreditProgress(child, manuallyPlannedCourseIds),
+            progress: getCategoryCreditProgress(child, manuallyPlannedCourseIds, countedCourseIds),
         }));
 
         const specializationChildren = childProgresses.filter(({ child }) => isSpecializationCategory(child));
