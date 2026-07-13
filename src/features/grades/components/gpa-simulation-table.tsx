@@ -1,10 +1,8 @@
-import { ChevronUp, ChevronDown, ArrowUpNarrowWideIcon } from "lucide-react";
+import { ArrowUpNarrowWideIcon } from "lucide-react";
 import type { SimulatorCourseGrade } from "../types";
 
 interface GPASimulationTableProps {
     courses: SimulatorCourseGrade[];
-    expandedSection: string;
-    setExpandedSection: (section: "history" | "simulator") => void;
     handleGradeChange: (id: string, grade: number | null) => void;
     semesterGPA: number;
     cumulativeGPA: number;
@@ -13,8 +11,6 @@ interface GPASimulationTableProps {
 
 export function GPASimulationTable({
     courses,
-    expandedSection,
-    setExpandedSection,
     handleGradeChange,
     semesterGPA,
     cumulativeGPA,
@@ -22,27 +18,16 @@ export function GPASimulationTable({
 }: GPASimulationTableProps) {
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <button
-                onClick={() => setExpandedSection(expandedSection === 'simulator' ? 'history' : 'simulator')}
-                className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
-            >
-                <div className="flex items-center gap-3">
-                    <ArrowUpNarrowWideIcon className="w-8 h-8 text-[#004A98]" />
-                    <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA - Học kỳ tiếp theo</h3>
-                    <span className="px-2 py-0.5 bg-[#004A98] text-white text-xs rounded-full">
-                        {courses.length} môn
-                    </span>
-                </div>
-                {expandedSection === 'simulator' ? (
-                    <ChevronUp className="w-5 h-5 text-gray-600" />
-                ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-600" />
-                )}
-            </button>
+        <div className="ustudy-card">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-gray-100 px-4 py-3 md:px-5">
+                <ArrowUpNarrowWideIcon className="h-5 w-5 text-[#004A98]" />
+                <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA kỳ tiếp theo</h3>
+                <span className="text-xs text-gray-500">
+                    {courses.length} môn · {courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} tín chỉ
+                </span>
+            </div>
 
-            {expandedSection === 'simulator' && (
-                <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
                     {courses.length === 0 && (
                         <div className="px-6 py-10 text-center text-gray-500">
                             <p className="text-sm font-medium">Chưa có môn học nào.</p>
@@ -169,25 +154,16 @@ export function GPASimulationTable({
                                 )})}
                             </tbody>
 
-                            <tfoot className="bg-gray-50 border-t border-gray-200">
-                                <tr>
-                                    <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-gray-900">
-                                        Tổng kết
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        {courses.reduce((sum, c) => sum + (c.credits ?? 0), 0)} TC
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        <div className="text-[#004A98]">GPA kỳ: {semesterGPA.toFixed(2)}</div>
-                                        <div className="text-gray-500 text-xs mt-0.5">GPA tích lũy: {cumulativeGPA.toFixed(2)}</div>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        {getClassification(cumulativeGPA)}
-                                    </td>
-                                </tr>
-                            </tfoot>
                         </table>
                     )}
+            </div>
+
+            {courses.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm md:grid-cols-4 md:px-5">
+                    <div><p className="text-xs text-gray-500">Tín chỉ dự kiến</p><p className="mt-0.5 font-semibold text-gray-900">{courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} TC</p></div>
+                    <div><p className="text-xs text-gray-500">GPA kỳ</p><p className="mt-0.5 font-semibold text-[#004A98]">{semesterGPA.toFixed(2)}</p></div>
+                    <div><p className="text-xs text-gray-500">GPA tích lũy</p><p className="mt-0.5 font-semibold text-gray-900">{cumulativeGPA.toFixed(2)}</p></div>
+                    <div><p className="text-xs text-gray-500">Xếp loại</p><p className="mt-0.5 font-semibold text-gray-900">{getClassification(cumulativeGPA)}</p></div>
                 </div>
             )}
         </div>

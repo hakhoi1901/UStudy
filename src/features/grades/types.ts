@@ -112,6 +112,7 @@ export interface GradeHistoryTableProps {
     selectedSemester: string;
     uniqueSemesters: string[];
     setSelectedSemester: (semester: string) => void;
+    embedded?: boolean;
 }
 
 

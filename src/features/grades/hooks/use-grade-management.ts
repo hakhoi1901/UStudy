@@ -12,8 +12,6 @@ import { GPACalculator } from '../services/gpa-calculator';
  */
 export function useGradeManagement() {
     const [selectedSemester, setSelectedSemester] = useState('all');
-    const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
-    const [mobileActivePanel, setMobileActivePanel] = useState<'gpaPull' | 'gpaSimulation' | null>(null);
     const hasAlertedRef = useRef(false);
 
     const { data, currentFaculty, currentMajor, currentCohort } = useDepartmentData();
@@ -85,10 +83,6 @@ export function useGradeManagement() {
         // UI State & Actions
         selectedSemester,
         setSelectedSemester,
-        expandedSection,
-        setExpandedSection,
-        mobileActivePanel,
-        setMobileActivePanel,
         handleGradeChange
     };
 }

@@ -1,15 +1,15 @@
-import { useAppNotification } from '../../context/NotificationContext';
+import { useEffect, useState } from 'react';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
-import { FileDown, TrendingUp, BarChart2, X } from 'lucide-react';
+import { SectionTabs } from '../../components/ui/section-tabs';
+import { FileDown, BarChart2, History } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TranscriptPDF } from '../../components/TranscriptPDF';
-import { readFromStorage } from '../../helpers/localStorage/save';
+import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
 
 // Import from feature module
 import {
-  GPAInformation,
   GPAPerSemesterTable,
   GradeHistoryTable,
   RetakeCourses,
@@ -17,6 +17,15 @@ import {
   GPAPullTool,
   useGradeManagement
 } from '../../features/grades';
+
+type GradeMainTab = 'overview' | 'target' | 'history';
+type GradeWorkspaceTab = 'target' | 'simulation';
+
+const isGradeMainTab = (value: unknown): value is GradeMainTab =>
+  value === 'overview' || value === 'target' || value === 'history';
+
+const isGradeWorkspaceTab = (value: unknown): value is GradeWorkspaceTab =>
+  value === 'target' || value === 'simulation';
 
 export function GradeManagement() {
   const {
@@ -46,12 +55,24 @@ export function GradeManagement() {
     // UI State & Actions
     selectedSemester,
     setSelectedSemester,
-    expandedSection,
-    setExpandedSection,
-    mobileActivePanel,
-    setMobileActivePanel,
     handleGradeChange
   } = useGradeManagement();
+  const [activeMainTab, setActiveMainTab] = useState<GradeMainTab>(() => {
+    const saved = readFromStorage<unknown>(STORAGE_KEYS.GRADE_MAIN_TAB, 'overview');
+    return isGradeMainTab(saved) ? saved : 'overview';
+  });
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<GradeWorkspaceTab>(() => {
+    const saved = readFromStorage<unknown>(STORAGE_KEYS.GRADE_GPA_WORKSPACE_TAB, 'target');
+    return isGradeWorkspaceTab(saved) ? saved : 'target';
+  });
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.GRADE_MAIN_TAB, activeMainTab);
+  }, [activeMainTab]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.GRADE_GPA_WORKSPACE_TAB, activeWorkspaceTab);
+  }, [activeWorkspaceTab]);
 
   const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
@@ -126,123 +147,102 @@ export function GradeManagement() {
         )}
       </div>
 
-      {/* Thông tin GPA */}
-      <GPAInformation
-        currentGPA={currentGPA}
-        projectedGPA={cumulativeGPA}
-        majorGPA={foundationGPA ?? 0}
-        majorSpecializedGPA={majorSpecializedGPA ?? 0}
-      />
-
-      {/* GPA theo học kỳ */}
-      <GPAPerSemesterTable
-        getClassification={getClassification}
-        gpaPerSemester={gpaPerSemester}
-      />
-
-      {/* Mobile Feature Buttons */}
-      <div className="md:hidden grid grid-cols-2 gap-3">
-        <button
-          onClick={() => setMobileActivePanel(mobileActivePanel === 'gpaPull' ? null : 'gpaPull')}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all shadow-sm ${mobileActivePanel === 'gpaPull'
-            ? 'bg-[#004A98] text-white border-[#004A98]'
-            : 'bg-white text-gray-700 border-gray-200 hover:border-[#004A98] hover:text-[#004A98]'
-            }`}
-        >
-          <TrendingUp className="w-4 h-4 flex-shrink-0" />
-          <span className="text-sm font-medium">Kéo GPA</span>
-        </button>
-        <button
-          onClick={() => setMobileActivePanel(mobileActivePanel === 'gpaSimulation' ? null : 'gpaSimulation')}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all shadow-sm ${mobileActivePanel === 'gpaSimulation'
-            ? 'bg-[#004A98] text-white border-[#004A98]'
-            : 'bg-white text-gray-700 border-gray-200 hover:border-[#004A98] hover:text-[#004A98]'
-            }`}
-        >
-          <BarChart2 className="w-4 h-4 flex-shrink-0" />
-          <span className="text-sm font-medium">Mô phỏng GPA</span>
-        </button>
-      </div>
-
-      {/* Mobile Panel: Kéo GPA */}
-      {mobileActivePanel === 'gpaPull' && (
-        <div className="md:hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-gray-800">Công cụ Kéo GPA</span>
-            <button onClick={() => setMobileActivePanel(null)} className="p-1.5 rounded-full hover:bg-gray-100">
-              <X className="w-4 h-4 text-gray-500" />
-            </button>
+      <div className="space-y-4">
+        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="grid grid-cols-2 divide-x divide-y divide-gray-200 md:grid-cols-4 md:divide-y-0">
+            {[
+              { label: 'GPA hiện tại', value: currentGPA, description: 'Điểm tích lũy hiện tại', textClass: 'text-[#004A98]', barClass: 'bg-[#004A98]' },
+              { label: 'GPA dự kiến', value: cumulativeGPA, description: 'Sau các môn đang học', textClass: 'text-indigo-600', barClass: 'bg-indigo-500' },
+              { label: 'GPA cơ sở ngành', value: foundationGPA ?? 0, description: 'Các môn cơ sở ngành', textClass: 'text-emerald-700', barClass: 'bg-emerald-500' },
+              { label: 'GPA chuyên ngành', value: majorSpecializedGPA ?? 0, description: 'Các môn chuyên ngành', textClass: 'text-orange-600', barClass: 'bg-orange-500' },
+            ].map((metric) => (
+              <div key={metric.label} className="relative min-w-0 px-4 py-4 md:px-5">
+                <span className={`absolute inset-x-0 top-0 h-0.5 ${metric.barClass}`} />
+                <p className="text-xs font-medium text-gray-500">{metric.label}</p>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className={`text-2xl font-bold tabular-nums ${metric.textClass}`}>{metric.value.toFixed(2)}</span>
+                  <span className="text-xs font-medium text-gray-400">/ 10</span>
+                </div>
+                <p className="mt-1 truncate text-[11px] text-gray-400">{metric.description}</p>
+              </div>
+            ))}
           </div>
-          <GPAPullTool
-            gradesHistory={gradesHistory}
-            getClassification={getClassification}
-            simulatorCourses={simulatorCourses}
-            handleGradeChange={handleGradeChange}
-            currentGPA={currentGPA}
-            accumulatedCredits={accumulatedCredits}
-            totalCredits={totalCredits}
-          />
-        </div>
-      )}
+        </section>
 
-      {/* Mobile Panel: Mô phỏng GPA */}
-      {mobileActivePanel === 'gpaSimulation' && (
-        <div className="md:hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-gray-800">Mô phỏng GPA</span>
-            <button onClick={() => setMobileActivePanel(null)} className="p-1.5 rounded-full hover:bg-gray-100">
-              <X className="w-4 h-4 text-gray-500" />
-            </button>
-          </div>
-          <GPASimulationTable
-            courses={simulatorCourses}
-            expandedSection={expandedSection}
-            setExpandedSection={setExpandedSection}
-            semesterGPA={semesterGPA}
-            cumulativeGPA={cumulativeGPA}
-            getClassification={getClassification}
-            handleGradeChange={handleGradeChange}
-          />
-        </div>
-      )}
-
-      {/* Desktop Sections */}
-      <div className="hidden md:block">
-        <GPAPullTool
-          gradesHistory={gradesHistory}
-          getClassification={getClassification}
-          simulatorCourses={simulatorCourses}
-          handleGradeChange={handleGradeChange}
-          currentGPA={currentGPA}
-          accumulatedCredits={accumulatedCredits}
-          totalCredits={totalCredits}
+        <SectionTabs
+          ariaLabel="Quản lý điểm"
+          activeTab={activeMainTab}
+          onChange={setActiveMainTab}
+          tabs={[
+            { id: 'overview', label: 'Tổng quan', description: 'GPA và xu hướng' },
+            { id: 'target', label: 'Kế hoạch GPA', description: 'Mục tiêu và mô phỏng' },
+            { id: 'history', label: 'Lịch sử điểm', description: 'Kết quả đã có' },
+          ]}
         />
       </div>
 
-      <div className="hidden md:block">
-        <GPASimulationTable
-          courses={simulatorCourses}
-          expandedSection={expandedSection}
-          setExpandedSection={setExpandedSection}
-          semesterGPA={semesterGPA}
-          cumulativeGPA={cumulativeGPA}
-          getClassification={getClassification}
-          handleGradeChange={handleGradeChange}
-        />
+      <div>
+        {activeMainTab === 'overview' && (
+          <GPAPerSemesterTable getClassification={getClassification} gpaPerSemester={gpaPerSemester} />
+        )}
+
+        {activeMainTab === 'target' && (
+          <div className="space-y-4">
+            <div className="flex overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-1" role="tablist" aria-label="Kế hoạch GPA">
+              {[
+                { id: 'target' as const, label: 'Mục tiêu GPA tốt nghiệp' },
+                { id: 'simulation' as const, label: 'Mô phỏng kỳ tiếp theo' },
+              ].map((tab) => {
+                const isActive = activeWorkspaceTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveWorkspaceTab(tab.id)}
+                    className={`min-w-max flex-1 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors ${isActive ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {activeWorkspaceTab === 'target' ? (
+              <GPAPullTool
+                gradesHistory={gradesHistory}
+                getClassification={getClassification}
+                simulatorCourses={simulatorCourses}
+                handleGradeChange={handleGradeChange}
+                currentGPA={currentGPA}
+                accumulatedCredits={accumulatedCredits}
+                totalCredits={totalCredits}
+              />
+            ) : (
+              <GPASimulationTable
+                courses={simulatorCourses}
+                semesterGPA={semesterGPA}
+                cumulativeGPA={cumulativeGPA}
+                getClassification={getClassification}
+                handleGradeChange={handleGradeChange}
+              />
+            )}
+          </div>
+        )}
+
+        {activeMainTab === 'history' && (
+          <div className="space-y-4">
+            {retakeCoursesList.length > 0 && <RetakeCourses retakeCourses={retakeCoursesList} />}
+            <GradeHistoryTable
+              filteredHistory={filteredHistory}
+              selectedSemester={selectedSemester}
+              uniqueSemesters={uniqueSemesters}
+              setSelectedSemester={setSelectedSemester}
+            />
+          </div>
+        )}
       </div>
-
-      {/* Retake Suggestions */}
-      {retakeCoursesList.length > 0 && (
-        <RetakeCourses retakeCourses={retakeCoursesList} />
-      )}
-
-      {/* Grade History */}
-      <GradeHistoryTable
-        filteredHistory={filteredHistory}
-        selectedSemester={selectedSemester}
-        uniqueSemesters={uniqueSemesters}
-        setSelectedSemester={setSelectedSemester}
-      />
 
       <PrivacyFooter />
     </div>

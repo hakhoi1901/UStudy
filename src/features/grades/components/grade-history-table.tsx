@@ -9,7 +9,8 @@ export function GradeHistoryTable({
     filteredHistory,
     selectedSemester,
     uniqueSemesters,
-    setSelectedSemester
+    setSelectedSemester,
+    embedded = false
 }: GradeHistoryTableProps) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof StudentCourseGrade, direction: 'asc' | 'desc' } | null>(null);
 
@@ -56,7 +57,7 @@ export function GradeHistoryTable({
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className={embedded ? "overflow-hidden" : "overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"}>
             <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-2 md:gap-3">
                     <History className="w-6 h-6 md:w-8 md:h-8 text-[#004A98]" />

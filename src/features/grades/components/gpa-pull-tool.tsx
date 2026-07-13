@@ -1,5 +1,5 @@
+import { Info } from 'lucide-react';
 import { useGPAPull } from '../hooks/use-gpa-pull';
-import { GPAPullHeader } from './gpa-pull-tool/gpa-pull-header';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
 import { GPAPullResultSummary } from './gpa-pull-tool/gpa-pull-result-summary';
 import { GPAPullSemesterTable } from './gpa-pull-tool/gpa-pull-semester-table';
@@ -27,7 +27,6 @@ export function GPAPullTool({
     const {
         // State & Computed
         targetGPAInput, setTargetGPAInput,
-        expanded, setExpanded,
         mode, setMode,
         draftManualRetakeTargets,
         draftManualRetakeTargetErrors,
@@ -72,11 +71,15 @@ export function GPAPullTool({
     });
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <GPAPullHeader expanded={expanded} setExpanded={setExpanded} />
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3 md:px-5">
+                <h3 className="text-sm font-semibold text-gray-800">Mục tiêu GPA tốt nghiệp</h3>
+                <span title="Ước tính GPA trung bình cần đạt cho các tín chỉ còn lại để chạm mục tiêu đã nhập.">
+                    <Info className="h-4 w-4 text-gray-400" />
+                </span>
+            </div>
 
-            {expanded && (
-                <div className="px-6 py-5 border-t border-gray-100 space-y-5">
+            <div className="space-y-5 px-4 py-4 md:px-5">
                     <GPAPullInputSection
                         targetGPAInput={targetGPAInput}
                         setTargetGPAInput={setTargetGPAInput}
@@ -185,8 +188,7 @@ export function GPAPullTool({
                             )}
                         </div>
                     )}
-                </div>
-            )}
+            </div>
         </div>
     );
 }

@@ -263,109 +263,111 @@ export function IntegratedStudyRoadmap() {
                         />
                     </div>
 
-                    {/* Tab 1: Chương trình đào tạo */}
-                    {activeTab === 'trainingProgram' && (
-                        <TrainingProgramView />
-                    )}
+                    <div className="pt-5">
+                        {/* Tab 1: Chương trình đào tạo */}
+                        {activeTab === 'trainingProgram' && (
+                            <TrainingProgramView />
+                        )}
 
-                    {/* Tab Kế hoạch học tập: kéo môn vào học kỳ */}
-                    {activeTab === 'studyPlan' && (
-                        <StudyPlanView />
-                    )}
+                        {/* Tab Kế hoạch học tập: kéo môn vào học kỳ */}
+                        {activeTab === 'studyPlan' && (
+                            <StudyPlanView />
+                        )}
 
-                    {/* Tab 2: Chọn môn học */}
-                    {activeTab === 'selection' && (
-                        // Desktop: 2 cột. Mobile: 1 cột (giỏ hàng ẩn vào drawer)
-                        <div className="flex flex-col md:flex-row md:flex-nowrap gap-6 items-start w-full">
+                        {/* Tab 2: Chọn môn học */}
+                        {activeTab === 'selection' && (
+                            // Desktop: 2 cột. Mobile: 1 cột (giỏ hàng ẩn vào drawer)
+                            <div className="flex flex-col md:flex-row md:flex-nowrap gap-6 items-start w-full">
 
-                            {/* CỘT TRÁI: danh sách môn học */}
-                            <div
-                                className="flex-1 min-w-0 w-full overflow-y-auto"
-                                // Desktop: scroll độc lập; Mobile: tự nhiên
-                                style={{ height: undefined }}
-                            >
-                                {/* Desktop: fixed height để scroll độc lập */}
-                                <div className="hidden md:block overflow-y-auto" style={{ height: 'calc(100vh - 11rem)' }}>
-                                    <SelectionView
-                                        searchTerm={searchTerm}
-                                        setSearchTerm={setSearchTerm}
-                                        viewMode={viewMode}
-                                        setViewMode={setViewMode}
-                                        recommended={recommended}
-                                        all={all}
-                                        filteredCourses={filteredCourses}
-                                        selectedCourses={selectedCourses}
-                                        handleCourseToggle={handleCourseToggle}
-                                        handleShowFlowchart={handleShowFlowchart}
-                                    />
+                                {/* CỘT TRÁI: danh sách môn học */}
+                                <div
+                                    className="flex-1 min-w-0 w-full overflow-y-auto"
+                                    // Desktop: scroll độc lập; Mobile: tự nhiên
+                                    style={{ height: undefined }}
+                                >
+                                    {/* Desktop: fixed height để scroll độc lập */}
+                                    <div className="hidden md:block overflow-y-auto" style={{ height: 'calc(100vh - 11rem)' }}>
+                                        <SelectionView
+                                            searchTerm={searchTerm}
+                                            setSearchTerm={setSearchTerm}
+                                            viewMode={viewMode}
+                                            setViewMode={setViewMode}
+                                            recommended={recommended}
+                                            all={all}
+                                            filteredCourses={filteredCourses}
+                                            selectedCourses={selectedCourses}
+                                            handleCourseToggle={handleCourseToggle}
+                                            handleShowFlowchart={handleShowFlowchart}
+                                        />
+                                    </div>
+                                    {/* Mobile: không fixed height */}
+                                    <div className="md:hidden pb-36">
+                                        <SelectionView
+                                            searchTerm={searchTerm}
+                                            setSearchTerm={setSearchTerm}
+                                            viewMode={viewMode}
+                                            setViewMode={setViewMode}
+                                            recommended={recommended}
+                                            all={all}
+                                            filteredCourses={filteredCourses}
+                                            selectedCourses={selectedCourses}
+                                            handleCourseToggle={handleCourseToggle}
+                                            handleShowFlowchart={handleShowFlowchart}
+                                        />
+                                    </div>
                                 </div>
-                                {/* Mobile: không fixed height */}
-                                <div className="md:hidden pb-36">
-                                    <SelectionView
-                                        searchTerm={searchTerm}
-                                        setSearchTerm={setSearchTerm}
-                                        viewMode={viewMode}
-                                        setViewMode={setViewMode}
-                                        recommended={recommended}
-                                        all={all}
-                                        filteredCourses={filteredCourses}
-                                        selectedCourses={selectedCourses}
-                                        handleCourseToggle={handleCourseToggle}
-                                        handleShowFlowchart={handleShowFlowchart}
+
+                                {/* CỘT PHẢI: giỏ hàng - chỉ hiện trên desktop */}
+                                <div
+                                    className="hidden md:block w-[26vw] xl:w-[24vw] 2xl:w-[22vw] flex-shrink-0"
+                                    style={{ height: 'calc(100vh - 11rem)' }}
+                                >
+                                    <SelectionBasket
+                                        selectedCourses={Array.from(selectedCourses)
+                                            .map(id => globalAllCourses.find(c => c.id === id)!)
+                                            .filter(Boolean)}
+                                        setActiveTab={setActiveTab}
+                                        onRemoveCourse={handleCourseToggle}
+                                        allowedClassesMap={allowedClassesMap}
+                                        setAllowedClassesMap={setAllowedClassesMap}
+                                        solve={solve}
                                     />
                                 </div>
                             </div>
+                        )}
 
-                            {/* CỘT PHẢI: giỏ hàng - chỉ hiện trên desktop */}
-                            <div
-                                className="hidden md:block w-[26vw] xl:w-[24vw] 2xl:w-[22vw] flex-shrink-0"
-                                style={{ height: 'calc(100vh - 11rem)' }}
-                            >
-                                <SelectionBasket
-                                    selectedCourses={Array.from(selectedCourses)
-                                        .map(id => globalAllCourses.find(c => c.id === id)!)
-                                        .filter(Boolean)}
-                                    setActiveTab={setActiveTab}
-                                    onRemoveCourse={handleCourseToggle}
-                                    allowedClassesMap={allowedClassesMap}
-                                    setAllowedClassesMap={setAllowedClassesMap}
-                                    solve={solve}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Tab 3: Lịch trực quan */}
-                    {activeTab === 'calendar' && (
-                        <CalendarView
-                            selectedCourses={selectedCourses}
-                            setActiveTab={setActiveTab}
-                            currentSections={currentSections}
-                            activeOption={activeOption}
-                            options={options}
-                            allCurrentCourses={globalAllCourses as Course[]}
-                            solve={solve}
-                            solving={solving}
-                            solverError={solverError}
-                            setActiveOption={setActiveOption}
-                            getConflicts={handleGetConflicts}
-                            allowedClassesMap={allowedClassesMap}
-                            setSelectedCourses={setSelectedCourses}
-                            setAllowedClassesMap={setAllowedClassesMap}
-                            setOptions={setOptions}
-                            groupScheduleContent={(
-                                <GroupSchedulePage
-                                    embedded
-                                    selectedCourseIds={selectedCourses}
-                                    allCourses={globalAllCourses as Course[]}
-                                    allowedClassesMap={allowedClassesMap}
-                                    setAllowedClassesMap={setAllowedClassesMap}
-                                    onRemoveSelectedCourse={handleCourseToggle}
-                                    onPageChange={() => undefined}
-                                />
-                            )}
-                        />
-                    )}
+                        {/* Tab 3: Lịch trực quan */}
+                        {activeTab === 'calendar' && (
+                            <CalendarView
+                                selectedCourses={selectedCourses}
+                                setActiveTab={setActiveTab}
+                                currentSections={currentSections}
+                                activeOption={activeOption}
+                                options={options}
+                                allCurrentCourses={globalAllCourses as Course[]}
+                                solve={solve}
+                                solving={solving}
+                                solverError={solverError}
+                                setActiveOption={setActiveOption}
+                                getConflicts={handleGetConflicts}
+                                allowedClassesMap={allowedClassesMap}
+                                setSelectedCourses={setSelectedCourses}
+                                setAllowedClassesMap={setAllowedClassesMap}
+                                setOptions={setOptions}
+                                groupScheduleContent={(
+                                    <GroupSchedulePage
+                                        embedded
+                                        selectedCourseIds={selectedCourses}
+                                        allCourses={globalAllCourses as Course[]}
+                                        allowedClassesMap={allowedClassesMap}
+                                        setAllowedClassesMap={setAllowedClassesMap}
+                                        onRemoveSelectedCourse={handleCourseToggle}
+                                        onPageChange={() => undefined}
+                                    />
+                                )}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {showFlowchart && flowchartCourse && (
