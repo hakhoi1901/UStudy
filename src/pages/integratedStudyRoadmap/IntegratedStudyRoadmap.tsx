@@ -27,12 +27,16 @@ export const tabs = {
 
 export type Tab = keyof typeof tabs;
 
+const isStudyRoadmapTab = (value: unknown): value is Tab =>
+    value === tabs.trainingProgram || value === tabs.studyPlan || value === tabs.selection || value === tabs.calendar;
 
 export function IntegratedStudyRoadmap() {
     const location = useLocation();
     const navigate = useNavigate();
-    const activeTab = getStudyRoadmapTabFromPath(location.pathname) ||
-        (location.hash.startsWith('#v1_') ? tabs.calendar : tabs.selection);
+    const tabFromPath = getStudyRoadmapTabFromPath(location.pathname);
+    const savedTab = readFromStorage<unknown>(STORAGE_KEYS.STUDY_ROADMAP_ACTIVE_TAB, tabs.selection);
+    const activeTab = tabFromPath ||
+        (location.hash.startsWith('#v1_') ? tabs.calendar : isStudyRoadmapTab(savedTab) ? savedTab : tabs.selection);
     const setActiveTab = (tab: Tab) => {
         navigate(STUDY_ROADMAP_TAB_TO_PATH[tab]);
     };
@@ -60,6 +64,10 @@ export function IntegratedStudyRoadmap() {
     }, [selectedCourses]);
 
     useEffect(() => {
+        saveToStorage(STORAGE_KEYS.STUDY_ROADMAP_ACTIVE_TAB, activeTab);
+    }, [activeTab]);
+
+    useEffect(() => {
         setSearchTerm('');
     }, [activeTab]);
 
@@ -69,10 +77,10 @@ export function IntegratedStudyRoadmap() {
     }, [activeTab]);
 
     useEffect(() => {
-        if (!getStudyRoadmapTabFromPath(location.pathname)) {
-            navigate(APP_ROUTES.studyRoadmapSelection, { replace: true });
+        if (!tabFromPath) {
+            navigate(STUDY_ROADMAP_TAB_TO_PATH[activeTab], { replace: true });
         }
-    }, [location.pathname, navigate]);
+    }, [tabFromPath, activeTab, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
     const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();

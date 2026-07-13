@@ -32,7 +32,7 @@ export const APP_ROUTES = {
 
 export const PAGE_TO_PATH: Record<PageId, string> = {
     dashboard: APP_ROUTES.dashboard,
-    courses: APP_ROUTES.studyRoadmapSelection,
+    courses: APP_ROUTES.studyRoadmap,
     grades: APP_ROUTES.grades,
     tuition: APP_ROUTES.tuition,
     schedule: APP_ROUTES.schedule,

@@ -131,6 +131,23 @@ export function useGPAPull({
         });
     }, [gradesHistory, isFoundationMajorScopeActive, courseCategoryByCode]);
 
+    const scopedGradesWithManualRetakes = useMemo(() => {
+        const targetByCode = new Map(
+            Object.entries(manualRetakeTargets).map(([code, target]) => [normalizeCourseCode(code), target])
+        );
+
+        return scopedGradesHistory.map((course) => {
+            const targetGrade = targetByCode.get(normalizeCourseCode(course.code));
+            if (targetGrade === undefined) return course;
+
+            return {
+                ...course,
+                grade: targetGrade,
+                status: AcademicRulesEngine.evaluateCourseStatus(targetGrade),
+            };
+        });
+    }, [scopedGradesHistory, manualRetakeTargets]);
+
     const scopedCurrentSnapshot = useMemo(() => {
         let points = 0;
         let creditsForGPA = 0;
@@ -188,14 +205,14 @@ export function useGPAPull({
         }
 
         return GPACalculator.calculateProjectedGPA(
-            scopedGradesHistory,
+            scopedGradesWithManualRetakes,
             projectedScopeCourses.map((course) => ({
                 code: course.code,
                 credits: course.credits ?? 0,
                 projectedGrade: course.projectedGrade!,
             }))
         );
-    }, [mode, scopedGradesHistory, projectedScopeCourses, projectedScopeCredits]);
+    }, [mode, scopedGradesWithManualRetakes, projectedScopeCourses, projectedScopeCredits]);
 
     /**
      * Tính toán số điểm trung bình cần thiết (Required Average).
@@ -223,12 +240,12 @@ export function useGPAPull({
             };
         }
         return GPACalculator.calculateRequiredAverageForTargetGPAInScope(
-            scopedGradesHistory,
+            scopedGradesWithManualRetakes,
             targetGPA,
             scopedTotalCredits,
             scopeName
         );
-    }, [scopedGradesHistory, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
+    }, [scopedGradesWithManualRetakes, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
 
     /**
      * Dự báo học kỳ tiếp theo dựa trên dữ liệu Simulator.

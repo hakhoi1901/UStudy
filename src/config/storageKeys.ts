@@ -39,6 +39,8 @@ export const STORAGE_KEYS = {
     PROJECTED_GRADES: 'gpa_projected_grades',
     /** Tab đang mở trong Quản lý điểm */
     GRADE_MAIN_TAB: 'grade_main_tab',
+    /** Tab đang mở trong Lộ trình học tập */
+    STUDY_ROADMAP_ACTIVE_TAB: 'study_roadmap_active_tab',
     /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
     /** Cấu hình ưu tiên xếp lịch */
