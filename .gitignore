@@ -41,3 +41,4 @@ build/*
 android/app/build/*
 capacitor-cordova-android-plugins/*
 capacitor-android-plugins/*
+SKILL.md
