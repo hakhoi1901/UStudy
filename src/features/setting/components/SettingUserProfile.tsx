@@ -5,10 +5,11 @@ import { useRef, useState } from "react";
 import { useAppNotification } from "../../../context/NotificationContext";
 import { useCrypto } from "../../../context/CryptoContext";
 import { processRawData } from "../../../logic/dataProcessor";
-import { savePlain, saveSecure, populateSecureCache } from "../../../helpers/localStorage/save";
+import { createImportRollbackSnapshot, readFromStorage, savePlain, saveSecure, populateSecureCache } from "../../../helpers/localStorage/save";
 import { CACHE_POPULATED_EVENT } from "../../../context/CryptoContext";
 import { SecurityLock } from "../../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../../config/storageKeys";
+import { buildRawImportPreview } from "../../../logic/import-preview";
 
 export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
@@ -48,6 +49,17 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
         fileInputRef.current?.click();
     };
 
+    const createJsonImportRollback = (source: string, data: any) => {
+        const changes = data?.grades || data?.registrations || data?.courses
+            ? buildRawImportPreview(data, readFromStorage('raw_student_db', null))
+            : Object.keys(data || {}).map((key) => ({ status: localStorage.getItem(key) === null ? 'add' : 'update' }));
+        return createImportRollbackSnapshot(source, {
+            added: changes.filter((change: any) => change.status === 'add').length,
+            updated: changes.filter((change: any) => change.status === 'update').length,
+            unchanged: changes.filter((change: any) => change.status === 'unchanged').length,
+        });
+    };
+
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -73,6 +85,9 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
 
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
+                        if (!createJsonImportRollback('Tệp JSON sao lưu', data)) {
+                            throw new Error('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
+                        }
                         if (!cryptoKey) {
                             // Nếu backup có salt → là bản backup đã mã hóa
                             // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu
@@ -129,6 +144,9 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                 let metaData = data.meta || null;
 
                 if (rawData && typeof rawData === 'object' && (rawData.grades || rawData.courses)) {
+                    if (!createJsonImportRollback('Tệp JSON từ Portal', rawData)) {
+                        throw new Error('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
+                    }
                     if (!cryptoKey) {
                         setPendingImport({ type: 'RAW_DATA', data: { rawData, metaData } });
                         return;

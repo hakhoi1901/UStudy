@@ -249,7 +249,8 @@ export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayloa
 export async function importBackupWithCurrentKey(
     backupData: Record<string, string>,
     backupPin: string,
-    currentKey: CryptoKey
+    currentKey: CryptoKey,
+    selectedKeys?: readonly string[],
 ): Promise<void> {
     const backupSaltRaw = backupData[INTERNAL_KEYS.SALT];
     if (!backupSaltRaw) throw new Error('File backup không hợp lệ');
@@ -257,6 +258,10 @@ export async function importBackupWithCurrentKey(
     const backupKey = await deriveKey(backupPin, backupSalt);
 
     for (const [k, v] of Object.entries(backupData)) {
+        if (selectedKeys && !selectedKeys.includes(k)) {
+            continue;
+        }
+
         if (k === INTERNAL_KEYS.SALT || k === INTERNAL_KEYS.PIN_VERIFY || k === INTERNAL_KEYS.FAIL_COUNT || k === INTERNAL_KEYS.LOCKOUT_UNTIL) {
             continue; // Bỏ qua các key hệ thống của backup
         }
@@ -375,6 +380,67 @@ export function hasSecureData(): boolean {
         localStorage.getItem('raw_student_db') ||
         localStorage.getItem('student_db_full')
     );
+}
+
+export const IMPORT_ROLLBACK_STORAGE_KEY = '__ustudy_last_import_rollback__';
+export const IMPORT_ROLLBACK_EVENT = 'ustudy:import-rollback-created';
+
+export interface ImportRollbackSummary {
+    added: number;
+    updated: number;
+    unchanged: number;
+}
+
+export interface ImportRollbackSnapshot {
+    createdAt: string;
+    source: string;
+    summary: ImportRollbackSummary;
+    data: Record<string, string>;
+}
+
+/** Lưu đúng trạng thái localStorage trước lần nhập gần nhất để có thể hoàn tác một lần. */
+export function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary): boolean {
+    try {
+        const data: Record<string, string> = {};
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            if (key && key !== IMPORT_ROLLBACK_STORAGE_KEY) {
+                data[key] = localStorage.getItem(key) || '';
+            }
+        }
+        const snapshot: ImportRollbackSnapshot = { createdAt: new Date().toISOString(), source, summary, data };
+        localStorage.setItem(IMPORT_ROLLBACK_STORAGE_KEY, JSON.stringify(snapshot));
+        window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
+        return true;
+    } catch (error) {
+        console.error('[createImportRollbackSnapshot] Không thể lưu snapshot:', error);
+        return false;
+    }
+}
+
+export function getImportRollbackSnapshot(): ImportRollbackSnapshot | null {
+    try {
+        const raw = localStorage.getItem(IMPORT_ROLLBACK_STORAGE_KEY);
+        if (!raw) return null;
+        const snapshot = JSON.parse(raw) as ImportRollbackSnapshot;
+        return snapshot?.data && snapshot?.createdAt ? snapshot : null;
+    } catch {
+        return null;
+    }
+}
+
+/** Khôi phục toàn bộ localStorage về trạng thái trước lần nhập gần nhất. */
+export function restoreLastImportRollback(): boolean {
+    const snapshot = getImportRollbackSnapshot();
+    if (!snapshot) return false;
+    try {
+        localStorage.clear();
+        Object.entries(snapshot.data).forEach(([key, value]) => localStorage.setItem(key, value));
+        return true;
+    } catch (error) {
+        console.error('[restoreLastImportRollback] Không thể khôi phục snapshot:', error);
+        return false;
+    }
 }
 
 /** Xóa toàn bộ localStorage + sessionStorage. Caller tự gọi reload nếu cần. */
