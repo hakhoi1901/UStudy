@@ -8,6 +8,7 @@ import {
   FileClock,
   GraduationCap,
   History,
+  Pencil,
   ReceiptText,
   RefreshCw,
   Undo2,
@@ -23,6 +24,7 @@ import {
   getImportRollbackSnapshot,
   IMPORT_ROLLBACK_EVENT,
   readFromStorage,
+  renameImportHistoryEntry,
   restoreLastImportRollback,
   type ImportHistoryEntry,
 } from '../../../helpers/localStorage/save';
@@ -120,18 +122,29 @@ function getHistorySources(entry: ImportHistoryEntry): string {
   return labels.join(', ');
 }
 
+function getHistoryTitle(entry: ImportHistoryEntry): string {
+  return entry.displayName?.trim() || entry.source;
+}
+
+function getHistoryContext(entry: ImportHistoryEntry): string {
+  const sources = getHistorySources(entry);
+  return entry.displayName ? `${entry.source} · ${sources}` : sources;
+}
+
 function HistoryList({
   entries,
   canUndo,
   canPartiallyUndo,
   onUndo,
   onPartialUndo,
+  onRename,
 }: {
   entries: ImportHistoryEntry[];
   canUndo: boolean;
   canPartiallyUndo: boolean;
   onUndo: () => void;
   onPartialUndo: () => void;
+  onRename: (entry: ImportHistoryEntry) => void;
 }) {
   if (entries.length === 0) {
     return <p className="py-5 text-sm text-slate-500">Chưa có lần cập nhật dữ liệu nào.</p>;
@@ -144,10 +157,11 @@ function HistoryList({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <p className="text-sm font-semibold text-slate-900">{entry.source}</p>
+                <p className="text-sm font-semibold text-slate-900">{getHistoryTitle(entry)}</p>
                 {index === 0 && <span className="text-[11px] font-semibold uppercase text-emerald-700">Mới nhất</span>}
+                <button type="button" title="Đổi tên" onClick={() => onRename(entry)} className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-[#004A98]"><Pencil className="h-3.5 w-3.5" /></button>
               </div>
-              <p className="mt-0.5 truncate text-xs text-slate-500">{getHistorySources(entry)}</p>
+              <p className="mt-0.5 truncate text-xs text-slate-500">{getHistoryContext(entry)}</p>
             </div>
             <time title={new Date(entry.createdAt).toLocaleString('vi-VN')} className="shrink-0 text-xs text-slate-500">{formatRelativeTime(entry.createdAt)}</time>
           </div>
@@ -179,26 +193,27 @@ function HistoryList({
   );
 }
 
-function InlineHistoryList({ entries }: { entries: ImportHistoryEntry[] }) {
+function InlineHistoryList({ entries, onRename }: { entries: ImportHistoryEntry[]; onRename: (entry: ImportHistoryEntry) => void }) {
   if (entries.length === 0) {
     return <p className="border-y border-slate-200 py-5 text-sm text-slate-500">Chưa có lần cập nhật dữ liệu nào.</p>;
   }
 
   return (
-    <div className="divide-y divide-slate-200 border-y border-slate-200">
+    <div className="divide-y divide-gray-100 border-y border-gray-100">
       {entries.map((entry, index) => (
-        <div key={entry.id} className="grid gap-2 py-3.5 sm:grid-cols-[minmax(180px,0.7fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-5">
+        <div key={entry.id} className={`grid gap-2 px-3 py-3.5 sm:grid-cols-[minmax(180px,0.7fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-5 ${index === 0 ? 'bg-[#004A98]/[0.03]' : 'hover:bg-gray-50/60'}`}>
           <div className="flex min-w-0 items-center gap-3">
             <span className={`h-2 w-2 shrink-0 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="truncate text-sm font-semibold text-slate-900">{entry.source}</p>
+                <p className="truncate text-sm font-semibold text-slate-900">{getHistoryTitle(entry)}</p>
                 {index === 0 && <span className="shrink-0 text-[11px] font-semibold text-emerald-700">Mới nhất</span>}
+                <button type="button" title="Đổi tên bản sao lưu" onClick={() => onRename(entry)} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-gray-400 transition hover:bg-blue-50 hover:text-[#004A98]"><Pencil className="h-3.5 w-3.5" /></button>
               </div>
               <time title={new Date(entry.createdAt).toLocaleString('vi-VN')} className="mt-0.5 block text-xs text-slate-500">{formatRelativeTime(entry.createdAt)}</time>
             </div>
           </div>
-          <p className="truncate pl-5 text-xs text-slate-500 sm:pl-0">{getHistorySources(entry)}</p>
+          <p className="truncate pl-5 text-xs text-slate-500 sm:pl-0">{getHistoryContext(entry)}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-5 text-xs sm:justify-end sm:pl-0">
             <span className="font-medium text-emerald-700">{entry.summary.added} thêm</span>
             <span className="font-medium text-blue-700">{entry.summary.updated} cập nhật</span>
@@ -224,6 +239,8 @@ export function DataSourceCenter() {
   const [selectedUndoSources, setSelectedUndoSources] = useState<PortalDataSource[]>([]);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isUndoConfirmOpen, setIsUndoConfirmOpen] = useState(false);
+  const [renamingEntry, setRenamingEntry] = useState<ImportHistoryEntry | null>(null);
+  const [historyNameInput, setHistoryNameInput] = useState('');
   const { cryptoKey } = useCrypto();
   const { addNotification } = useAppNotification();
 
@@ -322,16 +339,31 @@ export function DataSourceCenter() {
     }
   };
 
+  const openHistoryRename = (entry: ImportHistoryEntry) => {
+    setHistoryNameInput(entry.displayName || entry.source);
+    setRenamingEntry(entry);
+  };
+
+  const confirmHistoryRename = () => {
+    if (!renamingEntry || !historyNameInput.trim()) return;
+    if (renameImportHistoryEntry(renamingEntry.id, historyNameInput)) {
+      setRenamingEntry(null);
+      setHistoryNameInput('');
+      setStamp((value) => value + 1);
+      addNotification({ title: 'Đã đổi tên bản sao lưu', message: `Tên mới: ${historyNameInput.trim()}`, type: 'success' });
+    }
+  };
+
   return (
-    <section className="border-t border-slate-200">
+    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <button
         type="button"
         aria-expanded={isExpanded}
         aria-controls="data-source-center-content"
         onClick={() => setIsExpanded((value) => !value)}
-        className="group flex w-full items-center gap-3 py-5 text-left"
+        className="group flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-gray-50/60 md:px-6"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#004A98] transition group-hover:bg-blue-100">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98]/10 text-[#004A98] transition group-hover:bg-[#004A98]/15">
           <Database className="h-4.5 w-4.5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -349,9 +381,9 @@ export function DataSourceCenter() {
       </button>
 
       {isExpanded && (
-        <div id="data-source-center-content" className="pb-1">
+        <div id="data-source-center-content" className="border-t border-gray-100 px-4 pb-5 md:px-6 md:pb-6">
           <section className="min-w-0">
-            <div className="mb-3 flex items-end justify-between gap-3 border-t border-slate-200 pt-5">
+            <div className="mb-3 flex items-end justify-between gap-3 pt-5">
               <div>
                 <h4 className="text-sm font-semibold text-slate-900">Nguồn dữ liệu</h4>
                 <p className="mt-0.5 text-xs text-slate-500">Nhấn vào từng dòng để xem dữ liệu và lịch sử riêng.</p>
@@ -359,15 +391,15 @@ export function DataSourceCenter() {
               <span className="shrink-0 text-xs text-slate-500">{availableCount} sẵn sàng · {sources.length - availableCount} chưa có</span>
             </div>
 
-            <div className="hidden grid-cols-[minmax(220px,1fr)_150px_150px_140px_20px] gap-4 border-t border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold uppercase text-slate-500 sm:grid">
+            <div className="hidden grid-cols-[minmax(220px,1fr)_150px_150px_140px_20px] gap-4 rounded-t-lg border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 sm:grid">
               <span>Nguồn</span><span>Học kỳ</span><span>Cập nhật</span><span className="text-right">Trạng thái</span><span />
             </div>
-            <div className="divide-y divide-slate-200 border-y border-slate-200">
+            <div className="divide-y divide-gray-100 border-y border-gray-200 sm:rounded-b-lg sm:border-x">
               {sources.map((source) => {
                 const freshness = getFreshness(source);
                 const Icon = source.icon;
                 return (
-                  <button key={source.id} type="button" onClick={() => setSelectedSource(source)} className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-1 py-3.5 text-left transition hover:bg-slate-50 sm:grid-cols-[minmax(220px,1fr)_150px_150px_140px_20px] sm:gap-4 sm:px-3">
+                  <button key={source.id} type="button" onClick={() => setSelectedSource(source)} className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-1 py-3.5 text-left transition hover:bg-gray-50/70 sm:grid-cols-[minmax(220px,1fr)_150px_150px_140px_20px] sm:gap-4 sm:px-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#004A98]"><Icon className="h-4 w-4" /></div>
                       <div className="min-w-0">
@@ -377,7 +409,7 @@ export function DataSourceCenter() {
                     </div>
                     <div className="hidden truncate text-xs font-medium text-slate-700 sm:block">{source.period}</div>
                     <div className="hidden text-xs text-slate-600 sm:block"><Clock3 className="mr-1.5 inline h-3.5 w-3.5" />{formatRelativeTime(source.updatedAt)}</div>
-                    <span className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${freshness.className}`}>{freshness.label}</span>
+                    <span className={`justify-self-end rounded-full px-2 py-1 text-xs ${freshness.className}`}>{freshness.label}</span>
                     <ChevronRight className="hidden h-4 w-4 text-slate-400 sm:block" />
                   </button>
                 );
@@ -385,26 +417,28 @@ export function DataSourceCenter() {
             </div>
           </section>
 
-          <section className="mt-6 min-w-0 border-t border-slate-200 pt-5">
+          <section className="mt-6 min-w-0 border-t border-gray-100 pt-5">
             <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900"><History className="h-4 w-4 text-[#004A98]" />Lịch sử cập nhật chung</h4>
-                <p className="mt-0.5 text-xs text-slate-500">Mỗi dòng là một lần import hoàn chỉnh.</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98]/10 text-[#004A98]"><History className="h-4 w-4" /></div>
+                  <div><h4 className="text-sm font-semibold text-gray-900">Lịch sử cập nhật chung</h4><p className="mt-0.5 text-xs text-gray-500">Mỗi dòng là một lần import hoàn chỉnh.</p></div>
+                </div>
               </div>
               {canUndo && (
                 <div className="flex flex-wrap items-center gap-2">
                 {canPartiallyUndo && (
-                  <button type="button" onClick={() => openPartialUndo()} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#004A98] bg-white px-3 text-xs font-semibold text-[#004A98] transition hover:bg-blue-50">
+                  <button type="button" onClick={() => openPartialUndo()} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#004A98] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#003A78]">
                     <RefreshCw className="h-3.5 w-3.5" />Hoàn tác một phần
                   </button>
                 )}
-                <button type="button" onClick={openUndoConfirmation} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50">
+                <button type="button" onClick={openUndoConfirmation} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-red-600">
                   <Undo2 className="h-3.5 w-3.5" />Hoàn tác toàn bộ
                 </button>
                 </div>
               )}
             </div>
-            <InlineHistoryList entries={history.slice(0, 3)} />
+            <InlineHistoryList entries={history.slice(0, 3)} onRename={openHistoryRename} />
             {history.length > 3 && (
               <button type="button" onClick={() => setIsHistoryOpen(true)} className="mt-2 flex h-8 items-center gap-1.5 text-xs font-semibold text-[#004A98] transition hover:text-[#003A78]">
                 Xem toàn bộ {history.length} lần cập nhật<ChevronRight className="h-3.5 w-3.5" />
@@ -476,7 +510,37 @@ export function DataSourceCenter() {
           canPartiallyUndo={canPartiallyUndo}
           onUndo={openUndoConfirmation}
           onPartialUndo={() => openPartialUndo()}
+          onRename={openHistoryRename}
         />
+      </AppDialog>
+
+      <AppDialog
+        open={Boolean(renamingEntry)}
+        onOpenChange={(open) => { if (!open) setRenamingEntry(null); }}
+        title="Đổi tên bản sao lưu"
+        description="Đặt một tên dễ nhận biết để phân biệt các lần nhập dữ liệu trong lịch sử."
+        icon={Pencil}
+        size="sm"
+        footer={(
+          <>
+            <button type="button" onClick={() => setRenamingEntry(null)} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Hủy</button>
+            <button type="button" disabled={!historyNameInput.trim()} onClick={confirmHistoryRename} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">Lưu tên</button>
+          </>
+        )}
+      >
+        <label className="block">
+          <span className="mb-2 block text-sm font-semibold text-gray-800">Tên hiển thị</span>
+          <input
+            autoFocus
+            value={historyNameInput}
+            maxLength={80}
+            onChange={(event) => setHistoryNameInput(event.target.value)}
+            onKeyDown={(event) => { if (event.key === 'Enter') confirmHistoryRename(); }}
+            placeholder="Ví dụ: Trước khi đăng ký HK2"
+            className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-900 outline-none transition focus:border-[#004A98] focus:bg-white focus:ring-2 focus:ring-[#004A98]/15"
+          />
+          <span className="mt-2 block text-xs text-gray-500">Nguồn gốc: {renamingEntry?.source}</span>
+        </label>
       </AppDialog>
 
       <AppDialog

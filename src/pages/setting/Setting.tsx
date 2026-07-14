@@ -57,8 +57,9 @@ export function Setting({ onPageChange }: { onPageChange: (page: string) => void
                                 <div className="py-6">
                                     <ImportData />
                                 </div>
-                                <DataSourceCenter />
                             </div>
+
+                    <DataSourceCenter />
 
                     {/* Bảo mật */}
                     {hasData && (

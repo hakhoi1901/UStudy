@@ -409,6 +409,7 @@ export interface ImportHistoryEntry {
     id: string;
     createdAt: string;
     source: string;
+    displayName?: string;
     summary: ImportRollbackSummary;
     details: ImportHistoryDetail[];
     restoredSources?: string[];
@@ -430,11 +431,12 @@ export function getImportHistory(): ImportHistoryEntry[] {
     }
 }
 
-function appendImportHistory(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[]) {
+function appendImportHistory(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[], displayName?: string) {
     const entry: ImportHistoryEntry = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         createdAt: new Date().toISOString(),
         source,
+        displayName: displayName?.trim() || undefined,
         summary,
         details,
     };
@@ -442,7 +444,7 @@ function appendImportHistory(source: string, summary: ImportRollbackSummary, det
 }
 
 /** Lưu đúng trạng thái localStorage trước lần nhập gần nhất để có thể hoàn tác một lần. */
-export function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[] = []): boolean {
+export function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[] = [], displayName?: string): boolean {
     try {
         const data: Record<string, string> = {};
         for (let index = 0; index < localStorage.length; index += 1) {
@@ -453,11 +455,27 @@ export function createImportRollbackSnapshot(source: string, summary: ImportRoll
         }
         const snapshot: ImportRollbackSnapshot = { createdAt: new Date().toISOString(), source, summary, data, details };
         localStorage.setItem(IMPORT_ROLLBACK_STORAGE_KEY, JSON.stringify(snapshot));
-        appendImportHistory(source, summary, details);
+        appendImportHistory(source, summary, details, displayName);
         window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
         return true;
     } catch (error) {
         console.error('[createImportRollbackSnapshot] Không thể lưu snapshot:', error);
+        return false;
+    }
+}
+
+export function renameImportHistoryEntry(id: string, displayName: string): boolean {
+    try {
+        const history = getImportHistory();
+        const entryIndex = history.findIndex((entry) => entry.id === id);
+        if (entryIndex < 0) return false;
+        const normalizedName = displayName.trim().slice(0, 80);
+        history[entryIndex] = { ...history[entryIndex], displayName: normalizedName || undefined };
+        localStorage.setItem(IMPORT_HISTORY_STORAGE_KEY, JSON.stringify(history));
+        window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
+        return true;
+    } catch (error) {
+        console.error('[renameImportHistoryEntry] Không thể đổi tên lịch sử:', error);
         return false;
     }
 }
