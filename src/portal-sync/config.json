@@ -1,0 +1,30 @@
+{
+  "protocolVersion": "1.0.0",
+  "scraperVersion": "0.2.0",
+  "extensionVersion": "0.1.2",
+  "portalHostnamePattern": "^new-portal\\d+\\.hcmus\\.edu\\.vn$",
+  "portalLoginUrl": "https://new-portal3.hcmus.edu.vn/Login.aspx",
+  "portalLoginPathPattern": "^/Login\\.aspx(?:/.*)?$",
+  "productionAppUrl": "https://unopia.vercel.app/",
+  "appOrigins": [
+    "https://unopia.vercel.app",
+    "https://localhost:3005",
+    "http://localhost:3005",
+    "https://127.0.0.1:3005",
+    "http://127.0.0.1:3005"
+  ],
+  "developmentAppHostnames": ["localhost", "127.0.0.1"],
+  "endpoints": {
+    "grades": "/SinhVien.aspx?pid=211",
+    "exams": "/SinhVien.aspx?pid=180",
+    "tuition": "/SinhVien.aspx?pid=331",
+    "openClasses": "/SinhVien.aspx?pid=327",
+    "registrations": "/SinhVien.aspx?pid=212"
+  },
+  "defaults": {
+    "academicYear": "25-26",
+    "semester": "3",
+    "cooldownMinutes": 30,
+    "mode": "ask"
+  }
+}

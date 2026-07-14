@@ -1,12 +1,12 @@
-import { Bookmark, User, Shield, Lock } from 'lucide-react';
+import { User, Shield, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SettingUserProfile, ImportData, ReportError } from '../../features/setting';
 import { useStudentDb } from '../../hooks/useStudentDb';
-import { BookmarkletButton } from '../../components/BookmarkletButton';
 import { ChangePinModal } from '../../components/ChangePinModal';
 import { useCrypto } from '../../context/CryptoContext';
 import { DataSourceCenter } from '../../features/setting/components/DataSourceCenter';
+import { PortalSyncTools } from '../../features/setting/components/PortalSyncTools';
 
 export function Setting({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();
@@ -43,16 +43,9 @@ export function Setting({ onPageChange }: { onPageChange: (page: string) => void
                     {/* Công cụ đồng bộ dữ liệu */}
                     <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
                                 <div className="pb-6 border-b border-gray-200">
-                                    <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
-                                        <Bookmark className="w-5 h-5" />
-                                        Công cụ đồng bộ dữ liệu
-                                    </h2>
-                                    <p className="text-sm text-gray-500 flex-grow">
-                                        Kéo và thả nút bên dưới lên thanh Dấu trang (Bookmarks bar) của trình duyệt để dễ dàng lấy điểm và lịch học từ Portal.
-                                    </p>
-                                    <div className="flex justify-start mt-4">
-                                        <BookmarkletButton variant="outline" hideInstructions={true} className="flex flex-row items-center justify-start w-auto" />
-                                    </div>
+                                    <h2 className="text-gray-900 font-semibold mb-1">Công cụ đồng bộ dữ liệu</h2>
+                                    <p className="mb-6 text-sm text-gray-500">Chọn Extension để đồng bộ thuận tiện hoặc Bookmarklet cho chế độ thủ công nhẹ.</p>
+                                    <PortalSyncTools />
                                 </div>
                                 <div className="py-6">
                                     <ImportData />

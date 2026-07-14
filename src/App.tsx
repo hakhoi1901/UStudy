@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { CheckCircle2, FileUp, RefreshCw } from 'lucide-react';
 import { AppRouter } from './app/AppRouter';
@@ -9,16 +9,27 @@ import { SecurityLock } from './components/SecurityLock';
 import { CryptoProvider, CACHE_POPULATED_EVENT, useCrypto } from './context/CryptoContext';
 import { DepartmentProvider } from './context/DepartmentContext';
 import { NotificationProvider, useAppNotification } from './context/NotificationContext';
-import { APP_CONFIG } from './config';
 import { createImportRollbackSnapshot, readFromStorage, saveSecure, populateSecureCache } from './helpers/localStorage/save';
 import { processRawData } from './logic/dataProcessor';
 import { buildRawImportPreview, getImportCollectionLabel, mergeSelectedRawImport, type RawImportChange } from './logic/import-preview';
 import { mergeImportMetadata, type PortalDataSource } from './logic/import-metadata';
+import { requestPortalExtension } from './portal-sync/bridge';
+import {
+  PORTAL_EXTENSION_PENDING_AVAILABLE,
+  PORTAL_EXTENSION_READY_EVENT,
+  PORTAL_SCRAPER_VERSION,
+  isSupportedPortalOrigin,
+  isPortalSyncPacket,
+  type PendingPortalImport,
+  type PortalImportTransport,
+  type PortalSyncPacket,
+} from './portal-sync/protocol';
 
 interface PendingRawImport {
-  payload: any;
+  payload: PortalSyncPacket;
   changes: RawImportChange[];
   selectedIds: string[];
+  source: PortalImportTransport;
 }
 
 interface ImportSummary {
@@ -32,12 +43,20 @@ function AppContent() {
   const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
   const [importPreview, setImportPreview] = useState<PendingRawImport | null>(null);
+  const handledExtensionImports = useRef(new Set<string>());
 
   const previewSummary = useMemo(() => ({
     add: importPreview?.changes.filter((change) => change.status === 'add').length ?? 0,
     update: importPreview?.changes.filter((change) => change.status === 'update').length ?? 0,
     unchanged: importPreview?.changes.filter((change) => change.status === 'unchanged').length ?? 0,
   }), [importPreview]);
+  const groupedPreviewChanges = useMemo(() => {
+    const groups: Partial<Record<RawImportChange['collection'], RawImportChange[]>> = {};
+    for (const change of importPreview?.changes ?? []) {
+      (groups[change.collection] ??= []).push(change);
+    }
+    return Object.entries(groups) as Array<[RawImportChange['collection'], RawImportChange[]]>;
+  }, [importPreview]);
 
   const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey) => {
     await saveSecure('raw_student_db', raw, key);
@@ -55,30 +74,69 @@ function AppContent() {
     return student;
   }, [refreshHasData]);
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (!event.data || event.data.type !== 'IMPORT_FULL_DATA') return;
-      const payload = event.data.payload;
-      const incomingVersion = payload.version || payload.meta?.version;
-
-      if (incomingVersion && incomingVersion !== APP_CONFIG.BOOKMARKLET_VERSION) {
-        window.alert(`Bookmarklet cũ. Vui lòng kéo lại nút Bookmarklet mới để lấy dữ liệu chính xác.`);
-        addNotification({ title: 'Cần cập nhật Bookmarklet', message: 'Vui lòng kéo lại nút Bookmarklet mới để tương thích với phiên bản hệ thống hiện tại.', type: 'warning' });
+  const preparePortalImport = useCallback((payload: PortalSyncPacket, source: PortalImportTransport) => {
+      const incomingVersion = payload.scraperVersion || payload.version || String(payload.meta?.scraperVersion || payload.meta?.version || '');
+      if (incomingVersion && incomingVersion !== PORTAL_SCRAPER_VERSION) {
+        addNotification({
+          title: 'Công cụ đồng bộ cần cập nhật',
+          message: source === 'extension'
+            ? 'Vui lòng cập nhật UStudy Portal Sync trước khi tiếp tục đồng bộ.'
+            : 'Vui lòng kéo lại Bookmarklet mới để lấy dữ liệu chính xác.',
+          type: 'warning',
+        });
       }
-      if (!payload?.raw) return;
-
       const currentRaw = readFromStorage<any>('raw_student_db', null);
       const changes = buildRawImportPreview(payload.raw, currentRaw);
       setImportPreview({
         payload,
         changes,
         selectedIds: changes.filter((change) => change.status !== 'unchanged').map((change) => change.id),
+        source,
       });
+  }, [addNotification]);
+
+  useEffect(() => {
+    const handleBookmarkletMessage = (event: MessageEvent) => {
+      if (!isSupportedPortalOrigin(event.origin) || event.data?.type !== 'IMPORT_FULL_DATA') return;
+      if (!isPortalSyncPacket(event.data.payload)) return;
+      preparePortalImport(event.data.payload, 'bookmarklet');
     };
 
-    window.addEventListener('message', handleMessage, true);
-    return () => window.removeEventListener('message', handleMessage, true);
-  }, [addNotification]);
+    window.addEventListener('message', handleBookmarkletMessage);
+    return () => window.removeEventListener('message', handleBookmarkletMessage);
+  }, [preparePortalImport]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function consumePendingExtensionImport() {
+      const pendingImport = await requestPortalExtension<PendingPortalImport>('GET_PENDING_IMPORT');
+      if (!active || !pendingImport || handledExtensionImports.current.has(pendingImport.id)) return;
+      if (!isPortalSyncPacket(pendingImport.packet)) return;
+
+      handledExtensionImports.current.add(pendingImport.id);
+      preparePortalImport(pendingImport.packet, 'extension');
+      await requestPortalExtension('ACK_PENDING_IMPORT', { id: pendingImport.id });
+    }
+
+    function handlePendingAvailable(event: MessageEvent) {
+      if (event.source !== window || event.origin !== window.location.origin) return;
+      if (event.data?.type === PORTAL_EXTENSION_PENDING_AVAILABLE) void consumePendingExtensionImport();
+    }
+
+    function handleExtensionReady() {
+      void consumePendingExtensionImport();
+    }
+
+    window.addEventListener('message', handlePendingAvailable);
+    document.addEventListener(PORTAL_EXTENSION_READY_EVENT, handleExtensionReady);
+    void consumePendingExtensionImport();
+    return () => {
+      active = false;
+      window.removeEventListener('message', handlePendingAvailable);
+      document.removeEventListener(PORTAL_EXTENSION_READY_EVENT, handleExtensionReady);
+    };
+  }, [preparePortalImport]);
 
   const confirmImportPreview = useCallback(async () => {
     if (!importPreview || importPreview.selectedIds.length === 0) return;
@@ -107,7 +165,8 @@ function AppContent() {
       };
     });
 
-    if (!createImportRollbackSnapshot('Bookmarklet Portal', summary, details)) {
+    const importSourceLabel = importPreview.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet Portal';
+    if (!createImportRollbackSnapshot(importSourceLabel, summary, details)) {
       addNotification({ title: 'Không thể nhập dữ liệu', message: 'Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu hiện tại chưa bị thay đổi.', type: 'error' });
       return;
     }
@@ -115,7 +174,7 @@ function AppContent() {
     setImportPreview(null);
 
     if (!cryptoKey) {
-      setPendingData({ ...payload, summary });
+      setPendingData({ ...payload, summary, source: importPreview.source });
       return;
     }
 
@@ -158,8 +217,8 @@ function AppContent() {
       <AppDialog
         open={Boolean(importPreview)}
         onOpenChange={(open) => { if (!open) setImportPreview(null); }}
-        title="Xem trước dữ liệu từ Portal"
-        description="Chỉ các bản ghi được chọn mới được nhập. Bản ghi trùng hoàn toàn sẽ được bỏ qua."
+        title={`Xem trước dữ liệu từ ${importPreview?.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet'}`}
+        description="Chỉ các bản ghi được chọn mới được nhập. Extension và Bookmarklet không tự ghi đè dữ liệu của bạn."
         icon={FileUp}
         size="lg"
         footer={(
@@ -175,16 +234,16 @@ function AppContent() {
           <ImportSummary label="Trùng" value={previewSummary.unchanged} icon={<FileUp className="h-4 w-4 text-slate-400" />} />
         </div>
         <div className="mt-4 divide-y divide-slate-200">
-          {importPreview && Object.entries(Object.groupBy(importPreview.changes, (change) => change.collection)).map(([collection, changes]) => (
+          {importPreview && groupedPreviewChanges.map(([collection, changes]) => (
             <section key={collection} className="py-3 first:pt-0">
               <div className="mb-1 flex items-center justify-between gap-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{getImportCollectionLabel(collection as RawImportChange['collection'])}</h3>
                 <div className="flex items-center gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => togglePreviewGroup(changes ?? [], true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
-                  <button type="button" onClick={() => togglePreviewGroup(changes ?? [], false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
+                  <button type="button" onClick={() => togglePreviewGroup(changes, true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
+                  <button type="button" onClick={() => togglePreviewGroup(changes, false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
                 </div>
               </div>
-              {changes?.map((change) => (
+              {changes.map((change) => (
                 <label key={change.id} className={`flex items-center gap-3 px-1 py-2.5 ${change.status === 'unchanged' ? 'cursor-default opacity-55' : 'cursor-pointer'}`}>
                   <input type="checkbox" checked={importPreview.selectedIds.includes(change.id)} disabled={change.status === 'unchanged'} onChange={(event) => togglePreviewItem(change.id, event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-[#004A98] focus:ring-[#004A98]" />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">{change.label}</span>

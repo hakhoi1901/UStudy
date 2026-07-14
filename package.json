@@ -76,6 +76,8 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "npm run build:extension && vite build",
+        "build:extension": "node scripts/build-extension.mjs",
+        "typecheck": "tsc -b"
     }
 }

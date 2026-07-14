@@ -61,7 +61,7 @@ const sections = [
             { icon: Eye, label: 'Quyền được biết', desc: 'Bạn luôn biết chính xác dữ liệu nào được lưu, ở đâu, và được mã hóa bằng cách nào. Trang này chính là minh chứng cho quyền đó.' },
             { icon: HardDriveDownload, label: 'Quyền xuất dữ liệu', desc: 'Bạn có thể xuất toàn bộ dữ liệu ra file backup mã hóa bất cứ lúc nào thông qua tính năng Sao lưu ở trang Cài đặt.' },
             { icon: Trash2, label: 'Quyền xóa dữ liệu', desc: 'Bạn có thể xóa toàn bộ dữ liệu ngay lập tức bằng cách Đăng xuất hoặc "Quên mật khẩu" trên màn hình khóa. Dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.' },
-            { icon: RefreshCw, label: 'Quyền đồng bộ lại', desc: 'Sau khi xóa, bạn luôn có thể đồng bộ lại dữ liệu từ Portal trường thông qua Bookmarklet - không cần liên hệ hỗ trợ.' },
+            { icon: RefreshCw, label: 'Quyền đồng bộ lại', desc: 'Sau khi xóa, bạn luôn có thể đồng bộ lại dữ liệu từ Portal bằng Extension hoặc Bookmarklet - không cần liên hệ hỗ trợ.' },
         ],
     },
     {

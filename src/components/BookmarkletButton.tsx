@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react';
 import { Bookmark, MousePointerClick } from 'lucide-react';
 import bookmarkletSource from '../logic/Bookmarklet.js?raw';
 import { APP_CONFIG } from '../config';
+import { PORTAL_SYNC_PROTOCOL_VERSION } from '../portal-sync/protocol';
 import { AppDialog } from './ui/app-dialog';
 
 interface Props {
@@ -39,6 +40,8 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
             REG_TARGET_SEM: APP_CONFIG.DEFAULT_REG_TARGET_SEM,
             EXPIRES_AT: expirationTime,
             VERSION: APP_CONFIG.BOOKMARKLET_VERSION,
+            PROTOCOL_VERSION: PORTAL_SYNC_PROTOCOL_VERSION,
+            APP_ORIGIN: window.location.origin,
         };
 
         const processedSource = bookmarkletSource.replace(

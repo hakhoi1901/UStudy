@@ -12,6 +12,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-extension
 dist-ssr
 *.local
 
@@ -35,6 +36,7 @@ data.json
 temp/*
 
 *.txt
+public/downloads/*.zip
 
 android/
 build/*

@@ -2,7 +2,10 @@
     console.clear();
 
     // === 1. CẤU HÌNH ===
-    const CONFIG = window.__HCMUS_PORTAL_CONFIG__ || {
+    const EXTENSION_RUNTIME = window.__USTUDY_PORTAL_SYNC_RUNTIME__ || null;
+    if (EXTENSION_RUNTIME) delete window.__USTUDY_PORTAL_SYNC_RUNTIME__;
+
+    const CONFIG = EXTENSION_RUNTIME?.config || window.__HCMUS_PORTAL_CONFIG__ || {
         URL_DIEM: "/SinhVien.aspx?pid=211",
         URL_LICHTHI: "/SinhVien.aspx?pid=180",
         URL_HOCPHI: "/SinhVien.aspx?pid=331",
@@ -16,6 +19,18 @@
         REG_TARGET_SEM: "2",
         CONCURRENCY: "10"
     };
+    const IS_EXTENSION = EXTENSION_RUNTIME?.transport === 'extension';
+    const EXTENSION_REQUEST_ID = EXTENSION_RUNTIME?.requestId || '';
+
+    function emitExtensionEvent(type, detail = {}) {
+        if (!IS_EXTENSION) return;
+        window.postMessage({
+            channel: 'USTUDY_PORTAL_SYNC',
+            type,
+            requestId: EXTENSION_REQUEST_ID,
+            ...detail,
+        }, window.location.origin);
+    }
 
     //  Kiểm tra hạn sử dụng 30 ngày
     if (CONFIG.EXPIRES_AT && Date.now() > CONFIG.EXPIRES_AT) {
@@ -24,15 +39,17 @@
     }
 
     const URLS = {
-        DIEM: "/SinhVien.aspx?pid=211",
-        LICHTHI: "/SinhVien.aspx?pid=180",
-        HOCPHI: "/SinhVien.aspx?pid=331",
-        LOPMO: "/SinhVien.aspx?pid=327",
-        DKHP: "/SinhVien.aspx?pid=212"
+        DIEM: CONFIG.URL_DIEM || "/SinhVien.aspx?pid=211",
+        LICHTHI: CONFIG.URL_LICHTHI || "/SinhVien.aspx?pid=180",
+        HOCPHI: CONFIG.URL_HOCPHI || "/SinhVien.aspx?pid=331",
+        LOPMO: CONFIG.URL_LOPMO || "/SinhVien.aspx?pid=327",
+        DKHP: CONFIG.URL_DKHP || "/SinhVien.aspx?pid=212"
     };
 
     // UI: Hiển thị trạng thái loading lên màn hình hiện tại
     const showLoading = (msg) => {
+        emitExtensionEvent('USTUDY_PORTAL_SYNC_PROGRESS', { message: msg });
+        if (IS_EXTENSION) return;
         let el = document.getElementById('hcmus-tool-loading');
         if (!el) {
             el = document.createElement('div');
@@ -666,11 +683,21 @@
 
     // === 3. MAIN RUNNER ===
     try {
-        if (!window.opener) {
+        if (!IS_EXTENSION && !window.opener) {
             alert("Vui lòng mở Portal bằng nút \"Đăng nhập\" để công cụ hoạt động.");
             return;
         }
-        const config = await showPrivacyAndConfigModal();
+        const runtimeOptions = EXTENSION_RUNTIME?.syncOptions;
+        const config = runtimeOptions ? {
+            getTuition: Boolean(runtimeOptions.getTuition),
+            getExam: Boolean(runtimeOptions.getExam),
+            getClass: Boolean(runtimeOptions.getClass),
+            classYear: String(runtimeOptions.classYear || CONFIG.CLASS_TARGET_YEAR || CONFIG.TARGET_YEAR),
+            classSem: String(runtimeOptions.classSem || CONFIG.CLASS_TARGET_SEM || CONFIG.TARGET_SEM),
+            getReg: Boolean(runtimeOptions.getReg),
+            regYear: String(runtimeOptions.regYear || CONFIG.REG_TARGET_YEAR || CONFIG.TARGET_YEAR),
+            regSem: String(runtimeOptions.regSem || CONFIG.REG_TARGET_SEM || CONFIG.TARGET_SEM),
+        } : await showPrivacyAndConfigModal();
 
         showLoading("Đang khởi tạo & Lấy dữ liệu cơ bản...");
 
@@ -964,6 +991,9 @@
 
         const metaData = {
             version: CONFIG.VERSION,
+            protocolVersion: CONFIG.PROTOCOL_VERSION,
+            scraperVersion: CONFIG.VERSION,
+            source: IS_EXTENSION ? 'extension' : 'bookmarklet',
             scrapedAt: new Date().toISOString(),
             params: {
                 tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
@@ -976,13 +1006,18 @@
         const fullDataPacket = {
             raw: rawData,
             meta: metaData,
-            version: CONFIG.VERSION
+            version: CONFIG.VERSION,
+            protocolVersion: CONFIG.PROTOCOL_VERSION,
+            scraperVersion: CONFIG.VERSION,
+            source: IS_EXTENSION ? 'extension' : 'bookmarklet'
         };
 
         console.log("🔥 FULL DATA PACKET:", fullDataPacket);
 
-        if (window.opener) {
-            window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, '*');
+        if (IS_EXTENSION) {
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_RESULT', { payload: fullDataPacket });
+        } else if (window.opener) {
+            window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, CONFIG.APP_ORIGIN || '*');
             alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades.length} dòng điểm\n- ${(rawData.exams.midterm?.length || 0) + (rawData.exams.final?.length || 0)} lịch thi\n- ${rawData.tuition.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
         } else {
             // giờ cụm này kh hoạt động nma để lại cho HK nha :>
@@ -1002,7 +1037,11 @@
             console.log("Người dùng đã hủy.");
         } else {
             console.error(e);
-            alert("❌ Lỗi: " + e.message);
+            if (IS_EXTENSION) {
+                emitExtensionEvent('USTUDY_PORTAL_SYNC_ERROR', { message: e?.message || String(e) });
+            } else {
+                alert("❌ Lỗi: " + e.message);
+            }
         }
     }
 
