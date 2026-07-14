@@ -108,23 +108,55 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
         number: 1,
         rooms: [
           {code: 'HTB', name: 'Hội trường B', type: 'hall'},
-          {code: 'PTH-B', name: 'Phòng tự học Hội trường B', type: 'self-study'}
+          {code: 'PTH-HTB', name: 'Phòng tự học Hội trường B', type: 'self-study'}
         ],
         plan: {
           width: 800,
           height: 500,
           elements: [
-            { id: 'HTB', type: 'room', code: 'HTB', x: 300, y: 150, width: 300, height: 200, label: 'Hội trường B', fill: '#F2E8F0' },
-            { id: 'PTH-HTB', type: 'room', code: 'PTH-B', x: 100, y: 150, width: 200, height: 200, label: 'Phòng tự học', fill: '#F2E8F0'},
-            { id: 'HL-HTB', type: 'path', d: 'M100 150 H600 V350 H100 V400 H650 V100 H100 Z ', fill: '#FFFFFF', stroke: '#64748B', strokeWidth: 1 },
-            { id: 'HTB-exit-1', type: 'label', x: 370, y: 140, text: 'Lối thoát', size: 13 },
-            { id: 'HTB-exit-1', type: 'label', x: 370, y: 365, text: 'Lối thoát', size: 13 }
+            { id: 'HTB-outline', type: 'path', d: 'M60 70 H740 V410 H60 Z', fill: '#FFFFFF', stroke: '#64748B', strokeWidth: 2 },
+            { id: 'HTB-lobby', type: 'area', x: 90, y: 305, width: 620, height: 75, label: 'Sảnh / hành lang', fill: '#F8FAFC' },
+            { id: 'PTH-HTB', type: 'room', code: 'PTH-HTB', x: 90, y: 100, width: 210, height: 190, label: 'Phòng tự học', fill: '#F2E8F0' },
+            { id: 'HTB', type: 'room', code: 'HTB', x: 320, y: 100, width: 390, height: 190, label: 'Hội trường B', fill: '#F2E8F0' },
+            { id: 'HTB-stage', type: 'area', x: 330, y: 135, width: 34, height: 120, label: 'Sân khấu', fill: '#DBEAFE' },
+            { id: 'HTB-exit-front', type: 'label', x: 525, y: 88, text: 'Lối thoát', size: 13 },
+            { id: 'HTB-exit-back', type: 'label', x: 400, y: 406, text: 'Lối thoát', size: 13 },
+            { id: 'HTB-exit-right', type: 'label', x: 760, y: 350, text: 'Lối ra tòa C', size: 12 },
           ]
         }
       }
     ],
-    roomCount: 2, x: 314, y: 62, width: 134, height: 110, rotate: 2,
+    roomCount: 2, 
+    x: 314, y: 62, width: 134, height: 110, rotate: 2,
     accent: '#004A98', facilities: ['Thang bộ', 'Nhà vệ sinh'],
+  },
+  {
+    id: 'A', shortLabel: 'A', name: 'Hội trường A',
+    description: 'Hội trường A',
+    floors: [
+      {
+        number: 1,
+        rooms: [
+          {code: 'HTA', name: 'Hội trường A', type: 'hall'} // Đã bổ sung phòng bị thiếu
+        ],
+        plan: {
+          width: 900,
+          height: 600,
+          elements: [
+            { id: 'outline', type: 'path', d: 'M40 40 H860 V560 H40 Z', fill: '#FFFFFF', stroke: '#64748B', strokeWidth: 3 },
+            { id: 'stage', type: 'area', x: 280, y: 70, width: 340, height: 90, label: 'Sân khấu', fill: '#BFDBFE' },
+            // Đã sửa lại code và label bị copy-paste nhầm từ Hội trường B
+            { id: 'hta-room', type: 'room', code: 'HTA', label: 'Hội trường A', aliases: ['Hội trường tầng 1'], roomType: 'hall', x: 130, y: 205, width: 640, height: 250, fill: '#EFF6FF' },
+            { id: 'entrance', type: 'area', x: 330, y: 485, width: 240, height: 45, label: 'Lối vào', fill: '#F2E8F0' },
+            { id: 'exit-left', type: 'label', x: 90, y: 500, text: 'Lối thoát', size: 13 },
+            { id: 'exit-right', type: 'label', x: 810, y: 500, text: 'Lối thoát', size: 13 },
+          ],
+        },
+      },
+    ],
+    roomCount: 1, // Đã cập nhật lại số phòng thực tế
+    x: 170, y: 62, width: 134, height: 110, rotate: 0, // Đã dời tọa độ x để không bị đè lên tòa B
+    accent: '#0058B2', facilities: [],
   },
   {
     id: 'A', shortLabel: 'A', name: 'Hội trường A',
@@ -255,8 +287,8 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
           {code: 'F104', name: 'F104', type: 'classroom'},
           {code: 'F105', name: 'F105', type: 'classroom'},
           {code: 'F106', name: 'F106', type: 'classroom'},
-          {code: 'NSV-F1-1', name: 'Nhà vệ sinh (Nam-Nữ)', type: 'tolet', aliases: ['Nhà vệ sinh', 'nvs', 'wc', 'toilet']},
-          {code: 'NSV-F1-2', name: 'Nhà vệ sinh (Nam-Nữ)', type: 'tolet', aliases: ['Nhà vệ sinh', 'nvs', 'wc', 'toilet']}
+          {code: 'NSV-F1-A', name: 'Nhà vệ sinh (Nam-Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam nu toa f tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nam nữ tòa f tầng lầu 1', 'nvs', 'wc', 'toilet']},
+          {code: 'NSV-F1-B', name: 'Nhà vệ sinh (Nam-Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam nu toa f tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nam nữ tòa f tầng lầu 1', 'nvs', 'wc', 'toilet']}
         ],
         plan: {
           width: 900,
@@ -269,11 +301,11 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
             { id: 'F106', type: 'room', code: 'F106', x: 430, y: 70, width: 98, height: 98, label: 'F106', fill: '#F3E8FF' },
             { id: 'F105', type: 'room', code: 'F105', x: 430, y: 170, width: 98, height: 98, label: 'F105', fill: '#F3E8FF' },
             
-            { id: 'NSV-F1-2', type: 'room', code: 'NSV-F1-2', x: 480, y: 320, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NVS-F1-B', type: 'room', code: 'NVS-F1-B', x: 480, y: 320, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
             { id: 'stairs-north', type: 'area', x: 430, y: 320, width: 48, height: 48, label: 'Cầu thang', fill: '#DBEAFE' },
             { id: 'F104', type: 'room', code: 'F104', x: 430, y: 370, width: 98, height: 98, label: 'F104', fill: '#F3E8FF' },
             { id: 'F103', type: 'room', code: 'F103', x: 430, y: 470, width: 98, height: 98, label: 'F103', fill: '#F3E8FF' },
-            { id: 'NSV-F1-1', type: 'room', code: 'NSV-F1-1', x: 480, y: 570, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NVS-F1-A', type: 'room', code: 'NVS-F1-B', x: 480, y: 570, width: 48, height: 48, label: 'WC', fill: '#FEE2E2' },
             { id: 'stair-south', type: 'area', x: 430, y: 570, width: 48, height: 48, label: 'Cầu thang', fill: '#DBEAFE' },
             
             { id: 'F102', type: 'room', code: 'F102', x: 430, y: 670, width: 100, height: 78, label: 'F102', fill: '#F3E8FF' },
@@ -342,7 +374,74 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
   {
     id: 'NDH', shortLabel: 'NĐH', name: 'Nhà điều hành',
     description: 'Khu hành chính và các phòng chức năng.',
-    floors: createFloors(9), roomCount: 63, x: 402, y: 398, width: 188, height: 98, rotate: 1,
+    floors: [
+      {
+        number: 1,
+        rooms: [
+          {code: 'NDH101', name: 'NĐH 101', type: 'classroom'},
+          {code: 'NDH102', name: 'NĐH 102', type: 'classroom'},
+          {code: 'NDH103', name: 'NĐH 103', type: 'classroom'},
+          {code: 'NDH104', name: 'NĐH 104', type: 'classroom'},
+          {code: 'NDH105', name: 'NĐH 105', type: 'classroom'},
+          {code: 'NDH106', name: 'NĐH 106', type: 'classroom'},
+          {code: 'NDH107', name: 'NĐH 107', type: 'classroom'},
+          {code: 'NDH108', name: 'NĐH 108', type: 'classroom'},
+          {code: 'NDH109', name: 'NĐH 109', type: 'classroom'},
+          {code: 'NQKH', name: 'Hội quán khoa học - Hầm nhà điều hành', type: 'service', aliases: ['Hội quán sinh viên', 'HQKH']},
+          {code: 'NSV-NĐH1-A', name: 'Nhà vệ sinh (Nam)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam ndh nha dieu hanh tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nam nhà điều hành nđh ndh tầng lầu 1', 'nvs', 'wc', 'toilet']},
+          {code: 'NSV-NĐH1-B', name: 'Nhà vệ sinh (Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nu ndh nha dieu hanh tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nữ nhà điều hành nđh ndh tầng lầu 1', 'nvs', 'wc', 'toilet']}
+        ],
+        plan: {
+          width: 1000,
+          height: 1000,
+          elements: [
+            { id: 'NDH1-outline', type: 'path', d: 'M40 40 H460 V380 H510 V620 H460 V960 H40 Z', fill: '#FFFFFF', stroke: '#64748B', strokeWidth: 2 },
+            { id: 'NDH1-main-hallway', type: 'area', x: 210, y: 50, width: 80, height: 900, label: 'Hành lang', fill: '#F8FAFC' },
+
+            { id: 'NDH101', type: 'room', code: 'NDH101', x: 50, y: 50, width: 150, height: 150, label: 'NĐH 101', fill: '#EFF6FF' },
+            { id: 'NDH102', type: 'room', code: 'NDH102', x: 50, y: 200, width: 150, height: 150, label: 'NĐH 102', fill: '#EFF6FF' },
+            { id: 'NDH103', type: 'room', code: 'NDH103', x: 50, y: 350, width: 150, height: 300, label: 'NĐH 103', fill: '#EFF6FF' },
+            { id: 'NDH104', type: 'room', code: 'NDH104', x: 50, y: 650, width: 150, height: 150, label: 'NĐH 104', fill: '#EFF6FF' },
+            { id: 'NDH105', type: 'room', code: 'NDH105', x: 50, y: 800, width: 150, height: 150, label: 'NĐH 105', fill: '#EFF6FF' },
+
+            { id: 'NVS-F1-B', type: 'room', code: 'NVS-F1-B', x: 400, y: 50, width: 50, height: 80, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NDH1-top-hallway', type: 'area', x: 300, y: 50, width: 100, height: 30, label: 'Hành lang nhỏ', fill: '#F8FAFC' },
+            { id: 'NDH1-stair', type: 'area', x: 300, y: 80, width: 100, height: 50, label: 'Thang bộ', fill: '#DBEAFE' },
+
+            { id: 'NDH106', type: 'room', code: 'NDH106', x: 300, y: 130, width: 150, height: 130, label: 'NĐH 106', fill: '#EFF6FF' },
+            { id: 'NDH107', type: 'room', code: 'NDH107', x: 300, y: 260, width: 150, height: 130, label: 'NĐH 107', fill: '#EFF6FF' },
+
+            { id: 'NVS-F1-B', type: 'room', code: 'NVS-F1-B', x: 450, y: 390, width: 50, height: 50, label: 'WC', fill: '#FEE2E2' },
+            { id: 'NDH1-elevator', type: 'area', x: 300, y: 390, width: 150, height: 50, label: 'Thang máy', fill: '#E0F2FE' },
+            { id: 'NDH1-side-hallway', type: 'area', x: 290, y: 450, width: 220, height: 100, label: 'Hành lang nhỏ', fill: '#F8FAFC' },
+            { id: 'NDH1-stair', type: 'area', x: 300, y: 560, width: 150, height: 50, label: 'Thang bộ', fill: '#DBEAFE' },
+            { id: 'NVS-F1-B', type: 'room', code: 'NVS-F1-B', x: 450, y: 560, width: 50, height: 50, label: 'WC', fill: '#FEE2E2' },
+
+            { id: 'NDH108', type: 'room', code: 'NDH108', x: 300, y: 610, width: 150, height: 130, label: 'NĐH 108', fill: '#EFF6FF' },
+            { id: 'NDH109', type: 'room', code: 'NDH109', x: 300, y: 740, width: 150, height: 130, label: 'NĐH 109', fill: '#EFF6FF' },
+
+            { id: 'NDH1-stair', type: 'area', x: 300, y: 870, width: 100, height: 50, label: 'Thang bộ', fill: '#DBEAFE' },            
+            { id: 'NDH1-left-hallway', type: 'area', x: 300, y: 920, width: 100, height: 30, label: 'Hành lang nhỏ', fill: '#F8FAFC' },
+            { id: 'NVS-F1-B', type: 'room', code: 'NVS-F1-B', x: 400, y: 870, width: 50, height: 80, label: 'WC', fill: '#FEE2E2' },
+          ],
+        },
+      },
+      {
+        number: 2,
+        rooms: [
+          {code: 'PĐT', name: 'Phòng đào tạo - NĐH 2.4', type: 'office', aliases: ['pdt', 'pđt', 'phong dao tao', 'Phòng đào tạo', 'bảng điểm', 'bang diem', '2.4', 'ndh24']},
+          {code: 'PCTSV', name: 'Phòng công tác sinh viên - NĐH 2.8', type: 'office', aliases: ['pctsv', 'phong cong tac sinh vien', 'Phòng công tác sinh viên', 'drl', 'đrl', 'diem ren luyen', 'điểm rèn luyện', 'xác nhận sinh viên', 'xac nhan sinh vien', '2.8', 'ndh28']},
+          {code: 'NSV-NĐH2-A', name: 'Nhà vệ sinh (Nam)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam ndh nha dieu hanh tang lau 2', 'Nhà vệ sinh nvs wc toilet tolet nam nhà điều hành nđh tầng lầu 2', 'nvs nam ndh', 'wc', 'toilet']},
+          {code: 'NSV-NĐH2-B', name: 'Nhà vệ sinh (Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nu ndh nha dieu hanh tang lau 2', 'Nhà vệ sinh nvs wc toilet tolet nữ nhà điều hành nđh tầng lầu 2', 'nvs nu ndh', 'wc', 'toilet']},
+        ],
+        plan: {
+          width: 900,
+          height: 900,
+          elements: [],
+        },
+      },
+    ],
+    roomCount: 30, x: 314, y: 62, width: 134, height: 110, rotate: 2,
     accent: '#003A78', facilities: ['Thang máy', 'Thang bộ', 'Hành chính'],
   },
 ];
@@ -374,17 +473,43 @@ function normalizeSearchText(value: string): string {
     .replace(/[^a-z0-9]/g, '');
 }
 
-export function getFloorRooms(floor: CampusFloor): CampusRoom[] {
-  const roomsInPlan = floor.plan?.elements
-    .filter((element): element is Extract<FloorPlanElement, { type: 'room' }> => element.type === 'room')
-    .map(({ code, label, aliases, roomType }) => ({ code, name: label, aliases, type: roomType })) ?? [];
+function getSearchTokens(value: string): string[] {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/đ/g, 'd')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
 
-  return [...floor.rooms, ...roomsInPlan.filter((room) => !floor.rooms.some((item) => item.code === room.code))];
+function getMatchScore(token: string, value: string): number | null {
+  if (value === token) return 0;
+  if (value.startsWith(token)) return 2;
+  if (value.includes(token)) return 5;
+  return null;
+}
+
+function hasTokensInOrder(value: string, queryTokens: string[]): boolean {
+  const valueTokens = getSearchTokens(value);
+  let queryIndex = 0;
+
+  for (const token of valueTokens) {
+    if (token.includes(queryTokens[queryIndex])) queryIndex += 1;
+    if (queryIndex === queryTokens.length) return true;
+  }
+
+  return false;
+}
+
+export function getFloorRooms(floor: CampusFloor): CampusRoom[] {
+  return floor.rooms;
 }
 
 export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestion[] {
   const query = normalizeSearchText(input);
-  if (!query) return [];
+  const queryTokens = getSearchTokens(input);
+  if (!query || queryTokens.length === 0) return [];
 
   const matches: Array<CampusRoomSuggestion & { score: number }> = [];
 
@@ -394,19 +519,33 @@ export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestio
         const code = normalizeSearchText(room.code);
         const names = [room.name, ...(room.aliases || [])]
           .filter((value): value is string => Boolean(value));
-        const normalizedNames = names.map(normalizeSearchText);
+        const roomValues = [room.code, ...names];
+        const buildingValues = [
+          building.id,
+          building.shortLabel,
+          building.name,
+        ];
+        const searchableValues = [
+          ...roomValues,
+          ...buildingValues,
+        ];
+        const normalizedValues = searchableValues.map(normalizeSearchText);
+        const matchesAllTokens = queryTokens.every((token) => normalizedValues.some((value) => value.includes(token)));
+        if (!matchesAllTokens) continue;
 
-        const score = code === query
-          ? 0
-          : code.startsWith(query)
-            ? 1
-            : normalizedNames.some((value) => value.startsWith(query))
-              ? 2
-              : code.includes(query) || normalizedNames.some((value) => value.includes(query))
-                ? 3
-                : -1;
-
-        if (score === -1) continue;
+        const tokenScore = queryTokens.reduce((total, token) => {
+          const bestMatch = normalizedValues
+            .map((value) => getMatchScore(token, value))
+            .filter((score): score is number => score !== null)
+            .reduce((best, score) => Math.min(best, score), Number.POSITIVE_INFINITY);
+          return total + bestMatch;
+        }, 0);
+        const hasExactRoomPhrase = roomValues.some((value) => normalizeSearchText(value) === query);
+        const hasOrderedRoomPhrase = roomValues.some((value) => hasTokensInOrder(value, queryTokens));
+        const score = tokenScore
+          + (hasExactRoomPhrase ? -20 : 0)
+          + (hasOrderedRoomPhrase ? -6 : 0)
+          + (code.startsWith(query) ? -10 : 0);
         matches.push({
           buildingId: building.id,
           floor: floor.number,
@@ -428,31 +567,5 @@ export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestio
 
 export function findCampusRoom(input: string): RoomSearchResult | null {
   const roomCode = parseRoomCode(input);
-  const query = normalizeSearchText(input);
-  if (!query) return roomCode;
-
-  for (const building of CAMPUS_BUILDINGS) {
-    for (const floor of building.floors) {
-      for (const room of getFloorRooms(floor)) {
-        if (roomCode && normalizeSearchText(room.code) === normalizeSearchText(roomCode.fullCode)) {
-          return { ...roomCode, roomName: room.name };
-        }
-
-        if (roomCode) continue;
-        const searchableNames = [room.code, room.name, ...(room.aliases || [])]
-          .filter((value): value is string => Boolean(value));
-        if (!searchableNames.some((value) => normalizeSearchText(value).includes(query))) continue;
-
-        return {
-          buildingId: building.id,
-          floor: floor.number,
-          roomNumber: room.code,
-          fullCode: room.code,
-          roomName: room.name,
-        };
-      }
-    }
-  }
-
-  return roomCode;
+  return searchCampusRooms(input, 1)[0] ?? roomCode;
 }

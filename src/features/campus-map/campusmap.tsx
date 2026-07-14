@@ -9,6 +9,7 @@ import {
   MapPin,
   Navigation,
   Search,
+  SlidersHorizontal,
   Stars,
   X,
 } from 'lucide-react';
@@ -33,6 +34,16 @@ type Building = {
   rotate?: number;
   accent: string;
   facilities: string[];
+};
+
+const ROOM_TYPE_LABELS: Record<string, string> = {
+  classroom: 'Phòng học',
+  lab: 'Phòng thực hành',
+  office: 'Văn phòng',
+  hall: 'Hội trường',
+  service: 'Tiện ích',
+  'self-study': 'Tự học',
+  tolet: 'Nhà vệ sinh',
 };
 
 const LEGACY_BUILDINGS: Building[] = [
@@ -314,6 +325,8 @@ export default function CampusMap() {
     useState<RoomSearchResult | null>(null);
   const [error, setError] = useState('');
   const [isSearchSuggestionOpen, setIsSearchSuggestionOpen] = useState(false);
+  const [isSearchFilterOpen, setIsSearchFilterOpen] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({ buildingId: 'all', floor: 'all', roomType: 'all' });
   const [view, setView] = useState<'campus' | 'floor'>('campus');
   const [isRoomListOpen, setIsRoomListOpen] = useState(false);
 
@@ -338,10 +351,29 @@ export default function CampusMap() {
     [selectedBuilding.floors]
   );
 
-  const searchSuggestions = useMemo(
-    () => searchCampusRooms(searchValue),
-    [searchValue]
-  );
+  const searchSuggestions = useMemo(() => {
+    const filteredSuggestions = searchCampusRooms(searchValue, 100).filter((suggestion) => {
+      if (searchFilters.buildingId !== 'all' && suggestion.buildingId !== searchFilters.buildingId) return false;
+      if (searchFilters.floor !== 'all' && suggestion.floor !== Number(searchFilters.floor)) return false;
+      if (searchFilters.roomType === 'all') return true;
+
+      const floor = CAMPUS_BUILDINGS
+        .find((building) => building.id === suggestion.buildingId)
+        ?.floors.find((item) => item.number === suggestion.floor);
+      return floor ? getFloorRooms(floor).some((room) => room.code === suggestion.fullCode && room.type === searchFilters.roomType) : false;
+    });
+
+    return filteredSuggestions.slice(0, 6);
+  }, [searchFilters, searchValue]);
+
+  const availableRoomTypes = useMemo(() => Array.from(new Set(
+    CAMPUS_BUILDINGS.flatMap((building) => building.floors.flatMap((floor) => getFloorRooms(floor).map((room) => room.type).filter(Boolean)))
+  )).sort(), []);
+
+  const availableFloors = useMemo(() => {
+    if (searchFilters.buildingId === 'all') return Array.from(new Set(CAMPUS_BUILDINGS.flatMap((building) => building.floors.map((floor) => floor.number)))).sort((left, right) => left - right);
+    return CAMPUS_BUILDINGS.find((building) => building.id === searchFilters.buildingId)?.floors.map((floor) => floor.number) ?? [];
+  }, [searchFilters.buildingId]);
 
   function selectBuilding(building: CampusBuilding) {
     setSelectedBuildingId(building.id);
@@ -404,6 +436,11 @@ export default function CampusMap() {
       <FloorPlanView
         buildingId={selectedBuildingId}
         floorNumber={selectedFloor}
+        highlightedRoomCode={
+          searchResult?.buildingId === selectedBuildingId && searchResult.floor === selectedFloor
+            ? searchResult.fullCode
+            : undefined
+        }
         onBuildingChange={(buildingId) => {
           setSelectedBuildingId(buildingId);
           setSelectedFloor(1);
@@ -452,14 +489,14 @@ export default function CampusMap() {
               aria-expanded={isSearchSuggestionOpen && searchSuggestions.length > 0}
               aria-controls="room-search-suggestions"
               placeholder="Nhập mã phòng, ví dụ A305 hoặc NĐH504"
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-28 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#004A98] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-40 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#004A98] focus:bg-white focus:ring-4 focus:ring-blue-100"
             />
 
             {searchValue && (
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-[92px] top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                className="absolute right-[132px] top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
                 aria-label="Xóa tìm kiếm"
               >
                 <X className="h-4 w-4" />
@@ -467,11 +504,72 @@ export default function CampusMap() {
             )}
 
             <button
+              type="button"
+              onClick={() => setIsSearchFilterOpen((isOpen) => !isOpen)}
+              className={`absolute right-[96px] top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg transition ${searchFilters.buildingId !== 'all' || searchFilters.floor !== 'all' || searchFilters.roomType !== 'all' ? 'bg-blue-100 text-[#004A98]' : 'text-slate-500 hover:bg-slate-200 hover:text-[#004A98]'}`}
+              title="Lọc kết quả tìm phòng"
+              aria-label="Lọc kết quả tìm phòng"
+              aria-expanded={isSearchFilterOpen}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+            </button>
+
+            <button
               type="submit"
               className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-xl bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] focus:outline-none focus:ring-4 focus:ring-blue-100"
             >
               Tìm phòng
             </button>
+
+            {isSearchFilterOpen && (
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-full max-w-sm rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-slate-900">Lọc kết quả</h2>
+                  <button
+                    type="button"
+                    onClick={() => setSearchFilters({ buildingId: 'all', floor: 'all', roomType: 'all' })}
+                    className="text-xs font-medium text-[#004A98] hover:text-[#003A78]"
+                  >
+                    Đặt lại
+                  </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                    Tòa
+                    <select
+                      value={searchFilters.buildingId}
+                      onChange={(event) => setSearchFilters((filters) => ({ ...filters, buildingId: event.target.value, floor: 'all' }))}
+                      className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm font-medium text-slate-700 outline-none focus:border-[#004A98]"
+                    >
+                      <option value="all">Tất cả</option>
+                      {CAMPUS_BUILDINGS.map((building) => <option key={building.id} value={building.id}>{building.shortLabel}</option>)}
+                    </select>
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                    Tầng
+                    <select
+                      value={searchFilters.floor}
+                      onChange={(event) => setSearchFilters((filters) => ({ ...filters, floor: event.target.value }))}
+                      className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm font-medium text-slate-700 outline-none focus:border-[#004A98]"
+                    >
+                      <option value="all">Tất cả</option>
+                      {availableFloors.map((floor) => <option key={floor} value={floor}>Tầng {floor}</option>)}
+                    </select>
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                    Loại phòng
+                    <select
+                      value={searchFilters.roomType}
+                      onChange={(event) => setSearchFilters((filters) => ({ ...filters, roomType: event.target.value }))}
+                      className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm font-medium text-slate-700 outline-none focus:border-[#004A98]"
+                    >
+                      <option value="all">Tất cả</option>
+                      {availableRoomTypes.map((type) => <option key={type} value={type}>{ROOM_TYPE_LABELS[type ?? ''] ?? type}</option>)}
+                    </select>
+                  </label>
+                </div>
+              </div>
+            )}
 
             {isSearchSuggestionOpen && searchValue.trim() && searchSuggestions.length > 0 && (
               <div

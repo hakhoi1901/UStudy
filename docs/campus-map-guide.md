@@ -113,12 +113,9 @@ Tọa độ trong `d` dùng cùng hệ với `plan.width` và `plan.height`. Có
 
 ## Phòng học và tìm kiếm
 
-Có hai cách khai báo phòng:
+Khai báo mọi phòng trong `floors[].rooms`. Đây là nguồn dữ liệu duy nhất cho tìm kiếm, gợi ý, bộ lọc và danh sách phòng.
 
-1. Thêm vào `floors[].rooms` nếu mới có dữ liệu phòng nhưng chưa có bản vẽ.
-2. Thêm phần tử `type: 'room'` trong `plan.elements` nếu phòng đã có vị trí trên sơ đồ.
-
-Phòng được vẽ trong `plan` tự động tham gia tìm kiếm. Không cần khai báo lại cùng mã phòng trong `rooms`, trừ khi cần dữ liệu bổ sung.
+Khi phòng đã có vị trí trên sơ đồ, thêm phần tử `type: 'room'` tương ứng trong `plan.elements` với cùng `code`. Phần tử này chỉ quyết định cách vẽ và vị trí; không tham gia tìm kiếm để tránh trùng dữ liệu.
 
 `label` là tên hiển thị của phòng. `aliases` là các tên gọi khác để tìm kiếm và không được hiển thị thành phòng riêng.
 

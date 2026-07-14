@@ -1,4 +1,4 @@
-import { ArrowLeft, DoorOpen, Layers3, MapPinned } from 'lucide-react';
+import { ArrowLeft, DoorOpen, Layers3, MapPinned, Search } from 'lucide-react';
 import { CAMPUS_BUILDINGS } from './campus-data';
 import type { BuildingId, FloorPlanElement } from './campus-data';
 
@@ -8,6 +8,7 @@ interface FloorPlanViewProps {
   onBuildingChange: (buildingId: BuildingId) => void;
   onFloorChange: (floor: number) => void;
   onBack: () => void;
+  highlightedRoomCode?: string;
 }
 
 export function FloorPlanView({
@@ -16,10 +17,16 @@ export function FloorPlanView({
   onBuildingChange,
   onFloorChange,
   onBack,
+  highlightedRoomCode,
 }: FloorPlanViewProps) {
   const building = CAMPUS_BUILDINGS.find((item) => item.id === buildingId) ?? CAMPUS_BUILDINGS[0];
   const floor = building.floors.find((item) => item.number === floorNumber) ?? building.floors[0];
   const plan = floor.plan;
+  const isHighlightedRoomOnPlan = Boolean(
+    highlightedRoomCode && plan?.elements.some(
+      (element) => element.type === 'room' && element.code.toUpperCase() === highlightedRoomCode.toUpperCase()
+    )
+  );
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -62,6 +69,16 @@ export function FloorPlanView({
         </div>
       </header>
 
+      {highlightedRoomCode && (
+        <div className="flex items-start gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 sm:px-6">
+          <Search className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+          <p>
+            Đang xem vị trí <span className="font-mono font-semibold">{highlightedRoomCode}</span>
+            {isHighlightedRoomOnPlan ? ' - phòng được tô viền nổi bật trên sơ đồ.' : ' - phòng này chưa được đặt vị trí trong sơ đồ tầng.'}
+          </p>
+        </div>
+      )}
+
       <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:p-6">
         <div className="overflow-auto rounded-lg border border-gray-200 bg-[#F8FAFC] p-4">
           {plan ? (
@@ -72,7 +89,13 @@ export function FloorPlanView({
               role="img"
               aria-label={`Sơ đồ ${building.name}, tầng ${floor.number}`}
             >
-              {plan.elements.map((element) => <PlanElement key={element.id} element={element} />)}
+                {plan.elements.map((element) => (
+                  <PlanElement
+                    key={element.id}
+                    element={element}
+                    isHighlighted={element.type === 'room' && element.code.toUpperCase() === highlightedRoomCode?.toUpperCase()}
+                  />
+                ))}
             </svg>
           ) : (
             <div className="flex min-h-[420px] min-w-[620px] flex-col items-center justify-center rounded border border-dashed border-gray-300 bg-white px-6 text-center">
@@ -101,7 +124,7 @@ export function FloorPlanView({
   );
 }
 
-function PlanElement({ element }: { element: FloorPlanElement }) {
+function PlanElement({ element, isHighlighted = false }: { element: FloorPlanElement; isHighlighted?: boolean }) {
   if (element.type === 'path') {
     return <path d={element.d} fill={element.fill ?? 'none'} fillRule={element.fillRule} stroke={element.stroke ?? '#94A3B8'} strokeWidth={element.strokeWidth ?? 1} />;
   }
@@ -115,7 +138,7 @@ function PlanElement({ element }: { element: FloorPlanElement }) {
 
   return (
     <g>
-      <rect x={element.x} y={element.y} width={element.width} height={element.height} rx="4" fill={fill} stroke="#94A3B8" strokeWidth="1" />
+      <rect x={element.x} y={element.y} width={element.width} height={element.height} rx="4" fill={isHighlighted ? '#FEF3C7' : fill} stroke={isHighlighted ? '#D97706' : '#94A3B8'} strokeWidth={isHighlighted ? '4' : '1'} />
       <text x={element.x + element.width / 2} y={element.y + element.height / 2} fill="#1E3A5F" fontSize="13" fontWeight="600" textAnchor="middle" dominantBaseline="middle">{label}</text>
     </g>
   );
