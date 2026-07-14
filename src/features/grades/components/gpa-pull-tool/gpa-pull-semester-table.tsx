@@ -9,9 +9,16 @@ interface GradeComponent {
     name: string;
     weight: string;
     score: string;
+    children?: GradeComponent[];
 }
 
 type ComponentGradeMode = 'prediction' | 'target';
+
+const COURSE_GRADE_DECIMALS = 1;
+
+function roundCourseGrade(grade: number): number {
+    return Math.round(grade * 10) / 10;
+}
 
 interface PersistedComponentGradePlans {
     componentPlans: Record<string, GradeComponent[]>;
@@ -28,6 +35,7 @@ interface ComponentGradeSummary {
     suggestedScore: number | null;
     hasInvalidWeight: boolean;
     hasInvalidScore: boolean;
+    leafWeights: Record<string, number>;
 }
 
 const EMPTY_COMPONENT_GRADE_PLANS: PersistedComponentGradePlans = {
@@ -62,35 +70,48 @@ function getComponentGradeSummary(components: GradeComponent[], targetGrade: str
     let weightedScoreTotal = 0;
     let hasInvalidWeight = false;
     let hasInvalidScore = false;
+    const leafWeights: Record<string, number> = {};
 
-    components.forEach((component) => {
-        const weight = Number(component.weight);
-        const score = Number(component.score);
-        if (!Number.isFinite(weight) || weight < 0) {
-            hasInvalidWeight = true;
-            return;
-        }
+    const collectLeaves = (nodes: GradeComponent[], parentWeight: number) => {
+        nodes.forEach((node) => {
+            const percentage = Number(node.weight);
+            if (!Number.isFinite(percentage) || percentage < 0) {
+                hasInvalidWeight = true;
+                return;
+            }
 
-        totalWeight += weight;
-        if (component.score.trim() === '') {
-            missingWeight += weight;
-            return;
-        }
-        if (!Number.isFinite(score) || score < 0 || score > 10) {
-            hasInvalidScore = true;
-            return;
-        }
+            const weight = parentWeight * percentage / 100;
+            if (node.children?.length) {
+                collectLeaves(node.children, weight);
+                return;
+            }
 
-        knownWeight += weight;
-        weightedScoreTotal += score * weight;
-    });
+            leafWeights[node.id] = weight;
+            totalWeight += weight;
+            if (node.score.trim() === '') {
+                missingWeight += weight;
+                return;
+            }
+
+            const score = Number(node.score);
+            if (!Number.isFinite(score) || score < 0 || score > 10) {
+                hasInvalidScore = true;
+                return;
+            }
+
+            knownWeight += weight;
+            weightedScoreTotal += score * weight;
+        });
+    };
+
+    collectLeaves(components, 100);
 
     const target = Number(targetGrade);
     const predictedGrade = !hasInvalidWeight && !hasInvalidScore && knownWeight > 0
-        ? weightedScoreTotal / knownWeight
+        ? Math.min(10, weightedScoreTotal / 100)
         : null;
     const suggestedScore = targetGrade.trim() !== '' && Number.isFinite(target) && missingWeight > 0
-        ? (target * totalWeight - weightedScoreTotal) / missingWeight
+        ? (target * 100 - weightedScoreTotal) / missingWeight
         : null;
 
     return {
@@ -102,12 +123,39 @@ function getComponentGradeSummary(components: GradeComponent[], targetGrade: str
         suggestedScore,
         hasInvalidWeight,
         hasInvalidScore,
+        leafWeights,
     };
+}
+
+function mapComponentTree(
+    components: GradeComponent[],
+    id: string,
+    update: (component: GradeComponent) => GradeComponent,
+): GradeComponent[] {
+    return components.map((component) => {
+        if (component.id === id) return update(component);
+        if (!component.children?.length) return component;
+        return { ...component, children: mapComponentTree(component.children, id, update) };
+    });
+}
+
+function removeComponentFromTree(components: GradeComponent[], id: string): GradeComponent[] {
+    return components
+        .filter((component) => component.id !== id)
+        .map((component) => component.children?.length
+            ? { ...component, children: removeComponentFromTree(component.children, id) }
+            : component);
+}
+
+function getComponentRows(components: GradeComponent[], depth = 0): Array<{ component: GradeComponent; depth: number }> {
+    return components.flatMap((component) => [
+        { component, depth },
+        ...(component.children?.length ? getComponentRows(component.children, depth + 1) : []),
+    ]);
 }
 
 export function GPAPullSemesterTable({
     nextSemester,
-    decimals,
     isGuidanceActive,
     onGradeChange,
 }: GPAPullSemesterTableProps) {
@@ -149,12 +197,13 @@ export function GPAPullSemesterTable({
 
     const getPredictedGrade = (courseCode: string) => {
         const predictedGrade = getComponentGradeSummary(getComponentPlan(courseCode), '').predictedGrade;
-        return predictedGrade == null ? null : Math.max(0, Math.min(10, Math.round(predictedGrade * 100) / 100));
+        return predictedGrade == null ? null : Math.max(0, Math.min(10, roundCourseGrade(predictedGrade)));
     };
 
     const getActiveGrade = (course: GPAPullCourse, mode: ComponentGradeMode) => {
-        if (course.isLocked && course.lockedGrade != null) return course.lockedGrade;
-        return mode === 'target' ? targetGrades[course.code] ?? null : getPredictedGrade(course.code);
+        if (course.isLocked && course.lockedGrade != null) return roundCourseGrade(course.lockedGrade);
+        const grade = mode === 'target' ? targetGrades[course.code] ?? null : getPredictedGrade(course.code);
+        return grade == null ? null : roundCourseGrade(grade);
     };
 
     const updateTargetGrade = (courseCode: string, grade: number | null) => {
@@ -233,7 +282,7 @@ export function GPAPullSemesterTable({
                                                     max="10"
                                                     step="0.1"
                                                     value={activeGrade ?? ''}
-                                                    placeholder={isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(decimals) : '-'}
+                                                    placeholder={isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(COURSE_GRADE_DECIMALS) : '-'}
                                                     onChange={(event) => {
                                                         setComponentModes((prev) => ({ ...prev, [course.code]: 'target' }));
                                                         const value = event.target.value;
@@ -244,7 +293,7 @@ export function GPAPullSemesterTable({
                                                         }
                                                         const grade = Number(value);
                                                         if (!Number.isFinite(grade)) return;
-                                                        const nextGrade = Math.max(0, Math.min(10, grade));
+                                                        const nextGrade = Math.max(0, Math.min(10, roundCourseGrade(grade)));
                                                         updateTargetGrade(course.code, nextGrade);
                                                         onGradeChange(course.code, nextGrade);
                                                     }}
@@ -271,8 +320,7 @@ export function GPAPullSemesterTable({
                                             <td colSpan={5} className="px-4 py-4">
                                                 <CourseComponentPlanner
                                                     course={course}
-                                                    decimals={decimals}
-                                                    targetGrade={targetGrade != null ? targetGrade.toFixed(decimals) : ''}
+                                                    targetGrade={targetGrade != null ? roundCourseGrade(targetGrade).toFixed(COURSE_GRADE_DECIMALS) : ''}
                                                     mode={componentMode}
                                                     components={getComponentPlan(course.code)}
                                                     onComponentsChange={(components) => updateComponents(course.code, components)}
@@ -301,7 +349,6 @@ export function GPAPullSemesterTable({
 
 function CourseComponentPlanner({
     course,
-    decimals,
     targetGrade,
     mode,
     components,
@@ -310,7 +357,6 @@ function CourseComponentPlanner({
     onPredictedGradeChange,
 }: {
     course: GPAPullCourse;
-    decimals: number;
     targetGrade: string;
     mode: ComponentGradeMode;
     components: GradeComponent[];
@@ -321,18 +367,19 @@ function CourseComponentPlanner({
     const summary = useMemo(() => {
         return getComponentGradeSummary(components, targetGrade);
     }, [components, targetGrade]);
+    const componentRows = useMemo(() => getComponentRows(components), [components]);
 
     const syncPredictedGrade = (next: GradeComponent[]) => {
         if (mode !== 'prediction') return;
         const nextSummary = getComponentGradeSummary(next, targetGrade);
         const nextPredictedGrade = nextSummary.predictedGrade == null
             ? null
-            : Math.max(0, Math.min(10, Math.round(nextSummary.predictedGrade * 100) / 100));
+            : Math.max(0, Math.min(10, roundCourseGrade(nextSummary.predictedGrade)));
         onPredictedGradeChange(nextPredictedGrade);
     };
 
     const updateComponent = (id: string, patch: Partial<GradeComponent>) => {
-        const next = components.map((component) => component.id === id ? { ...component, ...patch } : component);
+        const next = mapComponentTree(components, id, (component) => ({ ...component, ...patch }));
         onComponentsChange(next);
         syncPredictedGrade(next);
     };
@@ -345,7 +392,26 @@ function CourseComponentPlanner({
     };
 
     const removeComponent = (id: string) => {
-        const next = components.filter((component) => component.id !== id);
+        const next = removeComponentFromTree(components, id);
+        onComponentsChange(next);
+        syncPredictedGrade(next);
+    };
+
+    const addChildComponent = (id: string) => {
+        const next = mapComponentTree(components, id, (component) => {
+            const existingChildren = component.children ?? (component.score.trim() === ''
+                ? []
+                : [{ id: `${component.id}-existing`, name: 'Điểm đã nhập', weight: '100', score: component.score }]);
+
+            return {
+                ...component,
+                score: '',
+                children: [
+                    ...existingChildren,
+                    { id: `${course.code}-${Date.now()}-${id}`, name: `Mục con ${existingChildren.length + 1}`, weight: existingChildren.length === 0 ? '100' : '0', score: '' },
+                ],
+            };
+        });
         onComponentsChange(next);
         syncPredictedGrade(next);
     };
@@ -355,7 +421,7 @@ function CourseComponentPlanner({
     };
 
     const suggestedPlaceholder = mode === 'target' && summary.suggestedScore != null && summary.suggestedScore >= 0 && summary.suggestedScore <= 10
-        ? summary.suggestedScore.toFixed(decimals)
+        ? roundCourseGrade(summary.suggestedScore).toFixed(COURSE_GRADE_DECIMALS)
         : undefined;
 
     return (
@@ -390,19 +456,19 @@ function CourseComponentPlanner({
                         </button>
                     </div>
                     <p className="text-xs font-medium text-gray-500">
-                        Điểm tính được (làm tròn) <span className="ml-1 font-bold tabular-nums text-gray-900">{summary.predictedGrade == null ? '-' : summary.predictedGrade.toFixed(decimals)}</span>
+                        Điểm tính được <span className="ml-1 font-bold tabular-nums text-gray-900">{summary.predictedGrade == null ? '-' : roundCourseGrade(summary.predictedGrade).toFixed(COURSE_GRADE_DECIMALS)}</span>
                     </p>
                 </div>
             </div>
 
             <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[620px] table-fixed border-collapse text-left">
+                <table className="w-full min-w-[680px] table-fixed border-collapse text-left">
                     <colgroup>
                         <col className="w-auto" />
                         <col className="w-28" />
                         <col className="w-28" />
                         <col className="w-32" />
-                        <col className="w-12" />
+                        <col className="w-20" />
                     </colgroup>
                     <thead>
                         <tr className="border-y border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500">
@@ -414,20 +480,22 @@ function CourseComponentPlanner({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {components.map((component) => {
+                        {componentRows.map(({ component, depth }) => {
+                            const isGroup = Boolean(component.children?.length);
                             const weight = Number(component.weight);
                             const score = Number(component.score);
-                            const contribution = Number.isFinite(weight) && Number.isFinite(score) && component.score.trim() !== '' && summary.totalWeight > 0
-                                ? score * weight / summary.totalWeight
+                            const leafWeight = summary.leafWeights[component.id];
+                            const contribution = !isGroup && Number.isFinite(leafWeight) && Number.isFinite(score) && component.score.trim() !== ''
+                                ? score * leafWeight / 100
                                 : null;
 
                             return (
                                 <tr key={component.id}>
-                                    <td className="px-3 py-2">
+                                    <td className="px-3 py-2" style={{ paddingLeft: `${12 + depth * 20}px` }}>
                                         <input
                                             value={component.name}
                                             onChange={(event) => updateComponent(component.id, { name: event.target.value })}
-                                            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-800 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                            className={`h-9 w-full rounded-lg border px-3 text-sm text-gray-800 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 ${isGroup ? 'border-[#004A98]/30 bg-[#F4F8FF] font-semibold' : 'border-gray-200'}`}
                                             aria-label="Tên mục điểm thành phần"
                                         />
                                     </td>
@@ -444,32 +512,45 @@ function CourseComponentPlanner({
                                         />
                                     </td>
                                     <td className="px-3 py-2">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="10"
-                                            step="0.1"
-                                            value={component.score}
-                                            placeholder={component.score.trim() === '' && weight > 0 ? suggestedPlaceholder : undefined}
-                                            onChange={(event) => {
-                                                const rawScore = event.target.value;
-                                                if (rawScore.trim() === '') {
-                                                    updateComponent(component.id, { score: '' });
-                                                    return;
-                                                }
-                                                const parsedScore = Number(rawScore);
-                                                if (!Number.isFinite(parsedScore)) return;
-                                                const nextScore = parsedScore > 10 ? '10' : parsedScore < 0 ? '0' : rawScore;
-                                                updateComponent(component.id, { score: nextScore });
-                                            }}
-                                            className="h-9 w-full rounded-lg border border-gray-200 px-2 text-center text-sm tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
-                                            aria-label={`Điểm ${component.name}`}
-                                        />
+                                        {isGroup ? (
+                                            <div className="flex h-9 items-center justify-center text-xs font-medium text-[#004A98]">Tự tính</div>
+                                        ) : (
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="10"
+                                                step="0.1"
+                                                value={component.score}
+                                                placeholder={component.score.trim() === '' && weight > 0 ? suggestedPlaceholder : undefined}
+                                                onChange={(event) => {
+                                                    const rawScore = event.target.value;
+                                                    if (rawScore.trim() === '') {
+                                                        updateComponent(component.id, { score: '' });
+                                                        return;
+                                                    }
+                                                    const parsedScore = Number(rawScore);
+                                                    if (!Number.isFinite(parsedScore)) return;
+                                                    const nextScore = parsedScore > 10 ? '10' : parsedScore < 0 ? '0' : rawScore;
+                                                    updateComponent(component.id, { score: nextScore });
+                                                }}
+                                                className="h-9 w-full rounded-lg border border-gray-200 px-2 text-center text-sm tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                                aria-label={`Điểm ${component.name}`}
+                                            />
+                                        )}
                                     </td>
                                     <td className="px-3 py-2 text-center text-sm font-semibold tabular-nums text-gray-700">
-                                        {contribution == null ? '-' : contribution.toFixed(decimals)}
+                                        {contribution == null ? '-' : contribution.toFixed(COURSE_GRADE_DECIMALS)}
                                     </td>
                                     <td className="px-2 py-2 text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => addChildComponent(component.id)}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#004A98] transition-colors hover:bg-[#EAF3FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/25"
+                                            title="Thêm nhóm con"
+                                            aria-label={`Thêm nhóm con cho ${component.name}`}
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => removeComponent(component.id)}

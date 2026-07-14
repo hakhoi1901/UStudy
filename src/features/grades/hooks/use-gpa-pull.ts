@@ -54,26 +54,6 @@ export function useGPAPull({
 
     const parsedTargetGpa = useMemo(() => parseFloat(targetGPAInput.replace(',', '.')), [targetGPAInput]);
     /**
-     * Logic kiểm tra lỗi input: 
-     * Tại sao: Chặn các giá trị vô lý (điểm âm hoặc > 10) ngay từ đầu để tránh gây lỗi 
-     * tràn số hoặc kết quả âm trong các hàm toán học phức tạp phía sau.
-     */
-    const targetGpaError = useMemo(() => {
-        if (targetGPAInput.trim() === '') return null;
-        if (Number.isNaN(parsedTargetGpa)) return `Vui lòng nhập GPA hợp lệ từ ${minTargetGpa} đến ${ACADEMIC_RULES.MAX_GPA}.`;
-        if (parsedTargetGpa < minTargetGpa) return `GPA mục tiêu không được nhỏ hơn ${minTargetGpa.toFixed(pullDecimals)}.`;
-        if (parsedTargetGpa > ACADEMIC_RULES.MAX_GPA) return `GPA mục tiêu không được lớn hơn ${ACADEMIC_RULES.MAX_GPA.toFixed(pullDecimals)}.`;
-        return null;
-    }, [targetGPAInput, parsedTargetGpa, minTargetGpa]);
-
-    const targetGPA = useMemo(() => {
-        if (targetGPAInput.trim() === '') return null;
-        if (targetGpaError) return null;
-        if (Number.isNaN(parsedTargetGpa)) return null;
-        return parsedTargetGpa;
-    }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
-
-    /**
      * Tạo bản đồ phân loại môn học từ dữ liệu khoa/ngành.
      * Tại sao: Dữ liệu điểm từ portal thường không có thông tin 'Cơ sở ngành', 
      * nên ta phải map ngược từ CTĐT để hỗ trợ tính năng lọc theo Scope.
@@ -183,6 +163,48 @@ export function useGPAPull({
     const scopeLabelSuffix = isFoundationMajorScopeActive ? ' (Cơ sở ngành)' : '';
     const scopeName = mode === 'currentSemester' ? 'Kỳ này' : isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
 
+    const maxAchievableGpaAtGraduation = useMemo(() => {
+        if (mode === 'currentSemester') return ACADEMIC_RULES.MAX_GPA;
+        if (scopedTotalCredits <= 0) return null;
+
+        let currentPoints = 0;
+        let currentCredits = 0;
+        for (const course of scopedGradesWithManualRetakes) {
+            if (course.status === 'ongoing') continue;
+            const result = AcademicRulesEngine.calculateAccumulationParams(
+                course.code,
+                course.credits,
+                course.grade,
+                course.status,
+            );
+            currentPoints += result.pointsForGPA;
+            currentCredits += result.creditsForGPA;
+        }
+
+        const remainingCredits = Math.max(0, scopedTotalCredits - currentCredits);
+        const maximumGpa = (currentPoints + ACADEMIC_RULES.MAX_GPA * remainingCredits) / scopedTotalCredits;
+        return Math.min(ACADEMIC_RULES.MAX_GPA, maximumGpa);
+    }, [mode, scopedGradesWithManualRetakes, scopedTotalCredits]);
+
+    const targetGpaError = useMemo(() => {
+        const maximumTargetGpa = maxAchievableGpaAtGraduation ?? ACADEMIC_RULES.MAX_GPA;
+        if (targetGPAInput.trim() === '') return null;
+        if (Number.isNaN(parsedTargetGpa)) return `Vui lòng nhập GPA hợp lệ từ ${minTargetGpa} đến ${maximumTargetGpa.toFixed(pullDecimals)}.`;
+        if (parsedTargetGpa < minTargetGpa) return `GPA mục tiêu không được nhỏ hơn ${minTargetGpa.toFixed(pullDecimals)}.`;
+        if (parsedTargetGpa > maximumTargetGpa + 1e-6 && maxAchievableGpaAtGraduation != null) {
+            return `GPA tối đa bạn có thể đạt là ${maxAchievableGpaAtGraduation.toFixed(pullDecimals)}.`;
+        }
+        if (parsedTargetGpa > ACADEMIC_RULES.MAX_GPA) return `GPA mục tiêu không được lớn hơn ${ACADEMIC_RULES.MAX_GPA.toFixed(pullDecimals)}.`;
+        return null;
+    }, [targetGPAInput, parsedTargetGpa, minTargetGpa, pullDecimals, maxAchievableGpaAtGraduation]);
+
+    const targetGPA = useMemo(() => {
+        if (targetGPAInput.trim() === '') return null;
+        if (targetGpaError) return null;
+        if (Number.isNaN(parsedTargetGpa)) return null;
+        return parsedTargetGpa;
+    }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
+
     const projectedScopeCourses = useMemo(() => {
         const scopeCourses = isFoundationMajorScopeActive
             ? simulatorCourses.filter((course) => isFoundationCategory(courseCategoryByCode.get(normalizeCourseCode(course.code))))
@@ -268,19 +290,6 @@ export function useGPAPull({
         const courses = redistributeSuggestedGrades(raw.courses, baseResult.requiredAverage);
         return { ...raw, courses };
     }, [baseResult, simulatorCourses, courseCategoryByCode, isFoundationMajorScopeActive]);
-
-    /**
-     * Giới hạn trần GPA (The Ceiling).
-     * Tại sao: Tính toán GPA tối đa nếu tất cả các môn còn lại đều được 10.0. 
-     * Nếu mục tiêu của người dùng cao hơn con số này, hệ thống sẽ tự động chuyển sang 
-     * trạng thái 'Impossible' để người dùng không nuôi hy vọng hão huyền.
-     */
-    const maxAchievableGpaAtGraduation = useMemo(() => {
-        if (baseResult?.currentPoints == null || baseResult.currentCredits == null) return null;
-        const remainingCredits = scopedTotalCredits - baseResult.currentCredits;
-        if (remainingCredits <= 0) return null;
-        return (baseResult.currentPoints + 10 * remainingCredits) / scopedTotalCredits;
-    }, [baseResult, scopedTotalCredits]);
 
     /**
      * Đánh giá hiệu quả học tập của học kỳ dự kiến so với mục tiêu dài hạn.
