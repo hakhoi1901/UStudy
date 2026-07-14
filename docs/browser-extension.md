@@ -41,6 +41,8 @@ Extension không đọc mật khẩu, không sao chép cookie và không gửi d
 - `ask`: hiện lời nhắc trên Portal trước mỗi lần chạy. Đây là mặc định.
 - `auto`: tự chạy một lần cho mỗi tab Portal sau khi đăng nhập. Khi quét chỉ hiện một thanh tiến trình nhỏ.
 
+Ở chế độ thủ công hoặc hỏi trước, panel nổi trên Portal dùng cùng bố cục với popup Extension: header logo và phiên bản, lựa chọn chế độ, nguồn dữ liệu, học kỳ và footer hành động cố định. Nội dung panel tự cuộn độc lập, không làm trang Portal dịch chuyển.
+
 Sau hai lần thành công ở chế độ `ask`, extension mới đề xuất bật `auto`. Thu thập có thể tự động nhưng UStudy luôn yêu cầu xác nhận trước khi ghi dữ liệu.
 
 Trên mọi host dạng `new-portal{n}.hcmus.edu.vn`, extension coi pathname `/Login.aspx` là trang chưa đăng nhập. Query như `?ReturnUrl=%2f` và phần pathname nối sau `Login.aspx` không làm thay đổi kết quả này. Khi URL đã rời trang đăng nhập, tab được phép đồng bộ. Cấu hình chế độ, nguồn dữ liệu và học kỳ chỉ nằm trong popup Extension; trang web UStudy chỉ hiển thị trạng thái kết nối.

@@ -9,12 +9,17 @@ const SOURCE_LABELS = {
   courses: 'Danh sách lớp mở',
   tuition: 'Học phí',
 };
+const MODE_DESCRIPTIONS = {
+  manual: 'Chỉ chạy khi bạn bấm đồng bộ.',
+  ask: 'Hiện lời nhắc trước mỗi lần đồng bộ. Đây là chế độ khuyên dùng.',
+  auto: 'Tự chạy khi mở Portal và đã đăng nhập.',
+};
+const EXTENSION_ICON_URL = chrome.runtime.getURL('icon.svg');
 
 let extensionState = null;
 let activeRequestId = null;
 let phase = 'idle';
 let phaseMessage = '';
-let editingSettings = false;
 let hiddenForSession = false;
 
 const host = document.createElement('div');
@@ -29,24 +34,21 @@ shadow.innerHTML = `
     *{box-sizing:border-box;letter-spacing:0}
     button,input,select{font:inherit}
     button{cursor:pointer}
-    .panel{width:min(380px,calc(100vw - 28px));overflow:hidden;border:1px solid #dbe3ec;border-radius:12px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.18)}
+    .panel{display:flex;width:min(380px,calc(100vw - 28px));max-height:calc(100vh - 36px);flex-direction:column;overflow:hidden;border:1px solid #dbe3ec;border-radius:12px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.18)}
+    .panel-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#98a2b3 transparent}
+    .panel-scroll::-webkit-scrollbar{width:8px}.panel-scroll::-webkit-scrollbar-track{background:transparent}.panel-scroll::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:#98a2b3;background-clip:padding-box}
     .compact{display:flex;width:min(340px,calc(100vw - 28px));align-items:center;gap:10px;border:1px solid #cbd9e8;border-radius:10px;background:#fff;padding:11px 12px;box-shadow:0 12px 32px rgba(15,23,42,.16)}
-    .compact .mark{width:30px;height:30px;border-radius:7px;font-size:13px}.compact-copy{min-width:0;flex:1}.compact-copy strong{display:block;color:#172033;font-size:12.5px}.compact-copy span{display:block;margin-top:3px;overflow:hidden;color:#667085;font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+    .compact img{width:30px;height:30px;flex:0 0 auto;border-radius:7px}.compact-copy{min-width:0;flex:1}.compact-copy strong{display:block;color:#172033;font-size:12.5px}.compact-copy span{display:block;margin-top:3px;overflow:hidden;color:#667085;font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
     .spinner{width:17px;height:17px;flex:0 0 auto;border:2px solid #bfdbfe;border-top-color:#004a98;border-radius:50%;animation:ustudy-spin .8s linear infinite}.compact-dot{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#12b76a}.compact-dot.error{background:#d92d20}@keyframes ustudy-spin{to{transform:rotate(360deg)}}
-    .header{display:flex;align-items:center;gap:11px;padding:14px 15px;border-bottom:1px solid #e7edf4;background:#fff}
-    .mark{display:grid;width:34px;height:34px;flex:0 0 auto;place-items:center;border-radius:8px;background:#004a98;color:#fff;font-size:15px;font-weight:800}
-    .heading{min-width:0;flex:1}.heading strong{display:block;font-size:14px;color:#101828}.heading span{display:block;margin-top:2px;color:#667085;font-size:11.5px}
-    .icon-btn{display:grid;width:30px;height:30px;place-items:center;border:0;border-radius:7px;background:transparent;color:#667085;font-size:18px}.icon-btn:hover{background:#f1f5f9;color:#172033}
-    .body{padding:15px}.intro{margin:0;color:#475467;font-size:13px;line-height:1.55}.privacy{display:flex;gap:8px;margin-top:12px;padding:10px 11px;border:1px solid #cde7dc;border-radius:8px;background:#f2fbf7;color:#176448;font-size:12px;line-height:1.45}
-    .status-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}.dot{width:8px;height:8px;border-radius:50%;background:#12b76a}.dot.running{background:#1570ef;box-shadow:0 0 0 4px #eaf3ff}.dot.error{background:#d92d20}.status-row strong{font-size:13px}.meta{margin:0;color:#667085;font-size:12px;line-height:1.5}
-    .progress{margin-top:12px;padding:11px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#184e8a;font-size:12px;line-height:1.45}.progress.error{border-color:#fecaca;background:#fff5f5;color:#b42318}.progress.success{border-color:#bbebd2;background:#f2fbf7;color:#176448}
-    .section{margin-top:15px}.section-title{display:flex;justify-content:space-between;margin-bottom:8px;color:#344054;font-size:11px;font-weight:750;text-transform:uppercase}
-    .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:4px;border:1px solid #e4e7ec;border-radius:9px;background:#f8fafc}.mode{min-height:34px;border:0;border-radius:6px;background:transparent;color:#667085;font-size:11.5px;font-weight:650}.mode.active{background:#fff;color:#004a98;box-shadow:0 1px 4px rgba(15,23,42,.12)}
-    .sources{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e4e7ec;border-radius:9px;overflow:hidden}.source{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 10px;border-right:1px solid #edf0f3;border-bottom:1px solid #edf0f3;color:#344054;font-size:11.5px}.source:nth-child(even){border-right:0}.source:nth-last-child(-n+2){border-bottom:0}.source input{width:15px;height:15px;margin:0;accent-color:#004a98}.source.locked{color:#667085;background:#fafafa}
-    .period{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field label{display:block;margin-bottom:5px;color:#667085;font-size:11px}.field input,.field select{width:100%;height:36px;border:1px solid #d0d5dd;border-radius:7px;background:#fff;padding:0 10px;color:#344054;font-size:12px;outline:none}.field input:focus,.field select:focus{border-color:#1570ef;box-shadow:0 0 0 3px rgba(21,112,239,.12)}
-    .check-row{display:flex;align-items:flex-start;gap:8px;margin-top:13px;color:#475467;font-size:12px;line-height:1.4}.check-row input{width:15px;height:15px;margin:1px 0 0;accent-color:#004a98}
-    .suggestion{margin-top:12px;padding:11px;border:1px solid #fedf89;border-radius:8px;background:#fffaeb;color:#7a4d00;font-size:12px;line-height:1.45}.suggestion-actions{display:flex;gap:12px;margin-top:8px}.link-btn{border:0;background:transparent;padding:0;color:#004a98;font-size:12px;font-weight:700}.link-btn.muted{color:#667085}
-    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.button{height:36px;border-radius:8px;padding:0 13px;font-size:12px;font-weight:700}.button.secondary{border:1px solid #d0d5dd;background:#fff;color:#475467}.button.secondary:hover{background:#f8fafc}.button.primary{border:1px solid #004a98;background:#004a98;color:#fff}.button.primary:hover{background:#003a78}.button:disabled{cursor:not-allowed;opacity:.55}
+    .header{display:flex;align-items:center;gap:12px;padding:17px 18px;border-bottom:1px solid #e5eaf0;background:#fff}.header img{width:42px;height:42px;flex:0 0 auto;border-radius:10px}.heading{min-width:0;flex:1}.heading strong{display:block;color:#101828;font-size:15px;line-height:1.3}.heading span{display:block;margin-top:3px;color:#667085;font-size:11.5px}.icon-btn{display:grid;width:30px;height:30px;flex:0 0 auto;place-items:center;border:0;border-radius:7px;background:transparent;color:#667085;font-size:19px;line-height:1}.icon-btn:hover{background:#f1f5f9;color:#172033}
+    .summary{margin:14px 16px 0;padding:11px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#184e8a;font-size:12px;line-height:1.45}.summary.error{border-color:#fecaca;background:#fff5f5;color:#b42318}.summary.success{border-color:#bbebd2;background:#f2fbf7;color:#176448}.summary.warning{border-color:#fedf89;background:#fffaeb;color:#7a4d00}
+    .section{padding:15px 16px;border-bottom:1px solid #edf0f3}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.section-heading h2{margin:0;color:#344054;font-size:11px;font-weight:800;text-transform:uppercase}.section-heading span{color:#078553;font-size:10.5px;font-weight:650}
+    .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border:1px solid #e4e7ec;border-radius:9px;background:#f8fafc}.segmented button{height:33px;border:0;border-radius:6px;background:transparent;color:#667085;font-size:11.5px;font-weight:700}.segmented button.active{background:#fff;color:#004a98;box-shadow:0 1px 5px rgba(15,23,42,.13)}.hint{min-height:16px;margin:8px 1px 0;color:#667085;font-size:11px;line-height:1.45}
+    .source-list{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e4e7ec;border-radius:9px;overflow:hidden}.source{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 9px;border-right:1px solid #edf0f3;border-bottom:1px solid #edf0f3;color:#344054;font-size:11px}.source:nth-child(even){border-right:0}.source:nth-last-child(-n+2){border-bottom:0}.source input{width:15px;height:15px;margin:0;accent-color:#004a98}.source.locked{background:#fafafa;color:#667085}
+    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.period-grid label{color:#667085;font-size:10.5px}.period-grid input,.period-grid select{display:block;width:100%;height:35px;margin-top:5px;border:1px solid #d0d5dd;border-radius:7px;background:#fff;padding:0 9px;color:#344054;font-size:12px;outline:0}.period-grid input:focus,.period-grid select:focus{border-color:#1570ef;box-shadow:0 0 0 3px rgba(21,112,239,.1)}
+    .open-app-option{display:flex;align-items:flex-start;gap:9px;padding:14px 16px;border-bottom:1px solid #edf0f3;color:#344054}.open-app-option input{width:15px;height:15px;margin:2px 0 0;accent-color:#004a98}.open-app-option span{display:flex;flex-direction:column}.open-app-option strong{font-size:11.5px}.open-app-option small{margin-top:2px;color:#667085;font-size:10.5px}
+    .suggestion-actions{display:flex;gap:12px;margin-top:8px}.link-btn{border:0;background:transparent;padding:0;color:#004a98;font-size:12px;font-weight:700}.link-btn.muted{color:#667085}
+    .actions{display:flex;gap:8px;padding:14px 16px;border-top:1px solid #edf0f3;background:#f8fafc}.button{height:37px;border-radius:8px;padding:0 12px;font-size:11.5px;font-weight:750}.button.secondary{border:1px solid #d0d5dd;background:#fff;color:#475467}.button.secondary:hover{background:#f4f6f8}.button.primary{flex:1;border:1px solid #004a98;background:#004a98;color:#fff}.button.primary:hover{background:#003a78}.button:disabled{cursor:not-allowed;opacity:.55}
   </style>
   <div id="mount"></div>
 `;
@@ -73,34 +75,31 @@ function formatLastSync(value) {
   return date.toLocaleDateString('vi-VN');
 }
 
-function modeLabel(mode) {
-  return mode === 'auto' ? 'Tự động' : mode === 'manual' ? 'Thủ công' : 'Hỏi trước';
-}
-
 function renderSettingsBody(settings) {
   return `
-    <p class="intro">Chọn dữ liệu UStudy được phép đọc. Bảng điểm luôn bật để nhận diện hồ sơ sinh viên.</p>
-    <div class="privacy"><span>✓</span><span>Dữ liệu chỉ đi từ Portal sang UStudy trên trình duyệt này, không được tải lên máy chủ.</span></div>
-    <div class="section">
-      <div class="section-title"><span>Cách đồng bộ</span></div>
-      <div class="modes" role="group" aria-label="Cách đồng bộ">
-        ${['manual', 'ask', 'auto'].map((mode) => `<button class="mode ${settings.mode === mode ? 'active' : ''}" data-mode="${mode}" type="button">${modeLabel(mode)}</button>`).join('')}
+    <section class="section">
+      <div class="section-heading"><h2>Cách đồng bộ</h2></div>
+      <div class="segmented" role="group" aria-label="Cách đồng bộ">
+        <button class="${settings.mode === 'manual' ? 'active' : ''}" data-mode="manual" type="button">Thủ công</button>
+        <button class="${settings.mode === 'ask' ? 'active' : ''}" data-mode="ask" type="button">Hỏi trước</button>
+        <button class="${settings.mode === 'auto' ? 'active' : ''}" data-mode="auto" type="button">Tự động</button>
       </div>
-    </div>
-    <div class="section">
-      <div class="section-title"><span>Nguồn dữ liệu</span></div>
-      <div class="sources">
+      <p class="hint" id="ustudy-mode-description">${MODE_DESCRIPTIONS[settings.mode]}</p>
+    </section>
+    <section class="section">
+      <div class="section-heading"><h2>Nguồn dữ liệu</h2><span>Chỉ lưu trên máy</span></div>
+      <div class="source-list">
         ${Object.entries(SOURCE_LABELS).map(([key, label]) => `<label class="source ${key === 'grades' ? 'locked' : ''}"><input data-source="${key}" type="checkbox" ${settings.sources[key] ? 'checked' : ''} ${key === 'grades' ? 'disabled' : ''}><span>${label}</span></label>`).join('')}
       </div>
-    </div>
-    <div class="section">
-      <div class="section-title"><span>Kỳ cho lớp mở và ĐKHP</span></div>
-      <div class="period">
-        <div class="field"><label for="ustudy-year">Năm học</label><input id="ustudy-year" value="${settings.academicYear}" maxlength="5" placeholder="25-26"></div>
-        <div class="field"><label for="ustudy-semester">Học kỳ</label><select id="ustudy-semester"><option value="1" ${settings.semester === '1' ? 'selected' : ''}>Học kỳ 1</option><option value="2" ${settings.semester === '2' ? 'selected' : ''}>Học kỳ 2</option><option value="3" ${settings.semester === '3' ? 'selected' : ''}>Học kỳ 3</option></select></div>
+    </section>
+    <section class="section">
+      <div class="section-heading"><h2>Kỳ cho lớp mở và ĐKHP</h2></div>
+      <div class="period-grid">
+        <label for="ustudy-year">Năm học<input id="ustudy-year" value="${settings.academicYear}" maxlength="5" placeholder="25-26"></label>
+        <label for="ustudy-semester">Học kỳ<select id="ustudy-semester"><option value="1" ${settings.semester === '1' ? 'selected' : ''}>Học kỳ 1</option><option value="2" ${settings.semester === '2' ? 'selected' : ''}>Học kỳ 2</option><option value="3" ${settings.semester === '3' ? 'selected' : ''}>Học kỳ 3</option></select></label>
       </div>
-    </div>
-    <label class="check-row"><input id="ustudy-open-app" type="checkbox" ${settings.openAppAfterSync ? 'checked' : ''}><span>Mở UStudy sau khi thu thập xong để xem trước thay đổi.</span></label>
+    </section>
+    <label class="open-app-option"><input id="ustudy-open-app" type="checkbox" ${settings.openAppAfterSync ? 'checked' : ''}><span><strong>Mở UStudy sau khi quét</strong><small>Luôn xem trước trước khi áp dụng dữ liệu.</small></span></label>
   `;
 }
 
@@ -111,7 +110,7 @@ function render() {
   }
   host.style.display = 'block';
   const settings = extensionState.settings;
-  const compactAutoMode = settings.onboardingComplete && settings.mode === 'auto' && !editingSettings;
+  const compactAutoMode = settings.onboardingComplete && settings.mode === 'auto';
   if (compactAutoMode) {
     if (phase === 'idle') {
       host.style.display = 'none';
@@ -119,7 +118,7 @@ function render() {
     }
     mount.innerHTML = `
       <section class="compact" aria-live="polite">
-        <div class="mark">U</div>
+        <img src="${EXTENSION_ICON_URL}" alt="">
         <div class="compact-copy">
           <strong>${phase === 'running' ? 'UStudy đang đồng bộ' : phase === 'success' ? 'Đồng bộ hoàn tất' : 'Không thể đồng bộ'}</strong>
           <span>${phaseMessage || 'Đang chuẩn bị dữ liệu Portal...'}</span>
@@ -129,26 +128,29 @@ function render() {
     `;
     return;
   }
-  const showSetup = !settings.onboardingComplete || editingSettings;
+  const isFirstSetup = !settings.onboardingComplete;
+  const phaseClass = phase === 'error' ? 'error' : phase === 'success' ? 'success' : '';
+  const showAutoSuggestion = extensionState.stats.successfulSyncs >= 2
+    && settings.mode === 'ask'
+    && !settings.autoSuggestionDismissed;
 
   mount.innerHTML = `
     <section class="panel" aria-label="UStudy Portal Sync">
-      <div class="header">
-        <div class="mark">U</div>
-        <div class="heading"><strong>${showSetup ? 'Thiết lập đồng bộ UStudy' : 'UStudy Portal Sync'}</strong><span>${showSetup ? 'Bạn luôn có thể đổi lại trong popup Extension' : `${modeLabel(settings.mode)} · ${formatLastSync(extensionState.stats.lastSyncedAt)}`}</span></div>
+      <header class="header">
+        <img src="${EXTENSION_ICON_URL}" alt="">
+        <div class="heading"><strong>UStudy Portal Sync</strong><span>Phiên bản ${extensionState.extensionVersion} · ${formatLastSync(extensionState.stats.lastSyncedAt)}</span></div>
         <button class="icon-btn" id="ustudy-close" type="button" aria-label="Ẩn">×</button>
+      </header>
+      <div class="panel-scroll">
+        ${!isPortalReady() ? '<div class="summary warning">Hãy đăng nhập Portal trước khi đồng bộ dữ liệu.</div>' : ''}
+        ${phaseMessage ? `<div class="summary ${phaseClass}">${phaseMessage}</div>` : ''}
+        ${showAutoSuggestion ? `<div class="summary">Bạn đã đồng bộ thành công ${extensionState.stats.successfulSyncs} lần. Bật tự động khi mở Portal?<div class="suggestion-actions"><button class="link-btn" id="ustudy-enable-auto" type="button">Bật tự động</button><button class="link-btn muted" id="ustudy-dismiss-auto" type="button">Giữ như hiện tại</button></div></div>` : ''}
+        ${renderSettingsBody(settings)}
       </div>
-      <div class="body">
-        ${showSetup ? renderSettingsBody(settings) : `
-          <div class="status-row"><span class="dot ${phase === 'running' ? 'running' : phase === 'error' ? 'error' : ''}"></span><strong>${isPortalReady() ? 'Portal đã sẵn sàng' : 'Hãy đăng nhập Portal trước'}</strong></div>
-          <p class="meta">${settings.sources && Object.entries(settings.sources).filter(([, enabled]) => enabled).map(([key]) => SOURCE_LABELS[key]).join(' · ')}</p>
-          ${phaseMessage ? `<div class="progress ${phase === 'error' ? 'error' : phase === 'success' ? 'success' : ''}">${phaseMessage}</div>` : ''}
-          ${extensionState.stats.successfulSyncs >= 2 && settings.mode === 'ask' && !settings.autoSuggestionDismissed ? `<div class="suggestion">Bạn đã đồng bộ thành công ${extensionState.stats.successfulSyncs} lần. Bật tự động khi mở Portal?<div class="suggestion-actions"><button class="link-btn" id="ustudy-enable-auto" type="button">Bật tự động</button><button class="link-btn muted" id="ustudy-dismiss-auto" type="button">Giữ như hiện tại</button></div></div>` : ''}
-        `}
-        <div class="actions">
-          ${showSetup ? `<button class="button secondary" id="ustudy-cancel-setup" type="button">${settings.onboardingComplete ? 'Hủy' : 'Để sau'}</button><button class="button primary" id="ustudy-save-setup" type="button">Lưu và đồng bộ</button>` : `<button class="button secondary" id="ustudy-settings" type="button">Thiết lập</button><button class="button primary" id="ustudy-sync" type="button" ${phase === 'running' || !isPortalReady() ? 'disabled' : ''}>${phase === 'running' ? 'Đang đồng bộ' : 'Đồng bộ ngay'}</button>`}
-        </div>
-      </div>
+      <footer class="actions">
+        ${isFirstSetup ? '<button class="button secondary" id="ustudy-cancel-setup" type="button">Để sau</button>' : '<button class="button secondary" id="ustudy-save-settings" type="button">Lưu thiết lập</button>'}
+        <button class="button primary" id="ustudy-save-and-sync" type="button" ${phase === 'running' || !isPortalReady() ? 'disabled' : ''}>${phase === 'running' ? 'Đang đồng bộ' : isFirstSetup ? 'Lưu và đồng bộ' : 'Đồng bộ ngay'}</button>
+      </footer>
     </section>
   `;
 
@@ -156,24 +158,17 @@ function render() {
     hiddenForSession = true;
     render();
   });
-  shadow.getElementById('ustudy-settings')?.addEventListener('click', () => {
-    editingSettings = true;
-    render();
-  });
   shadow.getElementById('ustudy-cancel-setup')?.addEventListener('click', () => {
-    if (settings.onboardingComplete) {
-      editingSettings = false;
-      render();
-    } else {
-      hiddenForSession = true;
-      render();
-    }
+    hiddenForSession = true;
+    render();
   });
   shadow.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => {
     shadow.querySelectorAll('[data-mode]').forEach((item) => item.classList.toggle('active', item === button));
+    const description = shadow.getElementById('ustudy-mode-description');
+    if (description) description.textContent = MODE_DESCRIPTIONS[button.dataset.mode];
   }));
-  shadow.getElementById('ustudy-save-setup')?.addEventListener('click', saveSetupAndSync);
-  shadow.getElementById('ustudy-sync')?.addEventListener('click', startSync);
+  shadow.getElementById('ustudy-save-settings')?.addEventListener('click', () => savePanelSettings(false));
+  shadow.getElementById('ustudy-save-and-sync')?.addEventListener('click', () => savePanelSettings(true));
   shadow.getElementById('ustudy-enable-auto')?.addEventListener('click', async () => {
     extensionState = await callExtension('SAVE_SETTINGS', { mode: 'auto', autoSuggestionDismissed: true });
     render();
@@ -184,7 +179,7 @@ function render() {
   });
 }
 
-async function saveSetupAndSync() {
+function collectPanelSettings() {
   const activeMode = shadow.querySelector('[data-mode].active')?.dataset.mode || 'ask';
   const sources = { grades: true };
   shadow.querySelectorAll('[data-source]').forEach((input) => { sources[input.dataset.source] = input.checked; });
@@ -192,17 +187,23 @@ async function saveSetupAndSync() {
   const semester = shadow.getElementById('ustudy-semester')?.value || EXTENSION_CONFIG.defaults.semester;
   const openAppAfterSync = Boolean(shadow.getElementById('ustudy-open-app')?.checked);
 
+  return {
+    onboardingComplete: true,
+    mode: activeMode,
+    sources,
+    academicYear,
+    semester,
+    openAppAfterSync,
+  };
+}
+
+async function savePanelSettings(shouldSync) {
   try {
-    extensionState = await callExtension('SAVE_SETTINGS', {
-      onboardingComplete: true,
-      mode: activeMode,
-      sources,
-      academicYear,
-      semester,
-      openAppAfterSync,
-    });
-    editingSettings = false;
-    await startSync();
+    extensionState = await callExtension('SAVE_SETTINGS', collectPanelSettings());
+    phase = 'idle';
+    phaseMessage = '';
+    if (shouldSync) await startSync();
+    else render();
   } catch (error) {
     phase = 'error';
     phaseMessage = error?.message || String(error);
