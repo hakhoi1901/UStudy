@@ -1,10 +1,10 @@
 import { CheckCircle2, Database, Download, FileUp, RefreshCw, Upload } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { AppDialog } from '../../../components/ui/app-dialog';
 import { SecurityLock } from '../../../components/SecurityLock';
 import { useCrypto } from '../../../context/CryptoContext';
-import { createImportRollbackSnapshot, getImportRollbackSnapshot, hasSecureData, IMPORT_ROLLBACK_EVENT, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, restoreLastImportRollback, SECURE_DATA_KEYS, verifyBackupPin, type ImportRollbackSnapshot } from '../../../helpers/localStorage/save';
+import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
 
 type ImportStatus = 'add' | 'update' | 'unchanged';
 
@@ -38,7 +38,7 @@ interface ExportPreview {
   selectedKeys: string[];
 }
 
-const INTERNAL_BACKUP_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__', '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY]);
+const INTERNAL_BACKUP_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__', '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY, IMPORT_HISTORY_STORAGE_KEY]);
 
 const IMPORT_LABELS: Record<string, { label: string; group: string }> = {
   raw_student_db: { label: 'Dữ liệu Portal gốc', group: 'Dữ liệu học tập' },
@@ -78,8 +78,6 @@ export function ImportData() {
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [pendingImport, setPendingImport] = useState<ImportPreview | null>(null);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
-  const [lastRollback, setLastRollback] = useState<ImportRollbackSnapshot | null>(() => getImportRollbackSnapshot());
-  const [isUndoConfirmOpen, setIsUndoConfirmOpen] = useState(false);
   const { cryptoKey } = useCrypto();
 
   const previewGroups = useMemo(() => {
@@ -95,12 +93,6 @@ export function ImportData() {
     update: preview?.items.filter((item) => item.status === 'update').length ?? 0,
     unchanged: preview?.items.filter((item) => item.status === 'unchanged').length ?? 0,
   }), [preview]);
-
-  useEffect(() => {
-    const refreshRollback = () => setLastRollback(getImportRollbackSnapshot());
-    window.addEventListener(IMPORT_ROLLBACK_EVENT, refreshRollback);
-    return () => window.removeEventListener(IMPORT_ROLLBACK_EVENT, refreshRollback);
-  }, []);
 
   function openExportPreview() {
     try {
@@ -257,17 +249,6 @@ export function ImportData() {
     <div className="flex h-full flex-col">
       <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900"><Database className="h-5 w-5" />Nhập / Xuất dữ liệu</h2>
       <p className="mb-6 flex-grow text-sm text-gray-500">Xuất dữ liệu cục bộ thành tệp sao lưu, hoặc chọn từng khối dữ liệu cần nhận trước khi nhập.</p>
-      {lastRollback && (
-        <div className="mb-5 border-y border-slate-200 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-800">Lần nhập gần nhất: {lastRollback.source}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{new Date(lastRollback.createdAt).toLocaleString('vi-VN')} · Thêm {lastRollback.summary.added}, cập nhật {lastRollback.summary.updated}, trùng {lastRollback.summary.unchanged}</p>
-            </div>
-            <button type="button" onClick={() => setIsUndoConfirmOpen(true)} className="h-8 rounded-lg border border-[#004A98] bg-white px-3 text-sm font-semibold text-[#004A98] transition hover:bg-blue-50">Hoàn tác lần nhập</button>
-          </div>
-        </div>
-      )}
       <div className="mt-auto flex flex-wrap items-center justify-start gap-3">
         <button type="button" onClick={openExportPreview} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Download className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>
         <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Nhập dữ liệu</button>
@@ -321,7 +302,7 @@ export function ImportData() {
         title="Chọn dữ liệu để xuất"
         description="Chọn cả nhóm dữ liệu cần đưa vào tệp sao lưu. Dữ liệu đã mã hóa sẽ kèm thông tin xác thực cần thiết."
         icon={Download}
-        size="md"
+        size="lg"
         footer={(
           <>
             <button type="button" onClick={() => setExportPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
@@ -329,7 +310,7 @@ export function ImportData() {
           </>
         )}
       >
-        <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
+        <div className="mb-4 max-h-[90vh] flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <p className="text-sm text-slate-600">Đã chọn {exportPreview?.selectedKeys.length ?? 0} mục</p>
           <div className="flex items-center gap-3 text-sm font-semibold">
             <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: current.groups.flatMap((group) => group.items.map((item) => item.key)) } : current)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
@@ -355,23 +336,6 @@ export function ImportData() {
             </section>
           ))}
         </div>
-      </AppDialog>
-
-      <AppDialog
-        open={isUndoConfirmOpen}
-        onOpenChange={setIsUndoConfirmOpen}
-        title="Hoàn tác lần nhập gần nhất"
-        description="Toàn bộ dữ liệu hiện tại sẽ được thay bằng snapshot trước lần nhập đó."
-        icon={RefreshCw}
-        size="sm"
-        footer={(
-          <>
-            <button type="button" onClick={() => setIsUndoConfirmOpen(false)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
-            <button type="button" onClick={() => { if (restoreLastImportRollback()) window.location.reload(); else window.alert('Không thể khôi phục snapshot.'); }} className="h-9 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700">Hoàn tác</button>
-          </>
-        )}
-      >
-        <p className="text-sm leading-6 text-slate-600">Các thay đổi được tạo sau lần nhập này cũng sẽ bị thay thế. Ứng dụng sẽ tải lại sau khi khôi phục.</p>
       </AppDialog>
 
       {pendingImport && (

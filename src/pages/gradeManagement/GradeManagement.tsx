@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SectionTabs } from '../../components/ui/section-tabs';
-import { FileDown } from 'lucide-react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { TranscriptPDF } from '../../components/TranscriptPDF';
+import { TranscriptWordExportButton } from '../../components/TranscriptWordExportButton';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
 
@@ -91,46 +89,14 @@ export function GradeManagement() {
         </div>
 
         {hasData && (
-          <PDFDownloadLink
-            document={
-              <TranscriptPDF
-                data={{
-                  studentInfo: {
-                    fullName: studentDb?.name || "N/A",
-                    dob: studentDb?.dob || "---",
-                    studentId: studentDb?.id || "---",
-                    course: currentCohort?.name || "---",
-                    program: currentFaculty?.name || "---",
-                    major: currentMajor?.name || "---",
-                  },
-                  courses: gradesHistory.map((g, idx) => ({
-                    no: idx + 1,
-                    id: g.code,
-                    title: g.nameVi,
-                    credits: g.credits,
-                    score10: g.grade,
-                    score4: (g.grade >= 9 ? 4.0 : g.grade >= 8 ? 3.5 : g.grade >= 7 ? 3.0 : g.grade >= 6.5 ? 2.5 : g.grade >= 5 ? 2.0 : 0.0).toFixed(1)
-                  })),
-                  summary: {
-                    totalCredits: accumulatedCredits,
-                    gpa10: currentGPA.toFixed(2),
-                    gpa4: (currentGPA >= 9 ? 4.0 : currentGPA >= 8 ? 3.5 : currentGPA >= 7 ? 3.0 : currentGPA >= 6.5 ? 2.5 : currentGPA >= 5 ? 2.0 : 0.0).toFixed(2)
-                  }
-                }}
-              />
-            }
-            fileName={`BangDiem_${studentDb?.name || 'SinhVien'}.pdf`}
-          >
-            {({ loading }) => (
-              <button
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-[#004A98] text-white rounded-lg hover:bg-[#003B7A] transition-colors shadow-sm disabled:opacity-50"
-              >
-                <FileDown className="w-4 h-4" />
-                {loading ? 'Đang chuẩn bị...' : 'Xuất bảng điểm'}
-              </button>
-            )}
-          </PDFDownloadLink>
+          <TranscriptWordExportButton
+            name={studentDb?.name || 'Sinh viên'}
+            major={currentMajor?.name || '---'}
+            cohort={currentCohort?.name || '---'}
+            totalCredits={accumulatedCredits}
+            gpa10={currentGPA}
+            courses={gradesHistory.map((grade) => ({ code: grade.code, name: grade.nameVi, credits: grade.credits, score10: grade.grade }))}
+          />
         )}
       </div>
 

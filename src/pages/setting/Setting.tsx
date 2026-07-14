@@ -6,6 +6,7 @@ import { useStudentDb } from '../../hooks/useStudentDb';
 import { BookmarkletButton } from '../../components/BookmarkletButton';
 import { ChangePinModal } from '../../components/ChangePinModal';
 import { useCrypto } from '../../context/CryptoContext';
+import { DataSourceCenter } from '../../features/setting/components/DataSourceCenter';
 
 export function Setting({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();
@@ -53,9 +54,10 @@ export function Setting({ onPageChange }: { onPageChange: (page: string) => void
                                         <BookmarkletButton variant="outline" hideInstructions={true} className="flex flex-row items-center justify-start w-auto" />
                                     </div>
                                 </div>
-                                <div className="pt-6">
+                                <div className="py-6">
                                     <ImportData />
                                 </div>
+                                <DataSourceCenter />
                             </div>
 
                     {/* Bảo mật */}

@@ -13,6 +13,7 @@ import { APP_CONFIG } from './config';
 import { createImportRollbackSnapshot, readFromStorage, saveSecure, populateSecureCache } from './helpers/localStorage/save';
 import { processRawData } from './logic/dataProcessor';
 import { buildRawImportPreview, getImportCollectionLabel, mergeSelectedRawImport, type RawImportChange } from './logic/import-preview';
+import { mergeImportMetadata, type PortalDataSource } from './logic/import-metadata';
 
 interface PendingRawImport {
   payload: any;
@@ -82,19 +83,31 @@ function AppContent() {
   const confirmImportPreview = useCallback(async () => {
     if (!importPreview || importPreview.selectedIds.length === 0) return;
     const currentRaw = readFromStorage<any>('raw_student_db', null);
+    const selectedChanges = importPreview.changes.filter((change) => importPreview.selectedIds.includes(change.id));
+    const updatedSources = new Set(selectedChanges.map((change) => change.collection as PortalDataSource));
+    const currentMeta = readFromStorage<any>('import_meta', null);
     const payload = {
       ...importPreview.payload,
       raw: mergeSelectedRawImport(importPreview.payload.raw, currentRaw, importPreview.selectedIds),
+      meta: mergeImportMetadata(currentMeta, importPreview.payload.meta, updatedSources),
     };
     const selectedCount = importPreview.selectedIds.length;
-    const selectedChanges = importPreview.changes.filter((change) => importPreview.selectedIds.includes(change.id));
     const summary: ImportSummary = {
       added: selectedChanges.filter((change) => change.status === 'add').length,
       updated: selectedChanges.filter((change) => change.status === 'update').length,
       unchanged: importPreview.changes.filter((change) => change.status === 'unchanged').length,
     };
+    const details = Array.from(updatedSources).map((source) => {
+      const sourceChanges = selectedChanges.filter((change) => change.collection === source);
+      return {
+        source,
+        added: sourceChanges.filter((change) => change.status === 'add').length,
+        updated: sourceChanges.filter((change) => change.status === 'update').length,
+        unchanged: importPreview.changes.filter((change) => change.collection === source && change.status === 'unchanged').length,
+      };
+    });
 
-    if (!createImportRollbackSnapshot('Bookmarklet Portal', summary)) {
+    if (!createImportRollbackSnapshot('Bookmarklet Portal', summary, details)) {
       addNotification({ title: 'Không thể nhập dữ liệu', message: 'Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu hiện tại chưa bị thay đổi.', type: 'error' });
       return;
     }

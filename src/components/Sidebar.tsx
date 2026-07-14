@@ -39,6 +39,19 @@ const bottomNavItems = [
   { icon: Menu, label: 'Thêm', page: '__more__' },
 ];
 
+const pagePreloaders: Partial<Record<string, () => Promise<unknown>>> = {
+  courses: () => import('../pages/integratedStudyRoadmap/IntegratedStudyRoadmap'),
+  grades: () => import('../pages/gradeManagement/GradeManagement'),
+  tuition: () => import('../pages/TuitionPage/TuitionPage'),
+  schedule: () => import('../pages/visualSchedule/VisualSchedule'),
+  examSchedule: () => import('../pages/ExamSchedule/examSchedule'),
+  settings: () => import('../pages/setting/Setting'),
+};
+
+function preloadPage(page: string) {
+  void pagePreloaders[page]?.();
+}
+
 interface SidebarProps {
   currentPage: string;
   onPageChange: (page: string) => void;
@@ -49,6 +62,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handlePageChange = (page: string) => {
+    preloadPage(page);
     onPageChange(page);
     setIsDrawerOpen(false);
   };
@@ -102,7 +116,8 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                   <li key={item.label}>
                     <a
                       href={getPathForPage(item.page)}
-                      onClick={(e) => { e.preventDefault(); onPageChange(item.page); }}
+                      onPointerEnter={() => preloadPage(item.page)}
+                      onClick={(e) => { e.preventDefault(); handlePageChange(item.page); }}
                       className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${isActive ? 'bg-white/10' : 'hover:bg-white/5'} ${isCollapsed ? 'justify-center' : ''}`}
                       title={isCollapsed ? item.label : undefined}
                     >
@@ -200,6 +215,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                     <li key={item.label}>
                       <a
                         href={getPathForPage(item.page)}
+                        onPointerEnter={() => preloadPage(item.page)}
                         onClick={(e) => { e.preventDefault(); handlePageChange(item.page); }}
                         style={{
                           display: 'flex',

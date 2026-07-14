@@ -10,6 +10,7 @@ import { CACHE_POPULATED_EVENT } from "../../../context/CryptoContext";
 import { SecurityLock } from "../../../components/SecurityLock";
 import { STORAGE_KEYS } from "../../../config/storageKeys";
 import { buildRawImportPreview } from "../../../logic/import-preview";
+import { mergeImportMetadata, type PortalDataSource } from "../../../logic/import-metadata";
 
 export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
@@ -26,17 +27,25 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
 
     /** Lưu dữ liệu nhạy cảm đã mã hóa + populate RAM cache */
     const saveImportedSecure = async (rawData: any, metaData: any, key: CryptoKey) => {
+        const params = metaData?.params || {};
+        const updatedSources: PortalDataSource[] = ['grades'];
+        if (params.registration || !metaData) updatedSources.push('registrations');
+        if (params.exam || !metaData) updatedSources.push('exams');
+        if (params.class || !metaData) updatedSources.push('courses');
+        if (params.tuition || !metaData) updatedSources.push('tuition');
+        const mergedMeta = mergeImportMetadata(readFromStorage('import_meta', null), metaData, updatedSources);
+
         await saveSecure('raw_student_db', rawData, key);
         const { student, courses } = processRawData(rawData);
         await saveSecure('student_db_full', student, key);
         await saveSecure('course_db_offline', courses, key);
-        if (metaData) await saveSecure('import_meta', metaData, key);
+        if (mergedMeta) await saveSecure('import_meta', mergedMeta, key);
 
         // Populate RAM cache để hooks đọc được ngay
         populateSecureCache('raw_student_db', rawData);
         populateSecureCache('student_db_full', student);
         populateSecureCache('course_db_offline', courses);
-        if (metaData) populateSecureCache('import_meta', metaData);
+        if (mergedMeta) populateSecureCache('import_meta', mergedMeta);
 
         // Báo các hook re-render (giống CryptoContext làm sau unlock)
         window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
@@ -53,11 +62,19 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
         const changes = data?.grades || data?.registrations || data?.courses
             ? buildRawImportPreview(data, readFromStorage('raw_student_db', null))
             : Object.keys(data || {}).map((key) => ({ status: localStorage.getItem(key) === null ? 'add' : 'update' }));
-        return createImportRollbackSnapshot(source, {
+        const summary = {
             added: changes.filter((change: any) => change.status === 'add').length,
             updated: changes.filter((change: any) => change.status === 'update').length,
             unchanged: changes.filter((change: any) => change.status === 'unchanged').length,
-        });
+        };
+        const changedSources = Array.from(new Set(changes.map((change: any) => change.collection).filter(Boolean))) as PortalDataSource[];
+        const details = changedSources.map((changedSource) => ({
+            source: changedSource,
+            added: changes.filter((change: any) => change.collection === changedSource && change.status === 'add').length,
+            updated: changes.filter((change: any) => change.collection === changedSource && change.status === 'update').length,
+            unchanged: changes.filter((change: any) => change.collection === changedSource && change.status === 'unchanged').length,
+        }));
+        return createImportRollbackSnapshot(source, summary, details);
     };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
