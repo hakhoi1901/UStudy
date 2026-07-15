@@ -389,6 +389,7 @@ export const IMPORT_HISTORY_STORAGE_KEY = '__ustudy_import_history__';
 export interface ImportRollbackSummary {
     added: number;
     updated: number;
+    removed?: number;
     unchanged: number;
 }
 

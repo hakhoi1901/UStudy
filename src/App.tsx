@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { BookOpen, CheckCircle2, ChevronUp, Eye, FileUp, RefreshCw } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronUp, Eye, FileUp, RefreshCw, Trash2 } from 'lucide-react';
 import { AppRouter } from './app/AppRouter';
 import { AppDialog } from './components/ui/app-dialog';
 import { ChatbotWidget } from './components/ChatbotWidget';
@@ -35,13 +35,14 @@ interface PendingRawImport {
 interface ImportSummary {
   added: number;
   updated: number;
+  removed: number;
   unchanged: number;
 }
 
 interface ImportCourseSummary {
   id: string;
   name: string;
-  status: 'add' | 'update';
+  status: 'add' | 'update' | 'remove';
 }
 
 interface ImportCollectionSummary {
@@ -49,6 +50,7 @@ interface ImportCollectionSummary {
   courses: ImportCourseSummary[];
   add: number;
   update: number;
+  remove: number;
   nonCourseChanges: number;
 }
 
@@ -63,6 +65,7 @@ function AppContent() {
   const previewSummary = useMemo(() => ({
     add: importPreview?.changes.filter((change) => change.status === 'add').length ?? 0,
     update: importPreview?.changes.filter((change) => change.status === 'update').length ?? 0,
+    remove: importPreview?.changes.filter((change) => change.status === 'remove').length ?? 0,
     unchanged: importPreview?.changes.filter((change) => change.status === 'unchanged').length ?? 0,
   }), [importPreview]);
   const groupedPreviewChanges = useMemo(() => {
@@ -86,6 +89,7 @@ function AppContent() {
           courses: [],
           add: 0,
           update: 0,
+          remove: 0,
           nonCourseChanges: 0,
         };
         summaries.set(change.collection, summary);
@@ -107,7 +111,7 @@ function AppContent() {
       const existing = courses.get(key);
       if (existing) {
         if (change.courseName && existing.name === 'Chưa rõ tên môn') existing.name = change.courseName;
-        if (change.status === 'update') existing.status = 'update';
+        if (existing.status !== change.status) existing.status = 'update';
         continue;
       }
       courses.set(key, {
@@ -222,6 +226,7 @@ function AppContent() {
     const summary: ImportSummary = {
       added: selectedChanges.filter((change) => change.status === 'add').length,
       updated: selectedChanges.filter((change) => change.status === 'update').length,
+      removed: selectedChanges.filter((change) => change.status === 'remove').length,
       unchanged: importPreview.changes.filter((change) => change.status === 'unchanged').length,
     };
     const details = Array.from(updatedSources).map((source) => {
@@ -230,6 +235,7 @@ function AppContent() {
         source,
         added: sourceChanges.filter((change) => change.status === 'add').length,
         updated: sourceChanges.filter((change) => change.status === 'update').length,
+        removed: sourceChanges.filter((change) => change.status === 'remove').length,
         unchanged: importPreview.changes.filter((change) => change.collection === source && change.status === 'unchanged').length,
       };
     });
@@ -249,7 +255,7 @@ function AppContent() {
     }
 
     const student = await saveImportedData(payload.raw, payload.meta, cryptoKey);
-    addNotification({ title: 'Nhập dữ liệu thành công', message: `Đã áp dụng ${selectedCount} thay đổi cho ${student.name}: thêm ${summary.added}, cập nhật ${summary.updated}, trùng ${summary.unchanged}. Có thể hoàn tác trong Cài đặt.`, type: 'success' });
+    addNotification({ title: 'Nhập dữ liệu thành công', message: `Đã áp dụng ${selectedCount} thay đổi cho ${student.name}: thêm ${summary.added}, cập nhật ${summary.updated}, xóa ${summary.removed}, trùng ${summary.unchanged}. Có thể hoàn tác trong Cài đặt.`, type: 'success' });
   }, [addNotification, cryptoKey, importPreview, saveImportedData]);
 
   const togglePreviewItem = useCallback((id: string, checked: boolean) => {
@@ -278,7 +284,7 @@ function AppContent() {
             unlock(key);
             const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
             const summary: ImportSummary | undefined = pendingData.summary;
-            addNotification({ title: 'Nhập dữ liệu thành công', message: `Dữ liệu đã được mã hóa và sẵn sàng cho ${student.name}.${summary ? ` Thêm ${summary.added}, cập nhật ${summary.updated}, trùng ${summary.unchanged}.` : ''} Có thể hoàn tác trong Cài đặt.`, type: 'success' });
+            addNotification({ title: 'Nhập dữ liệu thành công', message: `Dữ liệu đã được mã hóa và sẵn sàng cho ${student.name}.${summary ? ` Thêm ${summary.added}, cập nhật ${summary.updated}, xóa ${summary.removed}, trùng ${summary.unchanged}.` : ''} Có thể hoàn tác trong Cài đặt.`, type: 'success' });
             setPendingData(null);
           }}
         />
@@ -293,7 +299,7 @@ function AppContent() {
           }
         }}
         title={`Xem trước dữ liệu từ ${importPreview?.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet'}`}
-        description={`Phát hiện ${previewSummary.add + previewSummary.update} thay đổi trong ${changedCollectionSummaries.length} nhóm dữ liệu. Kiểm tra tóm tắt trước khi áp dụng.`}
+        description={`Phát hiện ${previewSummary.add + previewSummary.update + previewSummary.remove} thay đổi trong ${changedCollectionSummaries.length} nhóm dữ liệu. Kiểm tra tóm tắt trước khi áp dụng.`}
         icon={FileUp}
         size={isImportDetailsOpen ? 'lg' : 'md'}
         footer={(
@@ -307,9 +313,10 @@ function AppContent() {
           </>
         )}
       >
-        <div className="grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-200 text-center">
+        <div className="grid grid-cols-4 divide-x divide-slate-200 border-y border-slate-200 text-center">
           <ImportSummary label="Thêm" value={previewSummary.add} icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />} />
           <ImportSummary label="Cập nhật" value={previewSummary.update} icon={<RefreshCw className="h-4 w-4 text-blue-600" />} />
+          <ImportSummary label="Xóa" value={previewSummary.remove} icon={<Trash2 className="h-4 w-4 text-red-500" />} />
           <ImportSummary label="Trùng" value={previewSummary.unchanged} icon={<FileUp className="h-4 w-4 text-slate-400" />} />
         </div>
         {!isImportDetailsOpen && (
@@ -326,8 +333,10 @@ function AppContent() {
                       <h4 className="text-sm font-semibold text-slate-900">{getImportCollectionLabel(summary.collection)}</h4>
                       <span className="shrink-0 text-xs text-slate-500">
                         {summary.add > 0 && <strong className="font-semibold text-emerald-700">{summary.add} thêm</strong>}
-                        {summary.add > 0 && summary.update > 0 && <span className="mx-1.5">·</span>}
+                        {summary.add > 0 && (summary.update > 0 || summary.remove > 0) && <span className="mx-1.5">·</span>}
                         {summary.update > 0 && <strong className="font-semibold text-blue-700">{summary.update} cập nhật</strong>}
+                        {summary.update > 0 && summary.remove > 0 && <span className="mx-1.5">·</span>}
+                        {summary.remove > 0 && <strong className="font-semibold text-red-600">{summary.remove} xóa</strong>}
                       </span>
                     </div>
                     {summary.courses.length > 0 ? (
@@ -336,7 +345,7 @@ function AppContent() {
                           <div key={course.id} className="flex items-center gap-3 px-3 py-2.5">
                             <span className="w-24 shrink-0 text-xs font-bold text-[#004A98]">{course.id}</span>
                             <span className="min-w-0 flex-1 truncate text-sm text-slate-700">{course.name}</span>
-                            <span className={`shrink-0 text-xs font-semibold ${course.status === 'add' ? 'text-emerald-700' : 'text-blue-700'}`}>{course.status === 'add' ? 'Thêm mới' : 'Cập nhật'}</span>
+                            <span className={`shrink-0 text-xs font-semibold ${course.status === 'add' ? 'text-emerald-700' : course.status === 'remove' ? 'text-red-600' : 'text-blue-700'}`}>{course.status === 'add' ? 'Thêm mới' : course.status === 'remove' ? 'Xóa' : 'Cập nhật'}</span>
                           </div>
                         ))}
                       </div>
@@ -367,7 +376,7 @@ function AppContent() {
                   <label key={change.id} className={`flex items-center gap-3 px-1 py-2.5 ${change.status === 'unchanged' ? 'cursor-default opacity-55' : 'cursor-pointer'}`}>
                     <input type="checkbox" checked={importPreview.selectedIds.includes(change.id)} disabled={change.status === 'unchanged'} onChange={(event) => togglePreviewItem(change.id, event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-[#004A98] focus:ring-[#004A98]" />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">{change.label}</span>
-                    <span className={`shrink-0 text-xs font-semibold ${change.status === 'add' ? 'text-emerald-700' : change.status === 'update' ? 'text-blue-700' : 'text-slate-500'}`}>{change.status === 'add' ? 'Thêm mới' : change.status === 'update' ? 'Cập nhật' : 'Đã trùng'}</span>
+                    <span className={`shrink-0 text-xs font-semibold ${change.status === 'add' ? 'text-emerald-700' : change.status === 'update' ? 'text-blue-700' : change.status === 'remove' ? 'text-red-600' : 'text-slate-500'}`}>{change.status === 'add' ? 'Thêm mới' : change.status === 'update' ? 'Cập nhật' : change.status === 'remove' ? 'Xóa' : 'Đã trùng'}</span>
                   </label>
                 ))}
               </section>

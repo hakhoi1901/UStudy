@@ -167,7 +167,7 @@ function HistoryList({
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-slate-600">
-              {entry.summary.added} thêm mới · {entry.summary.updated} cập nhật · {entry.summary.unchanged} bỏ qua
+              {entry.summary.added} thêm mới · {entry.summary.updated} cập nhật · {entry.summary.removed || 0} xóa · {entry.summary.unchanged} bỏ qua
             </p>
             {index === 0 && canUndo && (
               <div className="flex flex-wrap items-center gap-1">
@@ -217,6 +217,7 @@ function InlineHistoryList({ entries, onRename }: { entries: ImportHistoryEntry[
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-5 text-xs sm:justify-end sm:pl-0">
             <span className="font-medium text-emerald-700">{entry.summary.added} thêm</span>
             <span className="font-medium text-blue-700">{entry.summary.updated} cập nhật</span>
+            <span className="font-medium text-red-600">{entry.summary.removed || 0} xóa</span>
             <span className="text-slate-500">{entry.summary.unchanged} bỏ qua</span>
           </div>
           {entry.restoredSources && entry.restoredSources.length > 0 && (
@@ -484,7 +485,7 @@ export function DataSourceCenter() {
                     return (
                       <div key={entry.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
                         <div><p className="font-medium text-slate-800">{entry.source}</p><p className="mt-0.5 text-xs text-slate-500">{new Date(entry.createdAt).toLocaleString('vi-VN')}</p>{wasRestored && <p className="mt-1 text-xs font-semibold text-emerald-700">Đã hoàn tác nguồn này</p>}</div>
-                        <p className="shrink-0 text-xs text-slate-600">+{summary.added} mới · {summary.updated} cập nhật · {summary.unchanged} bỏ qua</p>
+                        <p className="shrink-0 text-xs text-slate-600">+{summary.added} mới · {summary.updated} cập nhật · {summary.removed || 0} xóa · {summary.unchanged} bỏ qua</p>
                       </div>
                     );
                   })}

@@ -1,4 +1,4 @@
-export type ImportChangeStatus = 'add' | 'update' | 'unchanged';
+export type ImportChangeStatus = 'add' | 'update' | 'remove' | 'unchanged';
 
 type ImportCollection = 'grades' | 'registrations' | 'courses' | 'exams' | 'tuition';
 
@@ -122,6 +122,41 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
         ...(courseName ? { courseName } : {}),
       });
     });
+
+    // Only reconcile deletions from a non-empty snapshot. An empty array can
+    // also mean the Portal parser failed, so it must never erase local data.
+    if (incomingValue.length === 0 || (collection !== 'grades' && collection !== 'registrations' && collection !== 'courses')) continue;
+
+    const incomingKeys = new Set(incomingValue.map((value: any, index: number) => valueKey(collection, value, index)));
+    const incomingRegistrationBases = collection === 'registrations'
+      ? new Set(incomingValue.map(registrationBaseKey))
+      : null;
+    const incomingRegistrationSemesters = collection === 'registrations'
+      ? new Set(incomingValue.map((value: any) => normalizeSemester(value?.semester)).filter(Boolean))
+      : null;
+
+    currentValues.forEach((value: any, index: number) => {
+      const semester = collection === 'registrations' ? normalizeSemester(value?.semester) : '';
+      const existsInIncoming = incomingKeys.has(valueKey(collection, value, index))
+        || (collection === 'registrations'
+          && !semester
+          && incomingRegistrationBases?.has(registrationBaseKey(value)));
+      const isInReconciledScope = collection !== 'registrations'
+        || Boolean(semester && incomingRegistrationSemesters?.has(semester));
+      if (existsInIncoming || !isInReconciledScope) return;
+
+      const courseId = String(value?.id ?? '').trim();
+      const courseName = String(value?.name ?? '').trim();
+      changes.push({
+        id: `${collection}:remove:${index}`,
+        collection,
+        index,
+        label: valueLabel(collection, value),
+        status: 'remove',
+        ...(courseId ? { courseId } : {}),
+        ...(courseName ? { courseName } : {}),
+      });
+    });
   }
   return changes;
 }
@@ -138,7 +173,8 @@ export function mergeSelectedRawImport(incoming: any, current: any, selectedIds:
     }
     if (!Array.isArray(incomingValue)) continue;
     const currentCollection = Array.isArray(current?.[collection]) ? current[collection] : [];
-    const merged = collection === 'registrations' ? dedupeRegistrations(currentCollection) : [...currentCollection];
+    const retainedCurrentCollection = currentCollection.filter((_: any, index: number) => !selected.has(`${collection}:remove:${index}`));
+    const merged = collection === 'registrations' ? dedupeRegistrations(retainedCurrentCollection) : [...retainedCurrentCollection];
     const indexesByKey = new Map(merged.map((value: any, index: number) => [valueKey(collection, value, index), index]));
     const legacyRegistrationIndexes = collection === 'registrations'
       ? new Map(merged

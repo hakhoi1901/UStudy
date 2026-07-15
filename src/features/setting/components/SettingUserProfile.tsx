@@ -65,6 +65,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
         const summary = {
             added: changes.filter((change: any) => change.status === 'add').length,
             updated: changes.filter((change: any) => change.status === 'update').length,
+            removed: changes.filter((change: any) => change.status === 'remove').length,
             unchanged: changes.filter((change: any) => change.status === 'unchanged').length,
         };
         const changedSources = Array.from(new Set(changes.map((change: any) => change.collection).filter(Boolean))) as PortalDataSource[];
@@ -72,6 +73,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
             source: changedSource,
             added: changes.filter((change: any) => change.collection === changedSource && change.status === 'add').length,
             updated: changes.filter((change: any) => change.collection === changedSource && change.status === 'update').length,
+            removed: changes.filter((change: any) => change.collection === changedSource && change.status === 'remove').length,
             unchanged: changes.filter((change: any) => change.collection === changedSource && change.status === 'unchanged').length,
         }));
         return createImportRollbackSnapshot(source, summary, details);
