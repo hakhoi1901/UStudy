@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   pendingImport: 'ustudyPendingImport',
   pendingSyncRequest: 'ustudyPendingSyncRequest',
   syncSessions: 'ustudySyncSessions',
+  autoCooldowns: 'ustudyAutoCooldowns',
 };
 const SYNC_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -23,7 +24,7 @@ const DEFAULT_SETTINGS = {
   academicYear: CONFIG.defaults.academicYear,
   semester: CONFIG.defaults.semester,
   cooldownMinutes: CONFIG.defaults.cooldownMinutes,
-  openAppAfterSync: true,
+  openAppAfterSync: false,
   autoSuggestionDismissed: false,
 };
 
@@ -67,6 +68,27 @@ async function removeSyncSession(tabId) {
   });
 }
 
+async function readAutoCooldowns() {
+  const stored = await chrome.storage.session.get(STORAGE_KEYS.autoCooldowns);
+  return stored[STORAGE_KEYS.autoCooldowns] || {};
+}
+
+async function setAutoCooldown(tabId, cooldownMinutes) {
+  return enqueueCheckpoint(tabId, async () => {
+    const cooldowns = await readAutoCooldowns();
+    cooldowns[tabId] = Date.now() + cooldownMinutes * 60 * 1000;
+    await chrome.storage.session.set({ [STORAGE_KEYS.autoCooldowns]: cooldowns });
+  });
+}
+
+async function removeAutoCooldown(tabId) {
+  return enqueueCheckpoint(tabId, async () => {
+    const cooldowns = await readAutoCooldowns();
+    delete cooldowns[tabId];
+    await chrome.storage.session.set({ [STORAGE_KEYS.autoCooldowns]: cooldowns });
+  });
+}
+
 function hasSameSourceSelection(session, selectedSources) {
   return Array.isArray(session?.selectedSources)
     && session.selectedSources.length === selectedSources.length
@@ -79,7 +101,7 @@ function mergeSettings(value) {
   const semester = ['1', '2', '3'].includes(String(incoming.semester))
     ? String(incoming.semester)
     : DEFAULT_SETTINGS.semester;
-  const cooldownMinutes = Math.max(10, Math.min(240, Number(incoming.cooldownMinutes) || DEFAULT_SETTINGS.cooldownMinutes));
+  const cooldownMinutes = Math.max(1, Math.min(1440, Number(incoming.cooldownMinutes) || DEFAULT_SETTINGS.cooldownMinutes));
 
   return {
     ...DEFAULT_SETTINGS,
@@ -192,7 +214,7 @@ async function openOrFocusApp() {
     await notifyAppTabs();
     return appTab;
   }
-  return chrome.tabs.create({ url: CONFIG.productionAppUrl });
+  return chrome.tabs.create({ url: CONFIG.productionAppUrl, active: true });
 }
 
 async function injectAppBridgeIntoOpenTabs() {
@@ -293,9 +315,9 @@ async function runPortalSync(sender, requestId, trigger = 'manual', documentInst
     await writeSyncSessions(sessions);
   });
 
-  if (trigger === 'auto' && session.completedSources.length === 0 && state.stats.lastSyncedAt) {
-    const cooldownMs = state.settings.cooldownMinutes * 60 * 1000;
-    if (Date.now() - new Date(state.stats.lastSyncedAt).getTime() < cooldownMs) {
+  if (trigger === 'auto' && session.completedSources.length === 0) {
+    const cooldowns = await readAutoCooldowns();
+    if (Number(cooldowns[tabId] || 0) > Date.now()) {
       await removeSyncSession(tabId);
       return { requestId, skipped: true, reason: 'cooldown' };
     }
@@ -416,6 +438,9 @@ async function storeSyncResult(packet, trigger = 'manual', tabId, requestId) {
   await chrome.action.setBadgeText({ text: '1' });
   if (tabId) {
     activePortalRuns.delete(tabId);
+    if (trigger === 'auto' || state.settings.mode === 'auto') {
+      await setAutoCooldown(tabId, state.settings.cooldownMinutes);
+    }
     await removeSyncSession(tabId);
   }
 
@@ -488,6 +513,7 @@ void injectAppBridgeIntoOpenTabs();
 chrome.tabs.onRemoved.addListener((tabId) => {
   activePortalRuns.delete(tabId);
   void removeSyncSession(tabId);
+  void removeAutoCooldown(tabId);
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

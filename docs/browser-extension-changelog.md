@@ -2,6 +2,20 @@
 
 Tài liệu này ghi lại các thay đổi ảnh hưởng đến người dùng và luồng kết nối giữa Extension, HCMUS Portal và UStudy.
 
+## 0.2.4
+
+- Sửa hành vi mở UStudy sau đồng bộ: ưu tiên tab UStudy đang mở, chỉ tạo tab mới khi chưa có.
+- Đảm bảo tab Portal không bị đổi URL hoặc tái sử dụng làm tab UStudy.
+
+## 0.2.3
+
+- Chuyển cooldown tự động từ trạng thái toàn cục sang trạng thái theo từng tab Portal.
+- Đóng tab Portal sẽ xóa cooldown; mở Portal trong tab mới có thể tự đồng bộ ngay.
+- Cho phép nhập thời gian nghỉ tự động từ 1 đến 1440 phút trong popup và modal Portal.
+- Đồng bộ thủ công luôn bỏ qua cooldown.
+- Tắt mặc định tùy chọn **Mở UStudy sau khi quét** cho người dùng thiết lập mới.
+- Khi tùy chọn này được bật, extension mở hoặc chuyển tới UStudy mà không ghi đè tab Portal.
+
 ## 0.2.2
 
 - Đổi URL mở UStudy mặc định sang `https://ustudy.hakhoi.io.vn`.

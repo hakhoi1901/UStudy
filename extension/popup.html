@@ -47,9 +47,15 @@
         </div>
       </section>
 
+      <section class="section">
+        <div class="section-heading"><h2>Thời gian nghỉ tự động</h2></div>
+        <label class="cooldown-field">Số phút giữa hai lần tự động quét<input id="cooldown-minutes" type="number" min="1" max="1440" step="1" /></label>
+        <p class="hint">Chỉ áp dụng khi điều hướng trong cùng tab Portal. Đồng bộ thủ công luôn chạy ngay.</p>
+      </section>
+
       <label class="open-app-option">
         <input id="open-app" type="checkbox" />
-        <span><strong>Mở UStudy sau khi quét</strong><small>Luôn xem trước trước khi áp dụng dữ liệu.</small></span>
+        <span><strong>Mở UStudy sau khi quét</strong><small>Dùng tab UStudy đang mở hoặc tạo tab mới.</small></span>
       </label>
 
       <p id="error-message" class="error" hidden></p>

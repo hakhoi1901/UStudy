@@ -44,6 +44,7 @@ function collectSettings() {
     sources,
     academicYear: document.getElementById('academic-year').value.trim() || POPUP_CONFIG.defaults.academicYear,
     semester: document.getElementById('semester').value,
+    cooldownMinutes: Number(document.getElementById('cooldown-minutes').value) || POPUP_CONFIG.defaults.cooldownMinutes,
     openAppAfterSync: document.getElementById('open-app').checked,
   };
 }
@@ -61,6 +62,7 @@ function render() {
   document.getElementById('mode-description').textContent = MODE_DESCRIPTIONS[settings.mode];
   document.getElementById('academic-year').value = settings.academicYear;
   document.getElementById('semester').value = settings.semester;
+  document.getElementById('cooldown-minutes').value = settings.cooldownMinutes;
   document.getElementById('open-app').checked = settings.openAppAfterSync;
 
   document.getElementById('source-list').innerHTML = Object.entries(SOURCE_LABELS).map(([key, label]) => `

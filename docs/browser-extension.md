@@ -44,6 +44,8 @@ Extension không đọc mật khẩu, không sao chép cookie và không gửi d
 - `ask`: hiện lời nhắc trên Portal trước mỗi lần chạy. Đây là mặc định.
 - `auto`: chờ Portal ổn định khoảng 2 giây rồi tự chạy sau khi đăng nhập. Khi quét chỉ hiện một thanh tiến trình nhỏ.
 
+Người dùng có thể nhập thời gian nghỉ tự động từ 1 đến 1440 phút trong popup Extension hoặc modal cài đặt trên Portal. Khoảng nghỉ chỉ áp dụng cho các lần tự động quét lại trong cùng tab; nút đồng bộ thủ công luôn bỏ qua khoảng nghỉ.
+
 Sau lần thiết lập đầu tiên, chế độ thủ công và hỏi trước chỉ hiện một thanh điều khiển nhỏ bên phải Portal. Thanh này có nút **Đồng bộ ngay** và **Cài đặt**; modal đầy đủ chỉ mở khi người dùng yêu cầu. Modal dùng cấu trúc đồng bộ với `AppDialog` của web UStudy: header xanh, nội dung sáng, vùng cuộn độc lập và không làm trang Portal dịch chuyển.
 
 Sau hai lần thành công ở chế độ `ask`, extension mới đề xuất bật `auto`. Thu thập có thể tự động nhưng UStudy luôn yêu cầu xác nhận trước khi ghi dữ liệu.
@@ -57,8 +59,10 @@ Mỗi tab Portal có tối đa một phiên đồng bộ đang dở. Phiên lưu
 - Nguồn đã hoàn thành không bị gọi lại.
 - Nguồn đang chạy khi reload chưa được checkpoint nên sẽ chạy lại từ đầu.
 - Heartbeat cập nhật phiên trong lúc crawler hoạt động. Phiên không còn heartbeat quá 2 phút được xem là cũ và sẽ bắt đầu lại.
-- Sau khi hoàn tất, chế độ tự động áp dụng `cooldownMinutes`; nút đồng bộ thủ công luôn có thể chạy ngay.
+- Sau khi hoàn tất, chế độ tự động áp dụng `cooldownMinutes` theo từng tab Portal. Đóng tab sẽ xóa cooldown, vì vậy lần mở Portal tiếp theo vẫn tự đồng bộ.
 - Dữ liệu checkpoint nằm trong `chrome.storage.session`, tự mất khi đóng trình duyệt và không được gửi lên máy chủ.
+
+Tùy chọn **Mở UStudy sau khi quét** mặc định tắt. Khi được bật, extension chuyển tới tab UStudy đang mở; nếu chưa có tab UStudy thì tạo tab mới. Tab Portal không bao giờ bị đổi URL hoặc ghi đè.
 
 Trên mọi host dạng `new-portal{n}.hcmus.edu.vn`, extension coi pathname `/Login.aspx` là trang chưa đăng nhập. Query như `?ReturnUrl=%2f` và phần pathname nối sau `Login.aspx` không làm thay đổi kết quả này. Khi URL đã rời trang đăng nhập, tab được phép đồng bộ. Cấu hình chế độ, nguồn dữ liệu và học kỳ chỉ nằm trong popup Extension; trang web UStudy chỉ hiển thị trạng thái kết nối.
 

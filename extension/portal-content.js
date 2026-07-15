@@ -58,7 +58,7 @@ shadow.innerHTML = `
     .section{padding:16px 0;border-bottom:1px solid #e5e7eb}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.section-heading h2{margin:0;color:#111827;font-size:14px;font-weight:700}.section-heading span{color:#078553;font-size:12px;font-weight:650}
     .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc}.segmented button{height:38px;border:0;border-radius:7px;background:transparent;color:#64748b;font-size:13px;font-weight:650}.segmented button.active{background:#fff;color:#004a98;box-shadow:0 1px 5px rgba(15,23,42,.13)}.hint{min-height:18px;margin:9px 1px 0;color:#64748b;font-size:12px;line-height:1.5}
     .source-list{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}.source{display:flex;align-items:center;gap:9px;min-height:46px;padding:9px 11px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;color:#334155;font-size:13px}.source:nth-child(even){border-right:0}.source:last-child{border-bottom:0}.source input{width:16px;height:16px;margin:0;accent-color:#004a98}.source.locked{background:#f8fafc;color:#64748b}
-    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.period-grid label{color:#64748b;font-size:12px}.period-grid input,.period-grid select{display:block;width:100%;height:40px;margin-top:6px;border:1px solid #d1d5db;border-radius:8px;background:#fff;padding:0 11px;color:#334155;font-size:13px;outline:0}.period-grid input:focus,.period-grid select:focus{border-color:#004a98;box-shadow:0 0 0 3px rgba(0,74,152,.14)}
+    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.period-grid label{color:#64748b;font-size:12px}.period-grid input,.period-grid select{display:block;width:100%;height:40px;margin-top:6px;border:1px solid #d1d5db;border-radius:8px;background:#fff;padding:0 11px;color:#334155;font-size:13px;outline:0}.period-grid input:focus,.period-grid select:focus{border-color:#004a98;box-shadow:0 0 0 3px rgba(0,74,152,.14)}.cooldown-field{display:block;color:#64748b;font-size:12px}.cooldown-field input{display:block;width:100%;height:40px;margin-top:6px;border:1px solid #d1d5db;border-radius:8px;background:#fff;padding:0 11px;color:#334155;font-size:13px;outline:0}.cooldown-field input:focus{border-color:#004a98;box-shadow:0 0 0 3px rgba(0,74,152,.14)}
     .open-app-option{display:flex;align-items:flex-start;gap:10px;padding:16px 0;color:#334155}.open-app-option input{width:16px;height:16px;margin:2px 0 0;accent-color:#004a98}.open-app-option span{display:flex;flex-direction:column}.open-app-option strong{font-size:13px}.open-app-option small{margin-top:3px;color:#64748b;font-size:12px}
     .suggestion-actions{display:flex;gap:12px;margin-top:8px}.link-btn{border:0;background:transparent;padding:0;color:#004a98;font-size:12px;font-weight:700}.link-btn.muted{color:#667085}
     .actions{display:flex;justify-content:flex-end;gap:9px;padding:13px 20px;border-top:1px solid #e5e7eb;background:#f8fafc}.button{height:40px;border-radius:8px;padding:0 16px;font-size:13px;font-weight:700}.button.secondary{border:1px solid rgba(0,74,152,.3);background:#fff;color:#004a98}.button.secondary:hover{background:#eff6ff}.button.primary{min-width:180px;border:1px solid #004a98;background:#004a98;color:#fff;box-shadow:0 1px 2px rgba(15,23,42,.08)}.button.primary:hover{background:#003a78}.button:disabled{cursor:not-allowed;opacity:.55}
@@ -114,7 +114,12 @@ function renderSettingsBody(settings) {
         <label for="ustudy-semester">Học kỳ<select id="ustudy-semester"><option value="1" ${settings.semester === '1' ? 'selected' : ''}>Học kỳ 1</option><option value="2" ${settings.semester === '2' ? 'selected' : ''}>Học kỳ 2</option><option value="3" ${settings.semester === '3' ? 'selected' : ''}>Học kỳ 3</option></select></label>
       </div>
     </section>
-    <label class="open-app-option"><input id="ustudy-open-app" type="checkbox" ${settings.openAppAfterSync ? 'checked' : ''}><span><strong>Mở UStudy sau khi quét</strong><small>Luôn xem trước trước khi áp dụng dữ liệu.</small></span></label>
+    <section class="section">
+      <div class="section-heading"><h2>Thời gian nghỉ tự động</h2></div>
+      <label class="cooldown-field" for="ustudy-cooldown">Số phút giữa hai lần tự động quét<input id="ustudy-cooldown" type="number" min="1" max="1440" step="1" value="${settings.cooldownMinutes}"></label>
+      <p class="hint">Chỉ áp dụng khi điều hướng trong cùng tab Portal. Đồng bộ thủ công luôn chạy ngay.</p>
+    </section>
+    <label class="open-app-option"><input id="ustudy-open-app" type="checkbox" ${settings.openAppAfterSync ? 'checked' : ''}><span><strong>Mở UStudy sau khi quét</strong><small>Dùng tab UStudy đang mở hoặc tạo tab mới.</small></span></label>
   `;
 }
 
@@ -245,6 +250,7 @@ function collectPanelSettings() {
   shadow.querySelectorAll('[data-source]').forEach((input) => { sources[input.dataset.source] = input.checked; });
   const academicYear = shadow.getElementById('ustudy-year')?.value.trim() || EXTENSION_CONFIG.defaults.academicYear;
   const semester = shadow.getElementById('ustudy-semester')?.value || EXTENSION_CONFIG.defaults.semester;
+  const cooldownMinutes = Number(shadow.getElementById('ustudy-cooldown')?.value) || EXTENSION_CONFIG.defaults.cooldownMinutes;
   const openAppAfterSync = Boolean(shadow.getElementById('ustudy-open-app')?.checked);
 
   return {
@@ -253,6 +259,7 @@ function collectPanelSettings() {
     sources,
     academicYear,
     semester,
+    cooldownMinutes,
     openAppAfterSync,
   };
 }

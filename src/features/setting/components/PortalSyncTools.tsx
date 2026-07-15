@@ -109,7 +109,7 @@ export function PortalSyncTools() {
           )}
 
           {extensionState && (
-            <div className="mt-4 flex flex-col gap-3 border-y border-gray-200 py-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex flex-col text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-x-5 gap-y-1">
                 <span>Lần gần nhất: <strong className="font-semibold text-gray-700">{formatSyncTime(extensionState.stats.lastSyncedAt)}</strong></span>
                 <span>Đã đồng bộ: <strong className="font-semibold text-gray-700">{extensionState.stats.successfulSyncs} lần</strong></span>
