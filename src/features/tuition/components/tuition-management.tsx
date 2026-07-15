@@ -115,7 +115,7 @@ export function TuitionPage({ selectedSemester }: TuitionPageProps) {
           className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-[#004A98] text-white rounded-xl hover:bg-[#003d7a] transition-all duration-200 shadow-md hover:shadow-lg flex-shrink-0 active:scale-95"
         >
           <Download className="w-4 h-4" />
-          <span className="text-xs md:text-sm font-bold">Xuất hóa đơn</span>
+          <span className="text-xs md:text-sm font-bold">Xuất học phí (.txt)</span>
         </button>
       </div>
 

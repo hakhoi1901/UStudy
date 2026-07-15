@@ -11,21 +11,18 @@ import { MobileCoursePlannerSheet } from './MobileCoursePlannerSheet';
 import {
     DEFAULT_LEFT_PANEL_PERCENT,
     DEFAULT_SEMESTER_COUNT,
-    addSemesters,
     buildHistoricalStudyPlan,
     clampPanelPercent,
     createDefaultSemesters,
-    formatSemesterLabel,
     formatStudyPlanSemesterLabel,
     getAnchorSemester,
     getSemesterId,
-    getSemesterSequenceValue,
+    getSemesterSortValue,
     getStudyPlanSemesterIndex,
     isStudyPlanStorage,
     mergeHistoricalStudyPlan,
-    parseSemesterLabel,
 } from './semester-utils';
-import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, MobileSheetStep, ParsedSemester, PrerequisiteRule } from './types';
+import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, MobileSheetStep, PrerequisiteRule } from './types';
 
 const StudyPlanPreview = lazy(() => import('./StudyPlanPreview'));
 
@@ -317,44 +314,20 @@ export function StudyPlanContainer() {
         }));
     };
 
-    const addSemester = () => {
+    const addSemester = (semesterIndex: number) => {
         setStudyPlan((previous) => {
-            const studyPlanIndices = previous.semesters
-                .map((semester) => getStudyPlanSemesterIndex(semester.label))
-                .filter((index): index is number => index !== null);
-            const lastStudyPlanIndex = studyPlanIndices.length > 0 ? Math.max(...studyPlanIndices) : null;
+            if (!Number.isInteger(semesterIndex) || semesterIndex < 0 || semesterIndex >= DEFAULT_SEMESTER_COUNT) return previous;
+            if (previous.semesters.some((semester) => getStudyPlanSemesterIndex(semester.label) === semesterIndex)) return previous;
 
-            if (lastStudyPlanIndex !== null) {
-                const label = formatStudyPlanSemesterLabel(lastStudyPlanIndex + 1);
-                const newSemester = {
-                    id: getSemesterId(label),
-                    label,
-                };
-
-                return {
-                    semesters: [...previous.semesters, newSemester],
-                    plan: {
-                        ...previous.plan,
-                        [newSemester.id]: [],
-                    },
-                };
-            }
-
-            const parsedSemesters = previous.semesters
-                .map((semester) => parseSemesterLabel(semester.label))
-                .filter((semester): semester is ParsedSemester => !!semester);
-            const sortedSemesters = parsedSemesters.sort((a, b) => getSemesterSequenceValue(a) - getSemesterSequenceValue(b));
-            const anchorSemester = sortedSemesters[0] || getAnchorSemester(studentDb?.grades);
-            const lastParsedSemester = sortedSemesters[sortedSemesters.length - 1];
-            const nextSemester = addSemesters(lastParsedSemester || anchorSemester, lastParsedSemester ? 1 : previous.semesters.length);
-            const label = formatSemesterLabel(nextSemester, anchorSemester);
+            const label = formatStudyPlanSemesterLabel(semesterIndex);
             const newSemester = {
                 id: getSemesterId(label),
                 label,
             };
 
             return {
-                semesters: [...previous.semesters, newSemester],
+                semesters: [...previous.semesters, newSemester]
+                    .sort((first, second) => getSemesterSortValue(first.label) - getSemesterSortValue(second.label)),
                 plan: {
                     ...previous.plan,
                     [newSemester.id]: [],

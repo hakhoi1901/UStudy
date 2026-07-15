@@ -73,6 +73,10 @@ function valueKey(collection: ImportCollection, value: any, index: number): stri
   }
 }
 
+function removalChangeId(collection: ImportCollection, key: string): string {
+  return `${collection}:remove:${encodeURIComponent(key)}`;
+}
+
 function valueLabel(collection: ImportCollection, value: any): string {
   if (collection === 'grades') return `${value?.id || 'Không rõ mã'} - ${value?.name || 'Không rõ tên'}${value?.semester ? ` (${value.semester})` : ''}`;
   if (collection === 'registrations') return `${value?.id || 'Không rõ mã'} - ${value?.name || 'Không rõ tên'}${value?.semester ? ` (${value.semester})` : ''}`;
@@ -135,20 +139,23 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
       ? new Set(incomingValue.map((value: any) => normalizeSemester(value?.semester)).filter(Boolean))
       : null;
 
+    const queuedRemovalKeys = new Set<string>();
     currentValues.forEach((value: any, index: number) => {
+      const key = valueKey(collection, value, index);
       const semester = collection === 'registrations' ? normalizeSemester(value?.semester) : '';
-      const existsInIncoming = incomingKeys.has(valueKey(collection, value, index))
+      const existsInIncoming = incomingKeys.has(key)
         || (collection === 'registrations'
           && !semester
           && incomingRegistrationBases?.has(registrationBaseKey(value)));
       const isInReconciledScope = collection !== 'registrations'
         || Boolean(semester && incomingRegistrationSemesters?.has(semester));
-      if (existsInIncoming || !isInReconciledScope) return;
+      if (existsInIncoming || !isInReconciledScope || queuedRemovalKeys.has(key)) return;
+      queuedRemovalKeys.add(key);
 
       const courseId = String(value?.id ?? '').trim();
       const courseName = String(value?.name ?? '').trim();
       changes.push({
-        id: `${collection}:remove:${index}`,
+        id: removalChangeId(collection, key),
         collection,
         index,
         label: valueLabel(collection, value),
@@ -173,7 +180,9 @@ export function mergeSelectedRawImport(incoming: any, current: any, selectedIds:
     }
     if (!Array.isArray(incomingValue)) continue;
     const currentCollection = Array.isArray(current?.[collection]) ? current[collection] : [];
-    const retainedCurrentCollection = currentCollection.filter((_: any, index: number) => !selected.has(`${collection}:remove:${index}`));
+    const retainedCurrentCollection = currentCollection.filter((value: any, index: number) => (
+      !selected.has(removalChangeId(collection, valueKey(collection, value, index)))
+    ));
     const merged = collection === 'registrations' ? dedupeRegistrations(retainedCurrentCollection) : [...retainedCurrentCollection];
     const indexesByKey = new Map(merged.map((value: any, index: number) => [valueKey(collection, value, index), index]));
     const legacyRegistrationIndexes = collection === 'registrations'
