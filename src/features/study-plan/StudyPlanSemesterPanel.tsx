@@ -454,17 +454,19 @@ export function StudyPlanSemesterPanel({
                                             className={`transition-colors ${activeDropId === semester.id ? 'bg-blue-50 ring-2 ring-inset ring-[#004A98]/20 ' : ''}`}
                                         >
                                             <div className="flex items-center justify-between gap-2 px-4 py-2.5">
-                                                <div className="min-w-0">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <GraduationCap className="w-8 h-8 text-white bg-[#0058B2] p-1.5 rounded-lg" />
-                                                        <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
-                                                        {semester.isHistorical && (
-                                                            <span className={`text-[10px] font-semibold rounded-xl px-2 py-1 bg-[#004A98] text-white`}>
-                                                                {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
-                                                            </span>
-                                                        )}
+                                                <div className="flex items-start gap-2 min-w-0">
+                                                    <GraduationCap className="w-9 h-9 bg-[#0058B2] text-white mt-0.5 p-1 shrink-0 rounded-lg" />
+                                                    <div className="min-w-0">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
+                                                            {semester.isHistorical && (
+                                                                <span className={`text-[10px] font-semibold rounded-xl px-2 py-1 bg-[#004A98] text-white`}>
+                                                                    {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="mt-0.5 text-xs text-gray-500">{plannedIds.length} môn · {totalCredits} TC</p>
                                                     </div>
-                                                    <p className="mt-0.5 text-xs text-gray-500">{plannedIds.length} môn · {totalCredits} TC</p>
                                                 </div>
 
                                                 <div className="flex shrink-0 items-center gap-1">
