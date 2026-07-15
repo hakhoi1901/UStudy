@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UStudy Portal Sync",
-  "version": "0.1.7",
+  "version": "0.2.1",
   "description": "Đồng bộ dữ liệu HCMUS Portal vào UStudy ngay trên thiết bị của bạn.",
   "permissions": [
     "storage",

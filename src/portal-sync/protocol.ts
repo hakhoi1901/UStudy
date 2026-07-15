@@ -10,7 +10,7 @@ export const PORTAL_EXTENSION_READY = 'USTUDY_EXTENSION_READY';
 export const PORTAL_EXTENSION_READY_EVENT = 'ustudy:extension-ready';
 export const PORTAL_EXTENSION_MARKER_ATTRIBUTE = 'data-ustudy-extension-version';
 
-export type PortalSyncMode = 'manual' | 'ask' | 'auto';
+export type PortalSyncMode = 'off' | 'manual' | 'ask' | 'auto';
 export type PortalSyncTrigger = 'manual' | 'auto';
 export type PortalImportTransport = 'bookmarklet' | 'extension';
 export type PortalSyncSource = 'grades' | 'registrations' | 'exams' | 'courses' | 'tuition';
@@ -62,6 +62,13 @@ export interface PortalExtensionState {
   settings: PortalExtensionSettings;
   stats: PortalExtensionStats;
   pendingImport: Pick<PendingPortalImport, 'id' | 'createdAt'> | null;
+  syncSession?: {
+    id: string;
+    trigger: PortalSyncTrigger;
+    completed: number;
+    total: number;
+    updatedAt: string;
+  };
 }
 
 export interface PortalBridgeResponse<T = unknown> {

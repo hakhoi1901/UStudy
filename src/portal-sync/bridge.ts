@@ -18,6 +18,10 @@ export function isPortalExtensionInjected(): boolean {
   return document.documentElement?.hasAttribute(PORTAL_EXTENSION_MARKER_ATTRIBUTE) ?? false;
 }
 
+export function getInjectedPortalExtensionVersion(): string | null {
+  return document.documentElement?.getAttribute(PORTAL_EXTENSION_MARKER_ATTRIBUTE) || null;
+}
+
 export async function requestPortalExtension<T>(
   action: PortalBridgeAction,
   payload?: unknown,

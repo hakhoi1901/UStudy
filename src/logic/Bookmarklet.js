@@ -689,6 +689,7 @@
         }
         const runtimeOptions = EXTENSION_RUNTIME?.syncOptions;
         const config = runtimeOptions ? {
+            getGrades: runtimeOptions.getGrades !== false,
             getTuition: Boolean(runtimeOptions.getTuition),
             getExam: Boolean(runtimeOptions.getExam),
             getClass: Boolean(runtimeOptions.getClass),
@@ -709,8 +710,16 @@
         let registrationPeriod = { year: '', sem: '', semester: '' };
 
         // 2. Lấy dữ liệu cơ bản (Điểm - Bắt buộc)
-        const docDiemFull = await getFullGradesPage();
-        gradeData = scrapeGrades(docDiemFull);
+        if (config.getGrades !== false) {
+            const docDiemFull = await getFullGradesPage();
+            gradeData = scrapeGrades(docDiemFull);
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'grades',
+                    rawPatch: { name: gradeData.name, grades: gradeData.grades }
+                }
+            });
+        }
 
         showLoading("Đang tải Bảng điểm đầy đủ...");
         // Lấy Học phí
@@ -790,6 +799,13 @@
                 }
             }
             tuitionData = allTuition;
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'tuition',
+                    rawPatch: { tuition: tuitionData },
+                    metaPatch: { params: { tuition: { year: tuitionData.year || '', sem: tuitionData.sem || '' } } }
+                }
+            });
             return tuitionData;
         })() : Promise.resolve(tuitionData);
 
@@ -894,6 +910,9 @@
             results.forEach(r => { if (r) allExams[r.key] = r.data; });
 
             examData = allExams;
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: { source: 'exams', rawPatch: { exams: examData } }
+            });
             return examData;
         })() : Promise.resolve(examData);
 
@@ -920,6 +939,15 @@
 
             showLoading(`Đang cào dữ liệu lớp mở...`);
             courses = await scrapeOpenClassesRaw(docLopMo);
+            if (courses.length > 0) {
+                emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                    payload: {
+                        source: 'courses',
+                        rawPatch: { courses },
+                        metaPatch: { params: { class: { year: config.classYear, sem: config.classSem } } }
+                    }
+                });
+            }
             return courses;
         })() : Promise.resolve(courses);
 
@@ -967,6 +995,13 @@
 
             registrationPeriod = getRegistrationPeriod(docDKHP);
             registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'registrations',
+                    rawPatch: { registrations },
+                    metaPatch: { params: { registration: registrationPeriod } }
+                }
+            });
             return registrations;
         })() : Promise.resolve(registrations);
 
@@ -981,12 +1016,11 @@
 
         // Raw data - nguyên vẹn từ Portal, không xử lý
         const rawData = {
-            name: gradeData.name,
-            grades: gradeData.grades,
-            exams: examData,
-            tuition: tuitionData,
-            registrations: registrations,
-            courses: courses
+            ...(config.getGrades !== false ? { name: gradeData.name, grades: gradeData.grades } : {}),
+            ...(config.getExam ? { exams: examData } : {}),
+            ...(config.getTuition ? { tuition: tuitionData } : {}),
+            ...(config.getReg ? { registrations } : {}),
+            ...(config.getClass ? { courses } : {})
         };
 
         const metaData = {
@@ -1018,7 +1052,7 @@
             emitExtensionEvent('USTUDY_PORTAL_SYNC_RESULT', { payload: fullDataPacket });
         } else if (window.opener) {
             window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, CONFIG.APP_ORIGIN || '*');
-            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades.length} dòng điểm\n- ${(rawData.exams.midterm?.length || 0) + (rawData.exams.final?.length || 0)} lịch thi\n- ${rawData.tuition.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
+            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades?.length || 0} dòng điểm\n- ${(rawData.exams?.midterm?.length || 0) + (rawData.exams?.final?.length || 0)} lịch thi\n- ${rawData.tuition?.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
         } else {
             // giờ cụm này kh hoạt động nma để lại cho HK nha :>
             alert(`Vui lòng mở Portal bằng nút "Đăng nhập" để công cụ hoạt động.`);

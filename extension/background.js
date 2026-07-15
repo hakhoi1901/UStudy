@@ -6,7 +6,9 @@ const STORAGE_KEYS = {
   stats: 'ustudySyncStats',
   pendingImport: 'ustudyPendingImport',
   pendingSyncRequest: 'ustudyPendingSyncRequest',
+  syncSessions: 'ustudySyncSessions',
 };
+const SYNC_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
 
 const DEFAULT_SETTINGS = {
   onboardingComplete: false,
@@ -30,12 +32,50 @@ const DEFAULT_STATS = {
   lastSyncedAt: null,
   lastError: null,
 };
-const runningPortalTabs = new Set();
-const autoSyncedPortalTabs = new Set();
+const activePortalRuns = new Map();
+const checkpointQueues = new Map();
+
+function getSelectedSources(settings) {
+  return ['grades', 'tuition', 'exams', 'courses', 'registrations']
+    .filter((source) => source === 'grades' || Boolean(settings.sources[source]));
+}
+
+function enqueueCheckpoint(tabId, operation) {
+  const previous = checkpointQueues.get(tabId) || Promise.resolve();
+  const next = previous.catch(() => undefined).then(operation);
+  checkpointQueues.set(tabId, next);
+  void next.finally(() => {
+    if (checkpointQueues.get(tabId) === next) checkpointQueues.delete(tabId);
+  });
+  return next;
+}
+
+async function readSyncSessions() {
+  const stored = await chrome.storage.session.get(STORAGE_KEYS.syncSessions);
+  return stored[STORAGE_KEYS.syncSessions] || {};
+}
+
+async function writeSyncSessions(sessions) {
+  await chrome.storage.session.set({ [STORAGE_KEYS.syncSessions]: sessions });
+}
+
+async function removeSyncSession(tabId) {
+  return enqueueCheckpoint(tabId, async () => {
+    const sessions = await readSyncSessions();
+    delete sessions[tabId];
+    await writeSyncSessions(sessions);
+  });
+}
+
+function hasSameSourceSelection(session, selectedSources) {
+  return Array.isArray(session?.selectedSources)
+    && session.selectedSources.length === selectedSources.length
+    && session.selectedSources.every((source, index) => source === selectedSources[index]);
+}
 
 function mergeSettings(value) {
   const incoming = value && typeof value === 'object' ? value : {};
-  const mode = ['manual', 'ask', 'auto'].includes(incoming.mode) ? incoming.mode : DEFAULT_SETTINGS.mode;
+  const mode = ['off', 'manual', 'ask', 'auto'].includes(incoming.mode) ? incoming.mode : DEFAULT_SETTINGS.mode;
   const semester = ['1', '2', '3'].includes(String(incoming.semester))
     ? String(incoming.semester)
     : DEFAULT_SETTINGS.semester;
@@ -68,6 +108,24 @@ async function getStoredState() {
     stats,
     pendingImport: pending ? { id: pending.id, createdAt: pending.createdAt } : null,
     pendingSyncRequest: Boolean(stored[STORAGE_KEYS.pendingSyncRequest]),
+  };
+}
+
+async function getStateForSender(sender) {
+  const state = await getStoredState();
+  if (!sender.tab?.id || !isPortalUrl(sender.tab.url)) return state;
+  const sessions = await readSyncSessions();
+  const session = sessions[sender.tab.id];
+  if (!session) return state;
+  return {
+    ...state,
+    syncSession: {
+      id: session.id,
+      trigger: session.trigger,
+      completed: session.completedSources.length,
+      total: session.selectedSources.length,
+      updatedAt: session.updatedAt,
+    },
   };
 }
 
@@ -166,7 +224,8 @@ async function openPortalAndRequestSync() {
   await chrome.tabs.create({ url: CONFIG.portalLoginUrl });
 }
 
-function buildRunnerRuntime(requestId, settings) {
+function buildRunnerRuntime(requestId, settings, completedSources = []) {
+  const completed = new Set(completedSources);
   return {
     transport: 'extension',
     requestId,
@@ -187,28 +246,63 @@ function buildRunnerRuntime(requestId, settings) {
       CONCURRENCY: '4',
     },
     syncOptions: {
-      getTuition: settings.sources.tuition,
-      getExam: settings.sources.exams,
-      getClass: settings.sources.courses,
+      getGrades: !completed.has('grades'),
+      getTuition: settings.sources.tuition && !completed.has('tuition'),
+      getExam: settings.sources.exams && !completed.has('exams'),
+      getClass: settings.sources.courses && !completed.has('courses'),
       classYear: settings.academicYear,
       classSem: settings.semester,
-      getReg: settings.sources.registrations,
+      getReg: settings.sources.registrations && !completed.has('registrations'),
       regYear: settings.academicYear,
       regSem: settings.semester,
     },
   };
 }
 
-async function runPortalSync(sender, requestId, trigger = 'manual') {
+async function runPortalSync(sender, requestId, trigger = 'manual', documentInstanceId = '') {
   if (!sender.tab?.id || !isPortalUrl(sender.tab.url)) throw new Error('Chỉ có thể đồng bộ từ HCMUS Portal.');
   const tabId = sender.tab.id;
-  if (runningPortalTabs.has(tabId) || (trigger === 'auto' && autoSyncedPortalTabs.has(tabId))) {
-    return { requestId, skipped: true };
-  }
-  runningPortalTabs.add(tabId);
-  if (trigger === 'auto') autoSyncedPortalTabs.add(tabId);
   const state = await getStoredState();
-  const runtime = buildRunnerRuntime(requestId, state.settings);
+  const selectedSources = getSelectedSources(state.settings);
+  const documentId = documentInstanceId || sender.documentId || null;
+  const activeRun = activePortalRuns.get(tabId);
+  if (activeRun?.documentId === documentId) return { requestId, skipped: true, reason: 'running' };
+
+  let session;
+  await enqueueCheckpoint(tabId, async () => {
+    const sessions = await readSyncSessions();
+    const existing = sessions[tabId];
+    const isExpired = existing && Date.now() - new Date(existing.updatedAt).getTime() > SYNC_SESSION_TIMEOUT_MS;
+    if (existing && !isExpired && hasSameSourceSelection(existing, selectedSources)) {
+      session = { ...existing, currentRequestId: requestId, updatedAt: new Date().toISOString() };
+    } else {
+      session = {
+        id: crypto.randomUUID(),
+        tabId,
+        selectedSources,
+        completedSources: [],
+        partialRaw: {},
+        partialMeta: { params: {} },
+        startedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        currentRequestId: requestId,
+        trigger: trigger === 'auto' ? 'auto' : 'manual',
+      };
+    }
+    sessions[tabId] = session;
+    await writeSyncSessions(sessions);
+  });
+
+  if (trigger === 'auto' && session.completedSources.length === 0 && state.stats.lastSyncedAt) {
+    const cooldownMs = state.settings.cooldownMinutes * 60 * 1000;
+    if (Date.now() - new Date(state.stats.lastSyncedAt).getTime() < cooldownMs) {
+      await removeSyncSession(tabId);
+      return { requestId, skipped: true, reason: 'cooldown' };
+    }
+  }
+
+  activePortalRuns.set(tabId, { requestId, documentId });
+  const runtime = buildRunnerRuntime(requestId, state.settings, session.completedSources);
 
   await chrome.storage.local.set({ [STORAGE_KEYS.pendingSyncRequest]: false });
   await chrome.scripting.executeScript({
@@ -222,8 +316,7 @@ async function runPortalSync(sender, requestId, trigger = 'manual') {
     world: 'MAIN',
     files: ['portal-runner.js'],
   }).catch(async (error) => {
-    runningPortalTabs.delete(tabId);
-    if (trigger === 'auto') autoSyncedPortalTabs.delete(tabId);
+    activePortalRuns.delete(tabId);
     await chrome.tabs.sendMessage(tabId, {
       type: 'USTUDY_RUNNER_ERROR',
       requestId,
@@ -231,18 +324,82 @@ async function runPortalSync(sender, requestId, trigger = 'manual') {
     }).catch(() => undefined);
   });
 
-  return { requestId };
+  return {
+    requestId,
+    resumed: session.completedSources.length > 0,
+    completed: session.completedSources.length,
+    total: session.selectedSources.length,
+  };
 }
 
-async function storeSyncResult(packet, trigger = 'manual') {
-  if (!packet?.raw || !Array.isArray(packet.raw.grades)) throw new Error('Gói dữ liệu Portal không hợp lệ.');
+async function saveSourceCheckpoint(sender, requestId, payload) {
+  if (!sender.tab?.id || !isPortalUrl(sender.tab.url)) throw new Error('Nguồn checkpoint không hợp lệ.');
+  const tabId = sender.tab.id;
+  const source = payload?.source;
+  if (!['grades', 'tuition', 'exams', 'courses', 'registrations'].includes(source)) {
+    throw new Error('Nhóm dữ liệu checkpoint không hợp lệ.');
+  }
+
+  return enqueueCheckpoint(tabId, async () => {
+    const sessions = await readSyncSessions();
+    const session = sessions[tabId];
+    if (!session || session.currentRequestId !== requestId || !session.selectedSources.includes(source)) {
+      return { ignored: true };
+    }
+    session.partialRaw = { ...session.partialRaw, ...(payload.rawPatch || {}) };
+    session.partialMeta = {
+      ...session.partialMeta,
+      ...(payload.metaPatch || {}),
+      params: { ...(session.partialMeta?.params || {}), ...(payload.metaPatch?.params || {}) },
+    };
+    if (!session.completedSources.includes(source)) session.completedSources.push(source);
+    session.updatedAt = new Date().toISOString();
+    sessions[tabId] = session;
+    await writeSyncSessions(sessions);
+    return { completed: session.completedSources.length, total: session.selectedSources.length };
+  });
+}
+
+async function touchSyncSession(sender, requestId) {
+  if (!sender.tab?.id) return { ignored: true };
+  const tabId = sender.tab.id;
+  return enqueueCheckpoint(tabId, async () => {
+    const sessions = await readSyncSessions();
+    const session = sessions[tabId];
+    if (!session || session.currentRequestId !== requestId) return { ignored: true };
+    session.updatedAt = new Date().toISOString();
+    sessions[tabId] = session;
+    await writeSyncSessions(sessions);
+    return { touched: true };
+  });
+}
+
+async function storeSyncResult(packet, trigger = 'manual', tabId, requestId) {
+  let finalPacket = packet;
+  if (tabId) {
+    await (checkpointQueues.get(tabId) || Promise.resolve()).catch(() => undefined);
+    const sessions = await readSyncSessions();
+    const session = sessions[tabId];
+    if (session && session.currentRequestId === requestId) {
+      finalPacket = {
+        ...packet,
+        raw: { ...(packet?.raw || {}), ...(session.partialRaw || {}) },
+        meta: {
+          ...(packet?.meta || {}),
+          ...(session.partialMeta || {}),
+          params: { ...(packet?.meta?.params || {}), ...(session.partialMeta?.params || {}) },
+        },
+      };
+    }
+  }
+  if (!finalPacket?.raw || !Array.isArray(finalPacket.raw.grades)) throw new Error('Gói dữ liệu Portal không hợp lệ.');
   const state = await getStoredState();
   const now = new Date().toISOString();
   const pendingImport = {
     id: crypto.randomUUID(),
     createdAt: now,
     trigger: trigger === 'auto' ? 'auto' : 'manual',
-    packet,
+    packet: finalPacket,
   };
   const stats = {
     ...state.stats,
@@ -257,6 +414,10 @@ async function storeSyncResult(packet, trigger = 'manual') {
   });
   await chrome.action.setBadgeBackgroundColor({ color: '#004A98' });
   await chrome.action.setBadgeText({ text: '1' });
+  if (tabId) {
+    activePortalRuns.delete(tabId);
+    await removeSyncSession(tabId);
+  }
 
   if (state.settings.openAppAfterSync) await openOrFocusApp();
   else await notifyAppTabs();
@@ -266,22 +427,24 @@ async function storeSyncResult(packet, trigger = 'manual') {
 async function handleMessage(message, sender) {
   switch (message?.action) {
     case 'GET_STATE':
-      return getStoredState();
+      return getStateForSender(sender);
     case 'SAVE_SETTINGS':
       return saveSettings(message.payload);
     case 'OPEN_PORTAL':
       await openPortalAndRequestSync();
       return { opened: true };
     case 'RUN_PORTAL_SYNC':
-      return runPortalSync(sender, message.requestId || crypto.randomUUID(), message.trigger);
+      return runPortalSync(sender, message.requestId || crypto.randomUUID(), message.trigger, message.documentInstanceId);
+    case 'SYNC_SOURCE_COMPLETE':
+      return saveSourceCheckpoint(sender, message.requestId, message.payload);
+    case 'SYNC_HEARTBEAT':
+      return touchSyncSession(sender, message.requestId);
     case 'SYNC_COMPLETE':
       if (!isPortalUrl(sender.tab?.url)) throw new Error('Nguồn đồng bộ không hợp lệ.');
-      if (sender.tab?.id) runningPortalTabs.delete(sender.tab.id);
-      return storeSyncResult(message.payload, message.trigger);
+      return storeSyncResult(message.payload, message.trigger, sender.tab?.id, message.requestId);
     case 'SYNC_FAILED': {
       if (sender.tab?.id) {
-        runningPortalTabs.delete(sender.tab.id);
-        autoSyncedPortalTabs.delete(sender.tab.id);
+        activePortalRuns.delete(sender.tab.id);
       }
       const state = await getStoredState();
       await chrome.storage.local.set({
@@ -323,8 +486,8 @@ chrome.runtime.onStartup.addListener(() => {
 void injectAppBridgeIntoOpenTabs();
 
 chrome.tabs.onRemoved.addListener((tabId) => {
-  runningPortalTabs.delete(tabId);
-  autoSyncedPortalTabs.delete(tabId);
+  activePortalRuns.delete(tabId);
+  void removeSyncSession(tabId);
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

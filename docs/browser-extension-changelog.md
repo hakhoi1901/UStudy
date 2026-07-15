@@ -2,6 +2,22 @@
 
 Tài liệu này ghi lại các thay đổi ảnh hưởng đến người dùng và luồng kết nối giữa Extension, HCMUS Portal và UStudy.
 
+## 0.2.1
+
+- Đồng bộ chính xác font stack của popup và giao diện Portal với web UStudy.
+- Ưu tiên `Inter` trước `ui-sans-serif` và `system-ui`, tránh trường hợp web dùng Inter nhưng Extension dùng Segoe UI trên cùng thiết bị.
+
+## 0.2.0
+
+- Thêm chế độ **Tắt**: không tự quét và không chèn thanh điều khiển khi Portal ở trạng thái rảnh.
+- Popup Extension vẫn cho phép chạy một lần thủ công khi chế độ đang tắt.
+- Tạo phiên đồng bộ có checkpoint theo từng nguồn trong `chrome.storage.session`.
+- Sau khi Portal reload, extension giữ nguồn đã hoàn thành và tự chạy tiếp nguồn đang dở hoặc chưa chạy.
+- Nguồn đang chạy đúng lúc reload được chạy lại để không sử dụng dữ liệu thiếu.
+- Dùng document instance ID và request ID để kết quả từ trang cũ không ghi đè phiên mới.
+- Thêm heartbeat và thời hạn 2 phút để giải phóng phiên bị treo.
+- Chế độ tự động chờ Portal ổn định khoảng 2 giây và áp dụng cooldown sau lần đồng bộ thành công.
+
 ## 0.1.7
 
 - Sau lần thiết lập đầu tiên, chế độ thủ công và hỏi trước không tự mở modal lớn khi tải Portal.

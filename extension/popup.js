@@ -7,6 +7,7 @@ const SOURCE_LABELS = {
   tuition: 'Học phí',
 };
 const MODE_DESCRIPTIONS = {
+  off: 'Không tự chạy và không hiển thị thanh điều khiển trên Portal.',
   manual: 'Chỉ chạy khi bạn bấm đồng bộ.',
   ask: 'Hiện lời nhắc trước mỗi lần đồng bộ. Đây là chế độ khuyên dùng.',
   auto: 'Tự chạy khi mở Portal và đã qua thời gian nghỉ.',
