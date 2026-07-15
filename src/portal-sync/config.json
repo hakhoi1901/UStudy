@@ -1,12 +1,14 @@
 {
   "protocolVersion": "1.0.0",
   "scraperVersion": "0.2.0",
-  "extensionVersion": "0.2.1",
+  "extensionVersion": "0.2.2",
   "portalHostnamePattern": "^new-portal\\d+\\.hcmus\\.edu\\.vn$",
   "portalLoginUrl": "https://new-portal3.hcmus.edu.vn/Login.aspx",
   "portalLoginPathPattern": "^/Login\\.aspx(?:/.*)?$",
-  "productionAppUrl": "https://unopia.vercel.app/",
+  "productionAppUrl": "https://ustudy.hakhoi.io.vn/",
   "appOrigins": [
+    "https://ustudy.hakhoi.io.vn",
+    "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app",
     "https://unopia.vercel.app",
     "https://localhost:3005",
     "http://localhost:3005",

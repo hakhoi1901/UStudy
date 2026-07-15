@@ -2,6 +2,13 @@
 
 Tài liệu này ghi lại các thay đổi ảnh hưởng đến người dùng và luồng kết nối giữa Extension, HCMUS Portal và UStudy.
 
+## 0.2.2
+
+- Đổi URL mở UStudy mặc định sang `https://ustudy.hakhoi.io.vn`.
+- Cho phép bridge chạy trên domain production và alias branch deploy ổn định của project Vercel `u-study`.
+- Giữ lại `unopia.vercel.app` để tương thích với liên kết cũ.
+- Không mở quyền cho toàn bộ `*.vercel.app`, tránh để website Vercel không liên quan truy cập bridge dữ liệu.
+
 ## 0.2.1
 
 - Đồng bộ chính xác font stack của popup và giao diện Portal với web UStudy.

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UStudy Portal Sync",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Đồng bộ dữ liệu HCMUS Portal vào UStudy ngay trên thiết bị của bạn.",
   "permissions": [
     "storage",
@@ -9,6 +9,9 @@
   ],
   "host_permissions": [
     "https://*.hcmus.edu.vn/*",
+    "https://*.vercel.app/*",
+    "https://ustudy.hakhoi.io.vn/*",
+    "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app/*",
     "https://unopia.vercel.app/*",
     "http://localhost/*",
     "https://localhost/*",
@@ -30,6 +33,9 @@
     },
     {
       "matches": [
+        "https://*.vercel.app/*",
+        "https://ustudy.hakhoi.io.vn/*",
+        "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app/*",
         "https://unopia.vercel.app/*",
         "http://localhost/*",
         "https://localhost/*",

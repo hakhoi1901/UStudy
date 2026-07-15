@@ -64,6 +64,8 @@ Trên mọi host dạng `new-portal{n}.hcmus.edu.vn`, extension coi pathname `/L
 
 Bridge gắn phiên bản extension vào thuộc tính `data-ustudy-extension-version` trên thẻ `<html>`. Nhờ đó UStudy vẫn nhận diện được extension khi service worker đang khởi động, đồng thời extension tự chèn bridge vào các tab UStudy đã mở sau khi cài đặt hoặc cập nhật.
 
+Extension chỉ chèn bridge vào các origin UStudy được khai báo rõ trong `appOrigins` và `manifest.json`. Domain production hiện tại là `https://ustudy.hakhoi.io.vn`; alias branch deploy ổn định cũng được cho phép. Không sử dụng quyền rộng `https://*.vercel.app/*` vì bridge có thể truy cập gói dữ liệu đang chờ nhập.
+
 ## Cập nhật phiên bản
 
 Nhật ký thay đổi theo từng bản được lưu tại [browser-extension-changelog.md](./browser-extension-changelog.md).
