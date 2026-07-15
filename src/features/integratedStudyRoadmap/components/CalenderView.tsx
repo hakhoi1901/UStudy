@@ -308,7 +308,7 @@ export function CalendarView({
     return (
         <div className="space-y-4">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
-            <div className="ustudy-card bg-gradient-to-r from-[#004A98]/5 to-blue-50 p-2 md:p-3">
+            <div className="ustudy-card p-2 md:p-3">
                 <div className="flex flex-col gap-2 md:gap-3">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0 flex-1">

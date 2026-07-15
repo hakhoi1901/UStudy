@@ -1,6 +1,6 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as XLSX from 'xlsx';
-import { AlertTriangle, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, GraduationCap, MoreVertical, Maximize } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, MoreVertical, Maximize, GraduationCap } from 'lucide-react';
 import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
 import { DEFAULT_SEMESTER_COUNT, formatStudyPlanSemesterLabel, getStudyPlanSemesterIndex } from './semester-utils';
 
@@ -108,6 +108,18 @@ export function StudyPlanSemesterPanel({
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isAddSemesterMenuOpen, setIsAddSemesterMenuOpen] = useState(false);
     const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+    const [isBottomAddMenuOpen, setIsBottomAddMenuOpen] = useState(false);
+    const [selectedYear, setSelectedYear] = useState(() => {
+        const currentSemester = studyPlan.semesters.find((semester) => semester.isCurrent);
+        const currentIndex = currentSemester ? getStudyPlanSemesterIndex(currentSemester.label) : null;
+        const firstIndex = studyPlan.semesters
+            .map((semester) => getStudyPlanSemesterIndex(semester.label))
+            .find((index): index is number => index !== null);
+        return Math.floor((currentIndex ?? firstIndex ?? 0) / 3) + 1;
+    });
+    const yearExpandTimerRef = useRef<number | null>(null);
+    const moreMenuRef = useRef<HTMLDivElement>(null);
+    const bottomAddMenuRef = useRef<HTMLDivElement>(null);
     const existingSemesterIndices = new Set(
         studyPlan.semesters
             .map((semester) => getStudyPlanSemesterIndex(semester.label))
@@ -117,6 +129,70 @@ export function StudyPlanSemesterPanel({
         { length: DEFAULT_SEMESTER_COUNT },
         (_, index) => index
     ).filter((index) => !existingSemesterIndices.has(index));
+    const semesterGroups = new Map<number, Array<{ semester: StudyPlanStorage['semesters'][number]; semesterIndex: number }>>();
+    studyPlan.semesters.forEach((semester, semesterIndex) => {
+        const fixedIndex = getStudyPlanSemesterIndex(semester.label) ?? semesterIndex;
+        const year = Math.floor(fixedIndex / 3) + 1;
+        const group = semesterGroups.get(year) || [];
+        group.push({ semester, semesterIndex });
+        semesterGroups.set(year, group);
+    });
+    const semestersByYear = Array.from(semesterGroups, ([year, semesters]) => ({ year, semesters }))
+        .sort((first, second) => first.year - second.year);
+    const selectedYearGroup = semestersByYear.find((group) => group.year === selectedYear) || semestersByYear[0];
+    const selectedYearAvailableSemesterIndices = availableSemesterIndices.filter((index) => (
+        selectedYearGroup && Math.floor(index / 3) + 1 === selectedYearGroup.year
+    ));
+
+    const scheduleYearSelection = (year: number) => {
+        if (selectedYear === year || yearExpandTimerRef.current !== null) return;
+        yearExpandTimerRef.current = window.setTimeout(() => {
+            setSelectedYear(year);
+            yearExpandTimerRef.current = null;
+        }, 500);
+    };
+
+    const cancelYearExpansion = () => {
+        if (yearExpandTimerRef.current === null) return;
+        window.clearTimeout(yearExpandTimerRef.current);
+        yearExpandTimerRef.current = null;
+    };
+
+    useEffect(() => () => {
+        if (yearExpandTimerRef.current !== null) window.clearTimeout(yearExpandTimerRef.current);
+    }, []);
+
+    useEffect(() => {
+        setIsBottomAddMenuOpen(false);
+    }, [selectedYear]);
+
+    useEffect(() => {
+        const handlePointerDown = (event: PointerEvent) => {
+            const target = event.target as Node;
+            if (!moreMenuRef.current?.contains(target)) {
+                setIsMoreMenuOpen(false);
+                setIsAddSemesterMenuOpen(false);
+                setIsExportMenuOpen(false);
+            }
+            if (!bottomAddMenuRef.current?.contains(target)) {
+                setIsBottomAddMenuOpen(false);
+            }
+        };
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            setIsMoreMenuOpen(false);
+            setIsAddSemesterMenuOpen(false);
+            setIsExportMenuOpen(false);
+            setIsBottomAddMenuOpen(false);
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
 
     const exportCourseList = (format: CourseListExportFormat) => {
         const rows = studyPlan.semesters.flatMap((semester) => (
@@ -230,7 +306,7 @@ export function StudyPlanSemesterPanel({
                                 <Maximize className="h-4.5 w-4.5" />
                             </button>
 
-                            <div className="relative">
+                            <div ref={moreMenuRef} className="relative">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -321,138 +397,201 @@ export function StudyPlanSemesterPanel({
                 </div>
 
                 {/* Semester groups */}
-                <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50/60 p-4">
-                    {studyPlan.semesters.map((semester, semesterIndex) => {
-                        const plannedIds = studyPlan.plan[semester.id] || [];
-                        const totalCredits = plannedIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
-                        const warningCount = plannedIds.filter((courseId) => getMissingPrerequisites(courseId, semesterIndex).length > 0).length;
-                        return (
-                            <div
-                                key={semester.id}
-                                onDragOver={(event) => {
-                                    if (semester.isHistorical) return;
-                                    event.preventDefault();
-                                    onActiveDropIdChange(semester.id);
-                                }}
-                                onDragLeave={() => onActiveDropIdChange(null)}
-                                onDrop={(event) => {
-                                    if (semester.isHistorical) return;
-                                    event.preventDefault();
-                                    const courseId = event.dataTransfer.getData('text/plain');
-                                    onAddCourseToSemester(courseId, semester.id);
-                                    onActiveDropIdChange(null);
-                                }}
-                                className={`overflow-hidden rounded-xl border bg-white shadow-sm transition-all ${
-                                    activeDropId === semester.id
-                                        ? 'border-[#004A98] ring-2 ring-[#004A98]/10'
-                                        : 'border-gray-200'
-                                }`}
-                            >
-                                {/* Group header — visually separated from the course list */}
-                                <div className="flex items-center justify-between gap-2 border-b border-gray-100 bg-gray-50 px-3 py-2.5">
-                                    <div className="flex min-w-0 items-center gap-2.5">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0058B2]/10 text-[#004A98]">
-                                            <GraduationCap className="h-4 w-4" />
-                                        </div>
+                <div className="flex min-h-0 flex-1 flex-col bg-white rounded-2xl">
+                    <div className="shrink-0 border-b border-gray-200 bg-white p-3">
+                        <div
+                            role="tablist"
+                            aria-label="Chọn năm học"
+                            className="grid rounded-lg bg-gray-100 p-1"
+                            style={{ gridTemplateColumns: `repeat(${Math.max(1, semestersByYear.length)}, minmax(0, 1fr))` }}
+                        >
+                            {semestersByYear.map(({ year, semesters }) => {
+                                const isSelected = selectedYearGroup?.year === year;
+                                const isCurrentYear = semesters.some(({ semester }) => semester.isCurrent);
+                                return (
+                                    <button
+                                        key={year}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isSelected}
+                                        onClick={() => setSelectedYear(year)}
+                                        onDragEnter={() => scheduleYearSelection(year)}
+                                        onDragLeave={cancelYearExpansion}
+                                        className={`relative h-8 min-w-0 rounded-md px-2 text-sm font-semibold transition-colors ${isSelected ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                                    >
+                                        Năm {year}
+                                        {isCurrentYear && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" title="Năm hiện tại" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
 
-                                        <div className="min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
-                                                {semester.isHistorical && (
-                                                    <span className="rounded-full bg-[#004A98] px-2 py-0.5 text-[10px] font-medium text-white">
-                                                        {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-gray-500">
-                                                {plannedIds.length} môn · {totalCredits} TC tích lũy
-                                            </p>
-                                        </div>
-                                    </div>
+                    <div className="min-h-0 flex-1 p-1 overflow-y-auto bg-gray-50/50">
+                        {selectedYearGroup ? (
+                            <div className="divide-y divide-gray-200">
+                                {selectedYearGroup.semesters.map(({ semester, semesterIndex }) => {
+                                    const plannedIds = studyPlan.plan[semester.id] || [];
+                                    const totalCredits = plannedIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
+                                    const warningCount = plannedIds.filter((courseId) => getMissingPrerequisites(courseId, semesterIndex).length > 0).length;
 
-                                    <div className="flex shrink-0 items-center gap-1">
-                                        {warningCount > 0 && (
-                                            <span className="mr-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                                                <AlertTriangle className="h-3 w-3" />
-                                                {warningCount}
-                                            </span>
-                                        )}
-
-                                        {!semester.isHistorical && (
-                                            <button
-                                                type="button"
-                                                onClick={() => onDeleteSemester?.(semester.id)}
-                                                className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                                                title="Xóa học kỳ"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Course list */}
-                                <div className="p-2">
-                                    {plannedIds.length === 0 ? (
-                                        <div className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-5 text-center text-xs text-gray-500">
-                                            {semester.isHistorical ? 'Chưa có dữ liệu môn trong kỳ này' : 'Thả môn vào đây'}
-                                        </div>
-                                    ) : (
-                                        <div className="overflow-hidden rounded-lg border border-gray-200">
-                                            {plannedIds.map((courseId) => {
-                                                const course = courseById.get(courseId);
-                                                if (!course) return null;
-
-                                                const missingPrereqs = getMissingPrerequisites(courseId, semesterIndex);
-                                                return (
-                                                    <div
-                                                        key={courseId}
-                                                        draggable={!semester.isHistorical}
-                                                        onDragStart={(event) => onDragStart(courseId, event)}
-                                                        className="border-b border-gray-200 bg-white px-3 py-2.5 last:border-b-0 hover:bg-gray-50"
-                                                    >
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="min-w-0 flex-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="pt-1 text-xs font-bold text-gray-900">{course.course_id}</span>
-                                                                    <span className="text-[11px] font-semibold tabular-nums text-gray-500">
-                                                                        {course.credits}
-                                                                        <span className="ml-1 font-medium text-gray-400">TC</span>
-                                                                    </span>
-                                                                </div>
-                                                                <p className="mt-1 truncate text-xs font-medium text-gray-600">
-                                                                    {course.course_name_vi}
-                                                                </p>
-                                                            </div>
-                                                            {!semester.isHistorical && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => onRemoveCourseFromSemester(courseId, semester.id)}
-                                                                    className="rounded-md p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                                                                    title="Xóa khỏi học kỳ"
-                                                                >
-                                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                                </button>
-                                                            )}
-                                                        </div>
-
-                                                        {missingPrereqs.length > 0 && (
-                                                            <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] leading-relaxed text-amber-800">
-                                                                Chưa học môn tiên quyết: {missingPrereqs.map((prereqId) => {
-                                                                    const prereq = courseById.get(prereqId);
-                                                                    return prereq ? `${prereqId} - ${prereq.course_name_vi}` : prereqId;
-                                                                }).join(', ')}
-                                                            </div>
+                                    return (
+                                        <section
+                                            key={semester.id}
+                                            onDragOver={(event) => {
+                                                if (semester.isHistorical) return;
+                                                event.preventDefault();
+                                                onActiveDropIdChange(semester.id);
+                                            }}
+                                            onDragLeave={() => onActiveDropIdChange(null)}
+                                            onDrop={(event) => {
+                                                if (semester.isHistorical) return;
+                                                event.preventDefault();
+                                                const courseId = event.dataTransfer.getData('text/plain');
+                                                onAddCourseToSemester(courseId, semester.id);
+                                                onActiveDropIdChange(null);
+                                            }}
+                                            className={`transition-colors ${activeDropId === semester.id ? 'bg-blue-50 ring-2 ring-inset ring-[#004A98]/20 ' : ''}`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2 px-4 py-2.5">
+                                                <div className="min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <GraduationCap className="w-8 h-8 text-white bg-[#0058B2] p-1.5 rounded-lg" />
+                                                        <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
+                                                        {semester.isHistorical && (
+                                                            <span className={`text-[10px] font-semibold rounded-xl px-2 py-1 bg-[#004A98] text-white`}>
+                                                                {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
+                                                            </span>
                                                         )}
                                                     </div>
-                                                );
-                                            })}
+                                                    <p className="mt-0.5 text-xs text-gray-500">{plannedIds.length} môn · {totalCredits} TC</p>
+                                                </div>
+
+                                                <div className="flex shrink-0 items-center gap-1">
+                                                    {warningCount > 0 && (
+                                                        <span className="mr-1 inline-flex items-center gap-1 text-[11px] font-medium text-amber-700">
+                                                            <AlertTriangle className="h-3 w-3" />{warningCount}
+                                                        </span>
+                                                    )}
+                                                    {!semester.isHistorical && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => onDeleteSemester?.(semester.id)}
+                                                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                                            title="Xóa học kỳ"
+                                                        >
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="px-3 pb-3">
+                                                {plannedIds.length === 0 ? (
+                                                    <div className="border border-dashed border-gray-300 rounded-lg px-3 py-3 text-center text-xs text-gray-500 bg-white shadow-[0_0_8px_2px_rgba(59,130,246,0.1)]">
+                                                        {semester.isHistorical ? 'Chưa có dữ liệu môn trong kỳ này' : 'Thả môn vào đây'}
+                                                    </div>
+                                                ) : (
+                                                    <div className="overflow-hidden rounded-md border border-gray-300 bg-white shadow-[0_0_8px_2px_rgba(59,130,246,0.05)]">
+                                                        {plannedIds.map((courseId) => {
+                                                            const course = courseById.get(courseId);
+                                                            if (!course) return null;
+                                                            const missingPrereqs = getMissingPrerequisites(courseId, semesterIndex);
+
+                                                            return (
+                                                                <div
+                                                                    key={courseId}
+                                                                    draggable={!semester.isHistorical}
+                                                                    onDragStart={(event) => onDragStart(courseId, event)}
+                                                                    className="border-b border-gray-200 px-3 py-2.5 last:border-b-0 hover:bg-gray-50"
+                                                                >
+                                                                    <div className="flex items-start gap-2">
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="pt-1 text-xs font-bold text-gray-900">{course.course_id}</span>
+                                                                                <span className="text-[11px] font-semibold tabular-nums text-gray-500">{course.credits}<span className="ml-1 font-medium text-gray-400">TC</span></span>
+                                                                            </div>
+                                                                            <p className="mt-1 truncate text-xs font-medium text-gray-600">{course.course_name_vi}</p>
+                                                                        </div>
+                                                                        {!semester.isHistorical && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => onRemoveCourseFromSemester(courseId, semester.id)}
+                                                                                className="rounded-md p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                                                                title="Xóa khỏi học kỳ"
+                                                                            >
+                                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                    {missingPrereqs.length > 0 && (
+                                                                        <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] leading-relaxed text-amber-800">
+                                                                            Chưa học môn tiên quyết: {missingPrereqs.map((prereqId) => {
+                                                                                const prereq = courseById.get(prereqId);
+                                                                                return prereq ? `${prereqId} - ${prereq.course_name_vi}` : prereqId;
+                                                                            }).join(', ')}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </section>
+                                    );
+                                })}
+
+                                {selectedYearAvailableSemesterIndices.length > 0 && (
+                                    <div className="bg-white p-3">
+                                        <div ref={bottomAddMenuRef} className="relative">
+                                            {isBottomAddMenuOpen && selectedYearAvailableSemesterIndices.length > 1 && (
+                                                <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-xl">
+                                                    {selectedYearAvailableSemesterIndices.map((semesterIndex) => (
+                                                        <button
+                                                            key={semesterIndex}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                onAddSemester(semesterIndex);
+                                                                setIsBottomAddMenuOpen(false);
+                                                            }}
+                                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
+                                                        >
+                                                            <Plus className="h-4 w-4 shrink-0 text-gray-400" />
+                                                            {formatStudyPlanSemesterLabel(semesterIndex)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (selectedYearAvailableSemesterIndices.length === 1) {
+                                                        onAddSemester(selectedYearAvailableSemesterIndices[0]);
+                                                        return;
+                                                    }
+                                                    setIsBottomAddMenuOpen((open) => !open);
+                                                }}
+                                                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#0058B2] to-[#0066CC] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:brightness-95 active:translate-y-px"
+                                                aria-expanded={selectedYearAvailableSemesterIndices.length > 1 ? isBottomAddMenuOpen : undefined}
+                                            >
+                                                <Plus className="h-5 w-5" />
+                                                {selectedYearAvailableSemesterIndices.length === 1
+                                                    ? `Thêm ${formatStudyPlanSemesterLabel(selectedYearAvailableSemesterIndices[0])}`
+                                                    : 'Thêm học kỳ'}
+                                                {selectedYearAvailableSemesterIndices.length > 1 && (
+                                                    <ChevronDown className={`h-4 w-4 transition-transform ${isBottomAddMenuOpen ? 'rotate-180' : ''}`} />
+                                                )}
+                                            </button>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
-                        );
-                    })}
+                        ) : (
+                            <p className="px-4 py-8 text-center text-sm text-gray-500">Chưa có học kỳ trong kế hoạch.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </aside>
