@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSchedule } from './use-schedule';
 import { useCourseData } from '../../../hooks/useCourseData';
 import { ScheduleLogic } from '../services/schedule-logic';
+import { getHolidayDateRange, isSessionActiveInWeek, sortHolidays } from '../services/holiday-logic';
 import { exportCalendar } from '../services/schedule-export';
 import { getCurrentDayAndTime } from '../services/schedule-helpers';
 import { type ScheduleSession } from '../types';
@@ -33,42 +34,17 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
     const { semesterStartDate } = schedule;
 
     const displaySessions = useMemo(() => {
+        const allHolidays = [...schedule.systemHolidays, ...schedule.overrides.holidays];
         return schedule.sessions.filter(session => {
-            const allHolidays = [...schedule.systemHolidays, ...schedule.overrides.holidays];
-
-            const relevantHolidays = allHolidays.filter(h => {
-                const isAffectedCourse = h.affectedCourseCodes === 'all' || h.affectedCourseCodes.includes(session.courseCode);
-                if (!isAffectedCourse) return false;
-                if (!semesterStartDate || !session.startDateParsed || !session.endDateParsed) return true;
-
-                const holidayStart = new Date(semesterStartDate);
-                holidayStart.setDate(holidayStart.getDate() + (h.startWeek - 1) * 7);
-                const holidayEnd = new Date(holidayStart);
-                holidayEnd.setDate(holidayEnd.getDate() + h.duration * 7 - 1);
-                holidayEnd.setHours(23, 59, 59, 999);
-
-                return holidayStart <= session.endDateParsed && holidayEnd >= session.startDateParsed;
-            });
-
-            const actualWeek = ScheduleLogic.getActualWeekForCourse(currentWeek, session.courseCode, relevantHolidays);
-            if (actualWeek === null) return false;
+            if (!isSessionActiveInWeek(session, currentWeek, semesterStartDate, allHolidays)) return false;
 
             const sessionOverride = schedule.overrides.sessionOverrides[session.id];
             if (sessionOverride) {
-                if (sessionOverride.startWeek !== undefined && actualWeek < sessionOverride.startWeek) return false;
-                if (sessionOverride.endWeek !== undefined && actualWeek > sessionOverride.endWeek) return false;
+                if (sessionOverride.startWeek !== undefined && currentWeek < sessionOverride.startWeek) return false;
+                if (sessionOverride.endWeek !== undefined && currentWeek > sessionOverride.endWeek) return false;
                 if (sessionOverride.hiddenWeeks?.includes(currentWeek)) return false;
             }
-
-            if (!semesterStartDate || !session.startDateParsed || !session.endDateParsed) return true;
-
-            const contentWeekStart = new Date(semesterStartDate);
-            contentWeekStart.setDate(contentWeekStart.getDate() + (actualWeek - 1) * 7);
-            const contentWeekEnd = new Date(contentWeekStart);
-            contentWeekEnd.setDate(contentWeekEnd.getDate() + 6);
-            contentWeekEnd.setHours(23, 59, 59, 999);
-
-            return !(contentWeekStart > session.endDateParsed || contentWeekEnd < session.startDateParsed);
+            return true;
         }).map(session => {
             const weekOverride = schedule.overrides.weekOverrides[`${currentWeek}_${session.id}`];
             if (weekOverride) {
@@ -100,6 +76,22 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
         return `${String(wStart.getDate()).padStart(2, '0')}/${String(wStart.getMonth() + 1).padStart(2, '0')}/${wStart.getFullYear()} - ${String(wEnd.getDate()).padStart(2, '0')}/${String(wEnd.getMonth() + 1).padStart(2, '0')}/${wEnd.getFullYear()}`;
     }, [semesterStartDate, currentWeek]);
 
+    const currentWeekHolidays = useMemo(() => {
+        if (!semesterStartDate) return [];
+        const weekStart = new Date(semesterStartDate);
+        weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        return sortHolidays([...schedule.systemHolidays, ...schedule.overrides.holidays], semesterStartDate)
+            .filter((holiday) => {
+                const range = getHolidayDateRange(holiday, semesterStartDate);
+                return Boolean(range && range.start <= weekEnd && range.end >= weekStart);
+            });
+    }, [currentWeek, schedule.systemHolidays, schedule.overrides.holidays, semesterStartDate]);
+
     const stats = useMemo(() => {
         const uniqueCourseCodes = new Set(displaySessions.map(s => s.courseCode));
         const totalCredits = Array.from(uniqueCourseCodes).reduce((acc, code) => {
@@ -124,15 +116,15 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
     const trends = useMemo(() => {
         if (currentWeek <= 1 || !semesterStartDate) return { periodsTrend: undefined, coursesTrend: undefined };
 
-        const prevWeekStart = new Date(semesterStartDate);
-        prevWeekStart.setDate(prevWeekStart.getDate() + (currentWeek - 2) * 7);
-        const prevWeekEnd = new Date(prevWeekStart);
-        prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
-        prevWeekEnd.setHours(23, 59, 59, 999);
-
+        const previousWeek = currentWeek - 1;
+        const allHolidays = [...schedule.systemHolidays, ...schedule.overrides.holidays];
         const prevSessions = schedule.sessions.filter(session => {
-            if (!session.startDateParsed || !session.endDateParsed) return true;
-            return !(prevWeekStart > session.endDateParsed || prevWeekEnd < session.startDateParsed);
+            if (!isSessionActiveInWeek(session, previousWeek, semesterStartDate, allHolidays)) return false;
+            const override = schedule.overrides.sessionOverrides[session.id];
+            if (!override) return true;
+            if (override.startWeek !== undefined && previousWeek < override.startWeek) return false;
+            if (override.endWeek !== undefined && previousWeek > override.endWeek) return false;
+            return !override.hiddenWeeks?.includes(previousWeek);
         });
 
         const prevTotalPeriods = prevSessions.reduce((acc, s) => acc + s.duration, 0);
@@ -145,7 +137,7 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
             periodsTrend: diffPeriods > 0 ? { direction: 'up' as const, value: `+${diffPeriods} tiết` } : (diffPeriods < 0 ? { direction: 'down' as const, value: `${diffPeriods} tiết` } : undefined),
             coursesTrend: diffCourses > 0 ? { direction: 'up' as const, value: `+${diffCourses} môn` } : (diffCourses < 0 ? { direction: 'down' as const, value: `${diffCourses} môn` } : undefined),
         };
-    }, [currentWeek, semesterStartDate, schedule.sessions, stats.totalPeriods, stats.totalCourses]);
+    }, [currentWeek, semesterStartDate, schedule.sessions, schedule.systemHolidays, schedule.overrides, stats.totalPeriods, stats.totalCourses]);
 
     const uniqueCourses = useMemo(() => {
         return schedule.sessions.reduce((acc, session) => {
@@ -168,6 +160,7 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
         schedule,
         currentWeek,
         weekRangeStr,
+        currentWeekHolidays,
         displaySessions,
         stats,
         trends,

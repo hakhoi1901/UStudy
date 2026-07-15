@@ -11,6 +11,7 @@ import { MobileCoursePlannerSheet } from './MobileCoursePlannerSheet';
 import {
     DEFAULT_LEFT_PANEL_PERCENT,
     DEFAULT_SEMESTER_COUNT,
+    SEMESTERS_PER_STUDY_YEAR,
     buildHistoricalStudyPlan,
     clampPanelPercent,
     createDefaultSemesters,
@@ -316,7 +317,7 @@ export function StudyPlanContainer() {
 
     const addSemester = (semesterIndex: number) => {
         setStudyPlan((previous) => {
-            if (!Number.isInteger(semesterIndex) || semesterIndex < 0 || semesterIndex >= DEFAULT_SEMESTER_COUNT) return previous;
+            if (!Number.isInteger(semesterIndex) || semesterIndex < 0) return previous;
             if (previous.semesters.some((semester) => getStudyPlanSemesterIndex(semester.label) === semesterIndex)) return previous;
 
             const label = formatStudyPlanSemesterLabel(semesterIndex);
@@ -336,6 +337,39 @@ export function StudyPlanContainer() {
         });
     };
 
+    const addStudyYear = (year: number) => {
+        if (!Number.isInteger(year) || year < 1) return;
+
+        setStudyPlan((previous) => {
+            const existingIndices = new Set(
+                previous.semesters
+                    .map((semester) => getStudyPlanSemesterIndex(semester.label))
+                    .filter((index): index is number => index !== null)
+            );
+            const firstSemesterIndex = (year - 1) * SEMESTERS_PER_STUDY_YEAR;
+            const newSemesters = Array.from(
+                { length: SEMESTERS_PER_STUDY_YEAR },
+                (_, offset) => firstSemesterIndex + offset
+            )
+                .filter((semesterIndex) => !existingIndices.has(semesterIndex))
+                .map((semesterIndex) => {
+                    const label = formatStudyPlanSemesterLabel(semesterIndex);
+                    return { id: getSemesterId(label), label };
+                });
+
+            if (newSemesters.length === 0) return previous;
+
+            return {
+                semesters: [...previous.semesters, ...newSemesters]
+                    .sort((first, second) => getSemesterSortValue(first.label) - getSemesterSortValue(second.label)),
+                plan: {
+                    ...previous.plan,
+                    ...Object.fromEntries(newSemesters.map((semester) => [semester.id, []])),
+                },
+            };
+        });
+    };
+
     const deleteSemester = (semesterId: string) => {
         setStudyPlan((previous) => {
             const semester = previous.semesters.find((item) => item.id === semesterId);
@@ -346,6 +380,32 @@ export function StudyPlanContainer() {
             return {
                 semesters: previous.semesters.filter((item) => item.id !== semesterId),
                 plan: remainingPlan,
+            };
+        });
+    };
+
+    const deleteStudyYear = (year: number) => {
+        if (!Number.isInteger(year) || year < 1) return;
+
+        setStudyPlan((previous) => {
+            const removableSemesterIds = new Set(
+                previous.semesters
+                    .filter((semester) => {
+                        const semesterIndex = getStudyPlanSemesterIndex(semester.label);
+                        return !semester.isHistorical
+                            && semesterIndex !== null
+                            && Math.floor(semesterIndex / SEMESTERS_PER_STUDY_YEAR) + 1 === year;
+                    })
+                    .map((semester) => semester.id)
+            );
+
+            if (removableSemesterIds.size === 0) return previous;
+
+            return {
+                semesters: previous.semesters.filter((semester) => !removableSemesterIds.has(semester.id)),
+                plan: Object.fromEntries(
+                    Object.entries(previous.plan).filter(([semesterId]) => !removableSemesterIds.has(semesterId))
+                ),
             };
         });
     };
@@ -491,6 +551,8 @@ export function StudyPlanContainer() {
                     onAddCourseToSemester={addCourseToSemester}
                     onRemoveCourseFromSemester={removeCourseFromSemester}
                     onAddSemester={addSemester}
+                    onAddYear={addStudyYear}
+                    onDeleteYear={deleteStudyYear}
                     onDeleteSemester={deleteSemester}
                     onClearStudyPlan={clearStudyPlan}
                     onOpenPreview={() => setRightView('preview')}

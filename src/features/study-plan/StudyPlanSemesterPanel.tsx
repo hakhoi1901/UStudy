@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as XLSX from 'xlsx';
 import { AlertTriangle, ChevronDown, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, MoreVertical, Maximize, GraduationCap } from 'lucide-react';
+import { AppDialog } from '../../components/ui/app-dialog';
 import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
-import { DEFAULT_SEMESTER_COUNT, formatStudyPlanSemesterLabel, getStudyPlanSemesterIndex } from './semester-utils';
+import { DEFAULT_SEMESTER_COUNT, SEMESTERS_PER_STUDY_YEAR, formatStudyPlanSemesterLabel, getStudyPlanSemesterIndex } from './semester-utils';
 
 interface StudyPlanSemesterPanelProps {
     mobileVisible: boolean;
@@ -16,6 +17,8 @@ interface StudyPlanSemesterPanelProps {
     onAddCourseToSemester: (courseId: string, semesterId: string) => void;
     onRemoveCourseFromSemester: (courseId: string, semesterId: string) => void;
     onAddSemester: (semesterIndex: number) => void;
+    onAddYear: (year: number) => void;
+    onDeleteYear: (year: number) => void;
     onClearStudyPlan: () => void;
     onOpenPreview: () => void;
     onDragStart: CourseDragStartHandler;
@@ -100,6 +103,8 @@ export function StudyPlanSemesterPanel({
     onAddCourseToSemester,
     onRemoveCourseFromSemester,
     onAddSemester,
+    onAddYear,
+    onDeleteYear,
     onClearStudyPlan,
     onOpenPreview,
     onDragStart,
@@ -109,6 +114,7 @@ export function StudyPlanSemesterPanel({
     const [isAddSemesterMenuOpen, setIsAddSemesterMenuOpen] = useState(false);
     const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
     const [isBottomAddMenuOpen, setIsBottomAddMenuOpen] = useState(false);
+    const [yearPendingDeletion, setYearPendingDeletion] = useState<number | null>(null);
     const [selectedYear, setSelectedYear] = useState(() => {
         const currentSemester = studyPlan.semesters.find((semester) => semester.isCurrent);
         const currentIndex = currentSemester ? getStudyPlanSemesterIndex(currentSemester.label) : null;
@@ -125,8 +131,14 @@ export function StudyPlanSemesterPanel({
             .map((semester) => getStudyPlanSemesterIndex(semester.label))
             .filter((index): index is number => index !== null)
     );
+    const highestExistingSemesterIndex = Math.max(
+        DEFAULT_SEMESTER_COUNT - 1,
+        ...Array.from(existingSemesterIndices)
+    );
+    const supportedSemesterCount = Math.ceil((highestExistingSemesterIndex + 1) / SEMESTERS_PER_STUDY_YEAR)
+        * SEMESTERS_PER_STUDY_YEAR;
     const availableSemesterIndices = Array.from(
-        { length: DEFAULT_SEMESTER_COUNT },
+        { length: supportedSemesterCount },
         (_, index) => index
     ).filter((index) => !existingSemesterIndices.has(index));
     const semesterGroups = new Map<number, Array<{ semester: StudyPlanStorage['semesters'][number]; semesterIndex: number }>>();
@@ -139,7 +151,16 @@ export function StudyPlanSemesterPanel({
     });
     const semestersByYear = Array.from(semesterGroups, ([year, semesters]) => ({ year, semesters }))
         .sort((first, second) => first.year - second.year);
+    const nextStudyYear = Math.max(0, ...semestersByYear.map(({ year }) => year)) + 1;
+    const shouldScrollYearTabs = semestersByYear.length > 5;
     const selectedYearGroup = semestersByYear.find((group) => group.year === selectedYear) || semestersByYear[0];
+    const latestYearGroup = semestersByYear[semestersByYear.length - 1];
+    const pendingDeleteYearGroup = semestersByYear.find((group) => group.year === yearPendingDeletion);
+    const latestYearHasProtectedSemesters = latestYearGroup?.semesters.some(({ semester }) => semester.isHistorical) ?? false;
+    const pendingDeleteCourseCount = pendingDeleteYearGroup?.semesters.reduce(
+        (total, { semester }) => total + (studyPlan.plan[semester.id] || []).length,
+        0
+    ) ?? 0;
     const selectedYearAvailableSemesterIndices = availableSemesterIndices.filter((index) => (
         selectedYearGroup && Math.floor(index / 3) + 1 === selectedYearGroup.year
     ));
@@ -296,14 +317,14 @@ export function StudyPlanSemesterPanel({
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center">
                             <button
                                 type="button"
                                 onClick={onOpenPreview}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                                className="inline-flex h-8 w-8 text-white items-center justify-center"
                                 title="Xem trực quan kế hoạch"
                             >
-                                <Maximize className="h-4.5 w-4.5" />
+                                <Maximize className="h-5 w-5" />
                             </button>
 
                             <div ref={moreMenuRef} className="relative">
@@ -314,12 +335,12 @@ export function StudyPlanSemesterPanel({
                                         setIsAddSemesterMenuOpen(false);
                                         setIsExportMenuOpen(false);
                                     }}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                                    className="inline-flex h-8 w-8 text-white items-center justify-center"
                                     title="Thêm tùy chọn"
                                     aria-expanded={isMoreMenuOpen}
                                     aria-haspopup="menu"
                                 >
-                                    <MoreVertical className="h-4.5 w-4.5" />
+                                    <MoreVertical className="h-5 w-5" />
                                 </button>
 
                                 {isMoreMenuOpen && (
@@ -357,6 +378,22 @@ export function StudyPlanSemesterPanel({
                                             )}
                                         </FlyoutMenu>
 
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={() => {
+                                                onAddYear(nextStudyYear);
+                                                setSelectedYear(nextStudyYear);
+                                                setIsAddSemesterMenuOpen(false);
+                                                setIsExportMenuOpen(false);
+                                                setIsMoreMenuOpen(false);
+                                            }}
+                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
+                                        >
+                                            <Plus className="h-4 w-4 text-gray-500" />
+                                            Thêm Năm {nextStudyYear}
+                                        </button>
+
                                         <FlyoutMenu
                                             open={isExportMenuOpen}
                                             onToggle={() => {
@@ -376,6 +413,24 @@ export function StudyPlanSemesterPanel({
                                                 <FileSpreadsheet className="h-4 w-4 shrink-0 text-emerald-600" /> Excel (.xlsx)
                                             </button>
                                         </FlyoutMenu>
+
+                                        <div role="separator" className="my-1 border-t border-gray-100" />
+
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            disabled={!latestYearGroup || latestYearHasProtectedSemesters}
+                                            onClick={() => {
+                                                if (!latestYearGroup || latestYearHasProtectedSemesters) return;
+                                                setYearPendingDeletion(latestYearGroup.year);
+                                                setIsMoreMenuOpen(false);
+                                            }}
+                                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
+                                            title={latestYearHasProtectedSemesters ? 'Không thể xóa năm cuối vì có học kỳ từ dữ liệu trường' : undefined}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            Xóa Năm {latestYearGroup?.year ?? ''}
+                                        </button>
 
                                         <button
                                             type="button"
@@ -399,31 +454,39 @@ export function StudyPlanSemesterPanel({
                 {/* Semester groups */}
                 <div className="flex min-h-0 flex-1 flex-col bg-white rounded-2xl">
                     <div className="shrink-0 border-b border-gray-200 bg-white p-3">
-                        <div
-                            role="tablist"
-                            aria-label="Chọn năm học"
-                            className="grid rounded-lg bg-gray-100 p-1"
-                            style={{ gridTemplateColumns: `repeat(${Math.max(1, semestersByYear.length)}, minmax(0, 1fr))` }}
-                        >
-                            {semestersByYear.map(({ year, semesters }) => {
-                                const isSelected = selectedYearGroup?.year === year;
-                                const isCurrentYear = semesters.some(({ semester }) => semester.isCurrent);
-                                return (
-                                    <button
-                                        key={year}
-                                        type="button"
-                                        role="tab"
-                                        aria-selected={isSelected}
-                                        onClick={() => setSelectedYear(year)}
-                                        onDragEnter={() => scheduleYearSelection(year)}
-                                        onDragLeave={cancelYearExpansion}
-                                        className={`relative h-8 min-w-0 rounded-md px-2 text-sm font-semibold transition-colors ${isSelected ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
-                                    >
-                                        Năm {year}
-                                        {isCurrentYear && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" title="Năm hiện tại" />}
-                                    </button>
-                                );
-                            })}
+                        <div className="flex items-center gap-2">
+                            <div className={`min-w-0 flex-1 ${shouldScrollYearTabs ? 'overflow-x-auto' : 'overflow-x-hidden'}`}>
+                                <div
+                                    role="tablist"
+                                    aria-label="Chọn năm học"
+                                    className="grid rounded-lg bg-gray-100 p-1"
+                                    style={{
+                                        gridTemplateColumns: `repeat(${Math.max(1, semestersByYear.length)}, minmax(0, 1fr))`,
+                                        width: shouldScrollYearTabs ? `${semestersByYear.length * 20}%` : '100%',
+                                        minWidth: shouldScrollYearTabs ? `${semestersByYear.length * 72}px` : undefined,
+                                    }}
+                                >
+                                    {semestersByYear.map(({ year, semesters }) => {
+                                        const isSelected = selectedYearGroup?.year === year;
+                                        const isCurrentYear = semesters.some(({ semester }) => semester.isCurrent);
+                                        return (
+                                            <button
+                                                key={year}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={isSelected}
+                                                onClick={() => setSelectedYear(year)}
+                                                onDragEnter={() => scheduleYearSelection(year)}
+                                                onDragLeave={cancelYearExpansion}
+                                                className={`relative h-8 min-w-0 rounded-md px-2 text-sm font-semibold transition-colors ${isSelected ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                                            >
+                                                Năm {year}
+                                                {isCurrentYear && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" title="Năm hiện tại" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -596,6 +659,63 @@ export function StudyPlanSemesterPanel({
                     </div>
                 </div>
             </div>
+
+            <AppDialog
+                open={yearPendingDeletion !== null}
+                onOpenChange={(open) => {
+                    if (!open) setYearPendingDeletion(null);
+                }}
+                title={`Xóa Năm ${yearPendingDeletion ?? ''}`}
+                description="Các học kỳ dự kiến và danh sách môn trong năm này sẽ bị xóa khỏi kế hoạch học tập."
+                icon={Trash2}
+                size="sm"
+                footer={(
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setYearPendingDeletion(null)}
+                            className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (yearPendingDeletion === null) return;
+                                const remainingYears = semestersByYear.filter(({ year }) => year !== yearPendingDeletion);
+                                const nextSelectedYear = [...remainingYears]
+                                    .reverse()
+                                    .find(({ year }) => year < yearPendingDeletion)?.year
+                                    ?? remainingYears[0]?.year
+                                    ?? 1;
+                                onDeleteYear(yearPendingDeletion);
+                                if (selectedYear === yearPendingDeletion) {
+                                    setSelectedYear(nextSelectedYear);
+                                }
+                                setYearPendingDeletion(null);
+                            }}
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-bold text-white transition-colors hover:bg-red-700"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            Xóa năm
+                        </button>
+                    </>
+                )}
+            >
+                <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+                    <div className="flex items-start gap-3">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                        <div>
+                            <p className="text-sm font-bold text-gray-900">
+                                {pendingDeleteYearGroup?.semesters.length ?? 0} học kỳ và {pendingDeleteCourseCount} lượt môn sẽ bị xóa
+                            </p>
+                            <p className="mt-1 text-sm leading-5 text-gray-600">
+                                Thao tác này không ảnh hưởng bảng điểm hoặc các học kỳ được đồng bộ từ Portal.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </AppDialog>
         </aside>
     );
 }

@@ -5,6 +5,16 @@ import { useDepartmentData } from '../../../context/DepartmentContext';
 import { ScheduleLogic } from '../services/schedule-logic';
 import { type WeeklySchedule, type ScheduleOverrides, type Holiday } from '../types';
 
+const EMPTY_OVERRIDES: ScheduleOverrides = { sessionOverrides: {}, weekOverrides: {}, holidays: [] };
+
+function normalizeOverrides(value: ScheduleOverrides | null | undefined): ScheduleOverrides {
+    return {
+        sessionOverrides: value?.sessionOverrides || {},
+        weekOverrides: value?.weekOverrides || {},
+        holidays: Array.isArray(value?.holidays) ? value.holidays : [],
+    };
+}
+
 export function useSchedule(): WeeklySchedule & {
     overrides: ScheduleOverrides;
     systemHolidays: Holiday[];
@@ -24,14 +34,14 @@ export function useSchedule(): WeeklySchedule & {
 
     // Dùng useState để tránh reload trang khi cập nhật overrides
     const [overrides, setOverrides] = useState<ScheduleOverrides>(() => {
-        const stored = readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, { sessionOverrides: {}, weekOverrides: {}, holidays: [] });
-        return stored || { sessionOverrides: {}, weekOverrides: {}, holidays: [] };
+        const stored = readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, EMPTY_OVERRIDES);
+        return normalizeOverrides(stored);
     });
 
     useEffect(() => {
         fetch('/holidays.json')
             .then(res => res.json())
-            .then(data => setSystemHolidays(data))
+            .then(data => setSystemHolidays(Array.isArray(data) ? data : []))
             .catch(err => console.error('Failed to load system holidays:', err));
     }, []);
 
@@ -46,8 +56,9 @@ export function useSchedule(): WeeklySchedule & {
     }, [courses_registered, metadata, allCoursesMeta, overrides, systemHolidays]);
 
     const updateOverrides = (newOverrides: ScheduleOverrides) => {
-        saveToStorage(STORAGE_KEYS.SCHEDULE_OVERRIDES, newOverrides);
-        setOverrides(newOverrides); // Cập nhật state trực tiếp, không reload
+        const normalized = normalizeOverrides(newOverrides);
+        saveToStorage(STORAGE_KEYS.SCHEDULE_OVERRIDES, normalized);
+        setOverrides(normalized);
     };
 
     return {

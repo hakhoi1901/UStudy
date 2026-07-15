@@ -248,21 +248,22 @@ export const ScheduleLogic = {
         let isHoliday = false;
 
         // Sắp xếp holiday theo tuần tăng dần để tính toán chính xác
-        const sortedHolidays = [...holidays].sort((a, b) => a.startWeek - b.startWeek);
+        const sortedHolidays = [...holidays].sort((a, b) => (a.startWeek ?? Number.MAX_SAFE_INTEGER) - (b.startWeek ?? Number.MAX_SAFE_INTEGER));
 
         for (const h of sortedHolidays) {
             const isAffected = h.affectedCourseCodes === 'all' || h.affectedCourseCodes.includes(courseCode);
-            if (!isAffected) continue;
+            if (!isAffected || !h.startWeek) continue;
+            const duration = Math.max(1, h.duration || 1);
 
             // Nếu currentWeek nằm trong khoảng nghỉ
-            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + h.duration) {
+            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + duration) {
                 isHoliday = true;
                 break;
             }
 
             // Nếu currentWeek đã vượt qua kỳ nghỉ, thì "tuần nội dung" bị lùi lại
-            if (currentWeek >= h.startWeek + h.duration) {
-                shiftedWeeks += h.duration;
+            if (currentWeek >= h.startWeek + duration) {
+                shiftedWeeks += duration;
             }
         }
 
@@ -323,6 +324,23 @@ export const ScheduleLogic = {
 
             const color = ScheduleLogic.getColorForCourse(course.id);
             const cType = (course.courseType || 'LT') as 'LT' | 'TH' | 'BT';
+            let requiredHours = theoryHours;
+            if (cType === 'TH') requiredHours = labHours;
+            else if (cType === 'BT') requiredHours = exerciseHours;
+
+            const weeklyDuration = scheduleParts.reduce((total: number, part: string) => {
+                const parsedPart = part.match(SCHEDULE_PART_REGEX);
+                if (!parsedPart) return total;
+                const adjustedPart = ScheduleLogic.adjustPeriodsForPractical(
+                    cType,
+                    parseFloat(parsedPart[2]),
+                    parseFloat(parsedPart[3]),
+                );
+                return total + adjustedPart.duration;
+            }, 0);
+            const totalWeeks = requiredHours > 0 && weeklyDuration > 0
+                ? Math.ceil(requiredHours / weeklyDuration)
+                : 0;
 
             scheduleParts.forEach((part: string, partIdx: number) => {
                 const match = part.match(SCHEDULE_PART_REGEX);
@@ -352,14 +370,6 @@ export const ScheduleLogic = {
 
                 totalPeriodsPerWeek += adjusted.duration;
                 totalHoursPerWeek += adjusted.duration;
-
-                let requiredHours = theoryHours;
-                if (cType === 'TH') requiredHours = labHours;
-                else if (cType === 'BT') requiredHours = exerciseHours;
-
-                const totalWeeks = requiredHours > 0 && adjusted.duration > 0
-                    ? Math.ceil(requiredHours / adjusted.duration)
-                    : 0;
 
                 const dateInfo = ScheduleLogic.resolveStartDate(
                     course.startWeek, courseStartWeeks, course.id, cType,

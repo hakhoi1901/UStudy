@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 import { DAYS } from '../types';
@@ -10,10 +10,6 @@ import { HolidayManagerDialog } from './HolidayManagerDialog';
 import { CourseDetailCard } from './CourseDetailCard';
 import { PeriodRow } from './PeriodRow';
 import { QuickStatsCard } from './QuickStatsCard';
-import {
-  Dialog,
-  DialogTrigger
-} from '../../../components/ui/dialog';
 import { timePeriods } from '../../../constants';
 
 interface VisualScheduleMainProps {
@@ -21,12 +17,14 @@ interface VisualScheduleMainProps {
 }
 
 export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps) {
+  const [isHolidayManagerOpen, setIsHolidayManagerOpen] = useState(false);
   const {
     isReady,
     hasData,
     schedule,
     currentWeek,
     weekRangeStr,
+    currentWeekHolidays,
     displaySessions,
     stats,
     trends,
@@ -69,22 +67,33 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
 
           <div className="flex items-center gap-1.5 md:gap-3">
             {/* Manage Holidays Button */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors duration-200 border border-orange-200"
-                >
-                  <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span className="text-xs md:text-sm font-medium hidden sm:inline">Quản lý nghỉ lễ</span>
-                  <span className="text-xs font-medium sm:hidden">Nghỉ lễ</span>
-                </button>
-              </DialogTrigger>
-              <HolidayManagerDialog
-                overrides={schedule.overrides}
-                courses={Array.from(new Set(schedule.sessions.map(s => s.courseCode)))}
-                onSave={schedule.updateOverrides}
-              />
-            </Dialog>
+            <button
+              type="button"
+              onClick={() => setIsHolidayManagerOpen(true)}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98] md:gap-2 md:px-4"
+            >
+              <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden text-xs font-semibold sm:inline md:text-sm">Quản lý nghỉ lễ</span>
+              <span className="text-xs font-semibold sm:hidden">Nghỉ lễ</span>
+              {schedule.overrides.holidays.length > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#004A98] px-1.5 text-[10px] font-bold text-white">
+                  {schedule.overrides.holidays.length}
+                </span>
+              )}
+            </button>
+
+            <HolidayManagerDialog
+              open={isHolidayManagerOpen}
+              onOpenChange={setIsHolidayManagerOpen}
+              overrides={schedule.overrides}
+              systemHolidays={schedule.systemHolidays}
+              semesterStartDate={schedule.semesterStartDate}
+              courses={Array.from(new Map(schedule.sessions.map((session) => [session.courseCode, {
+                code: session.courseCode,
+                name: session.courseName,
+              }])).values())}
+              onSave={schedule.updateOverrides}
+            />
 
             {/* Export Button */}
             <button
@@ -154,6 +163,17 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+        {currentWeekHolidays.length > 0 && (
+          <div className="mb-3 flex items-start gap-3 border-y border-amber-200 bg-amber-50 px-3 py-3 md:mb-4 md:px-4">
+            <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-amber-900">Tuần này có {currentWeekHolidays.length} kỳ nghỉ ảnh hưởng lịch học</p>
+              <p className="mt-0.5 truncate text-xs text-amber-700">{currentWeekHolidays.map((holiday) => holiday.reason).join(' · ')}</p>
+            </div>
+            <button type="button" onClick={() => setIsHolidayManagerOpen(true)} className="shrink-0 text-xs font-semibold text-amber-800 hover:text-amber-950">Xem chi tiết</button>
+          </div>
+        )}
 
         {/* Weekly Calendar Grid */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-4 md:mb-6">
