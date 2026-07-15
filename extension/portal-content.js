@@ -394,9 +394,9 @@ async function initialize() {
     const shouldAutoRun = settings.onboardingComplete && settings.mode === 'auto' && isPortalReady();
     const shouldRunRequested = extensionState.pendingSyncRequest && settings.onboardingComplete && isPortalReady();
     const shouldResume = extensionState.syncSession && settings.onboardingComplete && isPortalReady();
-    if (shouldResume) window.setTimeout(() => startSync(extensionState.syncSession.trigger || 'manual'), 2200);
+    if (shouldResume) window.setTimeout(() => startSync(extensionState.syncSession.trigger || 'manual'), 500);
     else if (shouldRunRequested) window.setTimeout(() => startSync('manual'), 700);
-    else if (shouldAutoRun) window.setTimeout(() => startSync('auto'), 2200);
+    else if (shouldAutoRun) window.setTimeout(() => startSync('auto'), 500);
   } catch (error) {
     phase = 'error';
     phaseMessage = error?.message || 'Không thể kết nối UStudy Extension.';

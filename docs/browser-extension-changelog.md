@@ -2,6 +2,11 @@
 
 Tài liệu này ghi lại các thay đổi ảnh hưởng đến người dùng và luồng kết nối giữa Extension, HCMUS Portal và UStudy.
 
+## 0.2.5
+
+- Giảm thời gian chờ trước khi tự động quét từ 2200 ms xuống 500 ms.
+- Phiên checkpoint sau khi Portal reload cũng tiếp tục sau 500 ms.
+
 ## 0.2.4
 
 - Sửa hành vi mở UStudy sau đồng bộ: ưu tiên tab UStudy đang mở, chỉ tạo tab mới khi chưa có.

@@ -42,7 +42,7 @@ Extension không đọc mật khẩu, không sao chép cookie và không gửi d
 - `off`: không tự chạy và không hiển thị thanh điều khiển trên Portal. Người dùng vẫn có thể chạy một lần từ popup Extension.
 - `manual`: chỉ chạy khi người dùng bấm đồng bộ.
 - `ask`: hiện lời nhắc trên Portal trước mỗi lần chạy. Đây là mặc định.
-- `auto`: chờ Portal ổn định khoảng 2 giây rồi tự chạy sau khi đăng nhập. Khi quét chỉ hiện một thanh tiến trình nhỏ.
+- `auto`: chờ Portal ổn định 500 ms rồi tự chạy sau khi đăng nhập. Khi quét chỉ hiện một thanh tiến trình nhỏ.
 
 Người dùng có thể nhập thời gian nghỉ tự động từ 1 đến 1440 phút trong popup Extension hoặc modal cài đặt trên Portal. Khoảng nghỉ chỉ áp dụng cho các lần tự động quét lại trong cùng tab; nút đồng bộ thủ công luôn bỏ qua khoảng nghỉ.
 
@@ -55,7 +55,7 @@ Sau hai lần thành công ở chế độ `ask`, extension mới đề xuất b
 Mỗi tab Portal có tối đa một phiên đồng bộ đang dở. Phiên lưu danh sách nguồn đã chọn, nguồn đã hoàn thành, dữ liệu từng phần, thời điểm cập nhật và request ID của document hiện tại.
 
 - Chuyển sang tab trình duyệt khác không làm mất tiến trình.
-- Chuyển chức năng Portal có thể reload trang; content script mới chờ khoảng 2 giây rồi tiếp tục checkpoint.
+- Chuyển chức năng Portal có thể reload trang; content script mới chờ 500 ms rồi tiếp tục checkpoint.
 - Nguồn đã hoàn thành không bị gọi lại.
 - Nguồn đang chạy khi reload chưa được checkpoint nên sẽ chạy lại từ đầu.
 - Heartbeat cập nhật phiên trong lúc crawler hoạt động. Phiên không còn heartbeat quá 2 phút được xem là cũ và sẽ bắt đầu lại.
