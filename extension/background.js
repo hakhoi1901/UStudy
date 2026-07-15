@@ -234,13 +234,14 @@ async function runPortalSync(sender, requestId, trigger = 'manual') {
   return { requestId };
 }
 
-async function storeSyncResult(packet) {
+async function storeSyncResult(packet, trigger = 'manual') {
   if (!packet?.raw || !Array.isArray(packet.raw.grades)) throw new Error('Gói dữ liệu Portal không hợp lệ.');
   const state = await getStoredState();
   const now = new Date().toISOString();
   const pendingImport = {
     id: crypto.randomUUID(),
     createdAt: now,
+    trigger: trigger === 'auto' ? 'auto' : 'manual',
     packet,
   };
   const stats = {
@@ -276,7 +277,7 @@ async function handleMessage(message, sender) {
     case 'SYNC_COMPLETE':
       if (!isPortalUrl(sender.tab?.url)) throw new Error('Nguồn đồng bộ không hợp lệ.');
       if (sender.tab?.id) runningPortalTabs.delete(sender.tab.id);
-      return storeSyncResult(message.payload);
+      return storeSyncResult(message.payload, message.trigger);
     case 'SYNC_FAILED': {
       if (sender.tab?.id) {
         runningPortalTabs.delete(sender.tab.id);

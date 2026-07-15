@@ -18,37 +18,41 @@ const EXTENSION_ICON_URL = chrome.runtime.getURL('icon.svg');
 
 let extensionState = null;
 let activeRequestId = null;
+let activeSyncTrigger = 'manual';
 let phase = 'idle';
 let phaseMessage = '';
 let hiddenForSession = false;
+let isPanelExpanded = false;
 
 const host = document.createElement('div');
 host.id = HOST_ID;
-host.style.cssText = 'all:initial;position:fixed;right:18px;top:18px;z-index:2147483647;';
+host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
 const shadow = host.attachShadow({ mode: 'open' });
 document.documentElement.appendChild(host);
 
 shadow.innerHTML = `
   <style>
-    :host{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#172033}
+    :host{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033}
     *{box-sizing:border-box;letter-spacing:0}
     button,input,select{font:inherit}
     button{cursor:pointer}
-    .panel{display:flex;width:min(380px,calc(100vw - 28px));max-height:calc(100vh - 36px);flex-direction:column;overflow:hidden;border:1px solid #dbe3ec;border-radius:12px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.18)}
-    .panel-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#98a2b3 transparent}
+    .overlay{position:fixed;inset:0;display:grid;place-items:center;padding:16px;pointer-events:auto}.backdrop{position:absolute;inset:0;border:0;background:rgba(15,23,42,.42);backdrop-filter:blur(2px)}
+    .panel{position:relative;display:flex;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px);flex-direction:column;overflow:hidden;border:1px solid #cbd5e1;border-radius:16px;background:#fff;box-shadow:0 24px 64px rgba(15,23,42,.3)}
+    .panel-scroll{min-height:0;overflow-y:auto;padding:4px 20px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
     .panel-scroll::-webkit-scrollbar{width:8px}.panel-scroll::-webkit-scrollbar-track{background:transparent}.panel-scroll::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:#98a2b3;background-clip:padding-box}
-    .compact{display:flex;width:min(340px,calc(100vw - 28px));align-items:center;gap:10px;border:1px solid #cbd9e8;border-radius:10px;background:#fff;padding:11px 12px;box-shadow:0 12px 32px rgba(15,23,42,.16)}
-    .compact img{width:30px;height:30px;flex:0 0 auto;border-radius:7px}.compact-copy{min-width:0;flex:1}.compact-copy strong{display:block;color:#172033;font-size:12.5px}.compact-copy span{display:block;margin-top:3px;overflow:hidden;color:#667085;font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+    .compact-wrap{position:fixed;right:18px;top:18px;pointer-events:auto}.compact{display:flex;width:min(360px,calc(100vw - 28px));align-items:center;gap:11px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:12px 13px;box-shadow:0 12px 32px rgba(15,23,42,.18)}
+    .compact.control{width:min(500px,calc(100vw - 28px))}.compact img{width:30px;height:30px;flex:0 0 auto;border-radius:7px}.compact-copy{min-width:0;flex:1}.compact-copy strong{display:block;color:#172033;font-size:12.5px}.compact-copy span{display:block;margin-top:3px;overflow:hidden;color:#667085;font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}.compact-actions{display:flex;flex:0 0 auto;align-items:center;gap:7px}.compact-button{height:34px;border-radius:7px;padding:0 11px;font-size:12px;font-weight:700}.compact-button.primary{border:1px solid #004a98;background:#004a98;color:#fff}.compact-button.primary:hover{background:#003a78}.compact-button.secondary{border:1px solid #d0d5dd;background:#fff;color:#344054}.compact-button.secondary:hover{background:#f8fafc}.compact-button:disabled{cursor:not-allowed;opacity:.55}
     .spinner{width:17px;height:17px;flex:0 0 auto;border:2px solid #bfdbfe;border-top-color:#004a98;border-radius:50%;animation:ustudy-spin .8s linear infinite}.compact-dot{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#12b76a}.compact-dot.error{background:#d92d20}@keyframes ustudy-spin{to{transform:rotate(360deg)}}
-    .header{display:flex;align-items:center;gap:12px;padding:17px 18px;border-bottom:1px solid #e5eaf0;background:#fff}.header img{width:42px;height:42px;flex:0 0 auto;border-radius:10px}.heading{min-width:0;flex:1}.heading strong{display:block;color:#101828;font-size:15px;line-height:1.3}.heading span{display:block;margin-top:3px;color:#667085;font-size:11.5px}.icon-btn{display:grid;width:30px;height:30px;flex:0 0 auto;place-items:center;border:0;border-radius:7px;background:transparent;color:#667085;font-size:19px;line-height:1}.icon-btn:hover{background:#f1f5f9;color:#172033}
-    .summary{margin:14px 16px 0;padding:11px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#184e8a;font-size:12px;line-height:1.45}.summary.error{border-color:#fecaca;background:#fff5f5;color:#b42318}.summary.success{border-color:#bbebd2;background:#f2fbf7;color:#176448}.summary.warning{border-color:#fedf89;background:#fffaeb;color:#7a4d00}
-    .section{padding:15px 16px;border-bottom:1px solid #edf0f3}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.section-heading h2{margin:0;color:#344054;font-size:11px;font-weight:800;text-transform:uppercase}.section-heading span{color:#078553;font-size:10.5px;font-weight:650}
-    .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border:1px solid #e4e7ec;border-radius:9px;background:#f8fafc}.segmented button{height:33px;border:0;border-radius:6px;background:transparent;color:#667085;font-size:11.5px;font-weight:700}.segmented button.active{background:#fff;color:#004a98;box-shadow:0 1px 5px rgba(15,23,42,.13)}.hint{min-height:16px;margin:8px 1px 0;color:#667085;font-size:11px;line-height:1.45}
-    .source-list{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e4e7ec;border-radius:9px;overflow:hidden}.source{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 9px;border-right:1px solid #edf0f3;border-bottom:1px solid #edf0f3;color:#344054;font-size:11px}.source:nth-child(even){border-right:0}.source:nth-last-child(-n+2){border-bottom:0}.source input{width:15px;height:15px;margin:0;accent-color:#004a98}.source.locked{background:#fafafa;color:#667085}
-    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.period-grid label{color:#667085;font-size:10.5px}.period-grid input,.period-grid select{display:block;width:100%;height:35px;margin-top:5px;border:1px solid #d0d5dd;border-radius:7px;background:#fff;padding:0 9px;color:#344054;font-size:12px;outline:0}.period-grid input:focus,.period-grid select:focus{border-color:#1570ef;box-shadow:0 0 0 3px rgba(21,112,239,.1)}
-    .open-app-option{display:flex;align-items:flex-start;gap:9px;padding:14px 16px;border-bottom:1px solid #edf0f3;color:#344054}.open-app-option input{width:15px;height:15px;margin:2px 0 0;accent-color:#004a98}.open-app-option span{display:flex;flex-direction:column}.open-app-option strong{font-size:11.5px}.open-app-option small{margin-top:2px;color:#667085;font-size:10.5px}
+    .header{display:flex;align-items:center;gap:13px;padding:20px 22px;border-bottom:1px solid #003a78;background:#004a98}.header img{width:42px;height:42px;flex:0 0 auto;border:3px solid rgba(255,255,255,.22);border-radius:11px}.heading{min-width:0;flex:1}.heading strong{display:block;color:#fff;font-size:17px;line-height:1.3}.heading span{display:block;margin-top:4px;color:#dbeafe;font-size:13px}.icon-btn{display:grid;width:34px;height:34px;flex:0 0 auto;place-items:center;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:21px;line-height:1}.icon-btn:hover{background:rgba(255,255,255,.2)}
+    .summary{margin:14px 0 0;padding:11px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#184e8a;font-size:13px;line-height:1.5}.summary.error{border-color:#fecaca;background:#fff5f5;color:#b42318}.summary.success{border-color:#bbebd2;background:#f2fbf7;color:#176448}.summary.warning{border-color:#fedf89;background:#fffaeb;color:#7a4d00}
+    .section{padding:16px 0;border-bottom:1px solid #e5e7eb}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.section-heading h2{margin:0;color:#111827;font-size:14px;font-weight:700}.section-heading span{color:#078553;font-size:12px;font-weight:650}
+    .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc}.segmented button{height:38px;border:0;border-radius:7px;background:transparent;color:#64748b;font-size:13px;font-weight:650}.segmented button.active{background:#fff;color:#004a98;box-shadow:0 1px 5px rgba(15,23,42,.13)}.hint{min-height:18px;margin:9px 1px 0;color:#64748b;font-size:12px;line-height:1.5}
+    .source-list{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}.source{display:flex;align-items:center;gap:9px;min-height:46px;padding:9px 11px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;color:#334155;font-size:13px}.source:nth-child(even){border-right:0}.source:last-child{border-bottom:0}.source input{width:16px;height:16px;margin:0;accent-color:#004a98}.source.locked{background:#f8fafc;color:#64748b}
+    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.period-grid label{color:#64748b;font-size:12px}.period-grid input,.period-grid select{display:block;width:100%;height:40px;margin-top:6px;border:1px solid #d1d5db;border-radius:8px;background:#fff;padding:0 11px;color:#334155;font-size:13px;outline:0}.period-grid input:focus,.period-grid select:focus{border-color:#004a98;box-shadow:0 0 0 3px rgba(0,74,152,.14)}
+    .open-app-option{display:flex;align-items:flex-start;gap:10px;padding:16px 0;color:#334155}.open-app-option input{width:16px;height:16px;margin:2px 0 0;accent-color:#004a98}.open-app-option span{display:flex;flex-direction:column}.open-app-option strong{font-size:13px}.open-app-option small{margin-top:3px;color:#64748b;font-size:12px}
     .suggestion-actions{display:flex;gap:12px;margin-top:8px}.link-btn{border:0;background:transparent;padding:0;color:#004a98;font-size:12px;font-weight:700}.link-btn.muted{color:#667085}
-    .actions{display:flex;gap:8px;padding:14px 16px;border-top:1px solid #edf0f3;background:#f8fafc}.button{height:37px;border-radius:8px;padding:0 12px;font-size:11.5px;font-weight:750}.button.secondary{border:1px solid #d0d5dd;background:#fff;color:#475467}.button.secondary:hover{background:#f4f6f8}.button.primary{flex:1;border:1px solid #004a98;background:#004a98;color:#fff}.button.primary:hover{background:#003a78}.button:disabled{cursor:not-allowed;opacity:.55}
+    .actions{display:flex;justify-content:flex-end;gap:9px;padding:13px 20px;border-top:1px solid #e5e7eb;background:#f8fafc}.button{height:40px;border-radius:8px;padding:0 16px;font-size:13px;font-weight:700}.button.secondary{border:1px solid rgba(0,74,152,.3);background:#fff;color:#004a98}.button.secondary:hover{background:#eff6ff}.button.primary{min-width:180px;border:1px solid #004a98;background:#004a98;color:#fff;box-shadow:0 1px 2px rgba(15,23,42,.08)}.button.primary:hover{background:#003a78}.button:disabled{cursor:not-allowed;opacity:.55}
+    @media(max-width:520px){.overlay{padding:10px}.panel{width:calc(100vw - 20px);max-height:calc(100vh - 20px)}.header{padding:16px}.panel-scroll{padding:4px 16px}.actions{padding:12px 16px}.button{padding:0 12px}.button.primary{min-width:0;flex:1}.period-grid{grid-template-columns:1fr}.compact.control{align-items:stretch;flex-wrap:wrap}.compact.control .compact-copy{padding-top:1px}.compact-actions{width:100%}.compact-button{flex:1}}
   </style>
   <div id="mount"></div>
 `;
@@ -117,15 +121,50 @@ function render() {
       return;
     }
     mount.innerHTML = `
-      <section class="compact" aria-live="polite">
-        <img src="${EXTENSION_ICON_URL}" alt="">
-        <div class="compact-copy">
-          <strong>${phase === 'running' ? 'UStudy đang đồng bộ' : phase === 'success' ? 'Đồng bộ hoàn tất' : 'Không thể đồng bộ'}</strong>
-          <span>${phaseMessage || 'Đang chuẩn bị dữ liệu Portal...'}</span>
-        </div>
-        ${phase === 'running' ? '<span class="spinner"></span>' : `<span class="compact-dot ${phase === 'error' ? 'error' : ''}"></span>`}
-      </section>
+      <div class="compact-wrap">
+        <section class="compact" aria-live="polite">
+          <img src="${EXTENSION_ICON_URL}" alt="">
+          <div class="compact-copy">
+            <strong>${phase === 'running' ? 'UStudy đang đồng bộ' : phase === 'success' ? 'Đồng bộ hoàn tất' : 'Không thể đồng bộ'}</strong>
+            <span>${phaseMessage || 'Đang chuẩn bị dữ liệu Portal...'}</span>
+          </div>
+          ${phase === 'running' ? '<span class="spinner"></span>' : `<span class="compact-dot ${phase === 'error' ? 'error' : ''}"></span>`}
+        </section>
+      </div>
     `;
+    return;
+  }
+  const compactControlMode = settings.onboardingComplete && !isPanelExpanded;
+  if (compactControlMode) {
+    const statusTitle = phase === 'running'
+      ? 'UStudy đang đồng bộ'
+      : phase === 'success'
+        ? 'Đồng bộ hoàn tất'
+        : phase === 'error'
+          ? 'Không thể đồng bộ'
+          : settings.mode === 'ask'
+            ? 'Sẵn sàng đồng bộ dữ liệu?'
+            : 'UStudy Portal Sync';
+    const statusMessage = phaseMessage || (settings.mode === 'ask'
+      ? 'Kiểm tra và đồng bộ khi bạn sẵn sàng.'
+      : formatLastSync(extensionState.stats.lastSyncedAt));
+    mount.innerHTML = `
+      <div class="compact-wrap">
+        <section class="compact control" aria-live="polite">
+          <img src="${EXTENSION_ICON_URL}" alt="">
+          <div class="compact-copy"><strong>${statusTitle}</strong><span>${statusMessage}</span></div>
+          <div class="compact-actions">
+            <button class="compact-button primary" id="ustudy-compact-sync" type="button" ${phase === 'running' || !isPortalReady() ? 'disabled' : ''}>${phase === 'running' ? 'Đang đồng bộ' : 'Đồng bộ ngay'}</button>
+            <button class="compact-button secondary" id="ustudy-open-settings" type="button">Cài đặt</button>
+          </div>
+        </section>
+      </div>
+    `;
+    shadow.getElementById('ustudy-compact-sync')?.addEventListener('click', () => { void startSync('manual'); });
+    shadow.getElementById('ustudy-open-settings')?.addEventListener('click', () => {
+      isPanelExpanded = true;
+      render();
+    });
     return;
   }
   const isFirstSetup = !settings.onboardingComplete;
@@ -135,29 +174,35 @@ function render() {
     && !settings.autoSuggestionDismissed;
 
   mount.innerHTML = `
-    <section class="panel" aria-label="UStudy Portal Sync">
-      <header class="header">
-        <img src="${EXTENSION_ICON_URL}" alt="">
-        <div class="heading"><strong>UStudy Portal Sync</strong><span>Phiên bản ${extensionState.extensionVersion} · ${formatLastSync(extensionState.stats.lastSyncedAt)}</span></div>
-        <button class="icon-btn" id="ustudy-close" type="button" aria-label="Ẩn">×</button>
-      </header>
-      <div class="panel-scroll">
-        ${!isPortalReady() ? '<div class="summary warning">Hãy đăng nhập Portal trước khi đồng bộ dữ liệu.</div>' : ''}
-        ${phaseMessage ? `<div class="summary ${phaseClass}">${phaseMessage}</div>` : ''}
-        ${showAutoSuggestion ? `<div class="summary">Bạn đã đồng bộ thành công ${extensionState.stats.successfulSyncs} lần. Bật tự động khi mở Portal?<div class="suggestion-actions"><button class="link-btn" id="ustudy-enable-auto" type="button">Bật tự động</button><button class="link-btn muted" id="ustudy-dismiss-auto" type="button">Giữ như hiện tại</button></div></div>` : ''}
-        ${renderSettingsBody(settings)}
-      </div>
-      <footer class="actions">
-        ${isFirstSetup ? '<button class="button secondary" id="ustudy-cancel-setup" type="button">Để sau</button>' : '<button class="button secondary" id="ustudy-save-settings" type="button">Lưu thiết lập</button>'}
-        <button class="button primary" id="ustudy-save-and-sync" type="button" ${phase === 'running' || !isPortalReady() ? 'disabled' : ''}>${phase === 'running' ? 'Đang đồng bộ' : isFirstSetup ? 'Lưu và đồng bộ' : 'Đồng bộ ngay'}</button>
-      </footer>
-    </section>
+    <div class="overlay">
+      <button class="backdrop" id="ustudy-backdrop" type="button" aria-label="Đóng hộp thoại"></button>
+      <section class="panel" role="dialog" aria-modal="true" aria-label="UStudy Portal Sync">
+        <header class="header">
+          <img src="${EXTENSION_ICON_URL}" alt="">
+          <div class="heading"><strong>UStudy Portal Sync</strong><span>Phiên bản ${extensionState.extensionVersion} · ${formatLastSync(extensionState.stats.lastSyncedAt)}</span></div>
+          <button class="icon-btn" id="ustudy-close" type="button" aria-label="Ẩn">×</button>
+        </header>
+        <div class="panel-scroll">
+          ${!isPortalReady() ? '<div class="summary warning">Hãy đăng nhập Portal trước khi đồng bộ dữ liệu.</div>' : ''}
+          ${phaseMessage ? `<div class="summary ${phaseClass}">${phaseMessage}</div>` : ''}
+          ${showAutoSuggestion ? `<div class="summary">Bạn đã đồng bộ thành công ${extensionState.stats.successfulSyncs} lần. Bật tự động khi mở Portal?<div class="suggestion-actions"><button class="link-btn" id="ustudy-enable-auto" type="button">Bật tự động</button><button class="link-btn muted" id="ustudy-dismiss-auto" type="button">Giữ như hiện tại</button></div></div>` : ''}
+          ${renderSettingsBody(settings)}
+        </div>
+        <footer class="actions">
+          ${isFirstSetup ? '<button class="button secondary" id="ustudy-cancel-setup" type="button">Để sau</button>' : '<button class="button secondary" id="ustudy-save-settings" type="button">Lưu thiết lập</button>'}
+          <button class="button primary" id="ustudy-save-and-sync" type="button" ${phase === 'running' || !isPortalReady() ? 'disabled' : ''}>${phase === 'running' ? 'Đang đồng bộ' : isFirstSetup ? 'Lưu và đồng bộ' : 'Đồng bộ ngay'}</button>
+        </footer>
+      </section>
+    </div>
   `;
 
-  shadow.getElementById('ustudy-close')?.addEventListener('click', () => {
-    hiddenForSession = true;
+  const hidePanel = () => {
+    if (settings.onboardingComplete) isPanelExpanded = false;
+    else hiddenForSession = true;
     render();
-  });
+  };
+  shadow.getElementById('ustudy-close')?.addEventListener('click', hidePanel);
+  shadow.getElementById('ustudy-backdrop')?.addEventListener('click', hidePanel);
   shadow.getElementById('ustudy-cancel-setup')?.addEventListener('click', () => {
     hiddenForSession = true;
     render();
@@ -202,6 +247,7 @@ async function savePanelSettings(shouldSync) {
     extensionState = await callExtension('SAVE_SETTINGS', collectPanelSettings());
     phase = 'idle';
     phaseMessage = '';
+    isPanelExpanded = false;
     if (shouldSync) await startSync();
     else render();
   } catch (error) {
@@ -221,6 +267,7 @@ async function startSync(trigger = 'manual') {
   }
 
   activeRequestId = crypto.randomUUID();
+  activeSyncTrigger = trigger;
   phase = 'running';
   phaseMessage = 'Đang khởi tạo bộ thu thập dữ liệu...';
   render();
@@ -255,7 +302,7 @@ window.addEventListener('message', async (event) => {
     phaseMessage = 'Đã thu thập xong. Đang chuyển dữ liệu sang UStudy...';
     render();
     try {
-      await callExtension('SYNC_COMPLETE', message.payload);
+      await callExtension('SYNC_COMPLETE', message.payload, { trigger: activeSyncTrigger });
       extensionState = await callExtension('GET_STATE');
       phase = 'success';
       phaseMessage = 'Đồng bộ hoàn tất. UStudy sẽ mở màn hình xem trước thay đổi.';
@@ -284,6 +331,7 @@ window.addEventListener('message', async (event) => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === 'USTUDY_START_SYNC') {
     hiddenForSession = false;
+    isPanelExpanded = false;
     void startSync();
   }
   if (message?.type === 'USTUDY_RUNNER_ERROR' && message.requestId === activeRequestId) {

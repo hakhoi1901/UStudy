@@ -8,6 +8,8 @@ export interface RawImportChange {
   index: number;
   label: string;
   status: ImportChangeStatus;
+  courseId?: string;
+  courseName?: string;
 }
 
 const COLLECTION_LABELS: Record<ImportCollection, string> = {
@@ -60,7 +62,17 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
     incomingValue.forEach((value: any, index: number) => {
       const key = valueKey(collection, value, index);
       const currentValue = currentByKey.get(key);
-      changes.push({ id: `${collection}:${index}`, collection, index, label: valueLabel(collection, value), status: currentValue === undefined ? 'add' : isSameValue(currentValue, value) ? 'unchanged' : 'update' });
+      const courseId = String(value?.id ?? '').trim();
+      const courseName = String(value?.name ?? '').trim();
+      changes.push({
+        id: `${collection}:${index}`,
+        collection,
+        index,
+        label: valueLabel(collection, value),
+        status: currentValue === undefined ? 'add' : isSameValue(currentValue, value) ? 'unchanged' : 'update',
+        ...(courseId ? { courseId } : {}),
+        ...(courseName ? { courseName } : {}),
+      });
     });
   }
   return changes;

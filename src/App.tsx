@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { CheckCircle2, FileUp, RefreshCw } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronUp, Eye, FileUp, RefreshCw } from 'lucide-react';
 import { AppRouter } from './app/AppRouter';
 import { AppDialog } from './components/ui/app-dialog';
 import { ChatbotWidget } from './components/ChatbotWidget';
@@ -38,11 +38,26 @@ interface ImportSummary {
   unchanged: number;
 }
 
+interface ImportCourseSummary {
+  id: string;
+  name: string;
+  status: 'add' | 'update';
+}
+
+interface ImportCollectionSummary {
+  collection: RawImportChange['collection'];
+  courses: ImportCourseSummary[];
+  add: number;
+  update: number;
+  nonCourseChanges: number;
+}
+
 function AppContent() {
   const { addNotification } = useAppNotification();
   const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
   const [pendingData, setPendingData] = useState<any>(null);
   const [importPreview, setImportPreview] = useState<PendingRawImport | null>(null);
+  const [isImportDetailsOpen, setIsImportDetailsOpen] = useState(false);
   const handledExtensionImports = useRef(new Set<string>());
 
   const previewSummary = useMemo(() => ({
@@ -56,6 +71,57 @@ function AppContent() {
       (groups[change.collection] ??= []).push(change);
     }
     return Object.entries(groups) as Array<[RawImportChange['collection'], RawImportChange[]]>;
+  }, [importPreview]);
+  const changedCollectionSummaries = useMemo(() => {
+    const summaries = new Map<RawImportChange['collection'], ImportCollectionSummary>();
+    const coursesByCollection = new Map<RawImportChange['collection'], Map<string, ImportCourseSummary>>();
+
+    for (const change of importPreview?.changes ?? []) {
+      if (change.status === 'unchanged') continue;
+
+      let summary = summaries.get(change.collection);
+      if (!summary) {
+        summary = {
+          collection: change.collection,
+          courses: [],
+          add: 0,
+          update: 0,
+          nonCourseChanges: 0,
+        };
+        summaries.set(change.collection, summary);
+      }
+
+      summary[change.status] += 1;
+      if (!change.courseId) {
+        summary.nonCourseChanges += 1;
+        continue;
+      }
+
+      let courses = coursesByCollection.get(change.collection);
+      if (!courses) {
+        courses = new Map<string, ImportCourseSummary>();
+        coursesByCollection.set(change.collection, courses);
+      }
+
+      const key = change.courseId.toLocaleUpperCase('vi-VN');
+      const existing = courses.get(key);
+      if (existing) {
+        if (change.courseName && existing.name === 'Chưa rõ tên môn') existing.name = change.courseName;
+        if (change.status === 'update') existing.status = 'update';
+        continue;
+      }
+      courses.set(key, {
+        id: change.courseId,
+        name: change.courseName || 'Chưa rõ tên môn',
+        status: change.status,
+      });
+    }
+
+    for (const [collection, summary] of summaries) {
+      summary.courses = Array.from(coursesByCollection.get(collection)?.values() ?? [])
+        .sort((first, second) => first.id.localeCompare(second.id, 'vi-VN'));
+    }
+    return Array.from(summaries.values());
   }, [importPreview]);
 
   const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey) => {
@@ -74,7 +140,7 @@ function AppContent() {
     return student;
   }, [refreshHasData]);
 
-  const preparePortalImport = useCallback((payload: PortalSyncPacket, source: PortalImportTransport) => {
+  const preparePortalImport = useCallback((payload: PortalSyncPacket, source: PortalImportTransport, suppressIfUnchanged = false) => {
       const incomingVersion = payload.scraperVersion || payload.version || String(payload.meta?.scraperVersion || payload.meta?.version || '');
       if (incomingVersion && incomingVersion !== PORTAL_SCRAPER_VERSION) {
         addNotification({
@@ -87,12 +153,15 @@ function AppContent() {
       }
       const currentRaw = readFromStorage<any>('raw_student_db', null);
       const changes = buildRawImportPreview(payload.raw, currentRaw);
+      if (suppressIfUnchanged && changes.every((change) => change.status === 'unchanged')) return false;
+      setIsImportDetailsOpen(false);
       setImportPreview({
         payload,
         changes,
         selectedIds: changes.filter((change) => change.status !== 'unchanged').map((change) => change.id),
         source,
       });
+      return true;
   }, [addNotification]);
 
   useEffect(() => {
@@ -115,7 +184,7 @@ function AppContent() {
       if (!isPortalSyncPacket(pendingImport.packet)) return;
 
       handledExtensionImports.current.add(pendingImport.id);
-      preparePortalImport(pendingImport.packet, 'extension');
+      preparePortalImport(pendingImport.packet, 'extension', pendingImport.trigger === 'auto');
       await requestPortalExtension('ACK_PENDING_IMPORT', { id: pendingImport.id });
     }
 
@@ -172,6 +241,7 @@ function AppContent() {
     }
 
     setImportPreview(null);
+    setIsImportDetailsOpen(false);
 
     if (!cryptoKey) {
       setPendingData({ ...payload, summary, source: importPreview.source });
@@ -216,15 +286,24 @@ function AppContent() {
 
       <AppDialog
         open={Boolean(importPreview)}
-        onOpenChange={(open) => { if (!open) setImportPreview(null); }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setImportPreview(null);
+            setIsImportDetailsOpen(false);
+          }
+        }}
         title={`Xem trước dữ liệu từ ${importPreview?.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet'}`}
-        description="Chỉ các bản ghi được chọn mới được nhập. Extension và Bookmarklet không tự ghi đè dữ liệu của bạn."
+        description={`Phát hiện ${previewSummary.add + previewSummary.update} thay đổi trong ${changedCollectionSummaries.length} nhóm dữ liệu. Kiểm tra tóm tắt trước khi áp dụng.`}
         icon={FileUp}
-        size="lg"
+        size={isImportDetailsOpen ? 'lg' : 'md'}
         footer={(
           <>
-            <button type="button" onClick={() => setImportPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
-            <button type="button" onClick={confirmImportPreview} disabled={!importPreview?.selectedIds.length} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">Nhập {importPreview?.selectedIds.length ?? 0} bản ghi</button>
+            <button type="button" onClick={() => { setImportPreview(null); setIsImportDetailsOpen(false); }} className="ustudy-button-outline">Hủy</button>
+            <button type="button" onClick={() => setIsImportDetailsOpen((current) => !current)} className="ustudy-button-outline">
+              {isImportDetailsOpen ? <ChevronUp className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {isImportDetailsOpen ? 'Thu gọn' : 'Xem chi tiết'}
+            </button>
+            <button type="button" onClick={confirmImportPreview} disabled={!importPreview?.selectedIds.length} className="ustudy-button-primary">Nhập {importPreview?.selectedIds.length ?? 0} thay đổi</button>
           </>
         )}
       >
@@ -233,26 +312,68 @@ function AppContent() {
           <ImportSummary label="Cập nhật" value={previewSummary.update} icon={<RefreshCw className="h-4 w-4 text-blue-600" />} />
           <ImportSummary label="Trùng" value={previewSummary.unchanged} icon={<FileUp className="h-4 w-4 text-slate-400" />} />
         </div>
-        <div className="mt-4 divide-y divide-slate-200">
-          {importPreview && groupedPreviewChanges.map(([collection, changes]) => (
-            <section key={collection} className="py-3 first:pt-0">
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{getImportCollectionLabel(collection as RawImportChange['collection'])}</h3>
-                <div className="flex items-center gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => togglePreviewGroup(changes, true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
-                  <button type="button" onClick={() => togglePreviewGroup(changes, false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
-                </div>
+        {!isImportDetailsOpen && (
+          <section className="mt-4">
+            <div className="mb-2 flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-[#004A98]" />
+              <h3 className="text-sm font-semibold text-slate-900">Thay đổi theo nhóm thông tin</h3>
+            </div>
+            {changedCollectionSummaries.length > 0 ? (
+              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                {changedCollectionSummaries.map((summary) => (
+                  <section key={summary.collection} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <h4 className="text-sm font-semibold text-slate-900">{getImportCollectionLabel(summary.collection)}</h4>
+                      <span className="shrink-0 text-xs text-slate-500">
+                        {summary.add > 0 && <strong className="font-semibold text-emerald-700">{summary.add} thêm</strong>}
+                        {summary.add > 0 && summary.update > 0 && <span className="mx-1.5">·</span>}
+                        {summary.update > 0 && <strong className="font-semibold text-blue-700">{summary.update} cập nhật</strong>}
+                      </span>
+                    </div>
+                    {summary.courses.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {summary.courses.map((course) => (
+                          <div key={course.id} className="flex items-center gap-3 px-3 py-2.5">
+                            <span className="w-24 shrink-0 text-xs font-bold text-[#004A98]">{course.id}</span>
+                            <span className="min-w-0 flex-1 truncate text-sm text-slate-700">{course.name}</span>
+                            <span className={`shrink-0 text-xs font-semibold ${course.status === 'add' ? 'text-emerald-700' : 'text-blue-700'}`}>{course.status === 'add' ? 'Thêm mới' : 'Cập nhật'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="px-3 py-2.5 text-sm text-slate-600">{summary.nonCourseChanges} bản ghi có thay đổi.</p>
+                    )}
+                  </section>
+                ))}
               </div>
-              {changes.map((change) => (
-                <label key={change.id} className={`flex items-center gap-3 px-1 py-2.5 ${change.status === 'unchanged' ? 'cursor-default opacity-55' : 'cursor-pointer'}`}>
-                  <input type="checkbox" checked={importPreview.selectedIds.includes(change.id)} disabled={change.status === 'unchanged'} onChange={(event) => togglePreviewItem(change.id, event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-[#004A98] focus:ring-[#004A98]" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">{change.label}</span>
-                  <span className={`shrink-0 text-xs font-semibold ${change.status === 'add' ? 'text-emerald-700' : change.status === 'update' ? 'text-blue-700' : 'text-slate-500'}`}>{change.status === 'add' ? 'Thêm mới' : change.status === 'update' ? 'Cập nhật' : 'Đã trùng'}</span>
-                </label>
-              ))}
-            </section>
-          ))}
-        </div>
+            ) : (
+              <p className="rounded-lg bg-slate-50 px-3 py-3 text-sm text-slate-500">Không có dữ liệu mới cần áp dụng.</p>
+            )}
+            {previewSummary.unchanged > 0 && <p className="mt-2 text-xs text-slate-500">{previewSummary.unchanged} bản ghi trùng sẽ được bỏ qua.</p>}
+          </section>
+        )}
+        {isImportDetailsOpen && (
+          <div className="mt-4 divide-y divide-slate-200">
+            {importPreview && groupedPreviewChanges.map(([collection, changes]) => (
+              <section key={collection} className="py-3 first:pt-0">
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{getImportCollectionLabel(collection as RawImportChange['collection'])}</h3>
+                  <div className="flex items-center gap-3 text-xs font-semibold">
+                    <button type="button" onClick={() => togglePreviewGroup(changes, true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
+                    <button type="button" onClick={() => togglePreviewGroup(changes, false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
+                  </div>
+                </div>
+                {changes.map((change) => (
+                  <label key={change.id} className={`flex items-center gap-3 px-1 py-2.5 ${change.status === 'unchanged' ? 'cursor-default opacity-55' : 'cursor-pointer'}`}>
+                    <input type="checkbox" checked={importPreview.selectedIds.includes(change.id)} disabled={change.status === 'unchanged'} onChange={(event) => togglePreviewItem(change.id, event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-[#004A98] focus:ring-[#004A98]" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">{change.label}</span>
+                    <span className={`shrink-0 text-xs font-semibold ${change.status === 'add' ? 'text-emerald-700' : change.status === 'update' ? 'text-blue-700' : 'text-slate-500'}`}>{change.status === 'add' ? 'Thêm mới' : change.status === 'update' ? 'Cập nhật' : 'Đã trùng'}</span>
+                  </label>
+                ))}
+              </section>
+            ))}
+          </div>
+        )}
       </AppDialog>
 
       <AppRouter />

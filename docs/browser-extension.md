@@ -41,7 +41,7 @@ Extension không đọc mật khẩu, không sao chép cookie và không gửi d
 - `ask`: hiện lời nhắc trên Portal trước mỗi lần chạy. Đây là mặc định.
 - `auto`: tự chạy một lần cho mỗi tab Portal sau khi đăng nhập. Khi quét chỉ hiện một thanh tiến trình nhỏ.
 
-Ở chế độ thủ công hoặc hỏi trước, panel nổi trên Portal dùng cùng bố cục với popup Extension: header logo và phiên bản, lựa chọn chế độ, nguồn dữ liệu, học kỳ và footer hành động cố định. Nội dung panel tự cuộn độc lập, không làm trang Portal dịch chuyển.
+Sau lần thiết lập đầu tiên, chế độ thủ công và hỏi trước chỉ hiện một thanh điều khiển nhỏ bên phải Portal. Thanh này có nút **Đồng bộ ngay** và **Cài đặt**; modal đầy đủ chỉ mở khi người dùng yêu cầu. Modal dùng cấu trúc đồng bộ với `AppDialog` của web UStudy: header xanh, nội dung sáng, vùng cuộn độc lập và không làm trang Portal dịch chuyển.
 
 Sau hai lần thành công ở chế độ `ask`, extension mới đề xuất bật `auto`. Thu thập có thể tự động nhưng UStudy luôn yêu cầu xác nhận trước khi ghi dữ liệu.
 
@@ -50,6 +50,8 @@ Trên mọi host dạng `new-portal{n}.hcmus.edu.vn`, extension coi pathname `/L
 Bridge gắn phiên bản extension vào thuộc tính `data-ustudy-extension-version` trên thẻ `<html>`. Nhờ đó UStudy vẫn nhận diện được extension khi service worker đang khởi động, đồng thời extension tự chèn bridge vào các tab UStudy đã mở sau khi cài đặt hoặc cập nhật.
 
 ## Cập nhật phiên bản
+
+Nhật ký thay đổi theo từng bản được lưu tại [browser-extension-changelog.md](./browser-extension-changelog.md).
 
 Các phiên bản và URL nằm trong `src/portal-sync/config.json`:
 
