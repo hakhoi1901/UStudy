@@ -19,7 +19,6 @@ interface HolidayManagerDialogProps {
     onSave: (newOverrides: ScheduleOverrides) => void;
 }
 
-type HolidayListView = 'custom' | 'system';
 type AffectedMode = 'all' | 'selected';
 
 function formatDateRange(holiday: Holiday, semesterStartDate?: Date): string {
@@ -53,7 +52,6 @@ export function HolidayManagerDialog({
     const [selectedCourseCodes, setSelectedCourseCodes] = useState<string[]>([]);
     const [makeUp, setMakeUp] = useState(true);
     const [error, setError] = useState('');
-    const [listView, setListView] = useState<HolidayListView>('custom');
 
     const courseNameByCode = useMemo(() => new Map(courses.map((course) => [course.code, course.name])), [courses]);
     const customHolidays = useMemo(
@@ -64,7 +62,10 @@ export function HolidayManagerDialog({
         () => sortHolidays(systemHolidays || [], semesterStartDate),
         [systemHolidays, semesterStartDate],
     );
-    const visibleHolidays = listView === 'custom' ? customHolidays : sortedSystemHolidays;
+    const visibleHolidays = useMemo(
+        () => sortHolidays([...customHolidays, ...sortedSystemHolidays], semesterStartDate),
+        [customHolidays, sortedSystemHolidays, semesterStartDate],
+    );
 
     const resetForm = () => {
         setEditingId(null);
@@ -112,7 +113,6 @@ export function HolidayManagerDialog({
             : [...overrides.holidays, holiday];
         onSave({ ...overrides, holidays: sortHolidays(nextHolidays, semesterStartDate) });
         resetForm();
-        setListView('custom');
     };
 
     const editHoliday = (holiday: Holiday) => {
@@ -150,7 +150,7 @@ export function HolidayManagerDialog({
                 </button>
             )}
         >
-            <div className="grid min-h-[34rem] md:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
+            <div className="grid h-[32rem] md:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
                 <section className="p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
@@ -229,20 +229,24 @@ export function HolidayManagerDialog({
                 </section>
 
                 <section className="border-t border-gray-200 bg-gray-50/70 p-5 md:border-l md:border-t-0">
-                    <div className="mb-4 grid grid-cols-2 rounded-lg bg-gray-200/70 p-1">
-                        <button type="button" onClick={() => setListView('custom')} className={`h-9 rounded-md text-sm font-semibold transition ${listView === 'custom' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600'}`}>Tự thiết lập · {customHolidays.length}</button>
-                        <button type="button" onClick={() => setListView('system')} className={`h-9 rounded-md text-sm font-semibold transition ${listView === 'system' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600'}`}>Hệ thống · {sortedSystemHolidays.length}</button>
+                    <div className="mb-4 flex items-end justify-between gap-3">
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-900">Tất cả lịch nghỉ</h3>
+                            <p className="mt-1 text-xs text-gray-500">Lịch nghỉ chung và lịch bạn thêm được sắp cùng nhau theo ngày.</p>
+                        </div>
+                        <span className="shrink-0 text-xs font-semibold text-[#004A98]">{visibleHolidays.length} mục</span>
                     </div>
 
                     {visibleHolidays.length === 0 ? (
                         <div className="border-y border-dashed border-gray-300 py-10 text-center">
                             <CalendarDays className="mx-auto h-6 w-6 text-gray-300" />
                             <p className="mt-2 text-sm font-medium text-gray-600">Chưa có ngày nghỉ</p>
-                            <p className="mt-1 text-xs text-gray-500">{listView === 'custom' ? 'Ngày nghỉ bạn thêm sẽ xuất hiện tại đây.' : 'Chưa có lịch nghỉ chung cho học kỳ này.'}</p>
+                            <p className="mt-1 text-xs text-gray-500">Ngày nghỉ bạn thêm sẽ xuất hiện tại đây.</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-200 border-y border-gray-200 bg-white">
                             {visibleHolidays.map((holiday) => {
+                                const isSystemHoliday = sortedSystemHolidays.includes(holiday);
                                 const scope = holiday.affectedCourseCodes === 'all'
                                     ? 'Tất cả môn'
                                     : holiday.affectedCourseCodes.map((code) => {
@@ -250,15 +254,20 @@ export function HolidayManagerDialog({
                                         return name ? `${code} · ${name}` : code;
                                     }).join(', ');
                                 return (
-                                    <div key={holiday.id} className="px-3 py-3.5">
+                                    <div key={`${isSystemHoliday ? 'system' : 'custom'}-${holiday.id}`} className="px-3 py-3.5">
                                         <div className="flex items-start gap-3">
                                             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#004A98]"><CalendarDays className="h-4 w-4" /></span>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-bold text-gray-900">{holiday.reason}</p>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <p className="text-sm font-bold text-gray-900">{holiday.reason}</p>
+                                                    {isSystemHoliday && (
+                                                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">Lịch chung</span>
+                                                    )}
+                                                </div>
                                                 <p className="mt-1 text-xs font-medium text-gray-600">{formatDateRange(holiday, semesterStartDate)}</p>
                                                 <p className="mt-1 truncate text-xs text-gray-500">{scope} · {holiday.makeUp === false ? 'Không bù lịch' : 'Có bù lịch'}</p>
                                             </div>
-                                            {listView === 'custom' && (
+                                            {!isSystemHoliday && (
                                                 <div className="flex shrink-0 items-center gap-1">
                                                     <button type="button" onClick={() => editHoliday(holiday)} title="Chỉnh sửa" className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-blue-50 hover:text-[#004A98]"><Pencil className="h-4 w-4" /></button>
                                                     <button type="button" onClick={() => removeHoliday(holiday.id)} title="Xóa" className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>

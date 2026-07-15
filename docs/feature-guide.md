@@ -73,7 +73,7 @@ Theo dõi điểm và thử các kịch bản cải thiện GPA.
 - Xem GPA theo học kỳ và GPA tích lũy.
 - Xem lịch sử điểm và các môn cần học lại.
 - Dùng công cụ mô phỏng GPA cho học kỳ tiếp theo hoặc tình huống học lại.
-- Xuất bảng điểm dưới dạng PDF.
+- Xuất bảng điểm theo mẫu dưới dạng PDF, Word hoặc Excel.
 
 ### Lịch thi (`/exam-schedule`)
 
@@ -101,6 +101,7 @@ Xem thời khóa biểu đã chốt cho học kỳ.
 
 - Hiển thị lịch trực quan theo ngày và tiết.
 - Xem thông tin lớp học phần và lịch học liên quan.
+- Quản lý lịch nghỉ chung và lịch nghỉ tự nhập theo ngày, phạm vi môn và tùy chọn bù lịch. Xem [hướng dẫn quản lý lịch nghỉ](holiday-management.md).
 - Xuất thời khóa biểu.
 
 ### Cài đặt (`/settings`)

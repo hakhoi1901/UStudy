@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NoDataCard } from '../../components/nodataCard';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { SectionTabs } from '../../components/ui/section-tabs';
-import { TranscriptWordExportButton } from '../../components/TranscriptWordExportButton';
+import { TranscriptExportMenu } from '../../components/TranscriptExportMenu';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
 
@@ -89,8 +89,11 @@ export function GradeManagement() {
         </div>
 
         {hasData && (
-          <TranscriptWordExportButton
+          <TranscriptExportMenu
             name={studentDb?.name || 'Sinh viên'}
+            dob={studentDb?.dob || '---'}
+            studentId={studentDb?.id || '---'}
+            program={currentFaculty?.name || '---'}
             major={currentMajor?.name || '---'}
             cohort={currentCohort?.name || '---'}
             totalCredits={accumulatedCredits}
