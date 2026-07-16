@@ -239,9 +239,7 @@ export function TranscriptExportMenu(props: TranscriptExportMenuProps) {
         aria-haspopup="menu"
       >
         <div className="desktop-only">
-          <Download className="h-4 w-4" />
           {exportingFormat ? `Đang tạo ${exportLabels[exportingFormat]}...` : 'Xuất bảng điểm'}
-          {!exportingFormat && <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />}
         </div>     
         <div className="mobile-only">
           <Download className="h-4 w-4" />

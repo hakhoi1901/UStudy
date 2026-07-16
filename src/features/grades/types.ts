@@ -140,6 +140,7 @@ export interface GPAPullInputSectionProps {
     setTargetGPAInput: (val: string) => void;
     targetGpaError: string | null;
     minTargetGpa: number;
+    maxTargetGpa: number | null;
     mode: 'all' | 'foundationMajor' | 'currentSemester';
     setMode: (mode: 'all' | 'foundationMajor' | 'currentSemester') => void;
     isFoundationMajorModeUnavailable: boolean;

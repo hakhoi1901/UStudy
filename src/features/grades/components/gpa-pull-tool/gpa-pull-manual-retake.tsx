@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BookOpen, Check, ChevronDown, HelpCircle, Plus, Search, Trash2, X } from 'lucide-react';
+import { MobileBottomSheet } from '../../../../components/ui/mobile-bottom-sheet';
 import type { GPAPullManualRetakeProps } from '../../types';
 
 export function GPAPullManualRetake({
@@ -28,6 +29,85 @@ export function GPAPullManualRetake({
 }: GPAPullManualRetakeProps) {
     const pendingRetakeCount = pendingRetakeCodeSet.size;
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isMobileViewport, setIsMobileViewport] = useState(() => (
+        typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+    ));
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 767px)');
+        const handleChange = (event: MediaQueryListEvent) => setIsMobileViewport(event.matches);
+        setIsMobileViewport(mediaQuery.matches);
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
+
+    const renderPickerBody = (autoFocus: boolean) => (
+        <>
+            <div className="border-b border-gray-100 bg-gray-50 p-3">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        autoFocus={autoFocus}
+                        value={retakeSearchTerm}
+                        onChange={(event) => setRetakeSearchTerm(event.target.value)}
+                        placeholder="Tìm mã hoặc tên môn..."
+                        className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                    />
+                </div>
+            </div>
+
+            <div className="min-h-[10rem] flex-1 overflow-y-auto">
+                {selectableRetakeCourses.length === 0 ? (
+                    <p className="p-6 text-center text-sm text-gray-500">Không còn môn nào có thể cải thiện.</p>
+                ) : filteredSelectableRetakeCourses.length === 0 ? (
+                    <p className="p-6 text-center text-sm text-gray-500">Không tìm thấy môn phù hợp.</p>
+                ) : (
+                    <div className="divide-y divide-gray-100">
+                        {filteredSelectableRetakeCourses.map((course) => {
+                            const isPending = pendingRetakeCodeSet.has(course.code);
+                            return (
+                                <button
+                                    key={course.code}
+                                    type="button"
+                                    onClick={() => togglePendingRetakeCode(course.code)}
+                                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#EAF3FF] ${isPending ? 'bg-[#EAF3FF]' : ''}`}
+                                >
+                                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${isPending ? 'border-[#004A98] bg-[#004A98] text-white' : 'border-gray-300 text-transparent'}`}>
+                                        <Check className="h-3.5 w-3.5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="line-clamp-2 text-sm font-medium leading-5 text-gray-800">{course.nameVi}</p>
+                                        <p className="mt-0.5 text-xs text-gray-500">{course.code} · {course.credits} TC · Điểm hiện tại {course.currentGrade.toFixed(decimals)}</p>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </>
+    );
+
+    const pickerFooter = (
+        <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+                <span className="shrink-0">Đã chọn {pendingRetakeCount} môn</span>
+                <div className="flex items-center gap-3">
+                    <button type="button" onClick={selectAllFilteredRetakes} className="font-medium text-[#004A98] hover:underline">Chọn hết</button>
+                    <button type="button" onClick={clearPendingFilteredRetakes} className="font-medium text-red-600 hover:underline">Bỏ chọn</button>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={addPendingRetakes}
+                disabled={pendingRetakeCount === 0}
+                className="w-full rounded-lg bg-[#004A98] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+                Thêm {pendingRetakeCount} môn đã chọn
+            </button>
+        </div>
+    );
 
     return (
         <section>
@@ -69,75 +149,16 @@ export function GPAPullManualRetake({
                                 Thêm môn
                             </button>
 
-                            {isRetakePickerOpen && (
-                                <div className="absolute right-0 top-full z-[100] mt-2 flex max-h-[32rem] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-                                    <div className="space-y-3 border-b border-gray-100 bg-gray-50 p-3">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <p className="text-xs font-semibold text-gray-700">Chọn môn cải thiện · {scopeName}</p>
-                                            <button type="button" onClick={() => setIsRetakePickerOpen(false)} className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600" title="Đóng">
-                                                <X className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                autoFocus
-                                                value={retakeSearchTerm}
-                                                onChange={(event) => setRetakeSearchTerm(event.target.value)}
-                                                placeholder="Tìm mã hoặc tên môn..."
-                                                className="w-full rounded-lg border border-gray-200 bg-white py-2 pr-4 pl-9 text-sm outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="min-h-[10rem] flex-1 overflow-y-auto">
-                                        {selectableRetakeCourses.length === 0 ? (
-                                            <p className="p-6 text-center text-sm text-gray-500">Không còn môn nào có thể cải thiện.</p>
-                                        ) : filteredSelectableRetakeCourses.length === 0 ? (
-                                            <p className="p-6 text-center text-sm text-gray-500">Không tìm thấy môn phù hợp.</p>
-                                        ) : (
-                                            <div className="divide-y divide-gray-100">
-                                                {filteredSelectableRetakeCourses.map((course) => {
-                                                    const isPending = pendingRetakeCodeSet.has(course.code);
-                                                    return (
-                                                        <button
-                                                            key={course.code}
-                                                            type="button"
-                                                            onClick={() => togglePendingRetakeCode(course.code)}
-                                                            className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[#EAF3FF] ${isPending ? 'bg-[#EAF3FF]' : ''}`}
-                                                        >
-                                                            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${isPending ? 'border-[#004A98] bg-[#004A98] text-white' : 'border-gray-300 text-transparent'}`}>
-                                                                <Check className="h-3.5 w-3.5" />
-                                                            </span>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="truncate text-sm font-medium text-gray-800">{course.nameVi}</p>
-                                                                <p className="mt-0.5 text-xs text-gray-500">{course.code} · {course.credits} TC · Điểm hiện tại {course.currentGrade.toFixed(decimals)}</p>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2 border-t border-gray-100 bg-gray-50 p-3">
-                                        <div className="flex items-center justify-between text-xs text-gray-500">
-                                            <span>Đã chọn {pendingRetakeCount} môn</span>
-                                            <div className="flex items-center gap-3">
-                                                <button type="button" onClick={selectAllFilteredRetakes} className="font-medium text-[#004A98] hover:underline">Chọn hết</button>
-                                                <button type="button" onClick={clearPendingFilteredRetakes} className="font-medium text-red-600 hover:underline">Bỏ chọn</button>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={addPendingRetakes}
-                                            disabled={pendingRetakeCount === 0}
-                                            className="w-full rounded-lg bg-[#004A98] py-2 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-gray-300"
-                                        >
-                                            Thêm {pendingRetakeCount} môn đã chọn
+                            {isRetakePickerOpen && !isMobileViewport && (
+                                <div className="absolute bottom-full right-0 z-[100] mb-2 flex max-h-[32rem] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                                    <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50 px-3 py-2.5">
+                                        <p className="text-xs font-semibold text-gray-700">Chọn môn cải thiện · {scopeName}</p>
+                                        <button type="button" onClick={() => setIsRetakePickerOpen(false)} className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600" title="Đóng">
+                                            <X className="h-4 w-4" />
                                         </button>
                                     </div>
+                                    {renderPickerBody(true)}
+                                    <div className="border-t border-gray-100 bg-gray-50 p-3">{pickerFooter}</div>
                                 </div>
                             )}
                         </div>
@@ -227,6 +248,21 @@ export function GPAPullManualRetake({
                         <p className="py-3 text-sm text-gray-500">Chưa chọn môn nào để cải thiện.</p>
                     )}
                 </div>
+            )}
+
+            {isRetakePickerOpen && isMobileViewport && (
+                <MobileBottomSheet
+                    title="Chọn môn cải thiện"
+                    eyebrow={scopeName}
+                    ariaLabel="Chọn môn học cải thiện"
+                    onClose={() => setIsRetakePickerOpen(false)}
+                    footer={pickerFooter}
+                    className="md:hidden"
+                    contentClassName="flex flex-col overflow-hidden"
+                    sheetId="retake-picker"
+                >
+                    {renderPickerBody(false)}
+                </MobileBottomSheet>
             )}
         </section>
     );

@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { AlertTriangle, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { MobileBottomSheet } from './ui/mobile-bottom-sheet';
 
 export interface MobileCourseDetailData {
     code: string;
@@ -36,61 +36,17 @@ export function MobileCourseSheetFrame({
     children,
     footer,
 }: MobileCourseSheetFrameProps) {
-    useEffect(() => {
-        const previousOverflow = document.body.style.overflow;
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose();
-        };
-
-        document.body.style.overflow = 'hidden';
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.body.style.overflow = previousOverflow;
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [onClose]);
-
-    return createPortal((
-        <div className="fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[9000] lg:hidden">
-            <button
-                type="button"
-                aria-label="Đóng chi tiết môn học"
-                onClick={onClose}
-                className="absolute inset-0 h-full w-full bg-gray-900/35"
-            />
-            <section
-                role="dialog"
-                aria-modal="true"
-                aria-label={`Chi tiết môn ${courseCode}`}
-                className="absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl"
-            >
-                <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-gray-300" />
-                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-gray-100 px-4 py-4">
-                    <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase text-gray-500">{courseCode}</p>
-                        <h2 className="mt-1 text-base font-bold leading-snug text-gray-900">{courseName}</h2>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100"
-                        aria-label="Đóng"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
-
-                {children}
-
-                {footer && (
-                    <div className="shrink-0 border-t border-gray-100 bg-white px-4 pb-4 pt-3 shadow-[0_-8px_18px_rgba(15,23,42,0.06)]">
-                        {footer}
-                    </div>
-                )}
-            </section>
-        </div>
-    ), document.body);
+    return (
+        <MobileBottomSheet
+            title={courseName}
+            eyebrow={courseCode}
+            ariaLabel={`Chi tiết môn ${courseCode}`}
+            onClose={onClose}
+            footer={footer}
+        >
+            {children}
+        </MobileBottomSheet>
+    );
 }
 
 export function MobileCourseDetailContent({
