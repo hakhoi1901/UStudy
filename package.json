@@ -78,6 +78,7 @@
         "dev": "vite",
         "build": "npm run build:extension && vite build",
         "build:extension": "node scripts/build-extension.mjs",
+        "build:apk": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
         "typecheck": "tsc -b"
     }
 }

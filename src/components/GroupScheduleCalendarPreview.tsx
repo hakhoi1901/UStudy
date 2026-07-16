@@ -241,7 +241,8 @@ export function GroupScheduleCalendarPreview({
             </div>
 
             <div style={{ position: 'relative', isolation: 'isolate' }}>
-              <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Không tạo stacking context để cột Tiết sticky nằm trên thẻ môn khi vuốt ngang. */}
+              <div style={{ position: 'relative' }}>
                 {timePeriods.map((period) => {
                   const isFirstAfternoon = period.period === 6;
                   return (

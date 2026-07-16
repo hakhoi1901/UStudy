@@ -40,7 +40,7 @@ export function GPAPullTool({
         retakeSearchTerm, setRetakeSearchTerm,
         isRetakePickerOpen, setIsRetakePickerOpen,
         retakePickerRef,
-        targetGPA, targetGpaError,
+        targetGPA, targetGpaError, maxAchievableGpaAtGraduation,
         isFoundationMajorModeUnavailable,
         isFoundationMajorScopeActive,
         displayCurrentGPA,
@@ -105,10 +105,10 @@ export function GPAPullTool({
     }, [hasCalculated, nextSemester, simulatorCourses]);
 
     return (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="items-center gap-2 border-b border-gray-100 px-4 py-3 md:px-5">
                 <div className="flex">
-                    <h3 className="text-sm text-[15pxcái] font-semibold text-gray-800">{mode === 'currentSemester' ? 'Mục tiêu GPA kỳ này' : 'Mục tiêu GPA tốt nghiệp'}</h3>
+                    <h3 className="text-sm text-[15px] font-semibold text-gray-800">{mode === 'currentSemester' ? 'Mục tiêu GPA kỳ này' : 'Mục tiêu GPA tốt nghiệp'}</h3>
                     <span title={mode === 'currentSemester' ? 'Tính GPA cần đạt riêng cho các học phần trong kỳ hiện tại.' : 'Ước tính GPA trung bình cần đạt cho các tín chỉ còn lại để chạm mục tiêu đã nhập.'}>
                         <Info className="h-4 w-4 text-gray-400" />
                     </span>
@@ -126,6 +126,7 @@ export function GPAPullTool({
                     }}
                     targetGpaError={targetGpaError}
                     minTargetGpa={minTargetGpa}
+                    maxTargetGpa={maxAchievableGpaAtGraduation}
                     mode={mode}
                     setMode={(nextMode) => {
                         setMode(nextMode);
@@ -142,46 +143,6 @@ export function GPAPullTool({
                     projectedScopeCredits={projectedScopeCredits}
                     decimals={decimals}
                 />
-
-                {/* {hasCalculated && baseResult && (
-                    <div className="space-y-6 pt-2 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
-                        <GPAPullResultSummary
-                            targetGPA={targetGPA}
-                            displayCurrentGPA={mode === 'currentSemester' ? semesterGPA : displayCurrentGPA}
-                            displayAccumulatedCredits={mode === 'currentSemester' ? workingSemester.totalCredits : displayAccumulatedCredits}
-                            scopeName={scopeName}
-                            baseResult={baseResult}
-                            decimals={decimals}
-                        />
-
-                        {baseResult.success && !baseResult.alreadyAchieved && !baseResult.impossible && (
-                            <div className="space-y-8">
-                                {shouldShowRetakeSuggestions && (
-                                    <GPAPullRetakeSuggestions
-                                        retakeSuggestions={retakeSuggestions}
-                                        addManualRetake={addManualRetake}
-                                        decimals={decimals}
-                                        scopeName={scopeName}
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                        {baseResult.impossible && (
-                            <div className="p-4 bg-red-50 rounded-xl border border-red-100 flex flex-col gap-3">
-                                <p className="text-sm text-red-800 leading-relaxed font-medium">
-                                    Mục tiêu GPA {targetGPA?.toFixed(decimals)} trong phạm vi {scopeName} là <b>không khả thi</b> nếu chỉ dựa vào các tín chỉ còn lại (cần trung bình &gt; 10.0).
-                                </p>
-                                <GPAPullRetakeSuggestions
-                                    retakeSuggestions={retakeSuggestions}
-                                    addManualRetake={addManualRetake}
-                                    decimals={decimals}
-                                    scopeName={scopeName}
-                                />
-                            </div>
-                        )}
-                    </div>
-                )} */}
             </div>
 
             <div className="border-t border-gray-200">

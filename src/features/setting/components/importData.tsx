@@ -74,7 +74,12 @@ function isPortalBackup(data: Record<string, string>): boolean {
   ));
 }
 
-export function ImportData() {
+interface ImportDataProps {
+  compact?: boolean;
+  importButtonLabel?: string;
+}
+
+export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ liệu' }: ImportDataProps = {}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [pendingImport, setPendingImport] = useState<ImportPreview | null>(null);
@@ -248,12 +253,16 @@ export function ImportData() {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900"><Database className="h-5 w-5" />Nhập / Xuất dữ liệu</h2>
-      <p className="mb-6 flex-grow text-sm text-gray-500">Xuất dữ liệu cục bộ thành tệp sao lưu, hoặc chọn từng khối dữ liệu cần nhận trước khi nhập.</p>
-      <div className="mt-auto flex flex-wrap items-center justify-start gap-3">
-        <button type="button" onClick={openExportPreview} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>
-        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none"><Download className="h-4 w-4" strokeWidth={2.5} />Nhập dữ liệu</button>
+    <div className={compact ? '' : 'flex h-full flex-col'}>
+      {!compact && (
+        <>
+          <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900"><Database className="h-5 w-5" />Nhập / Xuất dữ liệu</h2>
+          <p className="mb-6 flex-grow text-sm text-gray-500">Xuất dữ liệu cục bộ thành tệp sao lưu, hoặc chọn từng khối dữ liệu cần nhận trước khi nhập.</p>
+        </>
+      )}
+      <div className={compact ? 'flex w-full' : 'mt-auto flex flex-wrap items-center justify-start gap-3'}>
+        {!compact && <button type="button" onClick={openExportPreview} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>}
+        <button type="button" onClick={() => fileInputRef.current?.click()} className={compact ? 'flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#004A98] bg-white px-4 py-2.5 text-sm font-semibold text-[#004A98] transition-colors hover:bg-blue-50' : 'flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none'}><Download className="h-4 w-4" strokeWidth={2.5} />{importButtonLabel}</button>
         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
       </div>
 

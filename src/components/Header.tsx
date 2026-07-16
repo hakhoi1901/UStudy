@@ -1,4 +1,4 @@
-import { LogOut, ChevronDown, LogIn, ExternalLink } from 'lucide-react';
+import { LogOut, ChevronDown, LogIn, ExternalLink, GraduationCap, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LogoutConfirmModal } from './LogoutConfirmModal';
 import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
@@ -10,6 +10,7 @@ import { ACADEMIC_YEARS } from '../assets/data/tuition';
 import { APP_CONFIG, STORAGE_KEYS } from '../config';
 import { readFromStorage, clearAllStorage } from '../helpers/localStorage/save';
 import { useCrypto } from '../context/CryptoContext';
+import { isNativePortalSyncAvailable, openNativePortalSync } from '../mobile/portal-sync';
 
 export interface HeaderProps {
   selectedSemester?: string;
@@ -27,7 +28,8 @@ export function Header({
   const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { academicYear, setAcademicYear, setSemesterNumber } = useDepartmentData();
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+  const { academicYear, semesterNumber, setAcademicYear, setSemesterNumber } = useDepartmentData();
 
   // lấy dữ liệu sinh viên
   const { hasData } = useStudentGradeData();
@@ -82,7 +84,26 @@ export function Header({
   };
 
   // xử lý đăng nhập
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (isNativePortalSyncAvailable()) {
+      setIsOpeningPortal(true);
+      try {
+        await openNativePortalSync(academicYear, semesterNumber);
+      } catch (reason) {
+        const message = reason instanceof Error ? reason.message : String(reason);
+        if (!/cancel|hủy|huy/i.test(message)) {
+          addNotification({
+            title: 'Không thể mở Portal',
+            message: message || 'Vui lòng thử lại.',
+            type: 'error'
+          });
+        }
+      } finally {
+        setIsOpeningPortal(false);
+      }
+      return;
+    }
+
     const PORTAL_URL = APP_CONFIG.PORTAL_LOGIN_URL;
     window.open(PORTAL_URL, '_blank');
   };
@@ -101,8 +122,15 @@ export function Header({
           {/* ---- Bên trái: tiêu đề + bộ chọn học kỳ ---- */}
           <div className="flex items-center gap-2 md:gap-4 min-w-0">
             {/* Tiêu đề: ẩn trên mobile nếu có bộ chọn, ngược lại hiện trên cả mobile và desktop */}
-            <h2 className={`${showSemesterSelector ? 'hidden md:block' : 'block'} text-gray-900 whitespace-nowrap text-sm sm:text-base md:text-lg`} style={{ fontWeight: 600 }}>
+            <h2 className={`desktop-only text-gray-900 whitespace-nowrap text-sm sm:text-base md:text-lg`} style={{ fontWeight: 600 }}>
               Hệ thống quản lý học tập
+            </h2>
+            <h2
+              className="mobile-only flex items-center gap-2 whitespace-nowrap text-sm text-gray-900 sm:text-base md:text-lg"
+              style={{ fontWeight: 600 }}
+            >
+              <GraduationCap className="h-8 w-8 shrink-0 rounded-md bg-[#0058B2] p-1 text-white lg:h-9 lg:w-9 lg:rounded-lg" />
+              <span>UStudy</span>
             </h2>
 
             {/* Bộ chọn học kỳ */}
@@ -174,11 +202,14 @@ export function Header({
 
                 {/* Open Portal Button */}
                 <button
-                  onClick={handleLogin}
+                  onClick={() => void handleLogin()}
+                  disabled={isOpeningPortal}
                   className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-gray-200 focus:ring-offset-2"
-                  title="Mở HCMUS Portal để đồng bộ dữ liệu"
+                  title={isNativePortalSyncAvailable() ? 'Mở Portal và đồng bộ dữ liệu' : 'Mở HCMUS Portal để đồng bộ dữ liệu'}
                 >
-                  <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
+                  {isOpeningPortal
+                    ? <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+                    : <ExternalLink className="h-4 w-4" strokeWidth={2.5} />}
                   <span className="hidden md:inline" style={{ fontWeight: 500 }}>Mở Portal</span>
                 </button>
 
@@ -200,11 +231,14 @@ export function Header({
                   <BookmarkletButton variant="outline" hideInstructions={true} />
                 </div>
                 <button
-                  onClick={handleLogin}
+                  onClick={() => void handleLogin()}
+                  disabled={isOpeningPortal}
                   className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-[#004A98] text-white rounded-lg hover:bg-[#003A78] transition-all shadow-sm focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
                 >
-                  <LogIn className="w-4 h-4" strokeWidth={2.5} />
-                  <span className="text-sm" style={{ fontWeight: 500 }}>Đăng nhập</span>
+                  {isOpeningPortal
+                    ? <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+                    : <LogIn className="h-4 w-4" strokeWidth={2.5} />}
+                  <span className="text-sm" style={{ fontWeight: 500 }}>{isOpeningPortal ? 'Đang mở' : 'Đăng nhập'}</span>
                 </button>
               </>
             )}

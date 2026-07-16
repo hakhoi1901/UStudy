@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, Bookmark, CheckCircle2, Download, ExternalLink, Puzzle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Bookmark, CheckCircle2, Download, ExternalLink, LoaderCircle, Puzzle, RefreshCw, Smartphone } from 'lucide-react';
 import { BookmarkletButton } from '../../../components/BookmarkletButton';
 import { AppDialog } from '../../../components/ui/app-dialog';
+import { useDepartmentData } from '../../../context/DepartmentContext';
+import { isNativePortalSyncAvailable, openNativePortalSync } from '../../../mobile/portal-sync';
 import { getInjectedPortalExtensionVersion, isPortalExtensionInjected, requestPortalExtension } from '../../../portal-sync/bridge';
 import { PORTAL_EXTENSION_READY_EVENT, portalSyncConfig, type PortalExtensionState } from '../../../portal-sync/protocol';
 
@@ -23,7 +25,53 @@ function formatSyncTime(value: string | null) {
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 }
 
-export function PortalSyncTools() {
+function MobilePortalSyncTools() {
+  const { academicYear, semesterNumber } = useDepartmentData();
+  const [isOpening, setIsOpening] = useState(false);
+  const [error, setError] = useState('');
+
+  async function openPortal() {
+    setError('');
+    setIsOpening(true);
+    try {
+      await openNativePortalSync(academicYear, semesterNumber);
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : String(reason);
+      if (!/cancel|hủy|huy/i.test(message)) setError(message || 'Không thể mở Portal.');
+    } finally {
+      setIsOpening(false);
+    }
+  }
+
+  return (
+    <section>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <span className="ustudy-icon-badge ustudy-icon-primary"><Smartphone className="h-5 w-5" /></span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-gray-900">Đồng bộ Portal trên điện thoại</h3>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
+              Đăng nhập Portal trong ứng dụng, bấm đồng bộ và xem trước thay đổi trước khi lưu.
+            </p>
+            <p className="mt-1 text-xs font-medium text-[#004A98]">Năm học {academicYear} · Học kỳ {semesterNumber}</p>
+          </div>
+        </div>
+        <button type="button" onClick={() => void openPortal()} disabled={isOpening} className="ustudy-button-primary shrink-0">
+          {isOpening ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+          {isOpening ? 'Đang mở Portal' : 'Mở Portal và đồng bộ'}
+        </button>
+      </div>
+      {error && (
+        <div className="mt-4 flex items-start gap-2 border-y border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function BrowserPortalSyncTools() {
   const [extensionState, setExtensionState] = useState<PortalExtensionState | null>(null);
   const [isExtensionDetected, setIsExtensionDetected] = useState(isPortalExtensionInjected);
   const [detectedVersion, setDetectedVersion] = useState(getInjectedPortalExtensionVersion);
@@ -165,4 +213,8 @@ export function PortalSyncTools() {
       </AppDialog>
     </>
   );
+}
+
+export function PortalSyncTools() {
+  return isNativePortalSyncAvailable() ? <MobilePortalSyncTools /> : <BrowserPortalSyncTools />;
 }

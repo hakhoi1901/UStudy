@@ -236,11 +236,11 @@ export function CalendarView({
 
     // ── Empty state ────────────────────────────────────────────────────────────
     const renderModeSwitch = () => (
-        <div className="inline-flex shrink-0 items-center rounded-lg border border-gray-200 bg-slate-50 p-1">
+        <div className="flex w-full shrink-0 items-center rounded-lg border border-gray-200 bg-slate-50 p-1 md:inline-flex md:w-auto">
             <button
                 type="button"
                 onClick={() => setScheduleMode('personal')}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
                     scheduleMode === 'personal'
                         ? 'bg-white text-[#004A98] shadow-sm'
                         : 'text-gray-500 hover:text-gray-900'
@@ -251,7 +251,7 @@ export function CalendarView({
             <button
                 type="button"
                 onClick={() => setScheduleMode('group')}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
                     scheduleMode === 'group'
                         ? 'bg-white text-[#004A98] shadow-sm'
                         : 'text-gray-500 hover:text-gray-900'
@@ -264,31 +264,39 @@ export function CalendarView({
 
     if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
-            <div className="ustudy-card p-8 text-center md:p-12">
-                <div className="mb-6 flex justify-center">
+            <div>
+                <div className="space-y-3 md:hidden">
                     {renderModeSwitch()}
-                </div>
-                <Calendar className="w-12 h-12 md:w-16 md:h-16 text-blue-400 mx-auto mb-3 md:mb-4" />
-                <h3 className="text-base md:text-lg text-gray-900 mb-2">Chưa chọn môn học nào</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    Vui lòng chuyển sang tab "Chọn môn" để chọn các môn học bạn muốn đăng ký.
-                </p>
-                <div className="flex flex-col gap-3 items-center">
-                    <button
-                        onClick={() => setActiveTab('selection')}
-                        className="ustudy-button-primary w-full sm:w-auto"
-                    >
-                        Đi đến Chọn môn
-                    </button>
-                    {savedSchedules.length > 0 && (
+                    <div className="rounded-xl border border-gray-200 bg-white px-5 py-8 text-center shadow-sm">
+                        <Calendar className="mx-auto mb-3 h-10 w-10 text-blue-400" />
+                        <h3 className="text-base font-semibold text-gray-900">Chưa có môn để xếp lịch</h3>
+                        <p className="mt-1.5 text-sm leading-5 text-gray-500">Chọn môn học trước, sau đó quay lại đây để tạo thời khóa biểu.</p>
                         <button
-                            onClick={() => setShowListModal(true)}
-                            className="ustudy-button-outline w-full sm:w-auto"
+                            onClick={() => setActiveTab('selection')}
+                            className="ustudy-button-primary mt-5 w-full"
                         >
-                            <List className="w-4 h-4" />
-                            Xem lịch đã lưu ({savedSchedules.length})
+                            Chọn môn học
                         </button>
-                    )}
+                    </div>
+                </div>
+
+                <div className="ustudy-card hidden p-12 text-center md:block">
+                    <div className="mb-6 flex justify-center">
+                        {renderModeSwitch()}
+                    </div>
+                    <Calendar className="mx-auto mb-4 h-16 w-16 text-blue-400" />
+                    <h3 className="mb-2 text-lg text-gray-900">Chưa chọn môn học nào</h3>
+                    <p className="mb-4 text-sm text-gray-600">
+                        Vui lòng chuyển sang tab "Chọn môn" để chọn các môn học bạn muốn đăng ký.
+                    </p>
+                    <div className="flex flex-col items-center gap-3">
+                        <button
+                            onClick={() => setActiveTab('selection')}
+                            className="ustudy-button-primary w-auto"
+                        >
+                            Đi đến Chọn môn
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -307,6 +315,113 @@ export function CalendarView({
 
     return (
         <div className="space-y-4">
+            <div className="space-y-3 md:hidden">
+                <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">
+                            {renderModeSwitch()}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsConfigOpen(true)}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[#004A98] transition-colors active:bg-blue-50"
+                            aria-label="Cấu hình xếp lịch"
+                        >
+                            <Settings className="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowListModal(true)}
+                            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[#004A98] transition-colors active:bg-blue-50"
+                            aria-label="Lịch đã lưu"
+                        >
+                            <List className="h-4 w-4" />
+                            {savedSchedules.length > 0 && (
+                                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#004A98] px-1 text-[9px] font-bold text-white">
+                                    {savedSchedules.length > 9 ? '9+' : savedSchedules.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                        <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">
+                                {currentSections.length > 0
+                                    ? `Phương án ${activeOption + 1}/${Math.max(options.length, 1)}`
+                                    : `${selectedCourses.size} môn đã chọn`}
+                            </p>
+                            <p className="mt-0.5 truncate text-xs text-gray-500">
+                                {currentSections.length > 0
+                                    ? `${new Set(currentSections.map((section) => section.courseCode)).size} môn · ${stats?.totalCredits ?? 0} TC · ${stats?.scheduledDays ?? 0} ngày học`
+                                    : 'Sẵn sàng tạo thời khóa biểu'}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
+                            disabled={solving}
+                            className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white shadow-sm transition-colors active:bg-[#003A78] disabled:opacity-60"
+                        >
+                            <Cpu className="h-4 w-4" />
+                            {solving ? 'Đang xếp...' : currentSections.length > 0 ? 'Xếp lại' : 'Xếp lịch'}
+                        </button>
+                    </div>
+
+                    {currentSections.length > 0 && (
+                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-3">
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
+                                    disabled={activeOption === 0 || options.length <= 1}
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 active:bg-gray-50 disabled:opacity-30"
+                                    aria-label="Phương án trước"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <span className="min-w-20 text-center text-xs font-semibold tabular-nums text-gray-600">
+                                    Phương án {activeOption + 1}/{Math.max(options.length, 1)}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))}
+                                    disabled={activeOption === options.length - 1 || options.length <= 1}
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 active:bg-gray-50 disabled:opacity-30"
+                                    aria-label="Phương án tiếp theo"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowSaveModal(true)}
+                                className="flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-emerald-700 active:bg-emerald-50"
+                            >
+                                <Save className="h-4 w-4" />
+                                Lưu
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {solverError && (
+                    <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>{solverError}</span>
+                    </div>
+                )}
+
+                {currentSections.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-8 text-center">
+                        <Calendar className="mx-auto h-9 w-9 text-gray-300" />
+                        <p className="mt-3 text-sm font-semibold text-gray-700">Chưa có thời khóa biểu</p>
+                        <p className="mt-1 text-xs leading-5 text-gray-500">Nhấn Xếp lịch để tạo các phương án phù hợp.</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="hidden space-y-4 md:block">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
             <div className="ustudy-card p-2 md:p-3">
                 <div className="flex flex-col gap-2 md:gap-3">
@@ -585,9 +700,10 @@ export function CalendarView({
                     </div>
                 </div>
             )}
+            </div>
 
             {/* ═══ Timetable grid ════════════════════════════════════════════ */}
-            <div className="ustudy-card overflow-hidden">
+            <div className={`ustudy-card overflow-hidden ${currentSections.length === 0 ? 'hidden md:block' : ''}`}>
                 {/* Grid header */}
                 <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
                     <div className="flex items-center gap-2 min-w-0">
@@ -641,8 +757,8 @@ export function CalendarView({
 
                         {/* Grid body — layer 1: lưới, layer 2: thẻ môn */}
                         <div style={{ position: 'relative', isolation: 'isolate' }}>
-                          {/* ── Layer 1: lưới nền (z=1) ── */}
-                          <div style={{ position: 'relative', zIndex: 1 }}>
+                          {/* Lưới nền không tạo stacking context để cột Tiết sticky nằm trên thẻ môn. */}
+                          <div style={{ position: 'relative' }}>
                             {timePeriods.map((period) => {
                                 const isFirstAfternoon = period.period === 6;
                                 return (
@@ -869,8 +985,10 @@ export function CalendarView({
                 </div>
             </div>
 
+            <div className="hidden md:block">
             {/* Chú thích */}
             <Note />
+            </div>
 
             {/* ═══ Modal: Lưu phương án ══════════════════════════════════════ */}
             {showSaveModal && (
@@ -896,7 +1014,7 @@ export function CalendarView({
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSaveSchedule()}
                             />
-                            <p className="mt-3 text-xs text-gray-400 italic">
+                                <p className="mt-3 hidden text-xs text-gray-400 italic md:block">
                                 * Hệ thống lưu danh sách môn học và các lớp học cụ thể đang hiển thị.
                             </p>
                         </div>
@@ -950,7 +1068,7 @@ export function CalendarView({
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Chọn "Tự do" nếu không quá cần thiết để thuật toán dễ tìm phương án hơn.</p>
+                                <p className="mt-2 hidden text-[10px] italic text-gray-400 md:block">* Chọn "Tự do" nếu không quá cần thiết để thuật toán dễ tìm phương án hơn.</p>
                             </div>
 
                             {/* Chiến thuật */}
@@ -971,7 +1089,7 @@ export function CalendarView({
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* "Dồn lịch" ưu tiên phương án có nhiều ngày nghỉ trống trong tuần.</p>
+                                <p className="mt-2 hidden text-[10px] italic text-gray-400 md:block">* "Dồn lịch" ưu tiên phương án có nhiều ngày nghỉ trống trong tuần.</p>
                             </div>
 
                             {/* Tiết trống */}
@@ -983,7 +1101,7 @@ export function CalendarView({
                                 >
                                     {prefs.noGaps ? 'Hạn chế tối đa tiết trống' : 'Cho phép tiết trống'}
                                 </button>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Hạn chế tiết trống giúp bạn không phải chờ đợi lâu giữa các tiết học.</p>
+                                <p className="mt-2 hidden text-[10px] italic text-gray-400 md:block">* Hạn chế tiết trống giúp bạn không phải chờ đợi lâu giữa các tiết học.</p>
                             </div>
 
                             {/* Ngày nghỉ */}
@@ -1010,7 +1128,7 @@ export function CalendarView({
                                         );
                                     })}
                                 </div>
-                                <p className="text-[10px] text-gray-400 mt-2 italic">* Bấm 1 lần nghỉ cả ngày, 2 lần nghỉ sáng, 3 lần nghỉ chiều, bấm nữa để bỏ chọn.</p>
+                                <p className="mt-2 hidden text-[10px] italic text-gray-400 md:block">* Bấm 1 lần nghỉ cả ngày, 2 lần nghỉ sáng, 3 lần nghỉ chiều, bấm nữa để bỏ chọn.</p>
                             </div>
                         </div>
 

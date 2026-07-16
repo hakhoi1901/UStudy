@@ -181,10 +181,18 @@ export function useGPAPull({
             currentCredits += result.creditsForGPA;
         }
 
+        // Mobile/app storage can temporarily have the GPA summary before the
+        // detailed grade rows finish hydrating. Keep the personal ceiling
+        // instead of falling back to 10.0 in that state.
+        if (!isFoundationMajorScopeActive && currentCredits <= 0 && accumulatedCredits > 0 && currentGPA > 0) {
+            currentCredits = accumulatedCredits;
+            currentPoints = currentGPA * accumulatedCredits;
+        }
+
         const remainingCredits = Math.max(0, scopedTotalCredits - currentCredits);
         const maximumGpa = (currentPoints + ACADEMIC_RULES.MAX_GPA * remainingCredits) / scopedTotalCredits;
         return Math.min(ACADEMIC_RULES.MAX_GPA, maximumGpa);
-    }, [mode, scopedGradesWithManualRetakes, scopedTotalCredits]);
+    }, [mode, scopedGradesWithManualRetakes, scopedTotalCredits, isFoundationMajorScopeActive, accumulatedCredits, currentGPA]);
 
     const targetGpaError = useMemo(() => {
         const maximumTargetGpa = maxAchievableGpaAtGraduation ?? ACADEMIC_RULES.MAX_GPA;
@@ -512,6 +520,7 @@ export function useGPAPull({
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Node | null;
             if (!target) return;
+            if (target instanceof Element && target.closest('[data-mobile-sheet="retake-picker"]')) return;
             if (retakePickerRef.current && !retakePickerRef.current.contains(target)) {
                 setIsRetakePickerOpen(false);
             }

@@ -3,7 +3,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { BookOpen, CheckCircle2, ChevronUp, Eye, FileUp, RefreshCw, Trash2 } from 'lucide-react';
 import { AppRouter } from './app/AppRouter';
 import { AppDialog } from './components/ui/app-dialog';
-import { ChatbotWidget } from './components/ChatbotWidget';
 import { SecurityGate } from './components/SecurityGate';
 import { SecurityLock } from './components/SecurityLock';
 import { CryptoProvider, CACHE_POPULATED_EVENT, useCrypto } from './context/CryptoContext';
@@ -17,6 +16,7 @@ import { requestPortalExtension } from './portal-sync/bridge';
 import {
   PORTAL_EXTENSION_PENDING_AVAILABLE,
   PORTAL_EXTENSION_READY_EVENT,
+  PORTAL_MOBILE_IMPORT_EVENT,
   PORTAL_SCRAPER_VERSION,
   isSupportedPortalOrigin,
   isPortalSyncPacket,
@@ -151,7 +151,9 @@ function AppContent() {
           title: 'Công cụ đồng bộ cần cập nhật',
           message: source === 'extension'
             ? 'Vui lòng cập nhật UStudy Portal Sync trước khi tiếp tục đồng bộ.'
-            : 'Vui lòng kéo lại Bookmarklet mới để lấy dữ liệu chính xác.',
+            : source === 'mobile-app'
+              ? 'Vui lòng cập nhật ứng dụng UStudy trước khi tiếp tục đồng bộ.'
+              : 'Vui lòng kéo lại Bookmarklet mới để lấy dữ liệu chính xác.',
           type: 'warning',
         });
       }
@@ -177,6 +179,17 @@ function AppContent() {
 
     window.addEventListener('message', handleBookmarkletMessage);
     return () => window.removeEventListener('message', handleBookmarkletMessage);
+  }, [preparePortalImport]);
+
+  useEffect(() => {
+    const handleMobilePortalImport = (event: Event) => {
+      const packet = (event as CustomEvent<PortalSyncPacket>).detail;
+      if (!isPortalSyncPacket(packet)) return;
+      preparePortalImport(packet, 'mobile-app');
+    };
+
+    window.addEventListener(PORTAL_MOBILE_IMPORT_EVENT, handleMobilePortalImport);
+    return () => window.removeEventListener(PORTAL_MOBILE_IMPORT_EVENT, handleMobilePortalImport);
   }, [preparePortalImport]);
 
   useEffect(() => {
@@ -240,7 +253,11 @@ function AppContent() {
       };
     });
 
-    const importSourceLabel = importPreview.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet Portal';
+    const importSourceLabel = importPreview.source === 'extension'
+      ? 'UStudy Extension'
+      : importPreview.source === 'mobile-app'
+        ? 'UStudy Android'
+        : 'Bookmarklet Portal';
     if (!createImportRollbackSnapshot(importSourceLabel, summary, details)) {
       addNotification({ title: 'Không thể nhập dữ liệu', message: 'Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu hiện tại chưa bị thay đổi.', type: 'error' });
       return;
@@ -298,7 +315,7 @@ function AppContent() {
             setIsImportDetailsOpen(false);
           }
         }}
-        title={`Xem trước dữ liệu từ ${importPreview?.source === 'extension' ? 'UStudy Extension' : 'Bookmarklet'}`}
+        title={`Xem trước dữ liệu từ ${importPreview?.source === 'extension' ? 'UStudy Extension' : importPreview?.source === 'mobile-app' ? 'UStudy Android' : 'Bookmarklet'}`}
         description={`Phát hiện ${previewSummary.add + previewSummary.update + previewSummary.remove} thay đổi trong ${changedCollectionSummaries.length} nhóm dữ liệu. Kiểm tra tóm tắt trước khi áp dụng.`}
         icon={FileUp}
         size={isImportDetailsOpen ? 'lg' : 'md'}
@@ -386,7 +403,6 @@ function AppContent() {
       </AppDialog>
 
       <AppRouter />
-      <ChatbotWidget />
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { Calculator, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import { MobileCourseSheetFrame } from '../../../../components/MobileCourseDetailSheet';
 import { STORAGE_KEYS } from '../../../../config';
 import { readPlain, savePlain } from '../../../../helpers/localStorage/save';
 import type { GPAPullCourse, GPAPullSemesterTableProps } from '../../types';
@@ -176,6 +177,7 @@ export function GPAPullSemesterTable({
         return { modes, targets };
     }, [nextSemester.courses, persistedPlans]);
     const [openCourseCode, setOpenCourseCode] = useState<string | null>(null);
+    const [mobileOpenCourseCode, setMobileOpenCourseCode] = useState<string | null>(null);
     const [componentPlans, setComponentPlans] = useState<Record<string, GradeComponent[]>>(persistedPlans.componentPlans);
     const [componentModes, setComponentModes] = useState<Record<string, ComponentGradeMode>>(initialGradeSettings.modes);
     const [targetGrades, setTargetGrades] = useState<Record<string, number>>(initialGradeSettings.targets);
@@ -221,9 +223,71 @@ export function GPAPullSemesterTable({
         onGradeChange(course.code, activeGrade);
     };
 
+    const updateCourseGradeFromInput = (course: GPAPullCourse, value: string) => {
+        setComponentModes((prev) => ({ ...prev, [course.code]: 'target' }));
+        if (value === '') {
+            updateTargetGrade(course.code, null);
+            onGradeChange(course.code, null);
+            return;
+        }
+
+        const grade = Number(value);
+        if (!Number.isFinite(grade)) return;
+        const nextGrade = Math.max(0, Math.min(10, roundCourseGrade(grade)));
+        updateTargetGrade(course.code, nextGrade);
+        onGradeChange(course.code, nextGrade);
+    };
+
+    const mobileOpenCourse = nextSemester.courses.find((course) => course.code === mobileOpenCourseCode) ?? null;
+
     return (
         <div className="overflow-hidden bg-white">
-            <div className="overflow-x-auto">
+            <div className="md:hidden">
+                <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-gray-600">Môn học kỳ này</p>
+                    <p className="text-xs font-semibold tabular-nums text-[#004A98]">{nextSemester.totalCredits} TC</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                    {nextSemester.courses.map((course) => {
+                        const componentMode = componentModes[course.code] ?? 'prediction';
+                        const activeGrade = getActiveGrade(course, componentMode);
+
+                        return (
+                            <div key={course.id} className="px-4 py-3">
+                                <div className="grid grid-cols-[minmax(0,15fr)_54px_20px] items-center gap-2">
+                                    <div className="min-w-0">
+                                        <p className="line-clamp-2 text-sm font-semibold leading-5 text-gray-800">{course.name}</p>
+                                        <p className="mt-0.5 font-mono text-[10px] uppercase text-gray-500">{course.code}</p>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="10"
+                                        step="0.1"
+                                        value={activeGrade ?? ''}
+                                        placeholder={isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(COURSE_GRADE_DECIMALS) : '-'}
+                                        onChange={(event) => updateCourseGradeFromInput(course, event.target.value)}
+                                        className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-2 text-center text-sm font-semibold tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                        aria-label={`Điểm dự kiến ${course.name}`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setMobileOpenCourseCode(course.code)}
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#004A98]"
+                                        title="Nhập điểm thành phần"
+                                        aria-label={`Nhập điểm thành phần cho ${course.name}`}
+                                    >
+                                        <MoreVertical className="h-4 w-4" />
+                                    </button>
+                                </div>
+                                
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[720px] table-fixed border-collapse text-left">
                     <colgroup>
                         <col className="w-auto" />
@@ -283,20 +347,7 @@ export function GPAPullSemesterTable({
                                                     step="0.1"
                                                     value={activeGrade ?? ''}
                                                     placeholder={isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(COURSE_GRADE_DECIMALS) : '-'}
-                                                    onChange={(event) => {
-                                                        setComponentModes((prev) => ({ ...prev, [course.code]: 'target' }));
-                                                        const value = event.target.value;
-                                                        if (value === '') {
-                                                            updateTargetGrade(course.code, null);
-                                                            onGradeChange(course.code, null);
-                                                            return;
-                                                        }
-                                                        const grade = Number(value);
-                                                        if (!Number.isFinite(grade)) return;
-                                                        const nextGrade = Math.max(0, Math.min(10, roundCourseGrade(grade)));
-                                                        updateTargetGrade(course.code, nextGrade);
-                                                        onGradeChange(course.code, nextGrade);
-                                                    }}
+                                                    onChange={(event) => updateCourseGradeFromInput(course, event.target.value)}
                                                     className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-center text-sm font-semibold tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
                                                     aria-label={`Điểm dự kiến ${course.name}`}
                                                 />
@@ -343,6 +394,42 @@ export function GPAPullSemesterTable({
                     </tfoot>
                 </table>
             </div>
+
+            {mobileOpenCourse && (() => {
+                const componentMode = componentModes[mobileOpenCourse.code] ?? 'prediction';
+                const targetGrade = targetGrades[mobileOpenCourse.code] ?? (isGuidanceActive ? mobileOpenCourse.suggestedGrade : null);
+                const activeGrade = getActiveGrade(mobileOpenCourse, componentMode);
+                const sourceLabel = mobileOpenCourse.source === 'ongoing' ? 'Đang học' : mobileOpenCourse.source === 'registration' ? 'Đăng ký' : 'Tương lai';
+                const gradeStatus = activeGrade !== null ? 'Đã nhập' : isGuidanceActive ? 'Gợi ý' : 'Chưa nhập';
+
+                return (
+                    <MobileCourseSheetFrame
+                        courseCode={mobileOpenCourse.code}
+                        courseName={mobileOpenCourse.name}
+                        onClose={() => setMobileOpenCourseCode(null)}
+                    >
+                        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+                            <div className="mb-4 flex min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs text-gray-500">
+                                <span className="font-semibold tabular-nums text-gray-700">{mobileOpenCourse.credits} TC</span>
+                                <span className="h-1 w-1 shrink-0 rounded-full bg-gray-300" />
+                                <span>{sourceLabel}</span>
+                                <span className="h-1 w-1 shrink-0 rounded-full bg-gray-300" />
+                                <span className={activeGrade !== null ? 'font-semibold text-[#004A98]' : ''}>{gradeStatus}</span>
+                            </div>
+                            <CourseComponentPlanner
+                                course={mobileOpenCourse}
+                                targetGrade={targetGrade != null ? roundCourseGrade(targetGrade).toFixed(COURSE_GRADE_DECIMALS) : ''}
+                                mode={componentMode}
+                                components={getComponentPlan(mobileOpenCourse.code)}
+                                onComponentsChange={(components) => updateComponents(mobileOpenCourse.code, components)}
+                                onModeChange={(mode) => changeComponentMode(mobileOpenCourse, mode)}
+                                onPredictedGradeChange={(grade) => onGradeChange(mobileOpenCourse.code, grade)}
+                                mobileSheet
+                            />
+                        </div>
+                    </MobileCourseSheetFrame>
+                );
+            })()}
         </div>
     );
 }
@@ -355,6 +442,7 @@ function CourseComponentPlanner({
     onComponentsChange,
     onModeChange,
     onPredictedGradeChange,
+    mobileSheet = false,
 }: {
     course: GPAPullCourse;
     targetGrade: string;
@@ -363,6 +451,7 @@ function CourseComponentPlanner({
     onComponentsChange: (components: GradeComponent[]) => void;
     onModeChange: (mode: ComponentGradeMode) => void;
     onPredictedGradeChange: (grade: number | null) => void;
+    mobileSheet?: boolean;
 }) {
     const summary = useMemo(() => {
         return getComponentGradeSummary(components, targetGrade);
@@ -425,9 +514,9 @@ function CourseComponentPlanner({
         : undefined;
 
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className={mobileSheet ? 'bg-white' : 'rounded-xl border border-gray-200 bg-white p-4 shadow-sm'}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
+                <div className={mobileSheet ? 'hidden' : 'min-w-0'}>
                     <div className="flex items-center gap-2">
                         <Calculator className="h-4 w-4 text-[#004A98]" />
                         <h4 className="text-sm font-semibold text-gray-900">Điểm thành phần · {course.code}</h4>
@@ -436,7 +525,7 @@ function CourseComponentPlanner({
                         {mode === 'prediction' ? 'Dự đoán từ các điểm thành phần đã nhập.' : 'Gợi ý theo điểm dự kiến trong bảng môn.'}
                     </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className={`flex flex-wrap items-center gap-3 ${mobileSheet ? 'justify-between rounded-lg bg-gray-50 p-2' : ''}`}>
                     <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="group" aria-label="Chế độ tính điểm">
                         <button
                             type="button"
@@ -461,7 +550,103 @@ function CourseComponentPlanner({
                 </div>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 space-y-2 md:hidden">
+                {componentRows.map(({ component, depth }) => {
+                    const isGroup = Boolean(component.children?.length);
+                    const weight = Number(component.weight);
+                    const score = Number(component.score);
+                    const leafWeight = summary.leafWeights[component.id];
+                    const contribution = !isGroup && Number.isFinite(leafWeight) && Number.isFinite(score) && component.score.trim() !== ''
+                        ? score * leafWeight / 100
+                        : null;
+
+                    return (
+                        <div
+                            key={component.id}
+                            className={`rounded-lg border p-3 ${isGroup ? 'border-[#004A98]/25 bg-[#F4F8FF]' : 'border-gray-200 bg-white'}`}
+                            style={{ marginLeft: `${Math.min(depth * 12, 24)}px` }}
+                        >
+                            <div className="flex items-center gap-2">
+                                <input
+                                    value={component.name}
+                                    onChange={(event) => updateComponent(component.id, { name: event.target.value })}
+                                    className={`h-9 min-w-0 flex-1 rounded-lg border px-3 text-sm text-gray-800 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 ${isGroup ? 'border-[#004A98]/30 bg-white font-semibold' : 'border-gray-200'}`}
+                                    aria-label="Tên mục điểm thành phần"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => addChildComponent(component.id)}
+                                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#004A98] transition-colors hover:bg-[#EAF3FF]"
+                                    title="Thêm nhóm con"
+                                    aria-label={`Thêm nhóm con cho ${component.name}`}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => removeComponent(component.id)}
+                                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                                    title="Xóa mục"
+                                    aria-label={`Xóa ${component.name}`}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            <div className="mt-3 grid grid-cols-3 gap-2">
+                                <label className="min-w-0">
+                                    <span className="block text-[10px] font-medium uppercase text-gray-500">Tỷ lệ %</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value={component.weight}
+                                        onChange={(event) => updateComponent(component.id, { weight: event.target.value })}
+                                        className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-2 text-center text-sm tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                        aria-label={`Tỷ lệ ${component.name}`}
+                                    />
+                                </label>
+                                <label className="min-w-0">
+                                    <span className="block text-[10px] font-medium uppercase text-gray-500">Điểm</span>
+                                    {isGroup ? (
+                                        <span className="mt-1 flex h-9 items-center justify-center rounded-lg bg-[#EAF3FF] text-xs font-semibold text-[#004A98]">Tự tính</span>
+                                    ) : (
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="10"
+                                            step="0.1"
+                                            value={component.score}
+                                            placeholder={component.score.trim() === '' && weight > 0 ? suggestedPlaceholder : undefined}
+                                            onChange={(event) => {
+                                                const rawScore = event.target.value;
+                                                if (rawScore.trim() === '') {
+                                                    updateComponent(component.id, { score: '' });
+                                                    return;
+                                                }
+                                                const parsedScore = Number(rawScore);
+                                                if (!Number.isFinite(parsedScore)) return;
+                                                const nextScore = parsedScore > 10 ? '10' : parsedScore < 0 ? '0' : rawScore;
+                                                updateComponent(component.id, { score: nextScore });
+                                            }}
+                                            className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-2 text-center text-sm tabular-nums text-gray-900 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20"
+                                            aria-label={`Điểm ${component.name}`}
+                                        />
+                                    )}
+                                </label>
+                                <div className="min-w-0">
+                                    <span className="block text-[10px] font-medium uppercase text-gray-500">Đóng góp</span>
+                                    <span className="mt-1 flex h-9 items-center justify-center text-sm font-semibold tabular-nums text-gray-700">
+                                        {contribution == null ? '-' : contribution.toFixed(COURSE_GRADE_DECIMALS)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[680px] table-fixed border-collapse text-left">
                     <colgroup>
                         <col className="w-auto" />
@@ -572,7 +757,7 @@ function CourseComponentPlanner({
                 <button
                     type="button"
                     onClick={addComponent}
-                    className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-[#004A98] transition-colors hover:border-[#004A98]/40 hover:bg-[#EAF3FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/25"
+                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-[#004A98] transition-colors hover:border-[#004A98]/40 hover:bg-[#EAF3FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/25 md:h-9 md:w-fit"
                 >
                     <Plus className="h-4 w-4" />
                     Thêm mục
