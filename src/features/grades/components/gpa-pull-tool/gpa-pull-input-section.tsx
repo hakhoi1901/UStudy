@@ -42,17 +42,19 @@ export function GPAPullInputSection({
                                 : 'border-gray-200 focus:ring-[#004A98]'
                                 }`}
                         />
-                        {GPA_CONFIG.slice(0, 4).map((config) => (
-                            <button
-                                key={config.value}
-                                type="button"
-                                onClick={() => setTargetGPAInput(String(config.value))}
-                                className="min-w-10 rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-[#004A98] hover:bg-[#EAF3FF] hover:text-[#004A98]"
-                            >
-                                {config.value}
-                            </button>
-                        ))}
-                        <div className="w-full min-h-[1.25rem]">
+                        <div className="desktop-only">
+                            {GPA_CONFIG.slice(0, 4).map((config) => (
+                                <button
+                                    key={config.value}
+                                    type="button"
+                                    onClick={() => setTargetGPAInput(String(config.value))}
+                                    className="min-w-10 rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-[#004A98] hover:bg-[#EAF3FF] hover:text-[#004A98]"
+                                >
+                                    {config.value}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="w-full">
                             {targetGpaError && (
                                 <p className="text-sm text-red-600" role="alert" aria-live="polite">
                                     {targetGpaError}
@@ -90,7 +92,7 @@ export function GPAPullInputSection({
                         {mode === 'currentSemester' ? 'Tính GPA kỳ này' : 'Gợi ý điểm để đạt mục tiêu'}
                     </button>
                     {isFoundationMajorModeUnavailable && <p className="w-full pl-24 text-xs text-amber-700">Chưa có dữ liệu danh mục để tính riêng Cơ sở ngành.</p>}
-                    <p className="w-full pl-24 text-xs text-gray-500">Bạn có thể nhập điểm dự đoán trực tiếp ở bảng bên dưới mà không cần bật gợi ý.</p>
+                    <p className="w-full lg:pl-24 text-xs text-gray-500">Bạn có thể nhập điểm dự đoán trực tiếp ở bảng bên dưới mà không cần bật gợi ý.</p>
                 </div>
             </div>
 

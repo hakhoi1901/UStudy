@@ -108,7 +108,7 @@ export function GPAPullTool({
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="items-center gap-2 border-b border-gray-100 px-4 py-3 md:px-5">
                 <div className="flex">
-                    <h3 className="text-sm text-[15pxcái] font-semibold text-gray-800">{mode === 'currentSemester' ? 'Mục tiêu GPA kỳ này' : 'Mục tiêu GPA tốt nghiệp'}</h3>
+                    <h3 className="text-sm text-[15px] font-semibold text-gray-800">{mode === 'currentSemester' ? 'Mục tiêu GPA kỳ này' : 'Mục tiêu GPA tốt nghiệp'}</h3>
                     <span title={mode === 'currentSemester' ? 'Tính GPA cần đạt riêng cho các học phần trong kỳ hiện tại.' : 'Ước tính GPA trung bình cần đạt cho các tín chỉ còn lại để chạm mục tiêu đã nhập.'}>
                         <Info className="h-4 w-4 text-gray-400" />
                     </span>

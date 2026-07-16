@@ -12,6 +12,7 @@ interface CourseRowProps {
   isSelected: boolean;
   onToggle: (courseId: string) => void;
   onShowFlowchart: (course: Course) => void;
+  onOpenMobileDetails?: (course: Course) => void;
 }
 
 // định nghĩa interface CourseSchedule
@@ -114,11 +115,19 @@ function buildLegacyEnrollment(classId: string, rows: RawOpenClass[]): ClassEnro
  * 
  * render component CourseRow
  */
-export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: CourseRowProps) {
+export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpenMobileDetails }: CourseRowProps) {
   const [showDescription, setShowDescription] = useState(false);
   const { data: { courses: allCoursesMeta } } = useDepartmentData();
   
   const [availableClasses, setAvailableClasses] = useState<CourseSchedule[]>([]);
+
+  const handleDetailsToggle = () => {
+    if (onOpenMobileDetails && window.matchMedia('(max-width: 767px)').matches) {
+      onOpenMobileDetails(course);
+      return;
+    }
+    setShowDescription(current => !current);
+  };
 
   const statusConfig = course.needsRetake
     ? {
@@ -162,7 +171,7 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
   return (
     <div className="group">
       <div
-        onClick={() => setShowDescription(!showDescription)}
+        onClick={handleDetailsToggle}
         className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg transition-all ${course.needsRetake
           ? 'border-red-200 bg-red-50 hover:bg-red-100'
           : isSelected
@@ -218,7 +227,11 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
         {/* Actions */}
         <div className="flex items-center md:gap-1 flex-shrink-0">
           <button
-            onClick={() => setShowDescription(!showDescription)}
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDetailsToggle();
+            }}
             className="p-1 md:p-1.5 hover:bg-gray-200 rounded transition-colors"
             title="Xem chi tiết"
           >

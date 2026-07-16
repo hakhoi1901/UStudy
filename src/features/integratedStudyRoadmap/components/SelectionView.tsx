@@ -1,5 +1,8 @@
+import { useMemo, useState } from 'react';
 import { Filter, Search, Info, DatabaseBackup } from 'lucide-react';
 import { CourseRow } from '../../../components/CourseRow';
+import { MobileCourseDetailContent, MobileCourseSheetFrame } from '../../../components/MobileCourseDetailSheet';
+import { useDepartmentData } from '../../../context/DepartmentContext';
 import type { Course } from '../../../types';
 
 interface SelectionViewProps {
@@ -27,6 +30,20 @@ export function SelectionView({
     handleCourseToggle,
     handleShowFlowchart,
 }: SelectionViewProps) {
+    const [mobileDetailCourse, setMobileDetailCourse] = useState<Course | null>(null);
+    const { data: { courses: courseMetadata } } = useDepartmentData();
+    const mobileCourseMetadata = useMemo(() => (
+        mobileDetailCourse
+            ? courseMetadata.find((item) => item.course_id === mobileDetailCourse.code)
+            : null
+    ), [courseMetadata, mobileDetailCourse]);
+
+    const mobileCourseStatus = mobileDetailCourse?.needsRetake
+        ? { label: 'Cần học lại', barClass: 'bg-red-500', textClass: 'text-red-700' }
+        : mobileDetailCourse?.isAvailable
+            ? { label: 'Sẵn sàng', barClass: 'bg-emerald-500', textClass: 'text-emerald-700' }
+            : { label: 'Chưa đủ điều kiện', barClass: 'bg-gray-300', textClass: 'text-gray-500' };
+
     return (
         <div>
             {/* Tìm kiếm và lọc */}
@@ -130,12 +147,73 @@ export function SelectionView({
                                     isSelected={selectedCourses.has(course.id)}
                                     onToggle={handleCourseToggle}
                                     onShowFlowchart={handleShowFlowchart}
+                                    onOpenMobileDetails={setMobileDetailCourse}
                                 />
                             ))}
                         </div>
                     </div>
                 );
             })}
+
+            {mobileDetailCourse && (
+                <MobileCourseSheetFrame
+                    courseCode={mobileDetailCourse.code}
+                    courseName={mobileDetailCourse.nameVi}
+                    onClose={() => setMobileDetailCourse(null)}
+                    footer={(
+                        <button
+                            type="button"
+                            disabled={!mobileDetailCourse.isAvailable && !mobileDetailCourse.needsRetake}
+                            onClick={() => handleCourseToggle(mobileDetailCourse.id)}
+                            className={`w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 ${selectedCourses.has(mobileDetailCourse.id)
+                                ? 'border border-red-200 bg-white text-red-600 hover:bg-red-50'
+                                : 'bg-[#004A98] text-white shadow-sm hover:bg-[#003A78]'
+                            }`}
+                        >
+                            {selectedCourses.has(mobileDetailCourse.id) ? 'Bỏ chọn môn' : 'Chọn môn này'}
+                        </button>
+                    )}
+                >
+                    <MobileCourseDetailContent
+                        course={{
+                            code: mobileDetailCourse.code,
+                            name: mobileDetailCourse.nameVi,
+                            credits: mobileDetailCourse.credits,
+                            type: mobileCourseMetadata?.course_type,
+                            category: mobileCourseMetadata?.category || mobileDetailCourse.category,
+                            theoryHours: mobileDetailCourse.theory_hours ?? mobileCourseMetadata?.theory_hours,
+                            labHours: mobileDetailCourse.lab_hours ?? mobileCourseMetadata?.lab_hours,
+                            exerciseHours: mobileDetailCourse.exercise_hours ?? mobileCourseMetadata?.exercise_hours,
+                            description: mobileDetailCourse.descriptionVi || mobileCourseMetadata?.description,
+                        }}
+                        status={(
+                            <div className="flex items-center gap-2">
+                                <span className={`h-4 w-1 rounded-full ${mobileCourseStatus.barClass}`} />
+                                <span className={`text-xs font-medium ${mobileCourseStatus.textClass}`}>
+                                    {mobileCourseStatus.label}
+                                </span>
+                            </div>
+                        )}
+                        prerequisiteContent={mobileDetailCourse.prerequisites.length > 0 ? (
+                            <div className="space-y-2">
+                                {mobileDetailCourse.prerequisites.map((prerequisiteId) => {
+                                    const prerequisite = courseMetadata.find((item) => item.course_id === prerequisiteId);
+                                    return (
+                                        <div key={prerequisiteId} className="border-l-2 border-amber-400 pl-3">
+                                            <p className="text-xs font-semibold text-gray-900">{prerequisiteId}</p>
+                                            <p className="mt-0.5 text-[11px] text-gray-500">
+                                                {prerequisite?.course_name_vi || 'Không tìm thấy thông tin môn học'}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-xs leading-relaxed text-gray-500">Chưa có dữ liệu tiên quyết cho môn này.</p>
+                        )}
+                    />
+                </MobileCourseSheetFrame>
+            )}
         </div>
     );
 }
