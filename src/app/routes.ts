@@ -5,6 +5,7 @@ export type PageId =
     | 'tuition'
     | 'schedule'
     | 'examSchedule'
+    | 'chatbot'
     | 'settings'
     | 'privacy'
     | 'setup';
@@ -25,6 +26,7 @@ export const APP_ROUTES = {
     tuition: '/tuition',
     schedule: '/schedule',
     examSchedule: '/exam-schedule',
+    chatbot: '/chatbot',
     settings: '/settings',
     privacy: '/privacy',
     setup: '/setup',
@@ -37,6 +39,7 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     tuition: APP_ROUTES.tuition,
     schedule: APP_ROUTES.schedule,
     examSchedule: APP_ROUTES.examSchedule,
+    chatbot: APP_ROUTES.chatbot,
     settings: APP_ROUTES.settings,
     privacy: APP_ROUTES.privacy,
     setup: APP_ROUTES.setup,
@@ -57,6 +60,7 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/tuition\/?$/, 'tuition'],
     [/^\/schedule\/?$/, 'schedule'],
     [/^\/exam-schedule\/?$/, 'examSchedule'],
+    [/^\/chatbot\/?$/, 'chatbot'],
     [/^\/settings\/?$/, 'settings'],
     [/^\/privacy\/?$/, 'privacy'],
     [/^\/setup\/?$/, 'setup'],

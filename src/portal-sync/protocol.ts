@@ -8,11 +8,12 @@ export const PORTAL_EXTENSION_BRIDGE_RESPONSE = 'USTUDY_EXTENSION_BRIDGE_RESPONS
 export const PORTAL_EXTENSION_PENDING_AVAILABLE = 'USTUDY_EXTENSION_PENDING_AVAILABLE';
 export const PORTAL_EXTENSION_READY = 'USTUDY_EXTENSION_READY';
 export const PORTAL_EXTENSION_READY_EVENT = 'ustudy:extension-ready';
+export const PORTAL_MOBILE_IMPORT_EVENT = 'ustudy:mobile-portal-import';
 export const PORTAL_EXTENSION_MARKER_ATTRIBUTE = 'data-ustudy-extension-version';
 
 export type PortalSyncMode = 'off' | 'manual' | 'ask' | 'auto';
 export type PortalSyncTrigger = 'manual' | 'auto';
-export type PortalImportTransport = 'bookmarklet' | 'extension';
+export type PortalImportTransport = 'bookmarklet' | 'extension' | 'mobile-app';
 export type PortalSyncSource = 'grades' | 'registrations' | 'exams' | 'courses' | 'tuition';
 
 export interface PortalSyncSources {

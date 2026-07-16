@@ -10,6 +10,7 @@ import { Setting } from '../pages/setting/Setting';
 import { SettingUserProfile } from '../features/setting/components/SettingUserProfile';
 import { PrivacySecurity } from '../features/setting/components/PrivacySecurity';
 import { ExamScheduleVi } from '../pages/ExamSchedule/examSchedule';
+import { ChatbotPage } from '../pages/ChatbotPage';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
@@ -89,6 +90,7 @@ function RoutedApp() {
                     <Route path={APP_ROUTES.tuition} element={<TuitionPage selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.schedule} element={<VisualSchedule selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.examSchedule} element={<ExamScheduleVi />} />
+                    <Route path={APP_ROUTES.chatbot} element={<ChatbotPage />} />
                     <Route path={APP_ROUTES.settings} element={<Setting onPageChange={handlePageChange} />} />
                 </Route>
 

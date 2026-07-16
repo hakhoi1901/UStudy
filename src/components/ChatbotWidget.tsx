@@ -1,25 +1,29 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { MessageSquare, X, Send, Trash2, Bot, Sparkles, AlertCircle, Check, Mic } from 'lucide-react';
+import { X, Send, Trash2, Bot, Sparkles, AlertCircle, Check, Mic } from 'lucide-react';
 import { GeminiService, type ChatMessage, type StudentContextData } from '../logic/ai/geminiService';
 import { AIService } from '../logic/ai/aiService';
 import { useStudentDb } from '../hooks/useStudentDb';
 import { useStudentGradeData } from '../features/grades/hooks/use-student-grade-data';
 import { useSchedule } from '../hooks/useSchedule';
 
-export function ChatbotWidget() {
-    const [isOpen, setIsOpen] = useState(false);
+interface ChatbotWidgetProps {
+    displayMode?: 'floating' | 'page';
+}
+
+export function ChatbotWidget({ displayMode = 'floating' }: ChatbotWidgetProps) {
+    const isPage = displayMode === 'page';
+    const [isOpen, setIsOpen] = useState(isPage);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage] = useState<string | null>(null);
-    const [activeProvider, setActiveProvider] = useState<'gemini' | 'groq'>('gemini');
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Lấy dữ liệu học tập cá nhân của Sếp từ các hook có sẵn
-    const { name, registrations, exams } = useStudentDb();
+    const { name, exams } = useStudentDb();
     const {
         gradesHistory,
         currentGPA, // Hệ 10
@@ -184,13 +188,7 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
             // Map lịch thi (giữa kỳ và cuối kỳ) từ tất cả học kỳ
             const mappedExams: any[] = [];
             if (exams && typeof exams === 'object') {
-                Object.entries(exams).forEach(([key, semesterExams]: [string, any]) => {
-                    const parts = key.split('-');
-                    let readableSemester = key;
-                    if (parts.length === 3) {
-                        readableSemester = `Học kỳ ${parts[2]}, 20${parts[0]}-20${parts[1]}`;
-                    }
-
+                Object.values(exams).forEach((semesterExams: any) => {
                     const mapExamItem = (item: any, type: 'Giữa kỳ' | 'Cuối kỳ') => {
                         let formattedDate = item.date || '';
                         if (formattedDate.includes('/')) {
@@ -254,7 +252,6 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                 systemPrompt,
                 messages, // Lịch sử trò chuyện trước đó
                 queryText, // Tin nhắn mới nhất
-                (prov) => setActiveProvider(prov)
             );
 
             // Thêm phản hồi của AI vào danh sách
@@ -320,14 +317,12 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
         const lines = html.split('\n');
         let inTable = false;
         let tableHtml = '';
-        let tableStartIndex = -1;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (line.startsWith('|') && line.endsWith('|')) {
                 if (!inTable) {
                     inTable = true;
-                    tableStartIndex = i;
                     tableHtml = '<div class="ustudy-chatbot-table-wrapper"><table class="ustudy-chatbot-table">';
                 }
 
@@ -386,7 +381,7 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
 
     if (typeof window === 'undefined' || typeof document === 'undefined') return null;
 
-    return createPortal(
+    const chatContent = (
         <>
             {/* Custom Embedded CSS Style Block for Premium Visual Effects */}
             <style>{`
@@ -544,8 +539,10 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
             {/* 2. Drawer Hội thoại Glassmorphism (Chat Panel) - Cozy Size */}
             {isOpen && (
                 <div
-                    className="fixed flex flex-col rounded-3xl ustudy-glass-panel animate-in slide-in-from-bottom-8 duration-300 overflow-hidden"
-                    style={{
+                    className={isPage
+                        ? 'relative flex h-[calc(100dvh-153px)] min-h-[420px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm md:h-[calc(100dvh-122px)] md:min-h-[520px]'
+                        : 'fixed hidden flex-col overflow-hidden rounded-3xl ustudy-glass-panel animate-in slide-in-from-bottom-8 duration-300 md:flex'}
+                    style={isPage ? undefined : {
                         position: 'fixed',
                         bottom: '76px',
                         right: '16px',
@@ -588,14 +585,15 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
-                            {/* Nút đóng */}
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="p-2 text-white/80 rounded-xl hover:bg-white/10 transition-all duration-200 active:scale-95"
-                                title="Đóng cửa sổ"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
+                            {!isPage && (
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-2 text-white/80 rounded-xl hover:bg-white/10 transition-all duration-200 active:scale-95"
+                                    title="Đóng cửa sổ"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -679,7 +677,6 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
                                 <input
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
                                     className="flex-1 bg-transparent border-none text-xs p-0 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0"
                                     placeholder={isLoading ? "Đang suy nghĩ..." : isListening ? "Đang nghe bạn nói..." : "Nhập câu hỏi của bạn..."}
                                     type="text"
@@ -722,30 +719,32 @@ Bạn cần hỗ trợ gì, hãy nhắn cho mình nhé!`,
             )}
 
             {/* 1. Bong bóng Chat nổi (Floating Chat Bubble Button) - Compact Size */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="group flex items-center justify-center rounded-full text-white shadow-[0_8px_24px_rgba(0,90,182,0.3)] hover:scale-110 active:scale-95 ustudy-bounce-slow ustudy-pulse-glow transition-all duration-300"
-                title={isOpen ? "Đóng cửa sổ chat" : "Trò chuyện với Trợ lý"}
-                style={{
-                    position: 'fixed',
-                    bottom: '16px',
-                    right: '16px',
-                    width: '52px',
-                    height: '52px',
-                    background: 'linear-gradient(135deg, #005ab6 0%, #1672df 100%)',
-                    zIndex: 2147483647,
-                }}
-            >
-                {isOpen ? <X className="w-5.5 h-5.5 animate-in spin-in duration-300" /> : <Bot className="w-6 h-6 fill-current animate-in zoom-in duration-300" />}
-                {!isOpen && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                    </span>
-                )}
-
-            </button>
-        </>,
-        document.body
+            {!isPage && (
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="group hidden items-center justify-center rounded-full text-white shadow-[0_8px_24px_rgba(0,90,182,0.3)] hover:scale-110 active:scale-95 ustudy-bounce-slow ustudy-pulse-glow transition-all duration-300 md:flex"
+                    title={isOpen ? "Đóng cửa sổ chat" : "Trò chuyện với Trợ lý"}
+                    style={{
+                        position: 'fixed',
+                        bottom: '16px',
+                        right: '16px',
+                        width: '52px',
+                        height: '52px',
+                        background: 'linear-gradient(135deg, #005ab6 0%, #1672df 100%)',
+                        zIndex: 2147483647,
+                    }}
+                >
+                    {isOpen ? <X className="w-5.5 h-5.5 animate-in spin-in duration-300" /> : <Bot className="w-6 h-6 fill-current animate-in zoom-in duration-300" />}
+                    {!isOpen && (
+                        <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                        </span>
+                    )}
+                </button>
+            )}
+        </>
     );
+
+    return isPage ? chatContent : createPortal(chatContent, document.body);
 }

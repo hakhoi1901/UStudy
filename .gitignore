@@ -1,5 +1,4 @@
 # test web (repomix)
-android
 src/assets/data
 # Logs
 logs
@@ -37,8 +36,8 @@ temp/*
 
 *.txt
 public/downloads/*.zip
+artifacts/*.apk
 
-android/
 build/*
 android/app/build/*
 capacitor-cordova-android-plugins/*
