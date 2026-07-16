@@ -171,6 +171,13 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
 export function mergeSelectedRawImport(incoming: any, current: any, selectedIds: readonly string[]): any {
   const selected = new Set(selectedIds);
   const next = { ...(current || {}) };
+  const collectionNames = new Set<string>(COLLECTIONS);
+
+  // Preserve future scraper fields even before the import UI knows how to
+  // render them. Known collections still follow the user's item selection.
+  for (const [key, value] of Object.entries(incoming || {})) {
+    if (key !== 'name' && !collectionNames.has(key)) next[key] = value;
+  }
   for (const collection of COLLECTIONS) {
     const incomingValue = incoming?.[collection];
     if (incomingValue === undefined) continue;

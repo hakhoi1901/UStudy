@@ -326,7 +326,7 @@ function AppContent() {
               <h3 className="text-sm font-semibold text-slate-900">Thay đổi theo nhóm thông tin</h3>
             </div>
             {changedCollectionSummaries.length > 0 ? (
-              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+              <div className="max-h-70 space-y-3 overflow-y-auto pr-1">
                 {changedCollectionSummaries.map((summary) => (
                   <section key={summary.collection} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
                     <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5">

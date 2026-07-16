@@ -155,7 +155,7 @@ export const TranscriptPDF: React.FC<TranscriptPDFProps> = ({ data }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
-        <View style={styles.headerContainer}>
+        {/* <View style={styles.headerContainer}>
           <View style={styles.headerLeft}>
             <Text>ĐẠI HỌC QUỐC GIA TP.HCM</Text>
             <Text style={styles.boldText}>TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN</Text>
@@ -164,7 +164,7 @@ export const TranscriptPDF: React.FC<TranscriptPDFProps> = ({ data }) => {
             <Text style={styles.boldText}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</Text>
             <Text style={styles.boldText}>Độc lập - Tự do - Hạnh phúc</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Title Section */}
         <View style={styles.titleContainer}>

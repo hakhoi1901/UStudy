@@ -1,5 +1,6 @@
 /**
  * Các Document Key để lưu dữ liệu xuống Local Storage
+ * Schema và quy tắc sử dụng: docs/local-storage-schema.md
  */
 export const STORAGE_KEYS = {
     /** Dữ liệu sinh viên đầy đủ (thông tin cá nhân, điểm thi, lịch thi) */

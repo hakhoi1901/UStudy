@@ -2,6 +2,8 @@
 
 Tài liệu này mô tả các màn hình và tab hiện có trong UStudy theo góc nhìn người dùng. Phần lớn dữ liệu hiển thị được lấy từ dữ liệu sinh viên đã nhập bằng bookmarklet hoặc thiết lập ban đầu.
 
+Tài liệu kỹ thuật về các key, cấu trúc dữ liệu và cơ chế mã hóa trong trình duyệt nằm tại [Cấu trúc lưu trữ cục bộ](./local-storage-schema.md).
+
 ## Điều kiện sử dụng
 
 Trước khi dùng các chức năng học tập, hãy vào **Cài đặt** để chọn chương trình đào tạo và nhập dữ liệu sinh viên. Khi chưa có dữ liệu, những màn hình cần bảng điểm, học phần hoặc lịch sẽ hiển thị trạng thái hướng dẫn thay vì dữ liệu giả định.

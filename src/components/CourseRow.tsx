@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info, GitBranch, ChevronUp, Clock, FileText, CalendarRange } from 'lucide-react';
+import { Info, GitBranch, ChevronUp, Clock, FileText, CalendarRange, Users } from 'lucide-react';
 import type { Course } from '../types';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { useEffect } from 'react';
@@ -18,6 +18,90 @@ interface CourseRowProps {
 export interface CourseSchedule {
   id: string;
   schedule: string[];
+  enrollment?: ClassEnrollment;
+}
+
+interface EnrollmentSnapshot {
+  capacity: number | null;
+  enrolled: number | null;
+  remaining?: number | null;
+  rawCapacity?: string;
+  rawEnrolled?: string;
+}
+
+interface ClassEnrollment {
+  theory: EnrollmentSnapshot;
+  practical: EnrollmentSnapshot | null;
+  exercise: EnrollmentSnapshot | null;
+}
+
+interface RawSubClass {
+  Nhom?: string;
+  SiSo?: string;
+  DaDK?: string;
+}
+
+interface RawOpenClass {
+  id?: string;
+  className?: string;
+  capacity?: string;
+  enrolled?: string;
+  practicalClasses?: RawSubClass[];
+  exerciseClasses?: RawSubClass[];
+}
+
+function parsePortalCount(value: unknown): number | null {
+  const match = String(value ?? '').match(/-?\d+/);
+  if (!match) return null;
+  const count = Number.parseInt(match[0], 10);
+  return Number.isFinite(count) ? count : null;
+}
+
+function makeEnrollment(capacityValue: unknown, enrolledValue: unknown): EnrollmentSnapshot {
+  const capacity = parsePortalCount(capacityValue);
+  const enrolled = parsePortalCount(enrolledValue);
+  return {
+    capacity,
+    enrolled,
+    remaining: capacity !== null && enrolled !== null ? Math.max(0, capacity - enrolled) : null,
+    rawCapacity: String(capacityValue ?? '').trim(),
+    rawEnrolled: String(enrolledValue ?? '').trim(),
+  };
+}
+
+function normalizeGroup(value: unknown): string {
+  return String(value ?? '').replace(/\s+/g, '').toLocaleUpperCase('vi-VN');
+}
+
+function getClassPart(classId: string, part: 'TH' | 'BT'): string {
+  const match = classId.match(new RegExp(`_${part}_(.*?)(?:_(?:TH|BT)_|$)`));
+  return match?.[1] ?? '';
+}
+
+function buildLegacyEnrollment(classId: string, rows: RawOpenClass[]): ClassEnrollment | undefined {
+  const baseClassId = classId.split(/_(?:TH|BT)_/)[0];
+  const classRows = rows.filter(row => (
+    String(row.className ?? '').trim().toLocaleUpperCase('vi-VN') === baseClassId.toLocaleUpperCase('vi-VN')
+  ));
+  if (classRows.length === 0) return undefined;
+
+  const theoryRow = classRows.find(row => row.capacity || row.enrolled) ?? classRows[0];
+  const practicalGroup = normalizeGroup(getClassPart(classId, 'TH'));
+  const exerciseGroup = normalizeGroup(getClassPart(classId, 'BT'));
+  const practical = classRows
+    .flatMap(row => Array.isArray(row.practicalClasses) ? row.practicalClasses : [])
+    .find(item => normalizeGroup(item.Nhom) === practicalGroup);
+  const exercise = classRows
+    .flatMap(row => Array.isArray(row.exerciseClasses) ? row.exerciseClasses : [])
+    .find(item => normalizeGroup(item.Nhom) === exerciseGroup);
+
+  const enrollment: ClassEnrollment = {
+    theory: makeEnrollment(theoryRow.capacity, theoryRow.enrolled),
+    practical: practical ? makeEnrollment(practical.SiSo, practical.DaDK) : null,
+    exercise: exercise ? makeEnrollment(exercise.SiSo, exercise.DaDK) : null,
+  };
+  const hasCounts = Object.values(enrollment).some(item => item && (item.capacity !== null || item.enrolled !== null));
+  return hasCounts ? enrollment : undefined;
 }
 
 /**
@@ -57,10 +141,18 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
   useEffect(() => {
     if (!showDescription) return;
     const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
-    const courseData = courseDb.find((c: any) => c.id === course.code);
+    const normalizedCourseCode = course.code.toLocaleUpperCase('vi-VN');
+    const courseData = courseDb.find((c: any) => String(c.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
+    const rawStudentDb = readFromStorage<{ courses?: RawOpenClass[] }>(STORAGE_KEYS.RAW_STUDENT_DB, {});
+    const sourceRows: RawOpenClass[] = Array.isArray(courseData?.source?.portalRows)
+      ? courseData.source.portalRows
+      : (rawStudentDb.courses ?? []).filter(row => String(row.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
 
     if (courseData && courseData.classes) {
-      setAvailableClasses(courseData.classes);
+      setAvailableClasses(courseData.classes.map((courseClass: CourseSchedule) => ({
+        ...courseClass,
+        enrollment: courseClass.enrollment ?? buildLegacyEnrollment(courseClass.id, sourceRows),
+      })));
     } else {
       setAvailableClasses([]);
     }
@@ -288,30 +380,69 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart }: Cou
                   </span>
                 </div>
 
-                <div className="overflow-hidden rounded-md border border-gray-200 grid grid-cols-2">
-                  {availableClasses
+                <div className="grid grid-cols-1 overflow-hidden rounded-md border border-gray-200 md:grid-cols-2">
+                  {[...availableClasses]
                     .sort((a, b) => a.id.localeCompare(b.id))
-                    .map((cls) => (
-                      <div
-                        key={cls.id}
-                        className="border-b border-gray-200 px-3 py-3 last:border-b-0 hover:bg-gray-50"
-                      >
-                        <p className="text-xs font-semibold text-gray-900">
-                          {cls.id.replace(/_/g, " ")}
-                        </p>
+                    .map((cls) => {
+                      const enrollmentRows = [
+                        { label: 'Lý thuyết', value: cls.enrollment?.theory },
+                        { label: 'Thực hành', value: cls.enrollment?.practical },
+                        { label: 'Bài tập', value: cls.enrollment?.exercise },
+                      ].filter((item): item is { label: string; value: EnrollmentSnapshot } => (
+                        Boolean(item.value && (item.value.capacity !== null || item.value.enrolled !== null))
+                      ));
 
-                        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-                          {cls.schedule.map((time, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[11px] font-medium text-gray-600"
-                            >
-                              {time}
-                            </span>
-                          ))}
+                      return (
+                        <div
+                          key={cls.id}
+                          className="border-b border-gray-200 px-3 py-3 hover:bg-gray-50 md:odd:border-r"
+                        >
+                          <p className="text-xs font-semibold text-gray-900">
+                            {cls.id.replace(/_/g, " ")}
+                          </p>
+
+                          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                            {cls.schedule.map((time, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[11px] font-medium text-gray-600"
+                              >
+                                {time}
+                              </span>
+                            ))}
+                          </div>
+
+                          {enrollmentRows.length > 0 && (
+                            <div className="mt-2.5 border-t border-gray-100 pt-2">
+                              <div className="mb-1 grid grid-cols-[minmax(0,1fr)_52px_72px] items-center gap-2 text-[10px] font-medium text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  Thành phần
+                                </span>
+                                <span className="text-right">Sĩ số</span>
+                                <span className="text-right">Đã đăng ký</span>
+                              </div>
+                              <div className="divide-y divide-gray-100">
+                                {enrollmentRows.map(({ label, value }) => (
+                                  <div
+                                    key={label}
+                                    className="grid grid-cols-[minmax(0,1fr)_52px_72px] items-center gap-2 py-1 text-[11px]"
+                                  >
+                                    <span className="truncate text-gray-500">{label}</span>
+                                    <span className="text-right font-semibold tabular-nums text-gray-800">
+                                      {value.capacity ?? '-'}
+                                    </span>
+                                    <span className="text-right font-semibold tabular-nums text-[#004A98]">
+                                      {value.enrolled ?? '-'}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               </div>
             )}
