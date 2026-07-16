@@ -1,9 +1,23 @@
 import { useState } from 'react';
-import { CalendarPlus, ChevronDown, ChevronUp, ExternalLink, Trash2 } from 'lucide-react';
+import { CalendarPlus, ChevronUp, ExternalLink, GitBranch, Trash2 } from 'lucide-react';
 import { courseLinks } from '../../assets/data/courseLinks';
 import { DocumentContributionModal } from '../../components/DocumentContributionModal';
 import { StatusBadge } from './StatusBadge';
 import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } from './types';
+
+const prerequisiteStatusConfig = {
+    passed: { label: 'Đã đạt', dotClass: 'bg-emerald-500', textClass: 'text-emerald-700' },
+    studying: { label: 'Đang học', dotClass: 'bg-blue-500', textClass: 'text-blue-700' },
+    failed: { label: 'Cần học lại', dotClass: 'bg-red-500', textClass: 'text-red-700' },
+    none: { label: 'Chưa học', dotClass: 'bg-amber-400', textClass: 'text-amber-700' },
+} as const;
+
+function getPrerequisiteTypeLabel(type: string): string {
+    const normalized = type.trim().toLocaleUpperCase('vi-VN');
+    if (normalized === 'PREVIOUS') return 'Học trước';
+    if (normalized === 'COREQUISITE' || normalized === 'CO-REQUISITE') return 'Song hành';
+    return type || 'Tiên quyết';
+}
 
 interface StudyPlanCourseRowProps {
     course: CourseMeta;
@@ -155,6 +169,41 @@ export function StudyPlanCourseRow({
                             <p className="mt-1 truncate text-xs font-semibold text-gray-900">{course.category || '-'}</p>
                         </div>
                     </div>
+
+                    {(course.prerequisites?.length ?? 0) > 0 && (
+                        <div className="border-b border-gray-200 py-3">
+                            <div className="flex items-center gap-2">
+                                <GitBranch className="h-4 w-4 text-amber-600" />
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                                    Môn tiên quyết
+                                </p>
+                            </div>
+
+                            <div className="divide-y divide-gray-100">
+                                {course.prerequisites?.map((prerequisite) => {
+                                    const prerequisiteStatus = prerequisiteStatusConfig[prerequisite.status];
+                                    return (
+                                        <div
+                                            key={`${prerequisite.id}-${prerequisite.type}`}
+                                            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2"
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs font-semibold text-gray-900">{prerequisite.id}</p>
+                                                <p className="mt-0.5 truncate text-[11px] text-gray-500">{prerequisite.name}</p>
+                                            </div>
+                                            <div className="flex flex-shrink-0 items-center gap-3 text-[10px]">
+                                                <span className="text-gray-500">{getPrerequisiteTypeLabel(prerequisite.type)}</span>
+                                                <span className={`inline-flex items-center gap-1.5 font-semibold ${prerequisiteStatus.textClass}`}>
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${prerequisiteStatus.dotClass}`} />
+                                                    {prerequisiteStatus.label}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="pt-3">
                         <p className="text-[10px] font-medium uppercase text-gray-500">Ghi chú từ CTĐT</p>

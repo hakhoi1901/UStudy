@@ -4,6 +4,13 @@ export type CourseStatus = 'passed' | 'studying' | 'failed' | 'none';
 export type MobilePlannerTab = 'courses' | 'semesters';
 export type MobileSheetStep = 'details' | 'semesters';
 
+export interface CoursePrerequisiteMeta {
+    id: string;
+    name: string;
+    type: string;
+    status: CourseStatus;
+}
+
 export interface CourseMeta {
     course_id: string;
     course_name_vi: string;
@@ -15,6 +22,7 @@ export interface CourseMeta {
     category: string;
     description: string;
     status?: CourseStatus;
+    prerequisites?: CoursePrerequisiteMeta[];
 }
 
 export interface StudyPlanSemester {

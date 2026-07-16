@@ -201,7 +201,16 @@ export function StudyPlanContainer() {
                 courseIds
                     .map((id) => courseById.get(id))
                     .filter((course): course is CourseMeta => !!course)
-                    .map((course) => ({ ...course, status: getCourseStatus(course.course_id) }));
+                    .map((course) => ({
+                        ...course,
+                        status: getCourseStatus(course.course_id),
+                        prerequisites: (prereqByCourse.get(course.course_id) || []).map((rule) => ({
+                            id: rule.prereq_id,
+                            name: courseById.get(rule.prereq_id)?.course_name_vi || 'Chưa có tên môn',
+                            type: rule.type,
+                            status: getCourseStatus(rule.prereq_id),
+                        })),
+                    }));
 
             const filterCourseList = (courseList: CourseMeta[]) => {
                 if (!lowerSearch) return courseList;
@@ -244,7 +253,7 @@ export function StudyPlanContainer() {
             acc[key] = attachCoursesData(category);
             return acc;
         }, {});
-    }, [categories, courseById, getCourseStatus, searchTerm]);
+    }, [categories, courseById, getCourseStatus, prereqByCourse, searchTerm]);
 
     const handleDragStart = (courseId: string, event: DragEvent<HTMLDivElement>) => {
         event.dataTransfer.effectAllowed = 'move';
