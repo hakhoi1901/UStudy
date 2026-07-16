@@ -23,6 +23,7 @@ const navGroups = [
   {
     title: 'Công cụ',
     items: [
+      { icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' },
       { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
       { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
       { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
@@ -35,7 +36,7 @@ const bottomNavItems = [
   { icon: Home, label: 'Tổng quan', page: 'dashboard' },
   { icon: Map, label: 'Lộ trình', page: 'courses' },
   { icon: BarChart3, label: 'Điểm', page: 'grades' },
-  { icon: Bot, label: 'Trợ lý', page: 'chatbot' },
+  { icon: Subtitles, label: 'Lịch thi', page: 'examSchedule' },
   { icon: Menu, label: 'Thêm', page: '__more__' },
 ];
 

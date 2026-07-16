@@ -272,17 +272,17 @@ export function StudyPlanSemesterPanel({
 
     return (
         <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:pl-3`}>
-            <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 {/* Header */}
-                <div className="rounded-t-xl border-b border-white/10 bg-gradient-to-br from-[#0058B2] to-[#0066CC] p-4 shadow-sm">
+                <div className="border-b border-white/10 bg-gradient-to-br from-[#0058B2] to-[#0066CC] p-3 shadow-sm lg:p-4">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <h2 className="flex items-center text-xl font-bold tracking-tight text-white">
+                            <h2 className="flex items-center text-base font-bold text-white lg:text-xl lg:tracking-tight">
                                 <span className="pr-1">Khung học kỳ</span>
                                 <div className="group relative">
                                     <button
                                         type="button"
-                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-blue-100 transition-colors hover:bg-white/10 hover:text-white"
+                                        className="hidden h-5 w-5 items-center justify-center rounded-full text-blue-100 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
                                         aria-label="Thông tin khung học kỳ"
                                     >
                                         <Info className="h-4 w-4" />
@@ -310,18 +310,18 @@ export function StudyPlanSemesterPanel({
                                 </div>
                             </h2>
 
-                            <p className="mt-1 text-sm text-blue-100">
+                            <p className="mt-1 text-xs text-blue-100 lg:text-sm">
                                 {plannedStats.courses} môn
                                 <span className="mx-1.5 text-white/40">·</span>
                                 {plannedStats.credits} tín chỉ tích lũy
                             </p>
                         </div>
 
-                        <div className="flex items-center">
+                        <div className="flex shrink-0 items-center gap-1">
                             <button
                                 type="button"
                                 onClick={onOpenPreview}
-                                className="inline-flex h-8 w-8 text-white items-center justify-center"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white transition-colors active:bg-white/20 lg:bg-transparent lg:hover:bg-white/10"
                                 title="Xem trực quan kế hoạch"
                             >
                                 <Maximize className="h-5 w-5" />
@@ -335,7 +335,7 @@ export function StudyPlanSemesterPanel({
                                         setIsAddSemesterMenuOpen(false);
                                         setIsExportMenuOpen(false);
                                     }}
-                                    className="inline-flex h-8 w-8 text-white items-center justify-center"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white transition-colors active:bg-white/20 lg:bg-transparent lg:hover:bg-white/10"
                                     title="Thêm tùy chọn"
                                     aria-expanded={isMoreMenuOpen}
                                     aria-haspopup="menu"
@@ -346,7 +346,7 @@ export function StudyPlanSemesterPanel({
                                 {isMoreMenuOpen && (
                                     <div
                                         role="menu"
-                                        className="absolute right-0 top-full z-50 mt-2 w-52 overflow-visible rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                                        className="absolute right-0 top-full z-50 mt-2 w-52 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
                                     >
                                         <FlyoutMenu
                                             open={isAddSemesterMenuOpen}
@@ -452,8 +452,8 @@ export function StudyPlanSemesterPanel({
                 </div>
 
                 {/* Semester groups */}
-                <div className="flex min-h-0 flex-1 flex-col bg-white rounded-2xl">
-                    <div className="shrink-0 border-b border-gray-200 bg-white p-3">
+                <div className="flex min-h-0 flex-1 flex-col bg-white lg:rounded-2xl">
+                    <div className="shrink-0 border-b border-gray-200 bg-white p-2 lg:p-3">
                         <div className="flex items-center gap-2">
                             <div className={`min-w-0 flex-1 ${shouldScrollYearTabs ? 'overflow-x-auto' : 'overflow-x-hidden'}`}>
                                 <div
@@ -490,9 +490,9 @@ export function StudyPlanSemesterPanel({
                         </div>
                     </div>
 
-                    <div className="min-h-0 flex-1 p-1 overflow-y-auto bg-gray-50/50">
+                    <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50/70 p-2 lg:bg-gray-50/50 lg:p-1">
                         {selectedYearGroup ? (
-                            <div className="divide-y divide-gray-200">
+                            <div className="space-y-2 lg:divide-y lg:divide-gray-200 lg:space-y-0">
                                 {selectedYearGroup.semesters.map(({ semester, semesterIndex }) => {
                                     const plannedIds = studyPlan.plan[semester.id] || [];
                                     const totalCredits = plannedIds.reduce((sum, courseId) => sum + getAccumulationCredits(courseId), 0);
@@ -514,16 +514,16 @@ export function StudyPlanSemesterPanel({
                                                 onAddCourseToSemester(courseId, semester.id);
                                                 onActiveDropIdChange(null);
                                             }}
-                                            className={`transition-colors ${activeDropId === semester.id ? 'bg-blue-50 ring-2 ring-inset ring-[#004A98]/20 ' : ''}`}
+                                            className={`overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors lg:rounded-none lg:border-0 ${activeDropId === semester.id ? 'bg-blue-50 ring-2 ring-inset ring-[#004A98]/20 ' : ''}`}
                                         >
-                                            <div className="flex items-center justify-between gap-2 px-4 py-2.5">
+                                            <div className="flex items-center justify-between gap-2 px-3 py-3 lg:px-4 lg:py-2.5">
                                                 <div className="flex items-start gap-2 min-w-0">
-                                                    <GraduationCap className="w-9 h-9 bg-[#0058B2] text-white mt-0.5 p-1 shrink-0 rounded-lg" />
+                                                    <GraduationCap className="mt-0.5 h-8 w-8 shrink-0 rounded-md bg-[#0058B2] p-1 text-white lg:h-9 lg:w-9 lg:rounded-lg" />
                                                     <div className="min-w-0">
                                                         <div className="flex flex-wrap items-center gap-2">
                                                             <h3 className="truncate text-sm font-bold text-gray-900">{semester.label}</h3>
                                                             {semester.isHistorical && (
-                                                                <span className={`text-[10px] font-semibold rounded-xl px-2 py-1 bg-[#004A98] text-white`}>
+                                                                <span className="rounded-full bg-[#004A98] px-2 py-0.5 text-[10px] font-semibold text-white lg:rounded-xl lg:py-1">
                                                                     {semester.isCurrent ? 'Đang học' : 'Từ dữ liệu'}
                                                                 </span>
                                                             )}
@@ -551,13 +551,13 @@ export function StudyPlanSemesterPanel({
                                                 </div>
                                             </div>
 
-                                            <div className="px-3 pb-3">
+                                            <div className="px-0 pb-0 lg:px-3 lg:pb-3">
                                                 {plannedIds.length === 0 ? (
-                                                    <div className="border border-dashed border-gray-300 rounded-lg px-3 py-3 text-center text-xs text-gray-500 bg-white shadow-[0_0_8px_2px_rgba(59,130,246,0.1)]">
+                                                    <div className="border-t border-dashed border-gray-200 bg-gray-50/60 px-3 py-4 text-center text-xs text-gray-500 lg:rounded-lg lg:border lg:border-gray-300 lg:bg-white lg:py-3 lg:shadow-[0_0_8px_2px_rgba(59,130,246,0.1)]">
                                                         {semester.isHistorical ? 'Chưa có dữ liệu môn trong kỳ này' : 'Thả môn vào đây'}
                                                     </div>
                                                 ) : (
-                                                    <div className="overflow-hidden rounded-md border border-gray-300 bg-white shadow-[0_0_8px_2px_rgba(59,130,246,0.05)]">
+                                                    <div className="divide-y divide-gray-200 border-t border-gray-200 bg-white lg:overflow-hidden lg:rounded-md lg:border lg:border-gray-300 lg:shadow-[0_0_8px_2px_rgba(59,130,246,0.05)]">
                                                         {plannedIds.map((courseId) => {
                                                             const course = courseById.get(courseId);
                                                             if (!course) return null;
@@ -568,7 +568,7 @@ export function StudyPlanSemesterPanel({
                                                                     key={courseId}
                                                                     draggable={!semester.isHistorical}
                                                                     onDragStart={(event) => onDragStart(courseId, event)}
-                                                                    className="border-b border-gray-200 px-3 py-2.5 last:border-b-0 hover:bg-gray-50"
+                                                                    className="px-3 py-2.5 hover:bg-gray-50 lg:border-b lg:border-gray-200 lg:last:border-b-0"
                                                                 >
                                                                     <div className="flex items-start gap-2">
                                                                         <div className="min-w-0 flex-1">
@@ -608,7 +608,7 @@ export function StudyPlanSemesterPanel({
                                 })}
 
                                 {selectedYearAvailableSemesterIndices.length > 0 && (
-                                    <div className="bg-white p-3">
+                                    <div className="bg-transparent pt-1 lg:bg-white lg:p-3">
                                         <div ref={bottomAddMenuRef} className="relative">
                                             {isBottomAddMenuOpen && selectedYearAvailableSemesterIndices.length > 1 && (
                                                 <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-xl">

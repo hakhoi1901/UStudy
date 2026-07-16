@@ -249,13 +249,7 @@
 }
 
 .mobile-only {
-  display: block;
-}
-
-@media (min-width: 768px) {
-  .mobile-only {
-    display: none;
-  }
+  display: flex;
 }
 
 .desktop-only {
@@ -263,6 +257,10 @@
 }
 
 @media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+
   .desktop-only {
     display: block;
   }

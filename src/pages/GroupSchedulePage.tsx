@@ -529,14 +529,14 @@ export function GroupSchedulePage({
         >
             <section className="ustudy-card space-y-6 p-5 sm:p-7">
                 {/* Header */}
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 items-start gap-3">
                         <span className="mt-1 h-6 w-[3px] rounded-full bg-[#004A98]" aria-hidden="true" />
-                        <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold text-slate-400 sm:text-[11px] sm:uppercase sm:tracking-[0.14em]">
                                 Bước thêm thành viên
                             </p>
-                            <h2 className="text-lg font-semibold text-slate-900">Nhóm của bạn</h2>
+                            <h2 className="text-base font-semibold text-slate-900 sm:text-lg">Nhóm của bạn</h2>
                         </div>
                     </div>
 
@@ -544,11 +544,16 @@ export function GroupSchedulePage({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="border-slate-200 text-slate-600 hover:bg-slate-50"
+                        className="w-full justify-center border-slate-200 text-slate-600 hover:bg-slate-50 sm:w-auto sm:shrink-0"
                         onClick={() => setShowMembersPanel(!showMembersPanel)}
                     >
                         <Users className="mr-2 h-4 w-4 text-slate-400" />
-                        {showMembersPanel ? 'Ẩn danh sách thành viên' : `Hiện danh sách thành viên (${members.length})`}
+                        <span className="sm:hidden">
+                            {showMembersPanel ? 'Ẩn thành viên' : `Hiện thành viên (${members.length})`}
+                        </span>
+                        <span className="hidden sm:inline">
+                            {showMembersPanel ? 'Ẩn danh sách thành viên' : `Hiện danh sách thành viên (${members.length})`}
+                        </span>
                     </Button>
                 </div>
 
@@ -688,15 +693,15 @@ export function GroupSchedulePage({
             </div>
 
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <div className="flex flex-row m-2 justify-between items-start w-full">
+                <div className="flex w-full flex-col gap-3 sm:m-2 sm:flex-row sm:items-start sm:justify-between">
                     {/* Phần tiêu đề bên trái */}
-                    <div className="flex items-start gap-3 pb-4">
+                    <div className="flex min-w-0 items-start gap-3 sm:pb-4">
                         <span className="mt-1 h-6 w-[3px] rounded-full bg-[#004A98]" aria-hidden="true" />
-                        <div>
-                            <h2 className="text-lg font-semibold text-slate-900">
+                        <div className="min-w-0">
+                            <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
                                 Cài đặt ưu tiên
                             </h2>
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                            <p className="hidden text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:block">
                                 Có thể bỏ qua bước này. Các ưu tiên dưới đây chỉ giúp solver chọn lịch hợp gu nhóm hơn.
                             </p>
                         </div>
@@ -707,7 +712,7 @@ export function GroupSchedulePage({
                         type="button" 
                         disabled={members.length < 2 || solving} 
                         onClick={runGroupSolve} 
-                        className="bg-emerald-600 text-white hover:bg-emerald-700 shrink-0"
+                        className="w-full shrink-0 bg-emerald-600 text-white hover:bg-emerald-700 sm:w-auto"
                     >
                         <Calendar className="h-4 w-4" />
                         {solving ? 'Đang xếp lịch...' : 'Xếp lịch nhóm'}

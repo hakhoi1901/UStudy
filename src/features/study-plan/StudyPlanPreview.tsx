@@ -88,7 +88,7 @@ function ProgressRing({ value, plannedValue, total }: { value: number; plannedVa
 
     return (
         <div className="flex items-center justify-center">
-            <div className="relative h-36 w-36">
+            <div className="relative h-28 w-28 sm:h-36 sm:w-36">
                 <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" role="img" aria-label={`${percent}% tín chỉ đã tích lũy`}>
                     <circle cx="60" cy="60" r={radius} fill="none" stroke="#E5E7EB" strokeWidth="10" />
                     <circle
@@ -115,7 +115,7 @@ function ProgressRing({ value, plannedValue, total }: { value: number; plannedVa
                     />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-3xl font-bold text-gray-900">{percent}%</span>
+                    <span className="text-2xl font-bold text-gray-900 sm:text-3xl">{percent}%</span>
                     <span className="mt-1 text-[11px] font-medium text-gray-500">đã tích lũy</span>
                 </div>
             </div>
@@ -315,90 +315,91 @@ export function StudyPlanPreview({
     const activeRow = semesterRows.find((row) => row.semester.id === activeSemesterId) ?? semesterRows[0] ?? null;
 
     return (
-            <div className="">
-                <div className="">
+            <div>
+                <div className="px-1 pb-3 sm:px-0 sm:pb-0">
                     <button
                         type="button"
                         onClick={onBackToPlan}
-                        className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition-colors hover:text-[#004A98]"
+                        className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition-colors hover:text-[#004A98] sm:mb-3"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Quay lại chỉnh sửa
                     </button>
-                    <h2 className="text-2xl font-bold text-gray-900">Tổng quan kế hoạch học tập</h2>
-                    <p className="mt-1 text-sm text-gray-500">Theo dõi tiến độ tín chỉ, học kỳ và các cảnh báo tiên quyết. Các số liệu tại đây bao gồm các môn đã được đăng ký ở kỳ hiện tại</p>
+                    <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Tổng quan kế hoạch học tập</h2>
+                    <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Theo dõi tín chỉ, học kỳ và cảnh báo tiên quyết. Số liệu đã bao gồm các môn đăng ký ở kỳ hiện tại.</p>
                 </div>
 
-                <div className="space-y-4 bg-gray-50/60 p-4">
+                <div className="space-y-3 bg-gray-50/60 py-3 sm:space-y-4 sm:p-4">
                     {studyPlan.semesters.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center text-sm text-gray-500">
                             Chưa có học kỳ nào để xem trực quan.
                         </div>
                     ) : (
                         <>
-                            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.6fr)_minmax(320px,1.6fr)]">
-                                <div className="space-y-4">
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <div className="grid gap-3 sm:gap-4 xl:grid-cols-[minmax(0,0.6fr)_minmax(320px,1.6fr)]">
+                                <div className="space-y-3 sm:space-y-4">
+                                    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
                                         <h3 className="mb-3 text-sm font-bold text-gray-900">Tiến độ tích lũy</h3>
-                                        <div className="grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3">
+                                        <div className="grid grid-cols-[104px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[132px_minmax(0,1fr)]">
                                             <ProgressRing value={summary.earnedCredits} plannedValue={summary.plannedCredits} total={ACADEMIC_RULES.TOTAL_CREDITS} />
-                                            <div className="space-y-3 text-sm">
-                                                <div><p className="text-xs text-gray-500">Đang tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
-                                                <div><p className="text-xs text-gray-500">Đã lên kế hoạch</p><p className="mt-0.5 font-bold text-[#004A98]">{summary.plannedCredits} TC</p></div>
-                                                <div><p className="text-xs text-gray-500">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits - summary.plannedCredits)} TC</p></div>
+                                            <div className="divide-y divide-gray-100 text-sm sm:space-y-3 sm:divide-y-0">
+                                                <div className="pb-2 sm:pb-0"><p className="text-[11px] text-gray-500 sm:text-xs">Đã tích lũy</p><p className="mt-0.5 font-bold text-gray-900">{summary.earnedCredits} / {ACADEMIC_RULES.TOTAL_CREDITS} TC</p></div>
+                                                <div className="py-2 sm:py-0"><p className="text-[11px] text-gray-500 sm:text-xs">Đã lên kế hoạch</p><p className="mt-0.5 font-bold text-[#004A98]">{summary.plannedCredits} TC</p></div>
+                                                <div className="pt-2 sm:pt-0"><p className="text-[11px] text-gray-500 sm:text-xs">Còn lại</p><p className="mt-0.5 font-bold text-gray-900">{Math.max(0, ACADEMIC_RULES.TOTAL_CREDITS - summary.earnedCredits - summary.plannedCredits)} TC</p></div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                                        <h3 className="mb-3 text-sm font-bold text-gray-900">Số môn học</h3>
-                                        <div className="space-y-3">
-                                            <div className="flex items-end justify-between gap-3">
+                                    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                                        <div className="flex items-center justify-between gap-3 sm:block">
+                                            <h3 className="text-sm font-bold text-gray-900 sm:mb-3">Số môn học</h3>
+                                            <div className="flex items-end gap-2 sm:justify-between sm:gap-3">
                                                 <div>
-                                                    <p className="text-2xl font-bold tabular-nums text-gray-900">{summary.completedCourses} / {summary.totalCourses}</p>
-                                                    <p className="mt-1 text-xs text-gray-500">môn đã học / Số môn đã chọn</p>
+                                                    <p className="text-lg font-bold tabular-nums text-gray-900 sm:text-2xl">{summary.completedCourses} / {summary.totalCourses}</p>
+                                                    <p className="hidden mt-1 text-xs text-gray-500 sm:block">môn đã học / Số môn đã chọn</p>
                                                 </div>
                                                 <span className="text-sm font-semibold tabular-nums text-[#004A98]">
                                                     {summary.totalCourses > 0 ? Math.round((summary.completedCourses / summary.totalCourses) * 100) : 0}%
                                                 </span>
                                             </div>
-                                            <div className="h-2 overflow-hidden rounded-full bg-gray-100" aria-label={`${summary.completedCourses}/${summary.totalCourses} môn đã học`}>
-                                                <div
-                                                    className="h-full rounded-full bg-[#0066CC] transition-[width] duration-300"
-                                                    style={{ width: `${summary.totalCourses > 0 ? Math.min(100, (summary.completedCourses / summary.totalCourses) * 100) : 0}%` }}
-                                                />
-                                            </div>
+                                        </div>
+                                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-100" aria-label={`${summary.completedCourses}/${summary.totalCourses} môn đã học`}>
+                                            <div
+                                                className="h-full rounded-full bg-[#0066CC] transition-[width] duration-300"
+                                                style={{ width: `${summary.totalCourses > 0 ? Math.min(100, (summary.completedCourses / summary.totalCourses) * 100) : 0}%` }}
+                                            />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                                    <h3 className="mb-3 text-sm font-bold text-gray-900">
+                                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white py-3 shadow-sm sm:p-4">
+                                    <h3 className="mb-3 px-3 text-sm font-bold text-gray-900 sm:px-0">
                                         Tín chỉ theo học kỳ
                                     </h3>
 
-                                    <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                                        <span className="flex items-center gap-1.5">
+                                    <div className="mb-3 flex items-center gap-4 overflow-x-auto px-3 pb-1 text-xs text-gray-500 sm:flex-wrap sm:px-0 sm:pb-0">
+                                        <span className="flex shrink-0 items-center gap-1.5">
                                             <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
                                             Đã hoàn thành
                                         </span>
 
-                                        <span className="flex items-center gap-1.5">
+                                        <span className="flex shrink-0 items-center gap-1.5">
                                             <span className="h-2.5 w-2.5 rounded-sm bg-blue-700" />
                                             Hiện tại
                                         </span>
 
-                                        <span className="flex items-center gap-1.5">
+                                        <span className="flex shrink-0 items-center gap-1.5">
                                             <span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />
                                             Dự kiến
                                         </span>
 
-                                        <span className="flex items-center gap-1.5">
+                                        <span className="flex shrink-0 items-center gap-1.5">
                                             <span className="h-0.5 w-4 bg-[#004A98]" />
                                             Tín chỉ tích lũy
                                         </span>
                                     </div>
 
-                                    <div className="h-72">
+                                    <div className="overflow-x-auto px-3 sm:px-0">
+                                        <div className="h-64 min-w-[720px] md:h-72 md:min-w-0">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <ComposedChart
                                                 data={chartData}
@@ -519,12 +520,13 @@ export function StudyPlanPreview({
                                                 />
                                             </ComposedChart>
                                         </ResponsiveContainer>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                                    <div className="border-b border-gray-200 px-5 py-4">
+                                    <div className="border-b border-gray-200 px-3 py-3 sm:px-5 sm:py-4">
                                         <h3 className="text-base font-bold text-gray-900">
                                             Tiến độ theo khối kiến thức
                                         </h3>
@@ -534,7 +536,47 @@ export function StudyPlanPreview({
                                         </p>
                                     </div>
 
-                                    <div className="overflow-x-auto">
+                                    <div className="divide-y divide-gray-100 md:hidden">
+                                        {knowledgeBlockRows.map((block) => {
+                                            const earnedPercent = block.requiredCredits > 0
+                                                ? Math.min(100, (block.earnedCredits / block.requiredCredits) * 100)
+                                                : 0;
+                                            const plannedPercent = block.requiredCredits > 0
+                                                ? Math.min(100 - earnedPercent, (block.plannedCredits / block.requiredCredits) * 100)
+                                                : 0;
+
+                                            return (
+                                                <div key={block.key} className="px-3 py-3.5">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <h4 className="min-w-0 text-sm font-semibold leading-5 text-gray-900">{block.label}</h4>
+                                                        <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-500">{block.requiredCredits} TC</span>
+                                                    </div>
+
+                                                    <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-gray-100">
+                                                        <span className="h-full bg-emerald-500" style={{ width: `${earnedPercent}%` }} />
+                                                        <span className="h-full bg-[#0058B2]" style={{ width: `${plannedPercent}%` }} />
+                                                    </div>
+
+                                                    <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                                                        <div>
+                                                            <p className="text-[10px] text-gray-400">Đã học</p>
+                                                            <p className="mt-0.5 font-bold tabular-nums text-emerald-700">{block.earnedCredits} TC</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-400">Đã lên lịch</p>
+                                                            <p className="mt-0.5 font-bold tabular-nums text-[#004A98]">{block.plannedCredits} TC</p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] text-gray-400">Còn thiếu</p>
+                                                            <p className="mt-0.5 font-bold tabular-nums text-gray-600">{block.remainingCredits} TC</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <div className="hidden overflow-x-auto md:block">
                                         <table className="w-full min-w-[760px]">
                                             <thead className="border-b border-gray-200 bg-gray-50">
                                                 <tr>
@@ -618,16 +660,16 @@ export function StudyPlanPreview({
                                 </section>
 
                             <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                                <div className="flex flex-col gap-2 border-b border-gray-200 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
+                                <div className="flex flex-col gap-2 border-b border-gray-200 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-5 sm:py-4">
                                     <div>
                                         <h3 className="text-base font-semibold text-gray-900">Timeline học kỳ</h3>
-                                        <p className="mt-1 text-sm text-gray-500">Chọn một học kỳ để xem các học phần và tiến độ tích lũy.</p>
+                                        <p className="mt-1 hidden text-sm text-gray-500 sm:block">Chọn một học kỳ để xem các học phần và tiến độ tích lũy.</p>
                                     </div>
-                                    {activeRow && <span className="shrink-0 text-sm font-medium text-[#004A98]">Đang xem: {activeRow.semester.label}</span>}
+                                    {activeRow && <span className="shrink-0 text-xs font-medium text-[#004A98] sm:text-sm">Đang xem: {activeRow.semester.label}</span>}
                                 </div>
 
-                                <div className="overflow-x-auto bg-gray-50 px-4 py-5 sm:px-5">
-                                    <div className="relative flex min-w-max snap-x snap-mandatory gap-3 pt-4">
+                                <div className="overflow-x-auto bg-gray-50 px-3 py-4 sm:px-5 sm:py-5">
+                                    <div className="relative flex min-w-max snap-x snap-mandatory gap-2.5 pt-4 sm:gap-3">
                                         <div className="absolute left-6 right-6 top-[21px] h-px bg-gray-200" />
 
                                         {semesterRows.map((row) => {
@@ -648,11 +690,11 @@ export function StudyPlanPreview({
                                                     onClick={() =>
                                                         setActiveSemesterId(row.semester.id)
                                                     }
-                                                    className="relative z-10 w-52 shrink-0 snap-start pt-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#004A98] focus-visible:ring-offset-2"
+                                                    className="relative z-10 w-44 shrink-0 snap-start pt-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#004A98] focus-visible:ring-offset-2 sm:w-52"
                                                 >
                                                     <span className={`absolute left-4 top-0 h-3.5 w-3.5 rounded-full ring-4 ring-gray-50 transition-transform ${row.statusStyle.dotClass} ${isActive ? 'scale-110' : ''}`} />
 
-                                                    <span className={`flex min-h-[148px] flex-col rounded-xl border p-4 transition-colors ${isActive ? 'border-[#004A98] bg-[#EAF3FF] shadow-sm' : 'border-gray-200 bg-white hover:border-[#0058B2] hover:bg-white'}`}>
+                                                    <span className={`flex min-h-[132px] flex-col rounded-lg border p-3 transition-colors sm:min-h-[148px] sm:rounded-xl sm:p-4 ${isActive ? 'border-[#004A98] bg-[#EAF3FF] shadow-sm' : 'border-gray-200 bg-white hover:border-[#0058B2] hover:bg-white'}`}>
                                                         <span className="flex items-start justify-between gap-2">
                                                             <span className="min-w-0">
                                                                 <span className="block truncate text-sm font-semibold text-gray-900">{row.semester.label}</span>
@@ -664,7 +706,7 @@ export function StudyPlanPreview({
                                                             <span className="text-xs font-semibold tabular-nums text-gray-500">{progressPercent}%</span>
                                                         </span>
 
-                                                        <span className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
+                                                        <span className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3 sm:mt-4">
                                                             <span><span className="block text-[11px] text-gray-500">Học phần</span><span className="mt-0.5 block text-sm font-semibold tabular-nums text-gray-900">{row.courseIds.length} môn</span></span>
                                                             <span className="text-right"><span className="block text-[11px] text-gray-500">Tín chỉ kỳ</span><span className="mt-0.5 block text-sm font-semibold tabular-nums text-gray-900">{row.credits} TC</span></span>
                                                         </span>
@@ -682,7 +724,7 @@ export function StudyPlanPreview({
                             </section>
 
                             <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                                <div className="flex flex-col gap-4 border-b border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
+                                <div className="flex flex-col gap-3 border-b border-gray-200 bg-gray-50 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-5 sm:py-4">
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <h3 className="truncate text-base font-semibold text-gray-900">
@@ -695,16 +737,16 @@ export function StudyPlanPreview({
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="mt-1 text-sm text-gray-500">Danh sách học phần của học kỳ đang chọn.</p>
+                                        <p className="mt-1 hidden text-sm text-gray-500 sm:block">Danh sách học phần của học kỳ đang chọn.</p>
                                     </div>
 
                                     {activeRow && (
-                                        <div className="flex shrink-0 divide-x divide-gray-200 rounded-lg border border-gray-200 bg-white text-sm shadow-sm">
-                                            <div className="px-3 py-2">
+                                        <div className="flex w-full shrink-0 divide-x divide-gray-200 rounded-lg border border-gray-200 bg-white text-sm shadow-sm sm:w-auto">
+                                            <div className="flex-1 px-3 py-2 sm:flex-none">
                                                 <p className="text-[11px] text-gray-500">Học phần</p>
                                                 <p className="mt-0.5 font-semibold tabular-nums text-gray-900">{activeRow.courseIds.length} môn</p>
                                             </div>
-                                            <div className="px-3 py-2">
+                                            <div className="flex-1 px-3 py-2 text-right sm:flex-none sm:text-left">
                                                 <p className="text-[11px] text-gray-500">Tín chỉ</p>
                                                 <p className="mt-0.5 font-semibold tabular-nums text-gray-900">{activeRow.credits} TC</p>
                                             </div>
@@ -744,13 +786,13 @@ export function StudyPlanPreview({
                                             return (
                                                 <div
                                                     key={courseId}
-                                                    className="grid gap-2 px-4 py-4 transition-colors hover:bg-gray-50 sm:grid-cols-[112px_minmax(0,1fr)_auto] sm:items-start sm:gap-4 sm:px-5"
+                                                    className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1.5 px-3 py-3 transition-colors hover:bg-gray-50 sm:grid-cols-[112px_minmax(0,1fr)_auto] sm:items-start sm:gap-4 sm:px-5 sm:py-4"
                                                 >
                                                     <p className="text-xs font-semibold text-[#004A98] sm:pt-0.5">
                                                         {course.course_id}
                                                     </p>
 
-                                                    <div className="min-w-0">
+                                                    <div className="col-span-2 row-start-2 min-w-0 sm:col-auto sm:row-auto">
                                                         <p className="text-sm font-semibold leading-5 text-gray-900" title={course.course_name_vi}>
                                                             {course.course_name_vi}
                                                         </p>
@@ -763,7 +805,7 @@ export function StudyPlanPreview({
                                                         )}
                                                     </div>
 
-                                                    <div className="text-left sm:text-right">
+                                                    <div className="col-start-2 row-start-1 text-right sm:col-auto sm:row-auto">
                                                         {accumulationCredits > 0 ? (
                                                             <><span className="text-sm font-bold tabular-nums text-gray-900">{accumulationCredits}</span><span className="ml-1 text-xs font-medium text-gray-500">TC</span></>
                                                         ) : (

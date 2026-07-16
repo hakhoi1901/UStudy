@@ -50,7 +50,14 @@ try {
     New-Item -ItemType Directory -Path $artifactDirectory -Force | Out-Null
     $artifactPath = Join-Path $artifactDirectory 'UStudy-debug.apk'
     Copy-Item -LiteralPath $sourceApk -Destination $artifactPath -Force
+
+    $publicDownloadDirectory = Join-Path $repoRoot 'public\downloads'
+    New-Item -ItemType Directory -Path $publicDownloadDirectory -Force | Out-Null
+    $publicDownloadPath = Join-Path $publicDownloadDirectory 'UStudy-android.apk'
+    Copy-Item -LiteralPath $sourceApk -Destination $publicDownloadPath -Force
+
     Write-Host "APK: $artifactPath"
+    Write-Host "Public download: $publicDownloadPath"
 } finally {
     Pop-Location
 }
