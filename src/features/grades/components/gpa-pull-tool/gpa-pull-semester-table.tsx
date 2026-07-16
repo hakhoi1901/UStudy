@@ -301,9 +301,6 @@ export function GPAPullSemesterTable({
                                             className={`w-16 rounded-lg border px-2 py-2 text-center text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 ${isGuidanceActive && activeGrade === null ? 'border-blue-200 bg-[#F4F8FF] text-[#004A98]' : 'border-gray-200 bg-white text-gray-900'}`}
                                             aria-label={`Điểm dự kiến ${course.name}`}
                                         />
-                                        <p className={`mt-1 text-[9px] font-semibold ${isGuidanceActive && activeGrade === null ? 'text-[#004A98]' : 'text-gray-400'}`}>
-                                            {isGuidanceActive ? (activeGrade === null ? 'Gợi ý' : 'Đã sửa') : (activeGrade === null ? 'Chưa nhập' : 'Đã nhập')}
-                                        </p>
                                     </div>
                                     <button
                                         type="button"
