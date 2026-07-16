@@ -23,6 +23,31 @@ export const isFoundationCategory = (categoryRaw: unknown): boolean => {
     return category === ACADEMIC_RULES.CATEGORIES.FOUNDATION;
 };
 
+function collectCategoryCourseCodes(category: any, result = new Set<string>()): Set<string> {
+    if (!category || typeof category !== 'object') return result;
+
+    if (Array.isArray(category.courses)) {
+        category.courses.forEach((course: unknown) => {
+            const code = normalizeCourseCode(
+                typeof course === 'object' && course !== null
+                    ? (course as any).course_id ?? (course as any).id
+                    : course
+            );
+            if (code) result.add(code);
+        });
+    }
+
+    if (category.breakdown && typeof category.breakdown === 'object') {
+        Object.values(category.breakdown).forEach((child) => collectCategoryCourseCodes(child, result));
+    }
+
+    if (Array.isArray(category.options)) {
+        category.options.forEach((option: unknown) => collectCategoryCourseCodes(option, result));
+    }
+
+    return result;
+}
+
 /**
  * Hook useGPAPull: Đầu não xử lý chiến lược "về đích" GPA.
  * 
@@ -47,7 +72,7 @@ export function useGPAPull({
     const [retakeSearchTerm, setRetakeSearchTerm] = useState<string>('');
     const [isRetakePickerOpen, setIsRetakePickerOpen] = useState<boolean>(false);
     const retakePickerRef = useRef<HTMLDivElement | null>(null);
-    const { data: { courses: departmentCourses } } = useDepartmentData();
+    const { data: { courses: departmentCourses, categories: departmentCategories } } = useDepartmentData();
 
     const pullDecimals = ACADEMIC_RULES.UI.PULL_DECIMALS;
     const minTargetGpa = ACADEMIC_RULES.PASS_GRADE_DECIMAL;
@@ -70,33 +95,53 @@ export function useGPAPull({
         return map;
     }, [departmentCourses]);
 
+    const foundationCategory = useMemo<any>(() => {
+        if (!departmentCategories || typeof departmentCategories !== 'object') return null;
+        const entry = Object.entries(departmentCategories).find(([key]) => isFoundationCategory(key));
+        return entry?.[1] ?? null;
+    }, [departmentCategories]);
+
+    const foundationCourseCodes = useMemo(
+        () => collectCategoryCourseCodes(foundationCategory),
+        [foundationCategory]
+    );
+
     const foundationMajorTotalCredits = useMemo(() => {
+        const configuredCredits = Number(
+            foundationCategory?.total_credits_required
+            ?? foundationCategory?.credits_required
+            ?? foundationCategory?.credits
+        );
+        if (Number.isFinite(configuredCredits) && configuredCredits > 0) return configuredCredits;
+
         const list = Array.isArray(departmentCourses) ? departmentCourses : [];
-        return list.reduce((sum, course) => {
+        const creditsByCode = new Map<string, number>();
+        list.forEach((course) => {
             const code = normalizeCourseCode(course?.course_id ?? course?.id);
             const category = (course?.category ?? '').toString().trim().toUpperCase();
             const credits = Number(course?.credits) || 0;
-            if (!code || credits <= 0) return sum;
-            if (!isFoundationCategory(category)) return sum;
-            if (AcademicRulesEngine.isCourseExcludedFromGPA(code)) return sum;
-            return sum + credits;
-        }, 0);
-    }, [departmentCourses]);
-
-    const hasCategoryDataForSimulator = useMemo(() => {
-        return simulatorCourses.some((course) => {
-            const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationCategory(category);
+            if (!code || credits <= 0) return;
+            const belongsToFoundation = foundationCourseCodes.size > 0
+                ? foundationCourseCodes.has(code)
+                : isFoundationCategory(category);
+            if (!belongsToFoundation || AcademicRulesEngine.isCourseExcludedFromGPA(code)) return;
+            creditsByCode.set(code, Math.max(creditsByCode.get(code) ?? 0, credits));
         });
-    }, [simulatorCourses, courseCategoryByCode]);
+        return Array.from(creditsByCode.values()).reduce((sum, credits) => sum + credits, 0);
+    }, [departmentCourses, foundationCategory, foundationCourseCodes]);
+
+    const hasFoundationScopeData = foundationMajorTotalCredits > 0 && (
+        foundationCourseCodes.size > 0
+        || Array.from(courseCategoryByCode.values()).some(isFoundationCategory)
+    );
 
     /**
      * Kiểm tra tính khả dụng của dữ liệu theo phạm vi (Scope).
      * Tại sao: Tránh tình trạng chia cho 0 (Division by zero) khi người dùng chọn 'Cơ sở ngành' 
      * nhưng hệ thống chưa load kịp danh mục môn học tương ứng.
      */
-    const isFoundationMajorModeUnavailable = mode === 'foundationMajor' && !hasCategoryDataForSimulator;
-    const isFoundationMajorScopeActive = mode === 'foundationMajor' && hasCategoryDataForSimulator;
+    const isFoundationMajorModeUnavailable = mode === 'foundationMajor' && !hasFoundationScopeData;
+    const isFoundationMajorScopeActive = mode === 'foundationMajor' && hasFoundationScopeData;
 
     /**
      * Lọc lịch sử điểm theo phạm vi đang chọn.
@@ -106,10 +151,12 @@ export function useGPAPull({
     const scopedGradesHistory = useMemo(() => {
         if (!isFoundationMajorScopeActive) return gradesHistory;
         return gradesHistory.filter((course) => {
-            const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationCategory(category);
+            const code = normalizeCourseCode(course.code);
+            return foundationCourseCodes.size > 0
+                ? foundationCourseCodes.has(code)
+                : isFoundationCategory(courseCategoryByCode.get(code));
         });
-    }, [gradesHistory, isFoundationMajorScopeActive, courseCategoryByCode]);
+    }, [gradesHistory, isFoundationMajorScopeActive, foundationCourseCodes, courseCategoryByCode]);
 
     const scopedGradesWithManualRetakes = useMemo(() => {
         const targetByCode = new Map(
@@ -190,7 +237,9 @@ export function useGPAPull({
         }
 
         const remainingCredits = Math.max(0, scopedTotalCredits - currentCredits);
-        const maximumGpa = (currentPoints + ACADEMIC_RULES.MAX_GPA * remainingCredits) / scopedTotalCredits;
+        const finalCreditsForGPA = currentCredits + remainingCredits;
+        if (finalCreditsForGPA <= 0) return null;
+        const maximumGpa = (currentPoints + ACADEMIC_RULES.MAX_GPA * remainingCredits) / finalCreditsForGPA;
         return Math.min(ACADEMIC_RULES.MAX_GPA, maximumGpa);
     }, [mode, scopedGradesWithManualRetakes, scopedTotalCredits, isFoundationMajorScopeActive, accumulatedCredits, currentGPA]);
 
@@ -213,13 +262,20 @@ export function useGPAPull({
         return parsedTargetGpa;
     }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
 
-    const projectedScopeCourses = useMemo(() => {
-        const scopeCourses = isFoundationMajorScopeActive
-            ? simulatorCourses.filter((course) => isFoundationCategory(courseCategoryByCode.get(normalizeCourseCode(course.code))))
+    const scopedSimulatorCourses = useMemo(() => {
+        return isFoundationMajorScopeActive
+            ? simulatorCourses.filter((course) => {
+                const code = normalizeCourseCode(course.code);
+                return foundationCourseCodes.size > 0
+                    ? foundationCourseCodes.has(code)
+                    : isFoundationCategory(courseCategoryByCode.get(code));
+            })
             : simulatorCourses;
+    }, [simulatorCourses, isFoundationMajorScopeActive, foundationCourseCodes, courseCategoryByCode]);
 
-        return scopeCourses.filter((course) => course.projectedGrade !== null && course.credits !== null);
-    }, [simulatorCourses, isFoundationMajorScopeActive, courseCategoryByCode]);
+    const projectedScopeCourses = useMemo(() => {
+        return scopedSimulatorCourses.filter((course) => course.projectedGrade !== null && course.credits !== null);
+    }, [scopedSimulatorCourses]);
 
     const projectedScopeCredits = useMemo(() => {
         return projectedScopeCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
@@ -286,18 +342,11 @@ export function useGPAPull({
     const nextSemester = useMemo((): GPAPullSemester | null => {
         if (!baseResult?.success || baseResult.requiredAverage == null || baseResult.impossible || baseResult.alreadyAchieved)
             return null;
-        const filteredSimulator =
-            isFoundationMajorScopeActive
-                ? simulatorCourses.filter((c) => {
-                    const category = courseCategoryByCode.get(normalizeCourseCode(c.code));
-                    return isFoundationCategory(category);
-                })
-                : simulatorCourses;
-        const raw = GPACalculator.buildNextSemesterFromSimulator(filteredSimulator, baseResult.requiredAverage);
+        const raw = GPACalculator.buildNextSemesterFromSimulator(scopedSimulatorCourses, baseResult.requiredAverage);
         if (!raw) return null;
         const courses = redistributeSuggestedGrades(raw.courses, baseResult.requiredAverage);
         return { ...raw, courses };
-    }, [baseResult, simulatorCourses, courseCategoryByCode, isFoundationMajorScopeActive]);
+    }, [baseResult, scopedSimulatorCourses]);
 
     /**
      * Đánh giá hiệu quả học tập của học kỳ dự kiến so với mục tiêu dài hạn.
@@ -766,6 +815,7 @@ export function useGPAPull({
         displayAccumulatedCredits,
         scopeLabelSuffix,
         scopeName,
+        scopedSimulatorCourses,
         projectedScopeGPA,
         projectedScopeCredits,
         baseResult,

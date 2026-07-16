@@ -2,11 +2,9 @@ import { useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
 import { useGPAPull } from '../hooks/use-gpa-pull';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
-import { GPAPullResultSummary } from './gpa-pull-tool/gpa-pull-result-summary';
 import { GPAPullSemesterTable } from './gpa-pull-tool/gpa-pull-semester-table';
 import { GPAPullManualRetake } from './gpa-pull-tool/gpa-pull-manual-retake';
-import { GPAPullRetakeSuggestions } from './gpa-pull-tool/gpa-pull-retake-suggestions';
-import type { GPAPullSemester, StudentCourseGrade, SimulatorCourseGrade } from '../types';
+import type { GPAPlanningIntent, GPAPullSemester, StudentCourseGrade, SimulatorCourseGrade } from '../types';
 
 interface GPAPullToolProps {
     gradesHistory: StudentCourseGrade[];
@@ -20,6 +18,20 @@ interface GPAPullToolProps {
     cumulativeGPA: number;
 }
 
+const planningModes: Array<{
+    id: GPAPlanningIntent;
+    label: string;
+}> = [
+    {
+        id: 'prediction',
+        label: 'Dự đoán',
+    },
+    {
+        id: 'goal',
+        label: 'Mục tiêu',
+    },
+];
+
 export function GPAPullTool({
     gradesHistory,
     simulatorCourses,
@@ -27,12 +39,10 @@ export function GPAPullTool({
     currentGPA,
     accumulatedCredits,
     totalCredits,
-    semesterGPA,
-    cumulativeGPA,
 }: GPAPullToolProps) {
+    const [planningIntent, setPlanningIntent] = useState<GPAPlanningIntent>('prediction');
     const [hasCalculated, setHasCalculated] = useState(false);
     const {
-        // State & Computed
         targetGPAInput, setTargetGPAInput,
         mode, setMode,
         draftManualRetakeTargets,
@@ -42,25 +52,20 @@ export function GPAPullTool({
         retakePickerRef,
         targetGPA, targetGpaError, maxAchievableGpaAtGraduation,
         isFoundationMajorModeUnavailable,
-        isFoundationMajorScopeActive,
         displayCurrentGPA,
         displayAccumulatedCredits,
         scopeName,
+        scopedSimulatorCourses,
         projectedScopeGPA,
         projectedScopeCredits,
         baseResult,
         nextSemester,
         semesterStats,
-        shouldShowRetakeSuggestions,
-        retakeSuggestions,
         manualRetakeItems,
         manualRetakeImpact,
         selectableRetakeCourses,
         filteredSelectableRetakeCourses,
         pendingRetakeCodeSet,
-
-        // Actions
-        addManualRetake,
         togglePendingRetakeCode,
         addPendingRetakes,
         selectAllFilteredRetakes,
@@ -70,7 +75,7 @@ export function GPAPullTool({
         commitManualRetakeTargetInput,
         clearAllManualRetakes,
         decimals,
-        minTargetGpa
+        minTargetGpa,
     } = useGPAPull({
         gradesHistory,
         simulatorCourses,
@@ -79,10 +84,12 @@ export function GPAPullTool({
         totalCredits,
     });
 
-    const workingSemester = useMemo<GPAPullSemester>(() => {
-        if (hasCalculated && nextSemester) return nextSemester;
+    const guidanceActive = planningIntent === 'goal' && hasCalculated && Boolean(nextSemester);
 
-        const courses = simulatorCourses
+    const workingSemester = useMemo<GPAPullSemester>(() => {
+        if (guidanceActive && nextSemester) return nextSemester;
+
+        const courses = scopedSimulatorCourses
             .filter((course) => (course.credits ?? 0) > 0)
             .map((course) => ({
                 id: course.id,
@@ -102,23 +109,48 @@ export function GPAPullTool({
             totalCredits: courses.reduce((sum, course) => sum + course.credits, 0),
             pointsNeeded: 0,
         };
-    }, [hasCalculated, nextSemester, simulatorCourses]);
+    }, [guidanceActive, nextSemester, scopedSimulatorCourses]);
+
+    const changePlanningIntent = (nextIntent: GPAPlanningIntent) => {
+        setPlanningIntent(nextIntent);
+        setHasCalculated(false);
+    };
 
     return (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="items-center gap-2 border-b border-gray-100 px-4 py-3 md:px-5">
-                <div className="flex">
-                    <h3 className="text-sm text-[15px] font-semibold text-gray-800">{mode === 'currentSemester' ? 'Mục tiêu GPA kỳ này' : 'Mục tiêu GPA tốt nghiệp'}</h3>
-                    <span title={mode === 'currentSemester' ? 'Tính GPA cần đạt riêng cho các học phần trong kỳ hiện tại.' : 'Ước tính GPA trung bình cần đạt cho các tín chỉ còn lại để chạm mục tiêu đã nhập.'}>
+            <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 md:px-5">
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <h3 className="truncate text-[15px] font-semibold text-gray-800">Kế hoạch GPA</h3>
+                    <span title={planningIntent === 'prediction' ? 'Nhập điểm từng môn để dự đoán GPA.' : 'Nhập GPA mong muốn để nhận gợi ý điểm cần đạt.'}>
                         <Info className="h-4 w-4 text-gray-400" />
                     </span>
                 </div>
-                <p className="text-sm leading-relaxed text-gray-600">
-                </p>
+
+                <div className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="tablist" aria-label="Chế độ kế hoạch GPA">
+                    {planningModes.map((planningMode) => {
+                        const isActive = planningIntent === planningMode.id;
+                        return (
+                            <button
+                                key={planningMode.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={isActive}
+                                onClick={() => changePlanningIntent(planningMode.id)}
+                                className={`h-8 rounded-md px-2.5 text-xs font-semibold transition-colors sm:px-3 ${isActive
+                                    ? 'bg-white text-[#004A98] shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-800'
+                                    }`}
+                            >
+                                {planningMode.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            <div className="space-y-5 px-3 py-3 md:px-5">
+            <div className="px-3 py-4 md:px-5">
                 <GPAPullInputSection
+                    planningIntent={planningIntent}
                     targetGPAInput={targetGPAInput}
                     setTargetGPAInput={(value) => {
                         setTargetGPAInput(value);
@@ -135,10 +167,13 @@ export function GPAPullTool({
                     isFoundationMajorModeUnavailable={isFoundationMajorModeUnavailable}
                     onCalculate={() => setHasCalculated(true)}
                     isCalculateDisabled={Boolean(targetGpaError) || targetGPA === null}
-                    isGuidanceActive={hasCalculated && Boolean(nextSemester)}
-                    baseResult={hasCalculated ? baseResult : null}
-                    semesterStats={hasCalculated ? semesterStats : null}
+                    isGuidanceActive={planningIntent === 'goal' && hasCalculated}
+                    targetGPA={targetGPA}
+                    baseResult={planningIntent === 'goal' && hasCalculated ? baseResult : null}
+                    semesterStats={planningIntent === 'goal' && hasCalculated ? semesterStats : null}
                     scopeName={scopeName}
+                    displayCurrentGPA={displayCurrentGPA}
+                    displayAccumulatedCredits={displayAccumulatedCredits}
                     projectedScopeGPA={projectedScopeGPA}
                     projectedScopeCredits={projectedScopeCredits}
                     decimals={decimals}
@@ -149,7 +184,8 @@ export function GPAPullTool({
                 <GPAPullSemesterTable
                     nextSemester={workingSemester}
                     decimals={decimals}
-                    isGuidanceActive={hasCalculated && Boolean(nextSemester)}
+                    planningIntent={planningIntent}
+                    isGuidanceActive={guidanceActive}
                     onGradeChange={handleGradeChange}
                 />
             </div>

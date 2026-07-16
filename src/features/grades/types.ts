@@ -56,6 +56,8 @@ export interface GPAPullSemester {
     pointsNeeded: number;
 }
 
+export type GPAPlanningIntent = 'prediction' | 'goal';
+
 export interface RemainingCourseItem {
     code: string;
     name: string;
@@ -136,6 +138,7 @@ export interface GPAPullHeaderProps {
     setExpanded: (val: boolean) => void;
 }
 export interface GPAPullInputSectionProps {
+    planningIntent: GPAPlanningIntent;
     targetGPAInput: string;
     setTargetGPAInput: (val: string) => void;
     targetGpaError: string | null;
@@ -147,11 +150,15 @@ export interface GPAPullInputSectionProps {
     onCalculate: () => void;
     isCalculateDisabled: boolean;
     isGuidanceActive: boolean;
-    baseResult: { requiredAverage?: number } | null;
+    targetGPA: number | null;
+    baseResult: GPAPullResult | null;
     semesterStats: {
+        semesterGpa: number;
         newRequiredAvgAfter: number | null;
     } | null;
     scopeName: string;
+    displayCurrentGPA: number;
+    displayAccumulatedCredits: number;
     projectedScopeGPA: number;
     projectedScopeCredits: number;
     decimals: number;
@@ -201,6 +208,7 @@ export interface GPAPullRetakeSuggestionsProps {
 export interface GPAPullSemesterTableProps {
     nextSemester: GPAPullSemester;
     decimals: number;
+    planningIntent: GPAPlanningIntent;
     isGuidanceActive: boolean;
     onGradeChange: (courseCode: string, grade: number | null) => void;
 }

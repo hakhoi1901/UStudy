@@ -31,6 +31,11 @@ const navGroups = [
   },
 ];
 
+const desktopNavGroups = navGroups.map((group) => ({
+  ...group,
+  items: group.items.filter((item) => item.page !== 'chatbot'),
+}));
+
 // các item hiển thị trên bottom nav (mobile)
 const bottomNavItems = [
   { icon: Home, label: 'Tổng quan', page: 'dashboard' },
@@ -88,7 +93,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
-        {navGroups.map((group) => (
+        {desktopNavGroups.map((group) => (
           <div key={group.title} className="mb-6">
             {!isCollapsed && (
               <p className="px-3 mb-2 text-xs text-blue-300 uppercase tracking-wider truncate" style={{ fontWeight: 500 }}>
