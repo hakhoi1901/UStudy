@@ -41,7 +41,7 @@ export function AppDialog({
 }: AppDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn('top-[calc((100dvh-64px-env(safe-area-inset-bottom))/2)] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100dvh-80px-env(safe-area-inset-bottom))] gap-0 overflow-hidden rounded-2xl border-0 border-slate-200 bg-white p-0 shadow-2xl outline-none ring-0 sm:top-1/2 sm:max-h-[calc(100vh-2rem)]', sizeClasses[size], className)}>
+      <DialogContent className={cn('top-[calc((100dvh-64px-env(safe-area-inset-bottom))/2)] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100dvh-9rem-env(safe-area-inset-bottom))] gap-0 overflow-hidden rounded-2xl border-0 border-slate-200 bg-white p-0 shadow-2xl outline-none ring-0 sm:top-1/2 sm:max-h-[calc(100vh-2rem)]', sizeClasses[size], className)}>
         <DialogHeader className={`rounded-t-2xl border-b border-[#003A78] bg-[#004A98] px-5 py-5 pr-14 text-left sm:px-6 ${backgroundHeader}`}>
           <div className="flex items-start gap-3.5">
             {Icon && (
