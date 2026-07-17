@@ -210,6 +210,19 @@ export function GPAPullSemesterTable({
         return grade == null ? null : roundCourseGrade(grade);
     };
 
+    useEffect(() => {
+        if (planningIntent !== 'prediction') return;
+
+        nextSemester.courses.forEach((course) => {
+            if (course.isLocked || (componentModes[course.code] ?? 'prediction') !== 'prediction') return;
+
+            const predictedGrade = getPredictedGrade(course.code);
+            if (course.projectedGrade !== predictedGrade) {
+                onGradeChange(course.code, predictedGrade);
+            }
+        });
+    }, [componentModes, componentPlans, nextSemester.courses, onGradeChange, planningIntent]);
+
     const updateTargetGrade = (courseCode: string, grade: number | null) => {
         setTargetGrades((prev) => {
             if (grade != null) return { ...prev, [courseCode]: grade };

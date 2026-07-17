@@ -146,7 +146,12 @@ export function MobileBottomSheet({
                     </div>
                 </div>
 
-                <div className={`min-h-0 flex-1 ${contentClassName}`}>{children}</div>
+                <div
+                    className={`scrollbar-hide min-h-0 flex-1 overscroll-contain ${contentClassName}`}
+                    style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+                >
+                    {children}
+                </div>
 
                 {footer && (
                     <div className="shrink-0 border-t border-gray-100 bg-white px-4 pb-4 pt-3 shadow-[0_-8px_18px_rgba(15,23,42,0.06)]">

@@ -29,6 +29,31 @@ export interface GroupSolverState {
   availableCourses: CourseChoice[];
 }
 
+interface PersistedGroupScheduleResult {
+  version: 1;
+  updatedAt: string;
+  memberSignature: string;
+  result: GroupScheduleRunResult;
+}
+
+function getMemberSignature(members: GroupMemberToken[]): string {
+  return JSON.stringify(members);
+}
+
+function loadLastGroupScheduleResult(members: GroupMemberToken[]): GroupScheduleRunResult | null {
+  const stored = readFromStorage<PersistedGroupScheduleResult | null>(
+    STORAGE_KEYS.GROUP_SCHEDULE_LAST_RESULT,
+    null,
+  );
+
+  if (
+    stored?.version !== 1
+    || stored.memberSignature !== getMemberSignature(members)
+    || !Array.isArray(stored.result?.solutions)
+  ) return null;
+  return stored.result;
+}
+
 function getBrowserHash(): string {
   if (typeof window === 'undefined') return '';
   return window.location.hash;
@@ -90,7 +115,7 @@ export function useGroupScheduler(): GroupSolverState & {
     saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_MEMBERS, members);
   }, [members]);
   const [solving, setSolving] = useState(false);
-  const [result, setResult] = useState<GroupScheduleRunResult | null>(null);
+  const [result, setResult] = useState<GroupScheduleRunResult | null>(() => loadLastGroupScheduleResult(members));
   const [solveError, setSolveError] = useState<string | null>(null);
 
   const dbData = useMemo(() => loadCourseDb(), []);
@@ -168,6 +193,13 @@ export function useGroupScheduler(): GroupSolverState & {
         if (nextResult.solutions.length === 0) {
           const hintedCourse = nextResult.density[0]?.courseId;
           setSolveError(`Không thể xếp lịch chung cho tất cả môn đã chọn.${hintedCourse ? ` Thử bỏ bớt môn ${hintedCourse} hoặc kiểm tra lại lớp của môn này.` : ' Thử giảm số môn chung hoặc kiểm tra lại dữ liệu lớp học.'}`);
+        } else {
+          saveToStorage<PersistedGroupScheduleResult>(STORAGE_KEYS.GROUP_SCHEDULE_LAST_RESULT, {
+            version: 1,
+            updatedAt: new Date().toISOString(),
+            memberSignature: getMemberSignature(members),
+            result: nextResult,
+          });
         }
         setResult(nextResult);
       } catch (error) {

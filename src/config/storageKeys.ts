@@ -66,6 +66,8 @@ export const STORAGE_KEYS = {
     GROUP_SCHEDULER_MEMBERS: 'group_scheduler_members',
     /** Trạng thái UI (chế độ xem, tab đang mở, trạng thái ẩn/hiện) của Xếp lịch Nhóm */
     GROUP_SCHEDULE_UI_STATE: 'group_schedule_ui_state',
+    /** Toàn bộ kết quả thành công gần nhất của bộ xếp lịch nhóm */
+    GROUP_SCHEDULE_LAST_RESULT: 'group_schedule_last_result',
     /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
     SCHEDULE_MODE: 'schedule_mode',
 };

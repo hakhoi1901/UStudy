@@ -321,6 +321,7 @@ type ClassComponent = {
 | `active_group_schedule` | Lịch nhóm đang được chọn để hiển thị |
 | `group_scheduler_members` | `GroupMemberToken[]` |
 | `group_schedule_ui_state` | Bước, chế độ xem và các panel đang mở |
+| `group_schedule_last_result` | `{ version: 1, updatedAt: string, memberSignature: string, result: GroupScheduleRunResult }`; toàn bộ phương án của lần xếp thành công gần nhất cho đúng nhóm hiện tại |
 | `schedule_mode` | `'personal' | 'group'` |
 
 ### GPA, UI và tiện ích (plain theo code hiện tại)

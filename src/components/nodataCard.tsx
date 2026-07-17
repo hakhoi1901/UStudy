@@ -90,16 +90,39 @@ export function NoDataCard() {
 
                 {!isMobile ? (
                     <>
-                        <div className="mb-8 space-y-5">
-                            <InstructionStep number={1} title="Chọn thông tin" description="Vào tab Cài đặt và chọn khoa, ngành, khóa tuyển của bạn." />
-                            <InstructionStep number={2} title="Cài đặt công cụ" description="Kéo nút HCMUS Portal Tool ở góc trên bên phải vào thanh dấu trang của trình duyệt." />
-                            <InstructionStep number={3} title="Đăng nhập" description="Nhấn nút Mở Portal để chuyển sang cổng thông tin sinh viên." />
-                            <InstructionStep number={4} title="Lấy dữ liệu" description="Sau khi đăng nhập, chạy HCMUS Portal Tool trên thanh dấu trang để thu thập và gửi dữ liệu về UStudy." />
-                        </div>
+                        <div className="space-y-5 mb-8">
+                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">1</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">Chọn thông tin</p>
+                                    <p className="text-sm text-gray-600 mt-1">Vào tab cài đặt và chọn khoa, ngành, khóa tuyển của bạn.</p>
+                                </div>
+                            </div>
 
-                        <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                            <span className="shrink-0 font-bold text-amber-700">Lưu ý:</span>
-                            <p>Hãy mở Portal từ UStudy để luồng đồng bộ hoạt động chính xác.</p>
+                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">2</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">Cài đặt công cụ</p>
+                                    <p className="text-sm text-gray-600 mt-1">Kéo nút <span className="font-medium text-[#004A98] px-1.5 py-0.5 bg-blue-50 rounded-md">HCMUS Portal tool</span> ở góc trên bên phải vào Bookmark bar của bạn.</p>
+                                    <p className="text-sm text-gray-600 mt-1">Nếu chưa mở Bookmark bar, nhấn Ctrl + Shift + B để mở.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">Đăng nhập</p>
+                                    <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">4</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">Lấy dữ liệu</p>
+                                    <p className="text-sm text-gray-600 mt-1">Đợi trang web tải xong, đăng nhập và nhấn vào <span className="font-medium text-[#004A98] px-1.5 py-0.5 bg-blue-50 rounded-md">HCMUS Portal tool</span> vừa kéo về thanh dấu trang để tự động cào dữ liệu.</p>
+                                </div>
+                            </div>
                         </div>
                     </>
                 ) : nativePortalSyncAvailable ? (
