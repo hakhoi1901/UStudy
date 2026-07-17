@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Info } from 'lucide-react';
+import { ArrowRight, Calculator, Info, PencilLine, Target } from 'lucide-react';
+import { AppDialog } from '../../../components/ui/app-dialog';
 import { STORAGE_KEYS } from '../../../config';
 import { readPlain, savePlain } from '../../../helpers/localStorage/save';
 import { useGPAPull } from '../hooks/use-gpa-pull';
@@ -56,6 +57,7 @@ export function GPAPullTool({
 }: GPAPullToolProps) {
     const [planningIntent, setPlanningIntent] = useState<GPAPlanningIntent>('prediction');
     const [hasCalculated, setHasCalculated] = useState(false);
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
     const [goalGrades, setGoalGrades] = useState<Record<string, number | null>>(readGoalGrades);
     const activeSimulatorCourses = useMemo(() => {
         if (planningIntent === 'prediction') return simulatorCourses;
@@ -168,9 +170,15 @@ export function GPAPullTool({
             <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 md:px-5">
                 <div className="flex min-w-0 items-center gap-1.5">
                     <h3 className="truncate text-[15px] font-semibold text-gray-800">Kế hoạch GPA</h3>
-                    <span title={planningIntent === 'prediction' ? 'Nhập điểm từng môn để dự đoán GPA.' : 'Nhập GPA mong muốn để nhận gợi ý điểm cần đạt.'}>
-                        <Info className="h-4 w-4 text-gray-400" />
-                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setIsGuideOpen(true)}
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-blue-50 hover:text-[#004A98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/25"
+                        title="Hướng dẫn Kế hoạch GPA"
+                        aria-label="Mở hướng dẫn Kế hoạch GPA"
+                    >
+                        <Info className="h-4 w-4" />
+                    </button>
                 </div>
 
                 <div className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="tablist" aria-label="Chế độ kế hoạch GPA">
@@ -264,6 +272,81 @@ export function GPAPullTool({
                     scopeName={scopeName}
                 />
             </div>
+
+            <AppDialog
+                open={isGuideOpen}
+                onOpenChange={setIsGuideOpen}
+                title="Hướng dẫn Kế hoạch GPA"
+                description="Dự đoán kết quả học tập hoặc tìm mức điểm cần đạt cho mục tiêu GPA của bạn."
+                icon={Calculator}
+                size="md"
+                footer={(
+                    <button
+                        type="button"
+                        onClick={() => setIsGuideOpen(false)}
+                        className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] sm:w-auto"
+                    >
+                        Đã hiểu
+                    </button>
+                )}
+            >
+                <div className="divide-y divide-gray-200">
+                    <section className="pb-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#004A98]">
+                                <PencilLine className="h-4.5 w-4.5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900">Dự đoán kết quả</h4>
+                                <p className="mt-1 text-sm leading-6 text-gray-600">
+                                    Nhập điểm dự kiến trực tiếp cho từng môn để xem GPA kỳ này và GPA tích lũy sau kỳ.
+                                </p>
+                                <p className="mt-2 text-xs leading-5 text-gray-500">
+                                    Khi nhập điểm thành phần, điểm môn bên ngoài sẽ được tính và cập nhật tự động.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="py-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                                <Target className="h-4.5 w-4.5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900">Lập mục tiêu GPA</h4>
+                                <p className="mt-1 text-sm leading-6 text-gray-600">
+                                    Chọn phạm vi, nhập GPA mong muốn rồi nhấn tính toán để nhận gợi ý điểm cho từng môn.
+                                </p>
+                                <p className="mt-2 text-xs leading-5 text-gray-500">
+                                    Bạn có thể sửa điểm môn được gợi ý. Các môn chưa sửa thủ công sẽ được phân bổ lại để bám theo mục tiêu.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="py-4">
+                        <h4 className="text-sm font-semibold text-gray-900">Điểm được đồng bộ như thế nào?</h4>
+                        <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#004A98]">
+                            <span>Dự đoán</span>
+                            <ArrowRight className="h-4 w-4" />
+                            <span>Mục tiêu</span>
+                        </div>
+                        <ul className="mt-2 space-y-1.5 text-xs leading-5 text-gray-600">
+                            <li>Mỗi lần điểm Dự đoán thay đổi hoặc bị xóa, điểm Mục tiêu được cập nhật theo ngay.</li>
+                            <li>Sửa hoặc xóa điểm bên Mục tiêu không làm thay đổi điểm Dự đoán.</li>
+                            <li>Nếu Dự đoán thay đổi lần nữa, giá trị mới tiếp tục được chuyển sang Mục tiêu.</li>
+                        </ul>
+                    </section>
+
+                    <section className="pt-4">
+                        <h4 className="text-sm font-semibold text-gray-900">Điểm thành phần trong Mục tiêu</h4>
+                        <p className="mt-1 text-xs leading-5 text-gray-600">
+                            Sửa điểm môn bên ngoài sẽ cập nhật gợi ý cho các mục thành phần còn trống. Điểm thành phần đã nhập vẫn được giữ nguyên, và sửa chúng không ghi ngược ra điểm môn.
+                        </p>
+                    </section>
+                </div>
+            </AppDialog>
         </div>
     );
 }
