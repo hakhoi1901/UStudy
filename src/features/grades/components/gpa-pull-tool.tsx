@@ -149,6 +149,7 @@ export function GPAPullTool({
     const handleActiveGradeChange = (courseCode: string, grade: number | null) => {
         if (planningIntent === 'prediction') {
             handleGradeChange(courseCode, grade);
+            setGoalGrades((current) => ({ ...current, [courseCode]: grade }));
             return;
         }
 

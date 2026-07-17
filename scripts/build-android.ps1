@@ -27,8 +27,17 @@ $env:ANDROID_SDK_ROOT = $sdkCandidates[0]
 $env:ANDROID_HOME = $sdkCandidates[0]
 $env:Path = "$(Join-Path $env:JAVA_HOME 'bin');$(Join-Path $env:ANDROID_SDK_ROOT 'platform-tools');$env:Path"
 
+$publicDownloadDirectory = Join-Path $repoRoot 'public\downloads'
+$publicDownloadPath = Join-Path $publicDownloadDirectory 'UStudy-android.apk'
+$stashedPublicApk = Join-Path ([System.IO.Path]::GetTempPath()) "UStudy-android-$([Guid]::NewGuid().ToString('N')).apk"
+
 Push-Location $repoRoot
 try {
+    # Prevent the previous downloadable APK from being embedded inside the next APK.
+    if (Test-Path $publicDownloadPath) {
+        Move-Item -LiteralPath $publicDownloadPath -Destination $stashedPublicApk
+    }
+
     npm run build
     if ($LASTEXITCODE -ne 0) { throw 'Web build that bai.' }
 
@@ -51,13 +60,19 @@ try {
     $artifactPath = Join-Path $artifactDirectory 'UStudy-debug.apk'
     Copy-Item -LiteralPath $sourceApk -Destination $artifactPath -Force
 
-    $publicDownloadDirectory = Join-Path $repoRoot 'public\downloads'
     New-Item -ItemType Directory -Path $publicDownloadDirectory -Force | Out-Null
-    $publicDownloadPath = Join-Path $publicDownloadDirectory 'UStudy-android.apk'
     Copy-Item -LiteralPath $sourceApk -Destination $publicDownloadPath -Force
 
     Write-Host "APK: $artifactPath"
     Write-Host "Public download: $publicDownloadPath"
 } finally {
+    if (Test-Path $stashedPublicApk) {
+        if (Test-Path $publicDownloadPath) {
+            Remove-Item -LiteralPath $stashedPublicApk -Force
+        } else {
+            New-Item -ItemType Directory -Path $publicDownloadDirectory -Force | Out-Null
+            Move-Item -LiteralPath $stashedPublicApk -Destination $publicDownloadPath
+        }
+    }
     Pop-Location
 }
