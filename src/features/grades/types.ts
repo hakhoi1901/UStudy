@@ -211,4 +211,5 @@ export interface GPAPullSemesterTableProps {
     planningIntent: GPAPlanningIntent;
     isGuidanceActive: boolean;
     onGradeChange: (courseCode: string, grade: number | null) => void;
+    onResetGradeOverrides: () => void;
 }

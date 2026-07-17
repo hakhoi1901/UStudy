@@ -22,9 +22,8 @@ function roundCourseGrade(grade: number): number {
 }
 
 interface PersistedComponentGradePlans {
-    componentPlans: Record<string, GradeComponent[]>;
-    componentModes: Record<string, ComponentGradeMode>;
-    targetGrades: Record<string, number>;
+    predictionPlans: Record<string, GradeComponent[]>;
+    targetPlans: Record<string, GradeComponent[]>;
 }
 
 interface ComponentGradeSummary {
@@ -40,27 +39,27 @@ interface ComponentGradeSummary {
 }
 
 const EMPTY_COMPONENT_GRADE_PLANS: PersistedComponentGradePlans = {
-    componentPlans: {},
-    componentModes: {},
-    targetGrades: {},
+    predictionPlans: {},
+    targetPlans: {},
 };
 
 function readComponentGradePlans(): PersistedComponentGradePlans {
-    const saved = readPlain<Partial<PersistedComponentGradePlans>>(STORAGE_KEYS.GPA_COMPONENT_GRADES, EMPTY_COMPONENT_GRADE_PLANS);
-    const componentPlans = typeof saved.componentPlans === 'object' && saved.componentPlans !== null ? saved.componentPlans : {};
-    const savedModes = typeof saved.componentModes === 'object' && saved.componentModes !== null ? saved.componentModes : {};
-    const componentModes = Object.fromEntries(
-        Object.entries(savedModes).filter((entry): entry is [string, ComponentGradeMode] => entry[1] === 'prediction' || entry[1] === 'target'),
-    );
-    const savedTargets = typeof saved.targetGrades === 'object' && saved.targetGrades !== null ? saved.targetGrades : {};
-    const targetGrades = Object.fromEntries(
-        Object.entries(savedTargets).filter((entry): entry is [string, number] => Number.isFinite(entry[1]) && entry[1] >= 0 && entry[1] <= 10),
-    );
+    const saved = readPlain<Partial<PersistedComponentGradePlans> & {
+        componentPlans?: Record<string, GradeComponent[]>;
+    }>(STORAGE_KEYS.GPA_COMPONENT_GRADES, EMPTY_COMPONENT_GRADE_PLANS);
+    const legacyPlans = typeof saved.componentPlans === 'object' && saved.componentPlans !== null
+        ? saved.componentPlans
+        : {};
+    const predictionPlans = typeof saved.predictionPlans === 'object' && saved.predictionPlans !== null
+        ? saved.predictionPlans
+        : legacyPlans;
+    const targetPlans = typeof saved.targetPlans === 'object' && saved.targetPlans !== null
+        ? saved.targetPlans
+        : {};
 
     return {
-        componentPlans,
-        componentModes,
-        targetGrades,
+        predictionPlans,
+        targetPlans,
     };
 }
 
@@ -160,82 +159,47 @@ export function GPAPullSemesterTable({
     planningIntent,
     isGuidanceActive,
     onGradeChange,
+    onResetGradeOverrides,
 }: GPAPullSemesterTableProps) {
     const plannerMode: ComponentGradeMode = planningIntent === 'goal' ? 'target' : 'prediction';
     const persistedPlans = useMemo(() => readComponentGradePlans(), []);
-    const initialGradeSettings = useMemo(() => {
-        const modes = { ...persistedPlans.componentModes };
-        const targets = { ...persistedPlans.targetGrades };
-
-        nextSemester.courses.forEach((course) => {
-            if (modes[course.code] == null && course.projectedGrade != null) {
-                modes[course.code] = 'target';
-            }
-            if (modes[course.code] === 'target' && targets[course.code] == null && course.projectedGrade != null) {
-                targets[course.code] = course.projectedGrade;
-            }
-        });
-
-        return { modes, targets };
-    }, [nextSemester.courses, persistedPlans]);
     const [openCourseCode, setOpenCourseCode] = useState<string | null>(null);
     const [mobileOpenCourseCode, setMobileOpenCourseCode] = useState<string | null>(null);
-    const [componentPlans, setComponentPlans] = useState<Record<string, GradeComponent[]>>(persistedPlans.componentPlans);
-    const [componentModes, setComponentModes] = useState<Record<string, ComponentGradeMode>>(initialGradeSettings.modes);
-    const [targetGrades, setTargetGrades] = useState<Record<string, number>>(initialGradeSettings.targets);
+    const [predictionPlans, setPredictionPlans] = useState<Record<string, GradeComponent[]>>(persistedPlans.predictionPlans);
+    const [targetPlans, setTargetPlans] = useState<Record<string, GradeComponent[]>>(persistedPlans.targetPlans);
 
     useEffect(() => {
-        savePlain(STORAGE_KEYS.GPA_COMPONENT_GRADES, { componentPlans, componentModes, targetGrades });
-    }, [componentModes, componentPlans, targetGrades]);
+        savePlain(STORAGE_KEYS.GPA_COMPONENT_GRADES, { predictionPlans, targetPlans });
+    }, [predictionPlans, targetPlans]);
 
     const getComponentPlan = (courseCode: string): GradeComponent[] => {
-        return componentPlans[courseCode] ?? [
+        const plans = plannerMode === 'prediction' ? predictionPlans : targetPlans;
+        return plans[courseCode] ?? [
             { id: `${courseCode}-midterm`, name: 'Giữa kỳ', weight: '30', score: '' },
             { id: `${courseCode}-final`, name: 'Cuối kỳ', weight: '70', score: '' },
         ];
     };
 
     const updateComponents = (courseCode: string, nextComponents: GradeComponent[]) => {
-        setComponentPlans((prev) => ({ ...prev, [courseCode]: nextComponents }));
+        const update = (current: Record<string, GradeComponent[]>) => ({
+            ...current,
+            [courseCode]: nextComponents,
+        });
+        if (plannerMode === 'prediction') {
+            setPredictionPlans(update);
+        } else {
+            setTargetPlans(update);
+        }
     };
 
-    const getPredictedGrade = (courseCode: string) => {
-        const predictedGrade = getComponentGradeSummary(getComponentPlan(courseCode), '').predictedGrade;
-        return predictedGrade == null ? null : Math.max(0, Math.min(10, roundCourseGrade(predictedGrade)));
-    };
-
-    const getActiveGrade = (course: GPAPullCourse, mode: ComponentGradeMode) => {
+    const getActiveGrade = (course: GPAPullCourse) => {
         if (course.isLocked && course.lockedGrade != null) return roundCourseGrade(course.lockedGrade);
-        const grade = mode === 'target' ? targetGrades[course.code] ?? null : getPredictedGrade(course.code);
+        const grade = course.projectedGrade;
         return grade == null ? null : roundCourseGrade(grade);
     };
 
-    useEffect(() => {
-        if (planningIntent !== 'prediction') return;
-
-        nextSemester.courses.forEach((course) => {
-            if (course.isLocked || (componentModes[course.code] ?? 'prediction') !== 'prediction') return;
-
-            const predictedGrade = getPredictedGrade(course.code);
-            if (course.projectedGrade !== predictedGrade) {
-                onGradeChange(course.code, predictedGrade);
-            }
-        });
-    }, [componentModes, componentPlans, nextSemester.courses, onGradeChange, planningIntent]);
-
-    const updateTargetGrade = (courseCode: string, grade: number | null) => {
-        setTargetGrades((prev) => {
-            if (grade != null) return { ...prev, [courseCode]: grade };
-            const next = { ...prev };
-            delete next[courseCode];
-            return next;
-        });
-    };
-
     const updateCourseGradeFromInput = (course: GPAPullCourse, value: string) => {
-        setComponentModes((prev) => ({ ...prev, [course.code]: 'target' }));
         if (value === '') {
-            updateTargetGrade(course.code, null);
             onGradeChange(course.code, null);
             return;
         }
@@ -243,32 +207,20 @@ export function GPAPullSemesterTable({
         const grade = Number(value);
         if (!Number.isFinite(grade)) return;
         const nextGrade = Math.max(0, Math.min(10, roundCourseGrade(grade)));
-        updateTargetGrade(course.code, nextGrade);
         onGradeChange(course.code, nextGrade);
     };
 
     const updateCourseGradeFromComponents = (course: GPAPullCourse, grade: number | null) => {
-        setComponentModes((prev) => ({ ...prev, [course.code]: 'prediction' }));
+        if (plannerMode !== 'prediction') return;
         onGradeChange(course.code, grade);
     };
 
     const hasManualGrades = nextSemester.courses.some((course) => {
-        const componentMode = componentModes[course.code] ?? 'prediction';
-        return getActiveGrade(course, componentMode) !== null;
+        return getActiveGrade(course) !== null;
     });
 
     const resetManualGrades = () => {
-        setTargetGrades({});
-        setComponentModes((current) => {
-            const next = { ...current };
-            nextSemester.courses.forEach((course) => {
-                next[course.code] = 'target';
-            });
-            return next;
-        });
-        nextSemester.courses.forEach((course) => {
-            if (!course.isLocked) onGradeChange(course.code, null);
-        });
+        onResetGradeOverrides();
     };
 
     const mobileOpenCourse = nextSemester.courses.find((course) => course.code === mobileOpenCourseCode) ?? null;
@@ -292,8 +244,7 @@ export function GPAPullSemesterTable({
                 </div>
                 <div className="divide-y divide-gray-100">
                     {nextSemester.courses.map((course) => {
-                        const componentMode = componentModes[course.code] ?? 'prediction';
-                        const activeGrade = getActiveGrade(course, componentMode);
+                        const activeGrade = getActiveGrade(course);
 
                         return (
                             <div key={course.id} className="px-4 py-3">
@@ -352,9 +303,8 @@ export function GPAPullSemesterTable({
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {nextSemester.courses.map((course) => {
-                            const componentMode = componentModes[course.code] ?? 'prediction';
-                            const activeGrade = getActiveGrade(course, componentMode);
-                            const targetGrade = targetGrades[course.code] ?? (isGuidanceActive ? course.suggestedGrade : null);
+                            const activeGrade = getActiveGrade(course);
+                            const targetGrade = activeGrade ?? (isGuidanceActive ? course.suggestedGrade : null);
                             const isComponentPanelOpen = openCourseCode === course.code;
 
                             return (
@@ -429,9 +379,8 @@ export function GPAPullSemesterTable({
             </div>
 
             {mobileOpenCourse && (() => {
-                const componentMode = componentModes[mobileOpenCourse.code] ?? 'prediction';
-                const targetGrade = targetGrades[mobileOpenCourse.code] ?? (isGuidanceActive ? mobileOpenCourse.suggestedGrade : null);
-                const activeGrade = getActiveGrade(mobileOpenCourse, componentMode);
+                const activeGrade = getActiveGrade(mobileOpenCourse);
+                const targetGrade = activeGrade ?? (isGuidanceActive ? mobileOpenCourse.suggestedGrade : null);
                 const sourceLabel = mobileOpenCourse.source === 'ongoing' ? 'Đang học' : mobileOpenCourse.source === 'registration' ? 'Đăng ký' : 'Tương lai';
                 const gradeStatus = activeGrade !== null ? 'Đã nhập' : isGuidanceActive ? 'Gợi ý' : 'Chưa nhập';
 

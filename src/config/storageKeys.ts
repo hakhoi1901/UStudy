@@ -46,6 +46,8 @@ export const STORAGE_KEYS = {
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
     /** Cấu hình điểm thành phần theo từng môn trong Kế hoạch GPA */
     GPA_COMPONENT_GRADES: 'gpa_component_grades',
+    /** Điểm môn được chỉnh riêng trong chế độ Mục tiêu của Kế hoạch GPA */
+    GPA_GOAL_GRADES: 'gpa_goal_grades',
     /** Cấu hình ưu tiên xếp lịch */
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản nháp kế hoạch học tập theo học kỳ */

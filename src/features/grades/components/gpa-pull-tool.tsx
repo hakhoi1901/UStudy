@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
+import { STORAGE_KEYS } from '../../../config';
+import { readPlain, savePlain } from '../../../helpers/localStorage/save';
 import { useGPAPull } from '../hooks/use-gpa-pull';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
 import { GPAPullSemesterTable } from './gpa-pull-tool/gpa-pull-semester-table';
@@ -32,6 +34,18 @@ const planningModes: Array<{
     },
 ];
 
+function readGoalGrades(): Record<string, number | null> {
+    const hasSavedGoalGrades = localStorage.getItem(STORAGE_KEYS.GPA_GOAL_GRADES) !== null;
+    const saved = readPlain<Record<string, number | null>>(STORAGE_KEYS.GPA_GOAL_GRADES, {});
+    const legacy = readPlain<{ targetGrades?: Record<string, number> }>(STORAGE_KEYS.GPA_COMPONENT_GRADES, {});
+    const source = hasSavedGoalGrades ? saved : legacy.targetGrades ?? {};
+    return Object.fromEntries(
+        Object.entries(source).filter((entry): entry is [string, number | null] => (
+            entry[1] === null || (Number.isFinite(entry[1]) && entry[1] >= 0 && entry[1] <= 10)
+        )),
+    );
+}
+
 export function GPAPullTool({
     gradesHistory,
     simulatorCourses,
@@ -42,6 +56,22 @@ export function GPAPullTool({
 }: GPAPullToolProps) {
     const [planningIntent, setPlanningIntent] = useState<GPAPlanningIntent>('prediction');
     const [hasCalculated, setHasCalculated] = useState(false);
+    const [goalGrades, setGoalGrades] = useState<Record<string, number | null>>(readGoalGrades);
+    const activeSimulatorCourses = useMemo(() => {
+        if (planningIntent === 'prediction') return simulatorCourses;
+
+        return simulatorCourses.map((course) => ({
+            ...course,
+            projectedGrade: Object.prototype.hasOwnProperty.call(goalGrades, course.code)
+                ? goalGrades[course.code]
+                : course.projectedGrade,
+        }));
+    }, [goalGrades, planningIntent, simulatorCourses]);
+
+    useEffect(() => {
+        savePlain(STORAGE_KEYS.GPA_GOAL_GRADES, goalGrades);
+    }, [goalGrades]);
+
     const {
         targetGPAInput, setTargetGPAInput,
         mode, setMode,
@@ -78,7 +108,7 @@ export function GPAPullTool({
         minTargetGpa,
     } = useGPAPull({
         gradesHistory,
-        simulatorCourses,
+        simulatorCourses: activeSimulatorCourses,
         currentGPA,
         accumulatedCredits,
         totalCredits,
@@ -114,6 +144,22 @@ export function GPAPullTool({
     const changePlanningIntent = (nextIntent: GPAPlanningIntent) => {
         setPlanningIntent(nextIntent);
         setHasCalculated(false);
+    };
+
+    const handleActiveGradeChange = (courseCode: string, grade: number | null) => {
+        if (planningIntent === 'prediction') {
+            handleGradeChange(courseCode, grade);
+            return;
+        }
+
+        setGoalGrades((current) => {
+            if (grade != null) return { ...current, [courseCode]: grade };
+            return { ...current, [courseCode]: null };
+        });
+    };
+
+    const resetGoalGradeOverrides = () => {
+        setGoalGrades({});
     };
 
     return (
@@ -186,7 +232,8 @@ export function GPAPullTool({
                     decimals={decimals}
                     planningIntent={planningIntent}
                     isGuidanceActive={guidanceActive}
-                    onGradeChange={handleGradeChange}
+                    onGradeChange={handleActiveGradeChange}
+                    onResetGradeOverrides={resetGoalGradeOverrides}
                 />
             </div>
 
