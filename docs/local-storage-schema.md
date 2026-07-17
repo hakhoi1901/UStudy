@@ -334,6 +334,7 @@ type ClassComponent = {
 | `gpa_pull_future_grades` | Dữ liệu dự kiến GPA tương lai; key dự phòng/legacy |
 | `grade_main_tab` | `'overview' | 'target' | 'history'` |
 | `study_roadmap_active_tab` | Tab con gần nhất của Lộ trình học tập |
+| `dashboard_layout_preferences` | `{ version, order, hidden, calendarSources, calendarDays, calendarNotificationsEnabled, calendarReminderMinutes }`; bố cục thẻ, timeline (1-30 ngày) và các mốc nhắc lịch trên app |
 | `app_notifications` | Mảng thông báo của ứng dụng |
 | `chatbot_chat_history` | Lịch sử hội thoại chatbot |
 

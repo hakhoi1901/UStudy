@@ -56,6 +56,7 @@ const IMPORT_LABELS: Record<string, { label: string; group: string }> = {
   group_schedule_last_result: { label: 'Kết quả xếp lịch nhóm gần nhất', group: 'Lịch học' },
   gpa_projected_grades: { label: 'Điểm dự kiến GPA', group: 'Kế hoạch cá nhân' },
   gpa_pull_future_grades: { label: 'Điểm dự kiến GPA còn lại', group: 'Kế hoạch cá nhân' },
+  dashboard_layout_preferences: { label: 'Bố cục trang tổng quan', group: 'Cài đặt giao diện' },
 };
 
 function getImportItem(key: string, value: string): ImportItem {

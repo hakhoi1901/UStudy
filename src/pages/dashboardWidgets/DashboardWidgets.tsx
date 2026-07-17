@@ -1,20 +1,78 @@
-import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, BookOpen, DollarSign } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, Eye, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 
-import { useStudentGradeData } from '../../features/grades';
+import { useStudentGradeData, GPACalculator } from '../../features/grades';
+import { useStudentDb } from '../../hooks/useStudentDb';
+import { useSchedule } from '../../features/visual-schedule/hooks/use-schedule';
 import { NoDataCard } from '../../components/nodataCard';
-import { ACADEMIC_RULES } from '../../constants';
 import { FinancialLogic } from '../../logic/FinancialLogic';
-import { GPACalculator } from '../../features/grades';
 import { PrivacyFooter } from '../../components/PrivacyFooter';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { buildTuitionSemesterKey, formatTuitionDeadline, getTuitionDeadline } from '../../config/tuitionDeadlines';
 import { CreditDistributionWidget } from './CreditDistributionWidget';
-import { TodayScheduleWidget } from './TodayScheduleWidget';
+import { DashboardCalendarWidget } from './DashboardCalendarWidget';
+import { DashboardCalendarSettingsDialog } from './DashboardCalendarSettingsDialog';
+import { buildDashboardCalendarEvents } from './dashboard-calendar-events';
+import { DashboardCustomizerDialog } from './DashboardCustomizerDialog';
+import { CreditsWidget, GpaWidget, TuitionWidget } from './DashboardSummaryWidgets';
+import { SortableDashboardWidget } from './SortableDashboardWidget';
+import {
+  DEFAULT_DASHBOARD_LAYOUT,
+  normalizeDashboardLayout,
+  readDashboardLayout,
+  saveDashboardLayout,
+  type DashboardLayoutPreferences,
+  type DashboardWidgetId,
+} from './dashboard-layout';
+import {
+  requestCalendarNotificationPermission,
+  syncCalendarNotifications,
+} from '../../mobile/calendar-notifications';
+
+const WIDGET_LABELS: Record<DashboardWidgetId, string> = {
+  gpa: 'GPA hiện tại',
+  credits: 'Tín chỉ tích lũy',
+  tuition: 'Học phí học kỳ',
+  calendar: 'Lịch',
+  creditDistribution: 'Phân bổ tín chỉ',
+};
+
+const WIDGET_SPANS: Record<DashboardWidgetId, string> = {
+  gpa: 'md:col-span-2',
+  credits: 'md:col-span-2',
+  tuition: 'md:col-span-2',
+  calendar: 'md:col-span-6 xl:col-span-2',
+  creditDistribution: 'md:col-span-6 xl:col-span-4',
+};
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [isCalendarSettingsOpen, setIsCalendarSettingsOpen] = useState(false);
+  const [layout, setLayout] = useState<DashboardLayoutPreferences>(readDashboardLayout);
   const { academicYear, semesterNumber } = useDepartmentData();
+  const schedule = useSchedule();
+  const { exams } = useStudentDb();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const {
     currentGPA,
@@ -25,6 +83,15 @@ export function DashboardWidgets() {
     hasData,
   } = useStudentGradeData();
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    saveDashboardLayout(layout);
+  }, [isMounted, layout]);
+
   const tuitionSemesterKey = useMemo(
     () => buildTuitionSemesterKey(academicYear, semesterNumber),
     [academicYear, semesterNumber],
@@ -33,34 +100,108 @@ export function DashboardWidgets() {
     () => formatTuitionDeadline(getTuitionDeadline(tuitionSemesterKey)),
     [tuitionSemesterKey],
   );
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const safeTotalCredits = ACADEMIC_RULES.TOTAL_CREDITS;
-
-  const gpaPercentage =
-    (currentGPA / ACADEMIC_RULES.MAX_GPA) * 100;
-
-  const creditsPercentage = Math.min(
-    (accumulatedCredits / safeTotalCredits) * 100,
-    100
-  );
-
-  const formatCurrency = (amount: number) =>
-    FinancialLogic.formatCurrency(amount, 'currency');
-
   const gpaStatus = useMemo(
     () => GPACalculator.getClassification(currentGPA),
-    [currentGPA]
+    [currentGPA],
   );
+  const visibleWidgetIds = useMemo(
+    () => layout.order.filter((id) => !layout.hidden.includes(id)),
+    [layout.hidden, layout.order],
+  );
+  const calendarEvents = useMemo(
+    () => buildDashboardCalendarEvents(schedule, exams, layout.calendarSources, layout.calendarDays),
+    [
+      exams,
+      layout.calendarDays,
+      layout.calendarSources,
+      schedule.overrides?.holidays,
+      schedule.semesterStartDate,
+      schedule.sessions,
+      schedule.systemHolidays,
+    ],
+  );
+  const calendarNotificationSyncKey = useMemo(() => JSON.stringify({
+    enabled: layout.calendarNotificationsEnabled,
+    reminders: layout.calendarReminderMinutes,
+    events: layout.calendarNotificationsEnabled
+      ? calendarEvents.map((event) => [event.id, event.date.getTime(), event.startTime, event.room])
+      : [],
+  }), [calendarEvents, layout.calendarNotificationsEnabled, layout.calendarReminderMinutes]);
 
-  if (!isMounted) {
-    return null;
-  }
+  useEffect(() => {
+    void syncCalendarNotifications(
+      calendarEvents,
+      layout.calendarNotificationsEnabled,
+      layout.calendarReminderMinutes,
+    ).catch((error) => console.error('[calendar-notifications] Không thể đồng bộ thông báo:', error));
+  }, [calendarNotificationSyncKey]);
 
-  // Loading
+  const updateLayout = (nextLayout: DashboardLayoutPreferences) => {
+    setLayout(normalizeDashboardLayout(nextLayout));
+  };
+
+  const hideWidget = (id: DashboardWidgetId) => {
+    setLayout((current) => normalizeDashboardLayout({
+      ...current,
+      hidden: [...current.hidden, id],
+    }));
+  };
+
+  const resetLayout = () => {
+    setLayout({
+      ...DEFAULT_DASHBOARD_LAYOUT,
+      order: [...DEFAULT_DASHBOARD_LAYOUT.order],
+      hidden: [...DEFAULT_DASHBOARD_LAYOUT.hidden],
+      calendarSources: [...layout.calendarSources],
+      calendarDays: layout.calendarDays,
+      calendarNotificationsEnabled: layout.calendarNotificationsEnabled,
+      calendarReminderMinutes: [...layout.calendarReminderMinutes],
+    });
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const activeId = active.id as DashboardWidgetId;
+    const overId = over.id as DashboardWidgetId;
+
+    setLayout((current) => {
+      const oldIndex = current.order.indexOf(activeId);
+      const newIndex = current.order.indexOf(overId);
+      if (oldIndex < 0 || newIndex < 0) return current;
+      return { ...current, order: arrayMove(current.order, oldIndex, newIndex) };
+    });
+  };
+
+  const renderWidget = (id: DashboardWidgetId) => {
+    switch (id) {
+      case 'gpa':
+        return <GpaWidget currentGPA={currentGPA} classification={gpaStatus} />;
+      case 'credits':
+        return <CreditsWidget accumulatedCredits={accumulatedCredits} totalCredits={totalCredits} />;
+      case 'tuition':
+        return (
+          <TuitionWidget
+            amountLabel={FinancialLogic.formatCurrency(estimatedTuition || 0, 'currency')}
+            dueDate={tuitionDueDate}
+          />
+        );
+      case 'calendar':
+        return (
+          <DashboardCalendarWidget
+            sources={layout.calendarSources}
+            days={layout.calendarDays}
+            events={calendarEvents}
+            onOpenSettings={() => setIsCalendarSettingsOpen(true)}
+            showSettings={!isEditing}
+          />
+        );
+      case 'creditDistribution':
+        return <CreditDistributionWidget />;
+    }
+  };
+
+  if (!isMounted) return null;
+
   if (!isReady) {
     return (
       <div className="flex h-40 items-center justify-center">
@@ -69,18 +210,13 @@ export function DashboardWidgets() {
     );
   }
 
-  // Không có dữ liệu
   if (!hasData) {
     return (
       <div className="ustudy-page-shell">
-        <h1 className="ustudy-page-title">
-          Tổng quan
-        </h1>
-
-        <p className="mb-6 ustudy-page-description md:mb-8">
+        <h1 className="ustudy-page-title">Tổng quan</h1>
+        <p className="ustudy-page-description mb-6 md:mb-8">
           Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
         </p>
-
         <NoDataCard />
       </div>
     );
@@ -88,226 +224,176 @@ export function DashboardWidgets() {
 
   return (
     <div className="ustudy-page-shell">
-      {/* Header */}
       <div className="ustudy-page-header">
-        <h1 className="ustudy-page-title">
-          Trang tổng quan
-        </h1>
+  {/* Mobile */}
+  <div className="sm:hidden">
+    <div className="flex items-start justify-between gap-3">
+      <h1 className="ustudy-page-title min-w-0">
+        Trang tổng quan
+      </h1>
 
-        <p className="ustudy-page-description">
-          Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
-        </p>
-      </div>
+      <button
+        type="button"
+        onClick={() => setIsEditing((current) => !current)}
+        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+          isEditing
+            ? 'border-[#004A98] bg-[#004A98] text-white hover:bg-[#003A78]'
+            : 'border-gray-200 bg-white text-gray-700 hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]'
+        }`}
+        aria-label={
+          isEditing
+            ? 'Hoàn tất chỉnh sửa dashboard'
+            : 'Tùy chỉnh dashboard'
+        }
+        title={isEditing ? 'Hoàn tất' : 'Tùy chỉnh'}
+      >
+        {isEditing ? (
+          <Check className="h-4 w-4" />
+        ) : (
+          <SlidersHorizontal className="h-4 w-4" />
+        )}
+      </button>
+    </div>
 
-      {/* Grid */}
-      <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 md:grid-cols-3 md:gap-6">
+    <p className="ustudy-page-description mt-1">
+      Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
+    </p>
+  </div>
 
-        {/* GPA */}
-        <div className="ustudy-card ustudy-card-padding">
-          <div className="ustudy-card-header">
+  {/* Laptop / desktop */}
+  <div className="hidden sm:flex sm:items-start sm:justify-between sm:gap-3">
+    <div className="min-w-0">
+      <h1 className="ustudy-page-title">
+        Trang tổng quan
+      </h1>
 
-            <div className="ustudy-icon-badge ustudy-icon-primary">
-              <TrendingUp className="h-4 w-4 text-white md:h-5 md:w-5" />
-            </div>
+      <p className="ustudy-page-description">
+        Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn.
+      </p>
+    </div>
 
-            <div>
-              <h3 className="ustudy-card-title">
-                GPA hiện tại
-              </h3>
+    <button
+      type="button"
+      onClick={() => setIsEditing((current) => !current)}
+      className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-colors ${
+        isEditing
+          ? 'border-[#004A98] bg-[#004A98] text-white hover:bg-[#003A78]'
+          : 'border-gray-200 bg-white text-gray-700 hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]'
+      }`}
+      aria-label={
+        isEditing
+          ? 'Hoàn tất chỉnh sửa dashboard'
+          : 'Tùy chỉnh dashboard'
+      }
+      title={isEditing ? 'Hoàn tất' : 'Tùy chỉnh'}
+    >
+      {isEditing ? (
+        <Check className="h-4 w-4" />
+      ) : (
+        <SlidersHorizontal className="h-4 w-4" />
+      )}
 
-              <p className="ustudy-card-subtitle">
-                Thang điểm 10
-              </p>
-            </div>
-          </div>
+      <span>
+        {isEditing ? 'Hoàn tất' : 'Tùy chỉnh'}
+      </span>
+    </button>
+  </div>
+</div>
 
-          {/* GPA Circle */}
-          <div className="mb-2 flex items-center justify-center md:mb-4">
-            <div className="relative h-40 w-40 scale-75 md:scale-100">
-
-              <svg className="h-full w-full -rotate-90 transform">
-                {/* Background */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="#E5E7EB"
-                  strokeWidth="12"
-                  fill="none"
-                />
-
-                {/* Progress */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="#004A98"
-                  strokeWidth="12"
-                  fill="none"
-                  strokeDasharray={`${2 * Math.PI * 70}`}
-                  strokeDashoffset={`${2 * Math.PI * 70 * (1 - gpaPercentage / 100)
-                    }`}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
-                />
-              </svg>
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-[#004A98] md:text-3xl">
-                  {currentGPA.toFixed(
-                    ACADEMIC_RULES.GPA_POINT_DECIMAL
-                  )}
-                </span>
-
-                <span className="text-xs text-gray-500 md:text-sm">
-                  /{' '}
-                  {ACADEMIC_RULES.MAX_GPA.toFixed(
-                    ACADEMIC_RULES.GPA_POINT_DECIMAL
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* GPA Classification */}
-          <div className="min-w-0 border-t border-gray-100 pt-3 md:pt-4">
-            <div className="ustudy-stat-row">
-
-              <span className="ustudy-stat-label">
-                Xếp loại
-              </span>
-
-              <span className="font-semibold text-[#004A98]">
-                {gpaStatus}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Credits */}
-        <div className="ustudy-card ustudy-card-padding">
-          <div className="ustudy-card-header">
-
-            <div className="ustudy-icon-badge ustudy-icon-success">
-              <BookOpen className="h-4 w-4 text-white md:h-5 md:w-5" />
-            </div>
-
-            <div>
-              <h3 className="ustudy-card-title">
-                Tín chỉ tích lũy
-              </h3>
-
-              <p className="ustudy-card-subtitle">
-                Tiến độ hoàn thành
-              </p>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="mb-4">
-            <div className="mb-2 flex items-end justify-between gap-2">
-
-              <span className="text-2xl font-bold text-gray-900 md:text-3xl">
-                {accumulatedCredits}
-              </span>
-
-              <span className="text-xs text-gray-500 md:text-sm">
-                / {totalCredits} tín chỉ
-              </span>
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 md:h-4">
-              <div
-                className="flex h-3 items-center justify-end rounded-full bg-green-500 pr-2 transition-all duration-1000 ease-out md:h-4"
-                style={{
-                  width: `${creditsPercentage}%`,
-                }}
-              >
-                <span className="text-[9px] font-semibold text-white md:text-[10px]">
-                  {creditsPercentage.toFixed(0)}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="space-y-2 border-t border-gray-100 pt-3 md:space-y-3 md:pt-4">
-
-            <div className="ustudy-stat-row">
-              <span className="ustudy-stat-label">
-                Đã tích lũy
-              </span>
-
-              <span className="font-semibold text-green-600">
-                {accumulatedCredits} tín chỉ
-              </span>
-            </div>
-
-            <div className="ustudy-stat-row">
-              <span className="ustudy-stat-label">
-                Còn lại
-              </span>
-
-              <span className="font-semibold text-orange-600">
-                {totalCredits - accumulatedCredits} tín chỉ
-              </span>
-            </div>
+      {isEditing && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-y border-blue-100 bg-[#F4F8FF] px-3 py-2.5 md:mb-6 md:px-4">
+          <p className="text-sm font-semibold text-[#004A98]">Đang chỉnh sửa bố cục</p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setIsCustomizerOpen(true)}
+              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-[#004A98] hover:bg-white"
+            >
+              <Eye className="h-4 w-4" />
+              Quản lý thẻ
+            </button>
+            <button
+              type="button"
+              onClick={resetLayout}
+              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-gray-600 hover:bg-white hover:text-gray-900"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Mặc định
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Tuition */}
-        <div className="rounded-xl bg-gradient-to-br from-[#004A98] to-[#0066CC] p-4 text-white shadow-lg md:p-6">
-          <div className="ustudy-card-header">
-
-            <div className="ustudy-icon-badge bg-white/20 text-white">
-              <DollarSign className="h-4 w-4 text-white md:h-5 md:w-5" />
+      {visibleWidgetIds.length > 0 ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={visibleWidgetIds} strategy={rectSortingStrategy}>
+            <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 md:grid-cols-6 md:gap-6">
+              {visibleWidgetIds.map((id) => (
+                <SortableDashboardWidget
+                  key={id}
+                  id={id}
+                  label={WIDGET_LABELS[id]}
+                  isEditing={isEditing}
+                  onHide={hideWidget}
+                  className={WIDGET_SPANS[id]}
+                >
+                  {renderWidget(id)}
+                </SortableDashboardWidget>
+              ))}
             </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-white md:text-base">
-                Học phí học kỳ
-              </h3>
-
-              <p className="text-xs text-blue-100 md:text-sm">
-                Dự kiến phải đóng
-              </p>
-            </div>
-          </div>
-
-          {/* Tuition */}
-          <div className="mb-4">
-            <p className="mb-2 text-xs text-blue-100 md:text-sm">
-              Tổng học phí dự kiến
-            </p>
-
-            <p className="break-words text-2xl font-bold text-white md:text-3xl">
-              {formatCurrency(estimatedTuition || 0)}
-            </p>
-          </div>
-
-          {/* Due date */}
-          <div className="border-t border-white/20 pt-3 md:pt-4">
-            <div className="ustudy-stat-row">
-
-              <span className="text-blue-100">
-                Hạn đóng học phí
-              </span>
-
-              <span className="font-semibold text-white">
-                {tuitionDueDate}
-              </span>
-            </div>
-          </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <div className="mb-6 flex min-h-64 flex-col items-center justify-center border-y border-gray-200 py-12 text-center">
+          <SlidersHorizontal className="h-8 w-8 text-gray-300" />
+          <p className="mt-3 text-sm font-semibold text-gray-800">Chưa có thẻ nào được hiển thị</p>
+          <button
+            type="button"
+            onClick={() => setIsCustomizerOpen(true)}
+            className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white hover:bg-[#003A78]"
+          >
+            <Eye className="h-4 w-4" />
+            Chọn thẻ hiển thị
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] md:gap-6">
-        <CreditDistributionWidget />
-        <TodayScheduleWidget />
-      </div> */}
+      <DashboardCustomizerDialog
+        open={isCustomizerOpen}
+        onOpenChange={setIsCustomizerOpen}
+        layout={layout}
+        onChange={updateLayout}
+      />
 
-      {/* Footer */}
+      <DashboardCalendarSettingsDialog
+        open={isCalendarSettingsOpen}
+        onOpenChange={setIsCalendarSettingsOpen}
+        sources={layout.calendarSources}
+        days={layout.calendarDays}
+        notificationsEnabled={layout.calendarNotificationsEnabled}
+        reminderMinutes={layout.calendarReminderMinutes}
+        onSave={async ({
+          sources: calendarSources,
+          days: calendarDays,
+          notificationsEnabled: calendarNotificationsEnabled,
+          reminderMinutes: calendarReminderMinutes,
+        }) => {
+          if (calendarNotificationsEnabled) {
+            const permission = await requestCalendarNotificationPermission();
+            if (!permission.granted) return { saved: false, message: permission.message };
+          }
+
+          updateLayout({
+            ...layout,
+            calendarSources,
+            calendarDays,
+            calendarNotificationsEnabled,
+            calendarReminderMinutes,
+          });
+          return { saved: true };
+        }}
+      />
+
       <PrivacyFooter />
     </div>
   );

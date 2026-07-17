@@ -42,6 +42,8 @@ export const STORAGE_KEYS = {
     GRADE_MAIN_TAB: 'grade_main_tab',
     /** Tab đang mở trong Lộ trình học tập */
     STUDY_ROADMAP_ACTIVE_TAB: 'study_roadmap_active_tab',
+    /** Thứ tự, trạng thái ẩn/hiện và cấu hình các thẻ trên trang Tổng quan */
+    DASHBOARD_LAYOUT: 'dashboard_layout_preferences',
     /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
     /** Cấu hình điểm thành phần theo từng môn trong Kế hoạch GPA */
