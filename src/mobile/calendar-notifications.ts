@@ -24,30 +24,43 @@ export async function requestCalendarNotificationPermission(): Promise<CalendarN
     return { granted: false, exact: false, message: 'Thông báo lịch chỉ hoạt động trên ứng dụng điện thoại.' };
   }
 
-  const LocalNotifications = await getPlugin();
-  let permission = await LocalNotifications.checkPermissions();
-  if (permission.display === 'prompt' || permission.display === 'prompt-with-rationale') {
-    permission = await LocalNotifications.requestPermissions();
-  }
-
-  if (permission.display !== 'granted') {
-    return { granted: false, exact: false, message: 'Bạn cần cho phép UStudy gửi thông báo trong cài đặt điện thoại.' };
-  }
-
-  let exact = true;
-  if (Capacitor.getPlatform() === 'android') {
-    try {
-      exact = (await LocalNotifications.checkExactNotificationSetting()).exact_alarm === 'granted';
-    } catch {
-      exact = false;
+  try {
+    const LocalNotifications = await getPlugin();
+    let permission = await LocalNotifications.checkPermissions();
+    if (permission.display === 'prompt' || permission.display === 'prompt-with-rationale') {
+      permission = await LocalNotifications.requestPermissions();
     }
-  }
 
-  return {
-    granted: true,
-    exact,
-    message: exact ? undefined : 'Android có thể gửi thông báo trễ vài phút nếu quyền báo thức chính xác đang tắt.',
-  };
+    if (permission.display !== 'granted') {
+      return {
+        granted: false,
+        exact: false,
+        message: 'Quyền thông báo đang bị tắt. Mở Cài đặt điện thoại > Ứng dụng > UStudy > Thông báo để cho phép.',
+      };
+    }
+
+    let exact = true;
+    if (Capacitor.getPlatform() === 'android') {
+      try {
+        exact = (await LocalNotifications.checkExactNotificationSetting()).exact_alarm === 'granted';
+      } catch {
+        exact = false;
+      }
+    }
+
+    return {
+      granted: true,
+      exact,
+      message: exact ? undefined : 'Android có thể gửi thông báo trễ vài phút nếu quyền báo thức chính xác đang tắt.',
+    };
+  } catch (error) {
+    console.error('[calendar-notifications] Không thể kiểm tra quyền thông báo:', error);
+    return {
+      granted: false,
+      exact: false,
+      message: 'Không thể mở quyền thông báo. Hãy đóng hẳn UStudy, mở lại rồi thử lần nữa.',
+    };
+  }
 }
 
 function hashNotificationId(value: string): number {

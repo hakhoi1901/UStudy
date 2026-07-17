@@ -378,19 +378,27 @@ export function DashboardWidgets() {
           notificationsEnabled: calendarNotificationsEnabled,
           reminderMinutes: calendarReminderMinutes,
         }) => {
-          if (calendarNotificationsEnabled) {
-            const permission = await requestCalendarNotificationPermission();
-            if (!permission.granted) return { saved: false, message: permission.message };
-          }
+          try {
+            if (calendarNotificationsEnabled) {
+              const permission = await requestCalendarNotificationPermission();
+              if (!permission.granted) return { saved: false, message: permission.message };
+            }
 
-          updateLayout({
-            ...layout,
-            calendarSources,
-            calendarDays,
-            calendarNotificationsEnabled,
-            calendarReminderMinutes,
-          });
-          return { saved: true };
+            updateLayout({
+              ...layout,
+              calendarSources,
+              calendarDays,
+              calendarNotificationsEnabled,
+              calendarReminderMinutes,
+            });
+            return { saved: true };
+          } catch (error) {
+            console.error('[calendar-settings] Không thể xin quyền thông báo:', error);
+            return {
+              saved: false,
+              message: 'Android không phản hồi yêu cầu cấp quyền. Hãy đóng hẳn UStudy, mở lại rồi thử lần nữa.',
+            };
+          }
         }}
       />
 

@@ -118,19 +118,25 @@ export function DashboardCalendarSettingsDialog({
     if (!canSave) return;
     setIsSaving(true);
     setSaveError('');
-    const result = await onSave({
-      sources: draftSources,
-      days: parsedDays,
-      notificationsEnabled: isNativeApp && draftNotificationsEnabled,
-      reminderMinutes: [...validReminderMinutes].sort((first, second) => second - first),
-    });
-    setIsSaving(false);
+    try {
+      const result = await onSave({
+        sources: draftSources,
+        days: parsedDays,
+        notificationsEnabled: isNativeApp && draftNotificationsEnabled,
+        reminderMinutes: [...validReminderMinutes].sort((first, second) => second - first),
+      });
 
-    if (!result.saved) {
-      setSaveError(result.message || 'Không thể lưu thiết lập thông báo.');
-      return;
+      if (!result.saved) {
+        setSaveError(result.message || 'Không thể lưu thiết lập thông báo.');
+        return;
+      }
+      onOpenChange(false);
+    } catch (error) {
+      console.error('[calendar-settings] Không thể lưu thiết lập:', error);
+      setSaveError('Không thể lưu thiết lập. Hãy đóng hẳn UStudy, mở lại rồi thử lần nữa.');
+    } finally {
+      setIsSaving(false);
     }
-    onOpenChange(false);
   };
 
   return (
@@ -142,14 +148,21 @@ export function DashboardCalendarSettingsDialog({
       icon={CalendarClock}
       size="sm"
       footer={(
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!canSave}
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-gray-300 sm:w-auto"
-        >
-          {isSaving ? 'Đang lưu...' : 'Lưu thiết lập'}
-        </button>
+        <div className="w-full">
+          {saveError && (
+            <p className="mb-2 border-l-2 border-red-500 bg-red-50 px-3 py-2 text-left text-xs leading-5 text-red-700">{saveError}</p>
+          )}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!canSave}
+              className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-gray-300 sm:w-auto"
+            >
+              {isSaving ? 'Đang lưu...' : 'Lưu thiết lập'}
+            </button>
+          </div>
+        </div>
       )}
     >
       <div>
@@ -289,9 +302,6 @@ export function DashboardCalendarSettingsDialog({
         )}
       </div>
 
-      {saveError && (
-        <p className="mt-4 border-l-2 border-red-500 bg-red-50 px-3 py-2 text-xs leading-5 text-red-700">{saveError}</p>
-      )}
     </AppDialog>
   );
 }
