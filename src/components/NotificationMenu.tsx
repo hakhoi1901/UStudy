@@ -1,37 +1,51 @@
-import { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCircle2, AlertTriangle, Info, XCircle, Trash2, CheckCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Bell, CheckCircle, CheckCircle2, Info, Trash2, XCircle } from 'lucide-react';
 import { useAppNotification } from '../context/NotificationContext';
 import type { AppNotification } from '../context/NotificationContext';
+import { MobileBottomSheet } from './ui/mobile-bottom-sheet';
 
-/**
- * 
- * @returns hiển thị danh sách thông báo
- */
 export function NotificationMenu() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useAppNotification();
     const [isOpen, setIsOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+        const mediaQuery = window.matchMedia('(max-width: 767px)');
+        const updateViewport = () => setIsMobile(mediaQuery.matches);
+        updateViewport();
+        mediaQuery.addEventListener('change', updateViewport);
+        return () => mediaQuery.removeEventListener('change', updateViewport);
+    }, []);
+
+    useEffect(() => {
+        if (!isOpen || isMobile) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
-        }
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isOpen]);
 
-    const getIcon = (type: string) => {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMobile, isOpen]);
+
+    const getIcon = (type: AppNotification['type']) => {
         switch (type) {
-            case 'success': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-            case 'warning': return <AlertTriangle className="w-5 h-5 text-orange-500" />;
-            case 'error': return <XCircle className="w-5 h-5 text-red-500" />;
-            default: return <Info className="w-5 h-5 text-blue-500" />;
+            case 'success': return <CheckCircle2 className="h-5 w-5 text-emerald-600" />;
+            case 'warning': return <AlertTriangle className="h-5 w-5 text-amber-600" />;
+            case 'error': return <XCircle className="h-5 w-5 text-red-600" />;
+            default: return <Info className="h-5 w-5 text-[#004A98]" />;
+        }
+    };
+
+    const getIconBackground = (type: AppNotification['type']) => {
+        switch (type) {
+            case 'success': return 'bg-emerald-50';
+            case 'warning': return 'bg-amber-50';
+            case 'error': return 'bg-red-50';
+            default: return 'bg-blue-50';
         }
     };
 
@@ -39,109 +53,148 @@ export function NotificationMenu() {
         const now = new Date();
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-        if (diffInSeconds < 60) return `Vài giây trước`;
+        if (diffInSeconds < 60) return 'Vài giây trước';
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
         return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
     };
 
+    const notificationList = (mobile = false) => {
+        if (notifications.length === 0) {
+            return (
+                <div className={`flex flex-col items-center justify-center px-6 text-center ${mobile ? 'min-h-72 py-12' : 'py-12'}`}>
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                        <Bell className="h-6 w-6 text-gray-400" />
+                    </div>
+                    <p className="mt-4 text-sm font-semibold text-gray-900">Không có thông báo</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Các cập nhật mới sẽ xuất hiện tại đây.</p>
+                </div>
+            );
+        }
+
+        return (
+            <div className="divide-y divide-gray-100">
+                {notifications.map((notification) => (
+                    <button
+                        key={notification.id}
+                        type="button"
+                        onClick={() => {
+                            if (!notification.isRead) markAsRead(notification.id);
+                        }}
+                        className={`flex w-full gap-3 text-left transition-colors hover:bg-gray-50 ${mobile ? 'px-4 py-4' : 'px-4 py-3'} ${
+                            notification.isRead ? 'bg-white' : 'bg-[#F4F8FF]'
+                        }`}
+                    >
+                        <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${getIconBackground(notification.type)}`}>
+                            {getIcon(notification.type)}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className={`block text-sm leading-5 text-gray-900 ${notification.isRead ? 'font-medium' : 'font-semibold'}`}>
+                                {notification.title}
+                            </span>
+                            <span className={`mt-1 block text-xs leading-5 text-gray-600 ${mobile ? '' : 'line-clamp-2'}`}>
+                                {notification.message}
+                            </span>
+                            <span className="mt-2 block text-[11px] font-medium text-gray-400">
+                                {formatTime(notification.timestamp)}
+                            </span>
+                        </span>
+                        {!notification.isRead && (
+                            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#004A98]" aria-label="Chưa đọc" />
+                        )}
+                    </button>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="relative" ref={menuRef}>
-            {/* Trigger Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2.5 hover:bg-gray-100 rounded-lg transition-colors group"
+                type="button"
+                onClick={() => setIsOpen((current) => !current)}
+                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
+                aria-label="Mở thông báo"
+                aria-expanded={isOpen}
             >
-                <Bell className="w-5 h-5 text-gray-600 group-hover:text-gray-900" strokeWidth={2} />
+                <Bell className="h-5 w-5 text-gray-600 group-hover:text-gray-900" strokeWidth={2} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center px-1 font-semibold border-2 border-white translate-x-1 -translate-y-1">
+                    <span className="absolute right-0 top-0 flex h-[18px] min-w-[18px] translate-x-1 -translate-y-1 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-semibold text-white">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
             </button>
 
-            {/* Dropdown Menu */}
-            {isOpen && (
-                <div className="absolute right-0 mt-2 sm:w-80 w-60 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col max-h-[380px]">
-                    {/* Header */}
-                    <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
-                        <h3 className="font-semibold text-gray-900">Thông báo</h3>
-                        <div className="flex gap-2">
+            {isOpen && !isMobile && (
+                <div className="absolute right-0 z-50 mt-2 flex max-h-[420px] w-80 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                    <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50/70 px-4 py-3">
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            <p className="mt-0.5 text-[11px] text-gray-500">{unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Đã đọc tất cả'}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
                             {unreadCount > 0 && (
                                 <button
-                                    onClick={() => markAllAsRead()}
-                                    className="text-xs text-[#004A98] hover:text-[#003A78] font-medium flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md"
+                                    type="button"
+                                    onClick={markAllAsRead}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#004A98] hover:bg-blue-50"
+                                    title="Đánh dấu tất cả đã đọc"
+                                    aria-label="Đánh dấu tất cả đã đọc"
                                 >
-                                    <CheckCircle className="w-3.5 h-3.5" />
-                                    Đọc hết
+                                    <CheckCircle className="h-4 w-4" />
                                 </button>
                             )}
                             {notifications.length > 0 && (
                                 <button
-                                    onClick={() => clearAll()}
-                                    className="text-xs text-gray-500 hover:text-red-700 font-medium flex items-center gap-1 ml-2 bg-gray-100 hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
+                                    type="button"
+                                    onClick={clearAll}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                    title="Xóa tất cả thông báo"
+                                    aria-label="Xóa tất cả thông báo"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                    Xóa
+                                    <Trash2 className="h-4 w-4" />
                                 </button>
                             )}
                         </div>
                     </div>
-
-                    {/* List */}
-                    <div className="overflow-y-auto flex-1 custom-scrollbar max-h-80" style={{ maxHeight: '380px' }}>
-                        {notifications.length === 0 ? (
-                            <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
-                                <Bell className="w-12 h-12 text-gray-200 mb-3" />
-                                <p className="text-sm font-medium text-gray-900">Không có thông báo mới</p>
-                                <p className="text-xs text-gray-500 mt-1">Bạn đã xem hết tất cả thông báo.</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-gray-100">
-                                {notifications.map((notif: AppNotification) => (
-                                    <div
-                                        key={notif.id}
-                                        onClick={() => !notif.isRead && markAsRead(notif.id)}
-                                        className={`px-4 py-3 flex gap-3 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.isRead ? 'bg-blue-50/40' : 'bg-white'
-                                            }`}
-                                    >
-                                        <div className="flex-shrink-0 mt-0.5">
-                                            {getIcon(notif.type)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-sm text-gray-900 ${!notif.isRead ? 'font-semibold' : 'font-medium'}`}>
-                                                {notif.title}
-                                            </p>
-                                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
-                                                {notif.message}
-                                            </p>
-                                            <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
-                                                {formatTime(notif.timestamp)}
-                                            </p>
-                                        </div>
-                                        {!notif.isRead && (
-                                            <div className="flex-shrink-0 flex items-center justify-center w-3">
-                                                <div className="w-2 h-2 bg-[#004A98] rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
+                        {notificationList()}
                     </div>
+                </div>
+            )}
 
-                    {/* Footer */}
+            {isOpen && isMobile && (
+                <MobileBottomSheet
+                    title="Thông báo"
+                    eyebrow={unreadCount > 0 ? `${unreadCount} chưa đọc` : 'Đã đọc tất cả'}
+                    onClose={() => setIsOpen(false)}
+                    className="md:hidden"
+                    contentClassName="bg-white"
+                    sheetId="notifications"
+                >
                     {notifications.length > 0 && (
-                        <div className="px-4 py-2.5 border-t border-gray-200 bg-gray-50/50 text-center">
+                        <div className="grid grid-cols-2 gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
                             <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-xs text-gray-500 hover:text-gray-900 font-medium w-full"
+                                type="button"
+                                onClick={markAllAsRead}
+                                disabled={unreadCount === 0}
+                                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-[#004A98] disabled:text-gray-400"
                             >
-                                Đóng
+                                <CheckCircle className="h-4 w-4" />
+                                Đọc tất cả
+                            </button>
+                            <button
+                                type="button"
+                                onClick={clearAll}
+                                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-red-600"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Xóa tất cả
                             </button>
                         </div>
                     )}
-                </div>
+                    {notificationList(true)}
+                </MobileBottomSheet>
             )}
         </div>
     );
