@@ -89,8 +89,8 @@ function getFreshness(source: SourceView) {
   }
   const ageDays = (Date.now() - new Date(source.updatedAt).getTime()) / 86_400_000;
   const isFastChanging = source.id === 'registrations' || source.id === 'exams' || source.id === 'courses';
-  const currentThreshold = isFastChanging ? 3 : 7;
-  const staleThreshold = isFastChanging ? 14 : 30;
+  const currentThreshold = isFastChanging ? 30 : 55;
+  const staleThreshold = isFastChanging ? 70 : 90;
   if (ageDays <= currentThreshold) {
     return { label: 'Đã cập nhật', className: 'bg-[#004A98] text-white', needsAttention: false };
   }

@@ -19,6 +19,22 @@ interface ExamData {
     notes: string;
 }
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+function parseExamDate(value: string): Date | null {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+
+    const [, year, month, day] = match;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+function startOfDay(value: Date): Date {
+    const date = new Date(value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
+
 export function ExamScheduleVi() {
     const { exams } = useStudentDb();
     const { academicYear, semesterNumber } = useDepartmentData();
@@ -131,38 +147,43 @@ export function ExamScheduleVi() {
         });
     }, [selectedType, selectedLocation, searchQuery, selectedSemester]);
 
-    // Calculate days until exam
     const getDaysUntilExam = (examDate: string) => {
-        const today = new Date();
-        const exam = new Date(examDate);
-        const diffTime = exam.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
+        const exam = parseExamDate(examDate);
+        if (!exam) return Number.NaN;
+
+        // Dùng để debug
+        // const referenceDate = new Date();
+        // referenceDate.setDate(referenceDate.getDate() - 17);
+
+        return Math.round((startOfDay(exam).getTime() - startOfDay(new Date()).getTime()) / DAY_IN_MS);
     };
 
 
     // Find all upcoming exams (for the new card design)
     const upcomingExams = useMemo(() => {
         return filteredData
-            .filter(exam => getDaysUntilExam(exam.examDate) > 0)
-            .sort((a, b) => new Date(a.examDate).getTime() - new Date(b.examDate).getTime());
+            .filter(exam => getDaysUntilExam(exam.examDate) >= 0)
+            .sort((a, b) => (parseExamDate(a.examDate)?.getTime() ?? Number.POSITIVE_INFINITY) - (parseExamDate(b.examDate)?.getTime() ?? Number.POSITIVE_INFINITY));
     }, [filteredData]);
 
     // Count exams
     const totalExams = filteredData.length;
     const midtermExams = filteredData.filter(e => e.examType === 'Giữa kỳ').length;
     const finalExams = filteredData.filter(e => e.examType === 'Cuối kỳ').length;
-    const completedExams = filteredData.filter(e => getDaysUntilExam(e.examDate) <= 0).length;
+    const completedExams = filteredData.filter(e => getDaysUntilExam(e.examDate) < 0).length;
     const remainingExams = totalExams - completedExams;
     const progressPercent = totalExams > 0 ? Math.round((completedExams / totalExams) * 100) : 0;
-    const completedMidterms = filteredData.filter(e => e.examType === 'Giữa kỳ' && getDaysUntilExam(e.examDate) <= 0).length;
-    const completedFinals = filteredData.filter(e => e.examType === 'Cuối kỳ' && getDaysUntilExam(e.examDate) <= 0).length;
+    const completedMidterms = filteredData.filter(e => e.examType === 'Giữa kỳ' && getDaysUntilExam(e.examDate) < 0).length;
+    const completedFinals = filteredData.filter(e => e.examType === 'Cuối kỳ' && getDaysUntilExam(e.examDate) < 0).length;
 
     // Format date for display
     const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
+        const date = parseExamDate(dateString);
+        if (!date) return dateString;
         return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
+
+    const nextExamDays = upcomingExams.length > 0 ? getDaysUntilExam(upcomingExams[0].examDate) : null;
 
     return (
         <PageShell
@@ -218,8 +239,14 @@ export function ExamScheduleVi() {
                                         </div>
                                     </div>
                                     <div className="flex-shrink-0 ml-3 md:ml-4 text-right">
-                                        <p className="text-lg md:text-2xl font-bold text-[#004A98]">{getDaysUntilExam(upcomingExams[0].examDate)}</p>
-                                        <p className="text-[9px] md:text-[11px] text-gray-400">ngày nữa</p>
+                                        {nextExamDays === 0 ? (
+                                            <p className="text-sm font-bold text-rose-600 md:text-base">Hôm nay</p>
+                                        ) : (
+                                            <>
+                                                <p className="text-lg md:text-2xl font-bold text-[#004A98]">{nextExamDays}</p>
+                                                <p className="text-[9px] md:text-[11px] text-gray-400">ngày nữa</p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -241,8 +268,11 @@ export function ExamScheduleVi() {
                                         </div>
                                     </div>
                                     <div className="flex-shrink-0 ml-3 md:ml-4 text-right">
-                                        <span className="text-xs md:text-sm font-semibold text-gray-600">{getDaysUntilExam(exam.examDate)}</span>
-                                        <span className="text-[9px] md:text-[11px] text-gray-400 ml-1">ngày</span>
+                                        {getDaysUntilExam(exam.examDate) === 0 ? (
+                                            <span className="text-xs font-semibold text-rose-600 md:text-sm">Hôm nay</span>
+                                        ) : (
+                                            <><span className="text-xs md:text-sm font-semibold text-gray-600">{getDaysUntilExam(exam.examDate)}</span><span className="ml-1 text-[9px] text-gray-400 md:text-[11px]">ngày</span></>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -433,9 +463,8 @@ export function ExamScheduleVi() {
                         <div className="divide-y divide-gray-100">
                             {filteredData.map((exam, index) => {
                                 const daysUntil = getDaysUntilExam(exam.examDate);
-                                const isUpcoming = daysUntil > 0 && daysUntil <= 7;
                                 return (
-                                    <div key={exam.id} className={`px-4 py-3 ${isUpcoming ? 'bg-blue-50' : ''}`}>
+                                    <div key={exam.id} className="px-4 py-3">
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-0.5">
@@ -455,10 +484,16 @@ export function ExamScheduleVi() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            {daysUntil > 0 && (
+                                            {daysUntil >= 0 && (
                                                 <div className="flex-shrink-0 text-right">
-                                                    <p className="text-lg font-bold text-[#004A98] leading-tight">{daysUntil}</p>
-                                                    <p className="text-[9px] text-gray-400">ngày nữa</p>
+                                                    {daysUntil === 0 ? (
+                                                        <p className="text-xs font-bold text-rose-600">Hôm nay</p>
+                                                    ) : (
+                                                        <>
+                                                            <p className="text-lg font-bold text-[#004A98] leading-tight">{daysUntil}</p>
+                                                            <p className="text-[9px] text-gray-400">ngày nữa</p>
+                                                        </>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -501,16 +536,12 @@ export function ExamScheduleVi() {
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {filteredData.map((exam, index) => {
-                                    const daysUntil = getDaysUntilExam(exam.examDate);
-                                    const isUpcoming = daysUntil > 0 && daysUntil <= 7;
-
                                     return (
                                         <tr
                                             key={exam.id}
                                             className={`
                       hover:bg-gray-50 transition-colors
                       ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-                      ${isUpcoming ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
                     `}
                                         >
                                             <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
