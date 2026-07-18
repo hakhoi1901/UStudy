@@ -6,11 +6,11 @@ import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './compone
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from './components/GroupScheduleResult';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
-import { Button } from '../../components/ui/button';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../components/ui/dropdown-menu';
-import { Input } from '../../components/ui/input';
-import { PageHeader } from '../../components/ui/page-header';
-import { Textarea } from '../../components/ui/textarea';
+import { Button } from '../../components/ui/form/button';
+import { Input } from '../../components/ui/form/input';
+import { Textarea } from '../../components/ui/form/textarea';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../components/ui/overlays/dropdown-menu';
+import { PageHeader } from '../../components/layout/page-header';
 import { buildDensityMap, decodeGroupURL } from './services/group-scheduler';
 import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberToken, GroupScheduleOption } from './types';
 import { parseCourseInput, useGroupScheduler } from './hooks/use-group-scheduler';

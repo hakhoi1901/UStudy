@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Calculator, Info, PencilLine, Target } from 'lucide-react';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { STORAGE_KEYS } from '../../../config';
 import { readPlain, savePlain } from '../../../helpers/localStorage/save';
 import { useGPAPull } from '../hooks/use-gpa-pull';

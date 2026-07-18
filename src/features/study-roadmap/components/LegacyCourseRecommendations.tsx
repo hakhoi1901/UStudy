@@ -5,8 +5,8 @@ import { PrerequisiteFlowchart } from './PrerequisiteFlowchart';
 import type { Course } from '../../../types';
 import { useCourseData } from '../../../hooks/useCourseData';
 import { Filter, Search, Database } from 'lucide-react';
-import { BookmarkletButton } from '../../../components/BookmarkletButton';
-import { PageHeader } from '../../../components/ui/page-header';
+import { BookmarkletButton } from '../../../components/portal';
+import { PageHeader } from '../../../components/layout/page-header';
 
 export function CourseRecommendations() {
   const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());   // set chứa các môn học được chọn

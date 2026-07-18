@@ -1,5 +1,5 @@
 import { BookOpen, CalendarDays, Check, DollarSign, RotateCcw, SlidersHorizontal, TrendingUp } from 'lucide-react';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import type { DashboardLayoutPreferences, DashboardWidgetId } from '../services/dashboard-layout';
 import { DASHBOARD_WIDGET_IDS, DEFAULT_DASHBOARD_LAYOUT } from '../services/dashboard-layout';
 

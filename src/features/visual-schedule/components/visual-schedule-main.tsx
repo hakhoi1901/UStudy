@@ -3,9 +3,9 @@ import { Calendar, Clock, BookOpen, GraduationCap, ChevronLeft, ChevronRight, Do
 
 import { DAYS } from '../types';
 import { useVisualSchedule } from '../hooks/use-visual-schedule';
-import { NoDataCard } from '../../../components/nodataCard';
-import { PageHeader } from '../../../components/ui/page-header';
-import { PageShell } from '../../../components/ui/page-shell';
+import { NoDataCard } from '../../../components/feedback';
+import { PageHeader } from '../../../components/layout/page-header';
+import { PageShell } from '../../../components/layout/page-shell';
 import { ColorLegend } from './ColorLegend';
 import { HolidayManagerDialog } from './HolidayManagerDialog';
 import { CourseDetailCard } from './CourseDetailCard';

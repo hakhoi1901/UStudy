@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../../hooks/useStudentDb';
 import { useDepartmentData } from '../../../context/DepartmentContext';
-import { PageHeader } from '../../../components/ui/page-header';
-import { PageShell } from '../../../components/ui/page-shell';
+import { PageHeader } from '../../../components/layout/page-header';
+import { PageShell } from '../../../components/layout/page-shell';
 
 interface ExamData {
     id: string;

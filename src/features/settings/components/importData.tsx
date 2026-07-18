@@ -1,8 +1,8 @@
 import { CheckCircle2, Database, Download, FileUp, RefreshCw, Upload } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { AppDialog } from '../../../components/ui/app-dialog';
-import { SecurityLock } from '../../../components/SecurityLock';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { SecurityLock } from '../../../components/security';
 import { useCrypto } from '../../../context/CryptoContext';
 import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
 

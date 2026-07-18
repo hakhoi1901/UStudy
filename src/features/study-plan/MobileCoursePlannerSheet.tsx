@@ -1,4 +1,4 @@
-import { MobileCourseDetailContent, MobileCourseSheetFrame } from '../../components/MobileCourseDetailSheet';
+import { MobileCourseDetailContent, MobileCourseSheetFrame } from '../../components/course';
 import { StatusBadge } from './StatusBadge';
 import type { CourseMeta, StudyPlanStorage, MobileSheetStep, PrerequisiteRule, StudyPlanSemester } from './types';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CalendarPlus, ChevronUp, ExternalLink, GitBranch, Trash2 } from 'lucide-react';
 import { courseLinks } from '../../assets/data/courseLinks';
-import { DocumentContributionModal } from '../../components/DocumentContributionModal';
+import { DocumentContributionModal } from '../../components/course';
 import { StatusBadge } from './StatusBadge';
 import type { CourseDragStartHandler, CourseMeta, MobilePlannerOpenHandler } from './types';
 

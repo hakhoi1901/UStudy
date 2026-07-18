@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BookOpen, Check, ChevronDown, HelpCircle, Plus, Search, Trash2, X } from 'lucide-react';
-import { MobileBottomSheet } from '../../../../components/ui/mobile-bottom-sheet';
+import { MobileBottomSheet } from '../../../../components/ui/overlays/mobile-bottom-sheet';
 import type { GPAPullManualRetakeProps } from '../../types';
 
 export function GPAPullManualRetake({

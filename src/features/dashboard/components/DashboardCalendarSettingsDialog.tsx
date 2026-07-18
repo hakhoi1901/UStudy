@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bell, BellOff, BookOpen, CalendarClock, Check, GraduationCap, Plus, Trash2 } from 'lucide-react';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { supportsCalendarNotifications } from '../../../mobile/calendar-notifications';
 import type { DashboardCalendarSource } from '../services/dashboard-layout';
 

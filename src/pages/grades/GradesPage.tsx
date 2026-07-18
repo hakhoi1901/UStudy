@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { NoDataCard } from '../../components/nodataCard';
-import { SectionTabs } from '../../components/ui/section-tabs';
-import { PageHeader } from '../../components/ui/page-header';
-import { PageShell } from '../../components/ui/page-shell';
-import { TranscriptExportMenu } from '../../components/TranscriptExportMenu';
+import { NoDataCard } from '../../components/feedback';
+import { SectionTabs } from '../../components/ui/navigation/section-tabs';
+import { PageHeader } from '../../components/layout/page-header';
+import { PageShell } from '../../components/layout/page-shell';
+import { TranscriptExportMenu } from '../../features/grades';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
 

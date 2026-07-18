@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, Bookmark, CheckCircle2, Download, ExternalLink, LoaderCircle, Puzzle, RefreshCw, Smartphone } from 'lucide-react';
-import { BookmarkletButton } from '../../../components/BookmarkletButton';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { BookmarkletButton } from '../../../components/portal';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../../../mobile/portal-sync';
 import { getInjectedPortalExtensionVersion, isPortalExtensionInjected, requestPortalExtension } from '../../../portal-sync/bridge';

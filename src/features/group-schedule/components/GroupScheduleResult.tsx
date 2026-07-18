@@ -1,9 +1,9 @@
 import { CalendarCheck } from 'lucide-react';
 
-import { Badge } from '../../../components/ui/badge';
+import { Badge } from '../../../components/ui/display/badge';
 import type { GroupScheduleItem, GroupScheduleOption } from '../types';
 import { Save } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../../../components/ui/form/button';
 export type GroupScheduleResultViewMode = 'course' | 'member';
 
 interface GroupScheduleResultProps {

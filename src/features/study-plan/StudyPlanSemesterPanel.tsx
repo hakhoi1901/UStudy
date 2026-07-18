@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as XLSX from 'xlsx';
 import { AlertTriangle, ChevronDown, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, MoreVertical, Maximize, GraduationCap } from 'lucide-react';
-import { AppDialog } from '../../components/ui/app-dialog';
+import { AppDialog } from '../../components/ui/overlays/app-dialog';
 import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
 import { DEFAULT_SEMESTER_COUNT, SEMESTERS_PER_STUDY_YEAR, formatStudyPlanSemesterLabel, getStudyPlanSemesterIndex } from './semester-utils';
 

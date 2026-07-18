@@ -5,10 +5,10 @@ import { Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle,
     DialogFooter, DialogDescription, DialogTrigger,
-} from '../../../components/ui/dialog';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
+} from '../../../components/ui/overlays/dialog';
+import { Button } from '../../../components/ui/form/button';
+import { Input } from '../../../components/ui/form/input';
+import { Label } from '../../../components/ui/form/label';
 import { type ScheduleSession, type ScheduleOverrides, DAYS } from '../types';
 import { calculateRowSpan, getDisplayEnd } from '../services/schedule-helpers';
 

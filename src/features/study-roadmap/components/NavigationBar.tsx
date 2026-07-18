@@ -1,7 +1,7 @@
 import type { ElementType } from 'react';
 
 import type { Tab } from '../types';
-import { SectionTabs } from '../../../components/ui/section-tabs';
+import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
 
 export type NavTab = {
     id: Tab;

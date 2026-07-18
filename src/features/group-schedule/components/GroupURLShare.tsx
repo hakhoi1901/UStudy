@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Check, Copy, Link } from 'lucide-react';
 
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
+import { Button } from '../../../components/ui/form/button';
+import { Input } from '../../../components/ui/form/input';
 
 interface GroupURLShareProps {
   url: string;

@@ -14,7 +14,7 @@ import {
   Undo2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { APP_CONFIG } from '../../../config';
 import { CACHE_POPULATED_EVENT } from '../../../context/CryptoContext';
 import { useCrypto } from '../../../context/CryptoContext';

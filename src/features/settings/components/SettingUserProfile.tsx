@@ -1,4 +1,4 @@
-import { Select } from "../../../components/Selection"
+import { Select } from "./LegacySelect"
 import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
@@ -7,7 +7,7 @@ import { useCrypto } from "../../../context/CryptoContext";
 import { processRawData } from "../../../logic/dataProcessor";
 import { createImportRollbackSnapshot, readFromStorage, savePlain, saveSecure, populateSecureCache } from "../../../helpers/localStorage/save";
 import { CACHE_POPULATED_EVENT } from "../../../context/CryptoContext";
-import { SecurityLock } from "../../../components/SecurityLock";
+import { SecurityLock } from "../../../components/security";
 import { STORAGE_KEYS } from "../../../config/storageKeys";
 import { buildRawImportPreview } from "../../../logic/import-preview";
 import { mergeImportMetadata, type PortalDataSource } from "../../../logic/import-metadata";

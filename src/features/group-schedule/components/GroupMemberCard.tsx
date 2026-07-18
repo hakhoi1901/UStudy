@@ -1,8 +1,8 @@
 import { ChevronDown, Trash2 } from 'lucide-react';
 
 import type { GroupMemberToken } from '../types';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/accordion';
-import { Button } from '../../../components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/navigation/accordion';
+import { Button } from '../../../components/ui/form/button';
 
 interface GroupMemberCardProps {
   member: GroupMemberToken;

@@ -8,9 +8,9 @@ import {
   Clock,
   AlertTriangle,
 } from 'lucide-react';
-import { NoDataCard } from '../../components/nodataCard';
-import { PageHeader } from '../../components/ui/page-header';
-import { PageShell } from '../../components/ui/page-shell';
+import { NoDataCard } from '../../components/feedback';
+import { PageHeader } from '../../components/layout/page-header';
+import { PageShell } from '../../components/layout/page-shell';
 import TuitionStatus from './components/tuition-status';
 import { TuitionCountDown } from './components/tuition-countdown';
 import { Payment } from './components/payment';

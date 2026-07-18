@@ -1,6 +1,6 @@
 import React from 'react';
-import { PageHeader } from '../../../components/ui/page-header';
-import { PageShell } from '../../../components/ui/page-shell';
+import { PageHeader } from '../../../components/layout/page-header';
+import { PageShell } from '../../../components/layout/page-shell';
 import {
     Shield, Lock, KeyRound, Server, Eye, EyeOff, Fingerprint,
     HardDriveDownload, Trash2, RefreshCw, AlertTriangle, CheckCircle2,

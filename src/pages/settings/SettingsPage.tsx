@@ -2,10 +2,10 @@ import { User, Shield, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { DataSourceCenter, ImportData, PortalSyncTools, ReportError, SettingUserProfile } from '../../features/settings';
 import { useStudentDb } from '../../hooks/useStudentDb';
-import { ChangePinModal } from '../../components/ChangePinModal';
+import { ChangePinModal } from '../../components/security';
 import { useCrypto } from '../../context/CryptoContext';
-import { PageHeader } from '../../components/ui/page-header';
-import { PageShell } from '../../components/ui/page-shell';
+import { PageHeader } from '../../components/layout/page-header';
+import { PageShell } from '../../components/layout/page-shell';
 
 export function SettingsPage({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();

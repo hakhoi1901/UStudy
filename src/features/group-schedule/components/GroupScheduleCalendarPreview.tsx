@@ -7,7 +7,7 @@ import { weekDays, timePeriods } from '../../../constants';
 import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../../../components/ui/form/button';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];

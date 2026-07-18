@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronUp, ChevronDown, CheckCircle2, Clock, XCircle, GitBranch, ExternalLink } from 'lucide-react';
 import { courseLinks } from '../../../assets/data/courseLinks';
-import { DocumentContributionModal } from '../../../components/DocumentContributionModal';
+import { DocumentContributionModal } from '../../../components/course';
 
 // định nghĩa props cho CourseRowTrainingProgram
 interface CourseRowTrainingProgramProps {

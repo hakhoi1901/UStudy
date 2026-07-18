@@ -1,6 +1,6 @@
 import { Calculator, MoreVertical, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { MobileCourseSheetFrame } from '../../../../components/MobileCourseDetailSheet';
+import { MobileCourseSheetFrame } from '../../../../components/course';
 import { STORAGE_KEYS } from '../../../../config';
 import { readPlain, savePlain } from '../../../../helpers/localStorage/save';
 import type { GPAPullCourse, GPAPullSemesterTableProps } from '../../types';

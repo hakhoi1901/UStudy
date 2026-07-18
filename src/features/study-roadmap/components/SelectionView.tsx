@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Filter, Search, Info, DatabaseBackup } from 'lucide-react';
 import { CourseRow } from './CourseRow';
-import { MobileCourseDetailContent, MobileCourseSheetFrame } from '../../../components/MobileCourseDetailSheet';
+import { MobileCourseDetailContent, MobileCourseSheetFrame } from '../../../components/course';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 import type { Course } from '../../../types';
 

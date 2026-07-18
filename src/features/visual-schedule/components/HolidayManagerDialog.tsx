@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, Check, Pencil, Plus, Trash2 } from 'lucide-react';
-import { AppDialog } from '../../../components/ui/app-dialog';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { getHolidayDateRange, sortHolidays, toDateInputValue } from '../services/holiday-logic';
 import type { Holiday, ScheduleOverrides } from '../types';
 
