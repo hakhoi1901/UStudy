@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
-import { ChatbotWidget } from '../components/ChatbotWidget';
+import { ChatbotWidget } from '../features/chatbot';
 
 interface MainLayoutProps {
   children: ReactNode;

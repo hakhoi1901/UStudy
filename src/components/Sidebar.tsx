@@ -41,7 +41,7 @@ const bottomNavItems = [
   { icon: Home, label: 'Tổng quan', page: 'dashboard' },
   { icon: Map, label: 'Lộ trình', page: 'courses' },
   { icon: BarChart3, label: 'Điểm', page: 'grades' },
-  { icon: Subtitles, label: 'Lịch thi', page: 'examSchedule' },
+  { icon: Calendar ,label: "TKB", page: 'schedule'},
   { icon: Menu, label: 'Thêm', page: '__more__' },
 ];
 

@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import type { LocalNotificationSchema } from '@capacitor/local-notifications';
-import { getCalendarEventStart, type DashboardCalendarEvent } from '../pages/dashboardWidgets/dashboard-calendar-events';
+import { getCalendarEventStart, type DashboardCalendarEvent } from '../features/dashboard';
 
 const NOTIFICATION_OWNER = 'ustudy-calendar';
 const MAX_SCHEDULED_NOTIFICATIONS = 400;

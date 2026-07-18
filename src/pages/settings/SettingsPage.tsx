@@ -1,0 +1,95 @@
+import { User, Shield, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { DataSourceCenter, ImportData, PortalSyncTools, ReportError, SettingUserProfile } from '../../features/settings';
+import { useStudentDb } from '../../hooks/useStudentDb';
+import { ChangePinModal } from '../../components/ChangePinModal';
+import { useCrypto } from '../../context/CryptoContext';
+import { PageHeader } from '../../components/ui/page-header';
+import { PageShell } from '../../components/ui/page-shell';
+
+export function SettingsPage({ onPageChange }: { onPageChange: (page: string) => void }) {
+    const { name } = useStudentDb();
+    const { lock, hasData } = useCrypto();
+    const [showChangePinModal, setShowChangePinModal] = useState(false);
+
+    const handleLockNow = () => {
+        lock();
+        window.location.reload();
+    };
+
+    return (
+        <PageShell
+            header={<PageHeader
+                title="Cài đặt"
+                description="Quản lý tài khoản và tùy chọn của bạn."
+            />}
+        >
+
+            <div className="flex flex-col items-center">
+                <div className="w-full max-w-4xl flex flex-col gap-4 md:gap-6">
+                    {/* Thông tin cá nhân */}
+                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                                <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
+                                    <User className="w-7 h-7" />Thông tin cá nhân
+                                </h2>
+                                <p className="text-sm text-gray-500 mb-6">Quản lý thông tin cá nhân của bạn.</p>
+                                <div className="flex flex-col gap-2">
+                                    <div className="text-gray-600"> Tên: {name}</div>
+                                </div>
+                            </div>
+
+                    <SettingUserProfile onPageChange={onPageChange} />
+
+                    {/* Công cụ đồng bộ dữ liệu */}
+                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                                <div className="pb-6 border-b border-gray-200">
+                                    <h2 className="text-gray-900 font-semibold mb-1">Công cụ đồng bộ dữ liệu</h2>
+                                    <p className="mb-6 text-sm text-gray-500">Chọn Extension để đồng bộ thuận tiện hoặc Bookmarklet cho chế độ thủ công nhẹ.</p>
+                                    <PortalSyncTools />
+                                </div>
+                                <div className="py-6">
+                                    <ImportData />
+                                </div>
+                            </div>
+
+                    <DataSourceCenter />
+
+                    {/* Bảo mật */}
+                    {hasData && (
+                        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                                    <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
+                                        <Shield className="w-5 h-5 text-blue-600" />
+                                        Bảo mật
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mb-6">
+                                        Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mật khẩu.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <button
+                                            onClick={() => setShowChangePinModal(true)}
+                                            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+                                        >
+                                            <Shield className="w-4 h-4" />
+                                            Đổi mật khẩu
+                                        </button>
+                                        <button
+                                            onClick={handleLockNow}
+                                            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                                        >
+                                            <Lock className="w-4 h-4" />
+                                            Khóa ngay
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                    <ReportError />
+                </div>
+            </div>
+
+            {showChangePinModal && (
+                <ChangePinModal onClose={() => setShowChangePinModal(false)} />
+            )}
+        </PageShell>
+    );
+}

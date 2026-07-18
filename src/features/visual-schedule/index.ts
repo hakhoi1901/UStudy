@@ -4,3 +4,4 @@ export * from './hooks/use-schedule';
 export * from './hooks/use-visual-schedule';
 export * from './services/schedule-logic';
 export * from './services/schedule-export';
+export * from './services/holiday-logic';

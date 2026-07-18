@@ -9,7 +9,7 @@ import {
     Smartphone,
 } from 'lucide-react';
 import { useDepartmentData } from '../context/DepartmentContext';
-import { ImportData } from '../features/setting/components/importData';
+import { ImportData } from '../features/settings';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../mobile/portal-sync';
 
 const ANDROID_APP_DOWNLOAD_URL = '/downloads/UStudy-android.apk';
