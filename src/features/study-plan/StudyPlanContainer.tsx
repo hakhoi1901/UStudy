@@ -33,6 +33,7 @@ export function StudyPlanContainer() {
     };
 
     const layoutRef = useRef<HTMLDivElement>(null);
+    const activeResizePointerIdRef = useRef<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeDropId, setActiveDropId] = useState<string | null>(null);
     const [mobileTab, setMobileTab] = useState<MobilePlannerTab>('courses');
@@ -444,22 +445,28 @@ export function StudyPlanContainer() {
     };
 
     const handleLayoutResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
         event.preventDefault();
+        activeResizePointerIdRef.current = event.pointerId;
+        event.currentTarget.setPointerCapture(event.pointerId);
         setIsResizingLayout(true);
         updateLayoutWidth(event.clientX);
+    };
 
-        const handlePointerMove = (moveEvent: PointerEvent) => {
-            updateLayoutWidth(moveEvent.clientX);
-        };
+    const handleLayoutResizeMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (activeResizePointerIdRef.current !== event.pointerId) return;
+        event.preventDefault();
+        updateLayoutWidth(event.clientX);
+    };
 
-        const handlePointerUp = () => {
-            setIsResizingLayout(false);
-            document.removeEventListener('pointermove', handlePointerMove);
-            document.removeEventListener('pointerup', handlePointerUp);
-        };
+    const finishLayoutResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (activeResizePointerIdRef.current !== event.pointerId) return;
+        activeResizePointerIdRef.current = null;
+        setIsResizingLayout(false);
 
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
     };
 
     const layoutStyle = {
@@ -540,7 +547,15 @@ export function StudyPlanContainer() {
                     <button
                         type="button"
                         onPointerDown={handleLayoutResizeStart}
-                        className={`group flex h-full min-h-[28rem] w-4 cursor-col-resize items-center justify-center rounded-lg transition-colors ${isResizingLayout ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
+                        onPointerMove={handleLayoutResizeMove}
+                        onPointerUp={finishLayoutResize}
+                        onPointerCancel={finishLayoutResize}
+                        onLostPointerCapture={(event) => {
+                            if (activeResizePointerIdRef.current !== event.pointerId) return;
+                            activeResizePointerIdRef.current = null;
+                            setIsResizingLayout(false);
+                        }}
+                        className={`group flex h-full min-h-[28rem] w-4 touch-none cursor-col-resize items-center justify-center rounded-lg transition-colors ${isResizingLayout ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                         title="Kéo để chỉnh chiều rộng"
                         aria-label="Kéo để chỉnh chiều rộng danh sách môn và khung học kỳ"
                     >
