@@ -1,48 +1,25 @@
 import { ScheduleLogic } from './schedule-logic';
+import { getScheduleCalendarWeekCount, isSessionActiveInWeek } from './holiday-logic';
 import type { ScheduleSession, WeeklySchedule } from '../types';
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
 function getExportWeekCount(schedule: WeeklySchedule): number {
-    const { semesterStartDate } = schedule;
-    const datedWeeks = semesterStartDate
-        ? Math.max(0, ...schedule.sessions.map((session) => {
-            if (!session.endDateParsed) return 0;
-            return Math.floor((session.endDateParsed.getTime() - semesterStartDate.getTime()) / WEEK_MS) + 1;
-        }))
-        : 0;
-    const plannedWeeks = Math.max(0, ...schedule.sessions.map((session) => session.totalWeeks || 0));
-    const baseWeeks = Math.max(datedWeeks, plannedWeeks, 1);
-    const holidayWeeks = [...(schedule.systemHolidays || []), ...(schedule.overrides?.holidays || [])]
-        .filter((holiday) => holiday.startWeek <= baseWeeks)
-        .reduce((sum, holiday) => sum + holiday.duration, 0);
-
-    return baseWeeks + holidayWeeks;
+    const holidays = [...(schedule.systemHolidays || []), ...(schedule.overrides?.holidays || [])];
+    return getScheduleCalendarWeekCount(schedule.sessions, schedule.semesterStartDate, holidays);
 }
 
 function getSessionForWeek(schedule: WeeklySchedule, session: ScheduleSession, calendarWeek: number): ScheduleSession | null {
     const semesterStart = schedule.semesterStartDate;
     if (!semesterStart) return null;
 
-    const holidays = [...(schedule.systemHolidays || []), ...(schedule.overrides?.holidays || [])]
-        .filter((holiday) => holiday.affectedCourseCodes === 'all' || holiday.affectedCourseCodes.includes(session.courseCode));
-    const actualWeek = ScheduleLogic.getActualWeekForCourse(calendarWeek, session.courseCode, holidays);
-    if (actualWeek === null) return null;
+    const holidays = [...(schedule.systemHolidays || []), ...(schedule.overrides?.holidays || [])];
+    if (!isSessionActiveInWeek(session, calendarWeek, semesterStart, holidays)) return null;
 
     const sessionOverride = schedule.overrides?.sessionOverrides[session.id];
     if (sessionOverride) {
-        if (sessionOverride.startWeek !== undefined && actualWeek < sessionOverride.startWeek) return null;
-        if (sessionOverride.endWeek !== undefined && actualWeek > sessionOverride.endWeek) return null;
+        if (sessionOverride.startWeek !== undefined && calendarWeek < sessionOverride.startWeek) return null;
+        if (sessionOverride.endWeek !== undefined && calendarWeek > sessionOverride.endWeek) return null;
         if (sessionOverride.hiddenWeeks?.includes(calendarWeek)) return null;
     }
-
-    const contentWeekStart = new Date(semesterStart);
-    contentWeekStart.setDate(contentWeekStart.getDate() + (actualWeek - 1) * 7);
-    const contentWeekEnd = new Date(contentWeekStart);
-    contentWeekEnd.setDate(contentWeekEnd.getDate() + 6);
-    contentWeekEnd.setHours(23, 59, 59, 999);
-    if (session.startDateParsed && contentWeekEnd < session.startDateParsed) return null;
-    if (session.endDateParsed && contentWeekStart > session.endDateParsed) return null;
 
     const weekOverride = schedule.overrides?.weekOverrides[`${calendarWeek}_${session.id}`];
     if (!weekOverride) return session;

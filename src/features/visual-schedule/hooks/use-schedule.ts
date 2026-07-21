@@ -7,6 +7,14 @@ import { type WeeklySchedule, type ScheduleOverrides, type Holiday } from '../ty
 
 const EMPTY_OVERRIDES: ScheduleOverrides = { sessionOverrides: {}, weekOverrides: {}, holidays: [] };
 
+function normalizeOverrides(value: ScheduleOverrides | null | undefined): ScheduleOverrides {
+    return {
+        sessionOverrides: value?.sessionOverrides || {},
+        weekOverrides: value?.weekOverrides || {},
+        holidays: Array.isArray(value?.holidays) ? value.holidays : [],
+    };
+}
+
 export function useSchedule(): WeeklySchedule & {
     overrides: ScheduleOverrides;
     systemHolidays: Holiday[];
@@ -26,19 +34,25 @@ export function useSchedule(): WeeklySchedule & {
 
     const [systemHolidays, setSystemHolidays] = useState<Holiday[]>([]);
 
+    const readOverridesForSemester = () => {
+        const semesterOverrides = readFromStorage<ScheduleOverrides | null>(overridesStorageKey, null);
+        if (semesterOverrides) return normalizeOverrides(semesterOverrides);
+
+        // Dữ liệu trước đây dùng một key chung; giữ làm fallback để không mất thiết lập cũ.
+        return normalizeOverrides(readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, EMPTY_OVERRIDES));
+    };
+
     // Dùng useState để tránh reload trang khi cập nhật overrides
-    const [overrides, setOverrides] = useState<ScheduleOverrides>(() => {
-        return readFromStorage<ScheduleOverrides>(overridesStorageKey, EMPTY_OVERRIDES) || EMPTY_OVERRIDES;
-    });
+    const [overrides, setOverrides] = useState<ScheduleOverrides>(readOverridesForSemester);
 
     useEffect(() => {
-        setOverrides(readFromStorage<ScheduleOverrides>(overridesStorageKey, EMPTY_OVERRIDES) || EMPTY_OVERRIDES);
+        setOverrides(readOverridesForSemester());
     }, [overridesStorageKey]);
 
     useEffect(() => {
         fetch('/holidays.json')
             .then(res => res.json())
-            .then(data => setSystemHolidays(data))
+            .then(data => setSystemHolidays(Array.isArray(data) ? data : []))
             .catch(err => console.error('Failed to load system holidays:', err));
     }, []);
 
@@ -53,8 +67,9 @@ export function useSchedule(): WeeklySchedule & {
     }, [courses_registered, metadata, allCoursesMeta, overrides, systemHolidays]);
 
     const updateOverrides = (newOverrides: ScheduleOverrides) => {
-        saveToStorage(overridesStorageKey, newOverrides);
-        setOverrides(newOverrides); // Cập nhật state trực tiếp, không reload
+        const normalized = normalizeOverrides(newOverrides);
+        saveToStorage(overridesStorageKey, normalized);
+        setOverrides(normalized);
     };
 
     return {

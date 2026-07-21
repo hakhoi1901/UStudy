@@ -5,6 +5,7 @@ export * from './components/grade-history-table';
 export * from './components/retake-courses';
 export * from './components/gpa-simulation-table';
 export * from './components/gpa-pull-tool';
+export * from './components/TranscriptExportMenu';
 
 // Hooks (Public API)
 export * from './hooks/use-student-grade-data';

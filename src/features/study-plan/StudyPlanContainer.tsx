@@ -11,21 +11,19 @@ import { MobileCoursePlannerSheet } from './MobileCoursePlannerSheet';
 import {
     DEFAULT_LEFT_PANEL_PERCENT,
     DEFAULT_SEMESTER_COUNT,
-    addSemesters,
+    SEMESTERS_PER_STUDY_YEAR,
     buildHistoricalStudyPlan,
     clampPanelPercent,
     createDefaultSemesters,
-    formatSemesterLabel,
     formatStudyPlanSemesterLabel,
     getAnchorSemester,
     getSemesterId,
-    getSemesterSequenceValue,
+    getSemesterSortValue,
     getStudyPlanSemesterIndex,
     isStudyPlanStorage,
     mergeHistoricalStudyPlan,
-    parseSemesterLabel,
 } from './semester-utils';
-import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, MobileSheetStep, ParsedSemester, PrerequisiteRule } from './types';
+import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, MobileSheetStep, PrerequisiteRule } from './types';
 
 const StudyPlanPreview = lazy(() => import('./StudyPlanPreview'));
 
@@ -35,6 +33,7 @@ export function StudyPlanContainer() {
     };
 
     const layoutRef = useRef<HTMLDivElement>(null);
+    const activeResizePointerIdRef = useRef<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeDropId, setActiveDropId] = useState<string | null>(null);
     const [mobileTab, setMobileTab] = useState<MobilePlannerTab>('courses');
@@ -203,7 +202,16 @@ export function StudyPlanContainer() {
                 courseIds
                     .map((id) => courseById.get(id))
                     .filter((course): course is CourseMeta => !!course)
-                    .map((course) => ({ ...course, status: getCourseStatus(course.course_id) }));
+                    .map((course) => ({
+                        ...course,
+                        status: getCourseStatus(course.course_id),
+                        prerequisites: (prereqByCourse.get(course.course_id) || []).map((rule) => ({
+                            id: rule.prereq_id,
+                            name: courseById.get(rule.prereq_id)?.course_name_vi || 'Chưa có tên môn',
+                            type: rule.type,
+                            status: getCourseStatus(rule.prereq_id),
+                        })),
+                    }));
 
             const filterCourseList = (courseList: CourseMeta[]) => {
                 if (!lowerSearch) return courseList;
@@ -246,7 +254,7 @@ export function StudyPlanContainer() {
             acc[key] = attachCoursesData(category);
             return acc;
         }, {});
-    }, [categories, courseById, getCourseStatus, searchTerm]);
+    }, [categories, courseById, getCourseStatus, prereqByCourse, searchTerm]);
 
     const handleDragStart = (courseId: string, event: DragEvent<HTMLDivElement>) => {
         event.dataTransfer.effectAllowed = 'move';
@@ -317,47 +325,56 @@ export function StudyPlanContainer() {
         }));
     };
 
-    const addSemester = () => {
+    const addSemester = (semesterIndex: number) => {
         setStudyPlan((previous) => {
-            const studyPlanIndices = previous.semesters
-                .map((semester) => getStudyPlanSemesterIndex(semester.label))
-                .filter((index): index is number => index !== null);
-            const lastStudyPlanIndex = studyPlanIndices.length > 0 ? Math.max(...studyPlanIndices) : null;
+            if (!Number.isInteger(semesterIndex) || semesterIndex < 0) return previous;
+            if (previous.semesters.some((semester) => getStudyPlanSemesterIndex(semester.label) === semesterIndex)) return previous;
 
-            if (lastStudyPlanIndex !== null) {
-                const label = formatStudyPlanSemesterLabel(lastStudyPlanIndex + 1);
-                const newSemester = {
-                    id: getSemesterId(label),
-                    label,
-                };
-
-                return {
-                    semesters: [...previous.semesters, newSemester],
-                    plan: {
-                        ...previous.plan,
-                        [newSemester.id]: [],
-                    },
-                };
-            }
-
-            const parsedSemesters = previous.semesters
-                .map((semester) => parseSemesterLabel(semester.label))
-                .filter((semester): semester is ParsedSemester => !!semester);
-            const sortedSemesters = parsedSemesters.sort((a, b) => getSemesterSequenceValue(a) - getSemesterSequenceValue(b));
-            const anchorSemester = sortedSemesters[0] || getAnchorSemester(studentDb?.grades);
-            const lastParsedSemester = sortedSemesters[sortedSemesters.length - 1];
-            const nextSemester = addSemesters(lastParsedSemester || anchorSemester, lastParsedSemester ? 1 : previous.semesters.length);
-            const label = formatSemesterLabel(nextSemester, anchorSemester);
+            const label = formatStudyPlanSemesterLabel(semesterIndex);
             const newSemester = {
                 id: getSemesterId(label),
                 label,
             };
 
             return {
-                semesters: [...previous.semesters, newSemester],
+                semesters: [...previous.semesters, newSemester]
+                    .sort((first, second) => getSemesterSortValue(first.label) - getSemesterSortValue(second.label)),
                 plan: {
                     ...previous.plan,
                     [newSemester.id]: [],
+                },
+            };
+        });
+    };
+
+    const addStudyYear = (year: number) => {
+        if (!Number.isInteger(year) || year < 1) return;
+
+        setStudyPlan((previous) => {
+            const existingIndices = new Set(
+                previous.semesters
+                    .map((semester) => getStudyPlanSemesterIndex(semester.label))
+                    .filter((index): index is number => index !== null)
+            );
+            const firstSemesterIndex = (year - 1) * SEMESTERS_PER_STUDY_YEAR;
+            const newSemesters = Array.from(
+                { length: SEMESTERS_PER_STUDY_YEAR },
+                (_, offset) => firstSemesterIndex + offset
+            )
+                .filter((semesterIndex) => !existingIndices.has(semesterIndex))
+                .map((semesterIndex) => {
+                    const label = formatStudyPlanSemesterLabel(semesterIndex);
+                    return { id: getSemesterId(label), label };
+                });
+
+            if (newSemesters.length === 0) return previous;
+
+            return {
+                semesters: [...previous.semesters, ...newSemesters]
+                    .sort((first, second) => getSemesterSortValue(first.label) - getSemesterSortValue(second.label)),
+                plan: {
+                    ...previous.plan,
+                    ...Object.fromEntries(newSemesters.map((semester) => [semester.id, []])),
                 },
             };
         });
@@ -373,6 +390,32 @@ export function StudyPlanContainer() {
             return {
                 semesters: previous.semesters.filter((item) => item.id !== semesterId),
                 plan: remainingPlan,
+            };
+        });
+    };
+
+    const deleteStudyYear = (year: number) => {
+        if (!Number.isInteger(year) || year < 1) return;
+
+        setStudyPlan((previous) => {
+            const removableSemesterIds = new Set(
+                previous.semesters
+                    .filter((semester) => {
+                        const semesterIndex = getStudyPlanSemesterIndex(semester.label);
+                        return !semester.isHistorical
+                            && semesterIndex !== null
+                            && Math.floor(semesterIndex / SEMESTERS_PER_STUDY_YEAR) + 1 === year;
+                    })
+                    .map((semester) => semester.id)
+            );
+
+            if (removableSemesterIds.size === 0) return previous;
+
+            return {
+                semesters: previous.semesters.filter((semester) => !removableSemesterIds.has(semester.id)),
+                plan: Object.fromEntries(
+                    Object.entries(previous.plan).filter(([semesterId]) => !removableSemesterIds.has(semesterId))
+                ),
             };
         });
     };
@@ -402,22 +445,28 @@ export function StudyPlanContainer() {
     };
 
     const handleLayoutResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
         event.preventDefault();
+        activeResizePointerIdRef.current = event.pointerId;
+        event.currentTarget.setPointerCapture(event.pointerId);
         setIsResizingLayout(true);
         updateLayoutWidth(event.clientX);
+    };
 
-        const handlePointerMove = (moveEvent: PointerEvent) => {
-            updateLayoutWidth(moveEvent.clientX);
-        };
+    const handleLayoutResizeMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (activeResizePointerIdRef.current !== event.pointerId) return;
+        event.preventDefault();
+        updateLayoutWidth(event.clientX);
+    };
 
-        const handlePointerUp = () => {
-            setIsResizingLayout(false);
-            document.removeEventListener('pointermove', handlePointerMove);
-            document.removeEventListener('pointerup', handlePointerUp);
-        };
+    const finishLayoutResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        if (activeResizePointerIdRef.current !== event.pointerId) return;
+        activeResizePointerIdRef.current = null;
+        setIsResizingLayout(false);
 
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
     };
 
     const layoutStyle = {
@@ -498,7 +547,15 @@ export function StudyPlanContainer() {
                     <button
                         type="button"
                         onPointerDown={handleLayoutResizeStart}
-                        className={`group flex h-full min-h-[28rem] w-4 cursor-col-resize items-center justify-center rounded-lg transition-colors ${isResizingLayout ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
+                        onPointerMove={handleLayoutResizeMove}
+                        onPointerUp={finishLayoutResize}
+                        onPointerCancel={finishLayoutResize}
+                        onLostPointerCapture={(event) => {
+                            if (activeResizePointerIdRef.current !== event.pointerId) return;
+                            activeResizePointerIdRef.current = null;
+                            setIsResizingLayout(false);
+                        }}
+                        className={`group flex h-full min-h-[28rem] w-4 touch-none cursor-col-resize items-center justify-center rounded-lg transition-colors ${isResizingLayout ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                         title="Kéo để chỉnh chiều rộng"
                         aria-label="Kéo để chỉnh chiều rộng danh sách môn và khung học kỳ"
                     >
@@ -518,6 +575,8 @@ export function StudyPlanContainer() {
                     onAddCourseToSemester={addCourseToSemester}
                     onRemoveCourseFromSemester={removeCourseFromSemester}
                     onAddSemester={addSemester}
+                    onAddYear={addStudyYear}
+                    onDeleteYear={deleteStudyYear}
                     onDeleteSemester={deleteSemester}
                     onClearStudyPlan={clearStudyPlan}
                     onOpenPreview={() => setRightView('preview')}

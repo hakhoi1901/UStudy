@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Sidebar } from '../components/Sidebar';
-import { Header } from '../components/Header';
+import { Header, Sidebar } from '../components/layout';
+import { ChatbotWidget } from '../features/chatbot';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -28,6 +28,8 @@ export function MainLayout({
           </div>
         </main>
       </div>
+
+      {currentPage !== 'chatbot' && <ChatbotWidget />}
     </div>
   );
 }

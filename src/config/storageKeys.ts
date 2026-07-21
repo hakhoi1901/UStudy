@@ -1,5 +1,6 @@
 /**
  * Các Document Key để lưu dữ liệu xuống Local Storage
+ * Schema và quy tắc sử dụng: docs/local-storage-schema.md
  */
 export const STORAGE_KEYS = {
     /** Dữ liệu sinh viên đầy đủ (thông tin cá nhân, điểm thi, lịch thi) */
@@ -41,8 +42,14 @@ export const STORAGE_KEYS = {
     GRADE_MAIN_TAB: 'grade_main_tab',
     /** Tab đang mở trong Lộ trình học tập */
     STUDY_ROADMAP_ACTIVE_TAB: 'study_roadmap_active_tab',
+    /** Thứ tự, trạng thái ẩn/hiện và cấu hình các thẻ trên trang Tổng quan */
+    DASHBOARD_LAYOUT: 'dashboard_layout_preferences',
     /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
+    /** Cấu hình điểm thành phần theo từng môn trong Kế hoạch GPA */
+    GPA_COMPONENT_GRADES: 'gpa_component_grades',
+    /** Điểm môn được chỉnh riêng trong chế độ Mục tiêu của Kế hoạch GPA */
+    GPA_GOAL_GRADES: 'gpa_goal_grades',
     /** Cấu hình ưu tiên xếp lịch */
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản nháp kế hoạch học tập theo học kỳ */
@@ -63,6 +70,8 @@ export const STORAGE_KEYS = {
     GROUP_SCHEDULER_MEMBERS: 'group_scheduler_members',
     /** Trạng thái UI (chế độ xem, tab đang mở, trạng thái ẩn/hiện) của Xếp lịch Nhóm */
     GROUP_SCHEDULE_UI_STATE: 'group_schedule_ui_state',
+    /** Toàn bộ kết quả thành công gần nhất của bộ xếp lịch nhóm */
+    GROUP_SCHEDULE_LAST_RESULT: 'group_schedule_last_result',
     /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
     SCHEDULE_MODE: 'schedule_mode',
 };

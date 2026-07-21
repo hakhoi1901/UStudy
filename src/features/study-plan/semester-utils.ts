@@ -2,6 +2,7 @@ import { AcademicRulesEngine } from '../grades';
 import type { CourseMeta, StudyPlanStorage, GradeRecord, ParsedSemester, StudyPlanSemester } from './types';
 
 export const DEFAULT_SEMESTER_COUNT = 12;
+export const SEMESTERS_PER_STUDY_YEAR = 3;
 export const DEFAULT_LEFT_PANEL_PERCENT = 68;
 export const MIN_LEFT_PANEL_PERCENT = 45;
 export const MAX_LEFT_PANEL_PERCENT = 78;

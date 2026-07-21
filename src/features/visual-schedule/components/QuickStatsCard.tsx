@@ -1,6 +1,6 @@
 // QuickStatsCard.tsx
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { Card, CardContent } from '../../../components/ui/card';
+import { Card, CardContent } from '../../../components/ui/display/card';
 
 interface QuickStatsCardProps {
     icon: React.ElementType;

@@ -1,5 +1,4 @@
 # test web (repomix)
-android
 src/assets/data
 # Logs
 logs
@@ -12,6 +11,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-extension
 dist-ssr
 *.local
 
@@ -36,9 +36,11 @@ temp/*
 localstorage.json
 
 *.txt
+public/downloads/*.zip
+artifacts/*.apk
 
-android/
 build/*
 android/app/build/*
 capacitor-cordova-android-plugins/*
 capacitor-android-plugins/*
+SKILL.md

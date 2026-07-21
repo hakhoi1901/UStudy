@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
-import { DashboardWidgets } from '../pages/dashboardWidgets/DashboardWidgets';
-import { IntegratedStudyRoadmap } from '../pages/integratedStudyRoadmap/IntegratedStudyRoadmap';
-import { GradeManagement } from '../pages/gradeManagement/GradeManagement';
-import { TuitionPage } from '../pages/TuitionPage/TuitionPage';
-import { VisualSchedule } from '../pages/visualSchedule/VisualSchedule';
-import { Setting } from '../pages/setting/Setting';
-import { PrivacySecurity, SettingUserProfile } from '../features/setting';
-import { ExamScheduleVi } from '../pages/ExamSchedule/examSchedule';
+import { DashboardPage } from '../pages/dashboard/DashboardPage';
+import { StudyRoadmapPage } from '../pages/study-roadmap/StudyRoadmapPage';
+import { GradesPage } from '../pages/grades/GradesPage';
+import { TuitionPage } from '../pages/tuition/TuitionPage';
+import { SchedulePage } from '../pages/schedule/SchedulePage';
+import { SettingsPage } from '../pages/settings/SettingsPage';
+import { PrivacySecurity, SettingUserProfile } from '../features/settings';
+import { ExamSchedulePage } from '../pages/exams/ExamSchedulePage';
+import { ChatbotPage } from '../pages/chatbot/ChatbotPage';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
@@ -82,15 +83,16 @@ function RoutedApp() {
                 <Route path={APP_ROUTES.setup} element={<SetupRoute isConfigured={isConfigured} onPageChange={handlePageChange} />} />
 
                 <Route element={<RequireConfigured isConfigured={isConfigured} />}>
-                    <Route path={APP_ROUTES.dashboard} element={<DashboardWidgets />} />
-                    <Route path={`${APP_ROUTES.studyRoadmap}/*`} element={<IntegratedStudyRoadmap />} />
-                    <Route path={APP_ROUTES.legacyGroupSchedule} element={<IntegratedStudyRoadmap />} />
-                    <Route path={APP_ROUTES.grades} element={<GradeManagement />} />
+                    <Route path={APP_ROUTES.dashboard} element={<DashboardPage />} />
+                    <Route path={`${APP_ROUTES.studyRoadmap}/*`} element={<StudyRoadmapPage />} />
+                    <Route path={APP_ROUTES.legacyGroupSchedule} element={<StudyRoadmapPage />} />
+                    <Route path={APP_ROUTES.grades} element={<GradesPage />} />
                     <Route path={APP_ROUTES.tuition} element={<TuitionPage selectedSemester={selectedSemester} />} />
-                    <Route path={APP_ROUTES.schedule} element={<VisualSchedule selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.campusMap} element={<CampusMap />} />
-                    <Route path={APP_ROUTES.examSchedule} element={<ExamScheduleVi />} />
-                    <Route path={APP_ROUTES.settings} element={<Setting onPageChange={handlePageChange} />} />
+                    <Route path={APP_ROUTES.schedule} element={<SchedulePage selectedSemester={selectedSemester} />} />
+                    <Route path={APP_ROUTES.examSchedule} element={<ExamSchedulePage />} />
+                    <Route path={APP_ROUTES.chatbot} element={<ChatbotPage />} />
+                    <Route path={APP_ROUTES.settings} element={<SettingsPage onPageChange={handlePageChange} />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to={isConfigured ? APP_ROUTES.dashboard : APP_ROUTES.setup} replace />} />

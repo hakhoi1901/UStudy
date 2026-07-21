@@ -248,21 +248,22 @@ export const ScheduleLogic = {
         let isHoliday = false;
 
         // Sắp xếp holiday theo tuần tăng dần để tính toán chính xác
-        const sortedHolidays = [...holidays].sort((a, b) => a.startWeek - b.startWeek);
+        const sortedHolidays = [...holidays].sort((a, b) => (a.startWeek ?? Number.MAX_SAFE_INTEGER) - (b.startWeek ?? Number.MAX_SAFE_INTEGER));
 
         for (const h of sortedHolidays) {
             const isAffected = h.affectedCourseCodes === 'all' || h.affectedCourseCodes.includes(courseCode);
-            if (!isAffected) continue;
+            if (!isAffected || !h.startWeek) continue;
+            const duration = Math.max(1, h.duration || 1);
 
             // Nếu currentWeek nằm trong khoảng nghỉ
-            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + h.duration) {
+            if (currentWeek >= h.startWeek && currentWeek < h.startWeek + duration) {
                 isHoliday = true;
                 break;
             }
 
             // Nếu currentWeek đã vượt qua kỳ nghỉ, thì "tuần nội dung" bị lùi lại
-            if (currentWeek >= h.startWeek + h.duration) {
-                shiftedWeeks += h.duration;
+            if (currentWeek >= h.startWeek + duration) {
+                shiftedWeeks += duration;
             }
         }
 
@@ -314,8 +315,8 @@ export const ScheduleLogic = {
             const labHours = parseInt(meta?.lab_hours as any) || 0;
             const exerciseHours = parseInt(meta?.exercise_hours as any) || 0;
 
-            const scheduleStr = course.schedule || '';
-            const scheduleParts = scheduleStr.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
+            const scheduleStr: string = course.schedule || '';
+            const scheduleParts: string[] = scheduleStr.split(/[;,]/).map((s) => s.trim()).filter(Boolean);
 
             if (scheduleParts.length > 0 && !countedCourseCodes.has(course.id)) {
                 countedCourseCodes.add(course.id);
@@ -329,9 +330,9 @@ export const ScheduleLogic = {
             if (cType === 'TH') requiredHours = labHours;
             else if (cType === 'BT') requiredHours = exerciseHours;
 
-            const parsedSessions = scheduleParts.map((part: string, partIdx: number) => {
+            const parsedSessions = scheduleParts.flatMap((part: string, partIdx: number) => {
                 const match = part.match(SCHEDULE_PART_REGEX);
-                if (!match) return null;
+                if (!match) return [];
 
                 const dayStr = match[1];
                 let dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
@@ -351,8 +352,8 @@ export const ScheduleLogic = {
                 }
 
                 const adjusted = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
-                return { partIdx, sessionId, dayOfWeek, room, adjusted };
-            }).filter((session): session is NonNullable<typeof session> => session !== null);
+                return [{ partIdx, sessionId, dayOfWeek, room, adjusted }];
+            });
 
             const periodsPerWeek = parsedSessions.reduce((sum, session) => sum + session.adjusted.duration, 0);
             const totalWeeks = requiredHours > 0 && periodsPerWeek > 0

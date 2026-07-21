@@ -6,6 +6,10 @@
         "@capacitor/android": "^8.3.3",
         "@capacitor/app": "^8.1.0",
         "@capacitor/core": "^8.3.3",
+        "@capacitor/local-notifications": "^8.2.1",
+        "@dnd-kit/core": "^6.3.1",
+        "@dnd-kit/sortable": "^10.0.0",
+        "@dnd-kit/utilities": "^3.2.2",
         "@radix-ui/react-accordion": "^1.2.3",
         "@radix-ui/react-alert-dialog": "^1.1.6",
         "@radix-ui/react-aspect-ratio": "^1.1.2",
@@ -39,11 +43,13 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "*",
         "cmdk": "^1.1.1",
+        "docxtemplater": "^3.69.0",
         "embla-carousel-react": "^8.6.0",
         "input-otp": "^1.4.2",
         "lucide-react": "^0.487.0",
         "next-themes": "^0.4.6",
         "pako": "^2.1.0",
+        "pizzip": "^3.2.0",
         "react": "^18.3.1",
         "react-day-picker": "^8.10.1",
         "react-dom": "^18.3.1",
@@ -74,6 +80,9 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "npm run build:extension && vite build",
+        "build:extension": "node scripts/build-extension.mjs",
+        "build:apk": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
+        "typecheck": "tsc -b"
     }
 }

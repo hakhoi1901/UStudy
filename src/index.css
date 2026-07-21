@@ -35,16 +35,20 @@
     @apply px-1 md:px-0;
   }
 
+  .ustudy-page-content {
+    @apply min-w-0;
+  }
+
   .ustudy-page-header {
-    @apply mb-4 md:mb-6;
+    @apply mb-4 flex items-start justify-between gap-4 md:mb-6;
   }
 
   .ustudy-page-title {
-    @apply mb-1 text-xl font-bold text-gray-950 md:mb-2 md:text-2xl;
+    @apply mb-2 text-2xl font-bold leading-tight text-gray-950;
   }
 
   .ustudy-page-description {
-    @apply text-sm leading-relaxed text-slate-600 md:text-base;
+    @apply text-sm leading-relaxed text-slate-600 md:text-base hidden md:block;
   }
 
   .ustudy-card {
@@ -116,6 +120,16 @@
 
   .ustudy-tabs::-webkit-scrollbar {
     display: none;
+  }
+
+  .ustudy-schedule-page {
+    --schedule-row-height: 36px;
+  }
+
+  @media (min-width: 768px) {
+    .ustudy-schedule-page {
+      --schedule-row-height: 56px;
+    }
   }
 
   .ustudy-tab {
@@ -246,4 +260,22 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.mobile-only {
+  display: flex;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+
+  .desktop-only {
+    display: block;
+  }
 }

@@ -6,6 +6,7 @@ export type PageId =
     | 'schedule'
     | 'campusMap'
     | 'examSchedule'
+    | 'chatbot'
     | 'settings'
     | 'privacy'
     | 'setup';
@@ -27,6 +28,7 @@ export const APP_ROUTES = {
     schedule: '/schedule',
     campusMap: '/campus-map',
     examSchedule: '/exam-schedule',
+    chatbot: '/chatbot',
     settings: '/settings',
     privacy: '/privacy',
     setup: '/setup',
@@ -40,6 +42,7 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     schedule: APP_ROUTES.schedule,
     campusMap: APP_ROUTES.campusMap,
     examSchedule: APP_ROUTES.examSchedule,
+    chatbot: APP_ROUTES.chatbot,
     settings: APP_ROUTES.settings,
     privacy: APP_ROUTES.privacy,
     setup: APP_ROUTES.setup,
@@ -61,6 +64,7 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/schedule\/?$/, 'schedule'],
     [/^\/campus-map\/?$/, 'campusMap'],
     [/^\/exam-schedule\/?$/, 'examSchedule'],
+    [/^\/chatbot\/?$/, 'chatbot'],
     [/^\/settings\/?$/, 'settings'],
     [/^\/privacy\/?$/, 'privacy'],
     [/^\/setup\/?$/, 'setup'],

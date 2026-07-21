@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UStudy Portal Sync</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <img src="icon.svg" alt="" />
+        <div>
+          <h1>UStudy Portal Sync</h1>
+          <p id="extension-status">Đang kiểm tra trạng thái...</p>
+        </div>
+      </header>
+
+      <section id="sync-summary" class="summary" hidden></section>
+
+      <section class="section">
+        <div class="section-heading">
+          <h2>Cách đồng bộ</h2>
+        </div>
+        <div class="segmented" id="sync-mode">
+          <button type="button" data-mode="off">Tắt</button>
+          <button type="button" data-mode="manual">Thủ công</button>
+          <button type="button" data-mode="ask">Hỏi trước</button>
+          <button type="button" data-mode="auto">Tự động</button>
+        </div>
+        <p class="hint" id="mode-description"></p>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <h2>Nguồn dữ liệu</h2>
+          <span>Chỉ lưu trên máy</span>
+        </div>
+        <div class="source-list" id="source-list"></div>
+      </section>
+
+      <section class="section period-section">
+        <div class="section-heading"><h2>Kỳ cho lớp mở và ĐKHP</h2></div>
+        <div class="period-grid">
+          <label>Năm học<input id="academic-year" maxlength="5" placeholder="25-26" /></label>
+          <label>Học kỳ<select id="semester"><option value="1">Học kỳ 1</option><option value="2">Học kỳ 2</option><option value="3">Học kỳ 3</option></select></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading"><h2>Thời gian nghỉ tự động</h2></div>
+        <label class="cooldown-field">Số phút giữa hai lần tự động quét<input id="cooldown-minutes" type="number" min="1" max="1440" step="1" /></label>
+        <p class="hint">Chỉ áp dụng khi điều hướng trong cùng tab Portal. Đồng bộ thủ công luôn chạy ngay.</p>
+      </section>
+
+      <label class="open-app-option">
+        <input id="open-app" type="checkbox" />
+        <span><strong>Mở UStudy sau khi quét</strong><small>Dùng tab UStudy đang mở hoặc tạo tab mới.</small></span>
+      </label>
+
+      <p id="error-message" class="error" hidden></p>
+
+      <footer class="actions">
+        <button id="save-settings" class="secondary" type="button">Lưu thiết lập</button>
+        <button id="sync-now" class="primary" type="button">Mở Portal và đồng bộ</button>
+      </footer>
+    </main>
+    <script src="config.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

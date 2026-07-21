@@ -37,6 +37,7 @@ export default class CourseDatabase {
                 }
 
                 return {
+                    ...cls,
                     id: cls.id,
                     schedule: cls.schedule,
                     scheduleMask: bitsetMask // Lưu Object Bitset
@@ -44,6 +45,7 @@ export default class CourseDatabase {
             });
 
             this.courses.push({
+                ...subj,
                 id: subj.id,
                 name: subj.name,
                 credits: subj.credits,
