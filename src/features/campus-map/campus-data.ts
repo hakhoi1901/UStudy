@@ -3,6 +3,11 @@ export type BuildingId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'NDH';
 export interface CampusRoom {
   code: string;
   name?: string;
+  description?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  openingHours?: string;
   aliases?: string[];
   type?: 'classroom' | 'lab' | 'office' | 'hall' | 'service' | 'self-study' | 'tolet';
 }
@@ -85,6 +90,11 @@ export interface RoomSearchResult {
   roomNumber: string;
   fullCode: string;
   roomName?: string;
+  description?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  openingHours?: string;
 }
 
 export interface CampusRoomSuggestion extends RoomSearchResult {
@@ -378,15 +388,6 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
       {
         number: 1,
         rooms: [
-          {code: 'NDH101', name: 'NĐH 101', type: 'classroom'},
-          {code: 'NDH102', name: 'NĐH 102', type: 'classroom'},
-          {code: 'NDH103', name: 'NĐH 103', type: 'classroom'},
-          {code: 'NDH104', name: 'NĐH 104', type: 'classroom'},
-          {code: 'NDH105', name: 'NĐH 105', type: 'classroom'},
-          {code: 'NDH106', name: 'NĐH 106', type: 'classroom'},
-          {code: 'NDH107', name: 'NĐH 107', type: 'classroom'},
-          {code: 'NDH108', name: 'NĐH 108', type: 'classroom'},
-          {code: 'NDH109', name: 'NĐH 109', type: 'classroom'},
           {code: 'NQKH', name: 'Hội quán khoa học - Hầm nhà điều hành', type: 'service', aliases: ['Hội quán sinh viên', 'HQKH']},
           {code: 'NSV-NĐH1-A', name: 'Nhà vệ sinh (Nam)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam ndh nha dieu hanh tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nam nhà điều hành nđh ndh tầng lầu 1', 'nvs', 'wc', 'toilet']},
           {code: 'NSV-NĐH1-B', name: 'Nhà vệ sinh (Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nu ndh nha dieu hanh tang lau 1', 'Nhà vệ sinh nvs wc toilet tolet nữ nhà điều hành nđh ndh tầng lầu 1', 'nvs', 'wc', 'toilet']}
@@ -429,7 +430,11 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
       {
         number: 2,
         rooms: [
-          {code: 'PĐT', name: 'Phòng đào tạo - NĐH 2.4', type: 'office', aliases: ['pdt', 'pđt', 'phong dao tao', 'Phòng đào tạo', 'bảng điểm', 'bang diem', '2.4', 'ndh24']},
+          {code: 'PĐT', name: 'Phòng đào tạo - NĐH 2.4', type: 'office', aliases: ['pdt', 'pđt', 'phong dao tao', 'Phòng đào tạo', 'bảng điểm', 'bang diem', '2.4', 'ndh24'], description: 'Tiếp nhận và hỗ trợ các thủ tục liên quan đến đào tạo.',
+  phone: '(028) 0000 0000',
+  email: 'pdt_khtn@hcmus.edu.vn',
+  website: 'https://hcmus.edu.vn/phong-dao-tao/',
+  openingHours: 'Thứ Hai - Thứ Sáu, 08:00 - 16:30',},
           {code: 'PCTSV', name: 'Phòng công tác sinh viên - NĐH 2.8', type: 'office', aliases: ['pctsv', 'phong cong tac sinh vien', 'Phòng công tác sinh viên', 'drl', 'đrl', 'diem ren luyen', 'điểm rèn luyện', 'xác nhận sinh viên', 'xac nhan sinh vien', '2.8', 'ndh28']},
           {code: 'NSV-NĐH2-A', name: 'Nhà vệ sinh (Nam)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nam ndh nha dieu hanh tang lau 2', 'Nhà vệ sinh nvs wc toilet tolet nam nhà điều hành nđh tầng lầu 2', 'nvs nam ndh', 'wc', 'toilet']},
           {code: 'NSV-NĐH2-B', name: 'Nhà vệ sinh (Nữ)', type: 'tolet', aliases: ['nha ve sinh nvs wc toilet tolet nu ndh nha dieu hanh tang lau 2', 'Nhà vệ sinh nvs wc toilet tolet nữ nhà điều hành nđh tầng lầu 2', 'nvs nu ndh', 'wc', 'toilet']},
@@ -517,7 +522,7 @@ export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestio
     for (const floor of building.floors) {
       for (const room of getFloorRooms(floor)) {
         const code = normalizeSearchText(room.code);
-        const names = [room.name, ...(room.aliases || [])]
+        const names = [room.name, room.description, ...(room.aliases || [])]
           .filter((value): value is string => Boolean(value));
         const roomValues = [room.code, ...names];
         const buildingValues = [
@@ -552,6 +557,11 @@ export function searchCampusRooms(input: string, limit = 6): CampusRoomSuggestio
           roomNumber: room.code,
           fullCode: room.code,
           roomName: room.name,
+          description: room.description,
+          phone: room.phone,
+          email: room.email,
+          website: room.website,
+          openingHours: room.openingHours,
           aliases: room.aliases,
           score,
         });

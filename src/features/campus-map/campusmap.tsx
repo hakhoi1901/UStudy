@@ -1,40 +1,19 @@
 'use client';
 import {
-  Building2,
-  ChevronRight,
-  CircleParking,
   DoorOpen,
-  Layers3,
   LocateFixed,
   MapPin,
-  Navigation,
   Search,
   SlidersHorizontal,
-  Stars,
   X,
 } from 'lucide-react';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { CAMPUS_BUILDINGS, findCampusRoom, getFloorRooms, searchCampusRooms } from './campus-data';
 import type { BuildingId, CampusBuilding, CampusRoomSuggestion, RoomSearchResult } from './campus-data';
+import { CampusSidePanel } from './CampusSidePanel';
 import { FloorPlanView } from './FloorPlanView';
-
-type Building = {
-  id: BuildingId;
-  shortLabel: string;
-  name: string;
-  description: string;
-  floors: number;
-  rooms: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotate?: number;
-  accent: string;
-  facilities: string[];
-};
 
 const ROOM_TYPE_LABELS: Record<string, string> = {
   classroom: 'Phòng học',
@@ -45,276 +24,6 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
   'self-study': 'Tự học',
   tolet: 'Nhà vệ sinh',
 };
-
-const LEGACY_BUILDINGS: Building[] = [
-  {
-    id: 'A',
-    shortLabel: 'A',
-    name: 'Tòa A',
-    description: 'Khu giảng đường và phòng học lý thuyết.',
-    floors: 5,
-    rooms: 42,
-    x: 92,
-    y: 74,
-    width: 156,
-    height: 92,
-    rotate: -2,
-    accent: '#004A98',
-    facilities: ['Thang bộ', 'Nhà vệ sinh'],
-  },
-  {
-    id: 'B',
-    shortLabel: 'B',
-    name: 'Tòa B',
-    description: 'Khu phòng học chung và phòng bộ môn.',
-    floors: 7,
-    rooms: 56,
-    x: 314,
-    y: 62,
-    width: 134,
-    height: 110,
-    rotate: 2,
-    accent: '#0058B2',
-    facilities: ['Thang máy', 'Thang bộ'],
-  },
-  {
-    id: 'C',
-    shortLabel: 'C',
-    name: 'Tòa C',
-    description: 'Khu phòng thực hành và phòng máy.',
-    floors: 4,
-    rooms: 31,
-    x: 514,
-    y: 82,
-    width: 148,
-    height: 82,
-    rotate: -1,
-    accent: '#0066CC',
-    facilities: ['Phòng máy', 'Thang bộ'],
-  },
-  {
-    id: 'D',
-    shortLabel: 'D',
-    name: 'Tòa D',
-    description: 'Khu giảng đường trung tâm.',
-    floors: 8,
-    rooms: 68,
-    x: 76,
-    y: 242,
-    width: 166,
-    height: 102,
-    rotate: 1,
-    accent: '#003A78',
-    facilities: ['Thang máy', 'Thang bộ', 'Máy bán nước'],
-  },
-  {
-    id: 'E',
-    shortLabel: 'E',
-    name: 'Tòa E',
-    description: 'Khu học tập nhiều tầng và phòng chuyên dụng.',
-    floors: 10,
-    rooms: 84,
-    x: 300,
-    y: 222,
-    width: 170,
-    height: 128,
-    rotate: -1,
-    accent: '#004A98',
-    facilities: ['Thang máy', 'Thang bộ', 'Nhà vệ sinh'],
-  },
-  {
-    id: 'F',
-    shortLabel: 'F',
-    name: 'Tòa F',
-    description: 'Khu phòng học và phòng sinh hoạt.',
-    floors: 6,
-    rooms: 47,
-    x: 532,
-    y: 238,
-    width: 140,
-    height: 96,
-    rotate: 2,
-    accent: '#0058B2',
-    facilities: ['Thang bộ', 'Khu tự học'],
-  },
-  {
-    id: 'G',
-    shortLabel: 'G',
-    name: 'Tòa G',
-    description: 'Khu phòng học quy mô nhỏ.',
-    floors: 3,
-    rooms: 22,
-    x: 164,
-    y: 410,
-    width: 144,
-    height: 84,
-    rotate: -2,
-    accent: '#0066CC',
-    facilities: ['Thang bộ'],
-  },
-  {
-    id: 'NDH',
-    shortLabel: 'NĐH',
-    name: 'Nhà điều hành',
-    description: 'Khu hành chính và các phòng chức năng.',
-    floors: 9,
-    rooms: 63,
-    x: 402,
-    y: 398,
-    width: 188,
-    height: 98,
-    rotate: 1,
-    accent: '#003A78',
-    facilities: ['Thang máy', 'Thang bộ', 'Hành chính'],
-  },
-];
-
-function parseLegacyRoomCode(input: string): RoomSearchResult | null {
-  const normalized = input
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, '')
-    .replace('NĐH', 'NDH');
-
-  const match = normalized.match(/^(NDH|[A-G])[-.]?(\d{3,4})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  const buildingId = match[1] as BuildingId;
-  const roomNumber = match[2];
-
-  // A305 → tầng 3, phòng 05
-  // E1002 → tầng 10, phòng 02
-  const floor =
-    roomNumber.length === 3
-      ? Number(roomNumber.slice(0, 1))
-      : Number(roomNumber.slice(0, 2));
-
-  if (!Number.isInteger(floor) || floor < 1) {
-    return null;
-  }
-
-  return {
-    buildingId,
-    floor,
-    roomNumber,
-    fullCode: `${buildingId === 'NDH' ? 'NĐH' : buildingId}${roomNumber}`,
-  };
-}
-
-function BuildingBlock({
-  building,
-  selected,
-  searched,
-  onClick,
-}: {
-  building: CampusBuilding;
-  selected: boolean;
-  searched: boolean;
-  onClick: () => void;
-}) {
-  const centerX = building.x + building.width / 2;
-  const centerY = building.y + building.height / 2;
-
-  return (
-    <g
-      role="button"
-      tabIndex={0}
-      aria-label={`Chọn ${building.name}`}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          onClick();
-        }
-      }}
-      className="cursor-pointer outline-none"
-      transform={`rotate(${building.rotate ?? 0} ${centerX} ${centerY})`}
-    >
-      {selected && (
-        <rect
-          x={building.x - 8}
-          y={building.y - 8}
-          width={building.width + 16}
-          height={building.height + 16}
-          rx="28"
-          fill="#004A98"
-          opacity="0.12"
-        />
-      )}
-
-      <rect
-        x={building.x + 7}
-        y={building.y + 9}
-        width={building.width}
-        height={building.height}
-        rx="20"
-        fill="#0f172a"
-        opacity="0.1"
-      />
-
-      <rect
-        x={building.x}
-        y={building.y}
-        width={building.width}
-        height={building.height}
-        rx="20"
-        fill={selected ? building.accent : '#ffffff'}
-        stroke={selected ? building.accent : searched ? '#0066CC' : '#dbe3ec'}
-        strokeWidth={selected ? 3 : searched ? 3 : 2}
-      />
-
-      {!selected && (
-        <rect
-          x={building.x + 10}
-          y={building.y + 10}
-          width={building.width - 20}
-          height={building.height - 20}
-          rx="14"
-          fill="#f8fafc"
-        />
-      )}
-
-      <text
-        x={building.x + 22}
-        y={building.y + 38}
-        fill={selected ? '#ffffff' : '#0f172a'}
-        fontSize={building.id === 'NDH' ? 23 : 29}
-        fontWeight="800"
-      >
-        {building.shortLabel}
-      </text>
-
-      <text
-        x={building.x + 22}
-        y={building.y + 62}
-        fill={selected ? '#dbeafe' : '#64748b'}
-        fontSize="12"
-        fontWeight="600"
-      >
-        {building.floors.length} tầng
-      </text>
-
-      {searched && (
-        <g>
-          <circle
-            cx={building.x + building.width - 20}
-            cy={building.y + 20}
-            r="10"
-            fill={selected ? '#ffffff' : '#0066CC'}
-          />
-          <circle
-            cx={building.x + building.width - 20}
-            cy={building.y + 20}
-            r="4"
-            fill={selected ? building.accent : '#ffffff'}
-          />
-        </g>
-      )}
-    </g>
-  );
-}
 
 export default function CampusMap() {
   const [selectedBuildingId, setSelectedBuildingId] =
@@ -329,6 +38,8 @@ export default function CampusMap() {
   const [searchFilters, setSearchFilters] = useState({ buildingId: 'all', floor: 'all', roomType: 'all' });
   const [view, setView] = useState<'campus' | 'floor'>('campus');
   const [isRoomListOpen, setIsRoomListOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const sidePanelRef = useRef<HTMLDivElement>(null);
 
   const selectedBuilding = useMemo(
     () =>
@@ -374,6 +85,11 @@ export default function CampusMap() {
     if (searchFilters.buildingId === 'all') return Array.from(new Set(CAMPUS_BUILDINGS.flatMap((building) => building.floors.map((floor) => floor.number)))).sort((left, right) => left - right);
     return CAMPUS_BUILDINGS.find((building) => building.id === searchFilters.buildingId)?.floors.map((floor) => floor.number) ?? [];
   }, [searchFilters.buildingId]);
+
+  useEffect(() => {
+    if (!searchResult || !window.matchMedia('(max-width: 1023px)').matches) return;
+    sidePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [searchResult]);
 
   function selectBuilding(building: CampusBuilding) {
     setSelectedBuildingId(building.id);
@@ -477,6 +193,7 @@ export default function CampusMap() {
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
+              ref={searchInputRef}
               value={searchValue}
               onChange={(event) => {
                 setSearchValue(event.target.value);
@@ -1473,187 +1190,22 @@ export default function CampusMap() {
           </svg>
         </div>
 
-        <aside className="border-t border-slate-200 bg-white lg:border-l lg:border-t-0">
-          <div className="flex h-full flex-col">
-            <div
-              className="px-5 py-5 text-white sm:px-6"
-              style={{
-                background: `linear-gradient(135deg, ${selectedBuilding.accent}, #0066CC)`,
-              }}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-                    <Building2 className="h-6 w-6" />
-                  </div>
-
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
-                    Khu học tập
-                  </p>
-                  <h2 className="mt-1 text-2xl font-bold">
-                    {selectedBuilding.name}
-                  </h2>
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-blue-50/90">
-                    {selectedBuilding.description}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-white/15 px-3 py-2 text-center backdrop-blur">
-                  <div className="text-xl font-bold">
-                    {selectedBuilding.floors.length}
-                  </div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-100">
-                    tầng
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 space-y-6 p-5 sm:p-6">
-              {searchResult?.buildingId === selectedBuilding.id && (
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                  <div className="flex gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#004A98] text-white">
-                      <Navigation className="h-4 w-4" />
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[#004A98]">
-                        Đã tìm thấy
-                      </p>
-                      <p className="mt-1 font-bold text-slate-900">
-                        Phòng {searchResult.fullCode}
-                      </p>
-                      {searchResult.roomName && <p className="mt-1 text-sm font-medium text-slate-700">{searchResult.roomName}</p>}
-                      <p className="mt-1 text-sm text-slate-600">
-                        {selectedBuilding.name}, tầng{' '}
-                        {searchResult.floor}.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <Layers3 className="h-4 w-4 text-[#004A98]" />
-                  <p className="mt-3 text-xl font-bold text-slate-950">
-                    {selectedBuilding.floors.length}
-                  </p>
-                  <p className="text-xs font-medium text-slate-500">
-                    Tổng số tầng
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <DoorOpen className="h-4 w-4 text-[#004A98]" />
-                  <p className="mt-3 text-xl font-bold text-slate-950">
-                    {selectedBuilding.roomCount}
-                  </p>
-                  <p className="text-xs font-medium text-slate-500">
-                    Phòng dự kiến
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Chọn tầng
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    {selectedBuilding.floors.length} tầng
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-5 gap-2">
-                  {floors.map((floor) => {
-                    const active = floor === selectedFloor;
-
-                    return (
-                      <button
-                        key={floor}
-                        type="button"
-                        onClick={() => setSelectedFloor(floor)}
-                        className={`flex aspect-square items-center justify-center rounded-xl text-sm font-bold transition ${
-                          active
-                            ? 'bg-[#004A98] text-white shadow-sm'
-                            : 'border border-slate-200 bg-white text-slate-600 hover:border-[#004A98] hover:bg-blue-50 hover:text-[#004A98]'
-                        }`}
-                      >
-                        {floor}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="mb-3 text-sm font-bold text-slate-900">
-                  Thông tin tầng {selectedFloor}
-                </h3>
-
-                <button
-                  type="button"
-                  onClick={() => setIsRoomListOpen(true)}
-                  className="group flex w-full items-center justify-between rounded-2xl border border-slate-200 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/60"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:bg-white group-hover:text-[#004A98]">
-                      <DoorOpen className="h-4 w-4" />
-                    </div>
-
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        Danh sách phòng
-                      </p>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Xem các phòng theo từng tầng
-                      </p>
-                    </div>
-                  </div>
-
-                  <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#004A98]" />
-                </button>
-              </div>
-
-              <div>
-                <h3 className="mb-3 text-sm font-bold text-slate-900">
-                  Tiện ích tại tòa
-                </h3>
-
-                <div className="flex flex-wrap gap-2">
-                  {selectedBuilding.facilities.map((facility) => (
-                    <span
-                      key={facility}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600"
-                    >
-                      {facility.includes('Thang') ? (
-                        <Stars className="h-3.5 w-3.5" />
-                      ) : facility.includes('xe') ? (
-                        <CircleParking className="h-3.5 w-3.5" />
-                      ) : (
-                        <MapPin className="h-3.5 w-3.5" />
-                      )}
-                      {facility}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-200 p-5 sm:p-6">
-              <button
-                type="button"
-                onClick={() => setView('floor')}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#004A98] to-[#0066CC] text-sm font-semibold text-white shadow-sm transition hover:from-[#003A78] hover:to-[#0058B2] focus:outline-none focus:ring-4 focus:ring-blue-100"
-              >
-                <Layers3 className="h-4 w-4" />
-                Xem sơ đồ tầng {selectedFloor}
-              </button>
-            </div>
-          </div>
-        </aside>
+        <div ref={sidePanelRef}>
+          <CampusSidePanel
+            building={selectedBuilding}
+            floors={floors}
+            selectedFloor={selectedFloor}
+            searchResult={searchResult?.buildingId === selectedBuilding.id ? searchResult : null}
+            onFloorChange={setSelectedFloor}
+            onOpenRoomList={() => setIsRoomListOpen(true)}
+            onOpenFloorPlan={() => setView('floor')}
+            onBackToExplore={clearSearch}
+            onFindAnotherRoom={() => {
+              clearSearch();
+              searchInputRef.current?.focus();
+            }}
+          />
+        </div>
       </div>
 
       {isRoomListOpen && (
@@ -1693,7 +1245,27 @@ export default function CampusMap() {
                       {rooms.length > 0 ? (
                         <div className="mt-2 divide-y divide-slate-100">
                           {rooms.map((room) => (
-                            <div key={room.code} className="flex items-center gap-3 px-2 py-3">
+                            <button
+                              key={room.code}
+                              type="button"
+                              onClick={() => {
+                                setSearchValue(room.code);
+                                selectRoom({
+                                  buildingId: selectedBuilding.id,
+                                  floor,
+                                  roomNumber: room.code,
+                                  fullCode: room.code,
+                                  roomName: room.name,
+                                  description: room.description,
+                                  phone: room.phone,
+                                  email: room.email,
+                                  website: room.website,
+                                  openingHours: room.openingHours,
+                                });
+                                setIsRoomListOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 px-2 py-3 text-left transition-colors hover:bg-blue-50"
+                            >
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#004A98]">
                                 <DoorOpen className="h-4 w-4" />
                               </div>
@@ -1702,7 +1274,7 @@ export default function CampusMap() {
                                 {room.name && <p className="mt-0.5 truncate text-sm text-slate-600">{room.name}</p>}
                               </div>
                               {room.type && <span className="ml-auto shrink-0 text-xs font-medium text-slate-500">{room.type}</span>}
-                            </div>
+                            </button>
                           ))}
                         </div>
                       ) : (

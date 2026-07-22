@@ -119,6 +119,32 @@ Khi phòng đã có vị trí trên sơ đồ, thêm phần tử `type: 'room'` 
 
 `label` là tên hiển thị của phòng. `aliases` là các tên gọi khác để tìm kiếm và không được hiển thị thành phòng riêng.
 
+### Mô tả và thông tin liên hệ của phòng
+
+Thông tin chi tiết được khai báo trực tiếp trong phần tử tương ứng của `floors[].rooms`. Tất cả các trường đều không bắt buộc; giao diện chỉ hiển thị những trường đã nhập.
+
+```ts
+{
+  code: 'PĐT',
+  name: 'Phòng Đào tạo - NĐH 2.4',
+  type: 'office',
+  aliases: ['pdt', 'phong dao tao', 'bảng điểm'],
+  description: 'Tiếp nhận và hỗ trợ các thủ tục liên quan đến đào tạo.',
+  phone: '(028) 0000 0000',
+  email: 'example@hcmus.edu.vn',
+  website: 'https://example.hcmus.edu.vn',
+  openingHours: 'Thứ Hai - Thứ Sáu, 08:00 - 16:30',
+}
+```
+
+- `description`: Nội dung mô tả tự do; có thể xuống dòng bằng `\n`.
+- `phone`: Số điện thoại, được hiển thị thành liên kết gọi điện.
+- `email`: Email, được hiển thị thành liên kết gửi thư.
+- `website`: Địa chỉ đầy đủ bắt đầu bằng `https://`, được mở trong tab mới.
+- `openingHours`: Giờ làm việc hoặc khoảng thời gian tiếp nhận.
+
+Không khai báo các trường này trong `plan.elements`. Bản vẽ chỉ giữ vị trí và hình dạng của phòng; thông tin phòng luôn lấy từ `floors[].rooms`.
+
 ## Tọa độ bản đồ khuôn viên
 
 Tọa độ các tòa trên bản đồ tổng dùng hệ `viewBox="0 0 760 560"` trong `campusmap.tsx`. Chỉnh `x`, `y`, `width`, `height` và `rotate` của tòa tương ứng trong `CAMPUS_BUILDINGS`; không ghi cứng thông tin tòa trong JSX SVG.
