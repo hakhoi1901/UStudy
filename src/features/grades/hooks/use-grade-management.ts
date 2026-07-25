@@ -18,6 +18,10 @@ export function useGradeManagement() {
     const gradeData = useStudentGradeData();
     
     const {
+        projectionSemesters,
+        selectedProjectionSemester,
+        selectedProjectionSemesterId,
+        setSelectedProjectionSemesterId,
         simulatorCourses,
         handleGradeChange,
         semesterGPA,
@@ -68,6 +72,10 @@ export function useGradeManagement() {
         // Data
         ...gradeData,
         simulatorCourses,
+        projectionSemesters,
+        selectedProjectionSemester,
+        selectedProjectionSemesterId,
+        setSelectedProjectionSemesterId,
         semesterGPA,
         cumulativeGPA,
         uniqueSemesters,

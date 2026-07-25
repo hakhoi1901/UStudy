@@ -17,6 +17,10 @@ type ComponentGradeMode = 'prediction' | 'target';
 
 const COURSE_GRADE_DECIMALS = 1;
 
+function getCourseStorageKey(course: GPAPullCourse): string {
+    return course.attemptKey ?? course.id;
+}
+
 function roundCourseGrade(grade: number): number {
     return Math.round(grade * 10) / 10;
 }
@@ -172,18 +176,20 @@ export function GPAPullSemesterTable({
         savePlain(STORAGE_KEYS.GPA_COMPONENT_GRADES, { predictionPlans, targetPlans });
     }, [predictionPlans, targetPlans]);
 
-    const getComponentPlan = (courseCode: string): GradeComponent[] => {
+    const getComponentPlan = (course: GPAPullCourse): GradeComponent[] => {
         const plans = plannerMode === 'prediction' ? predictionPlans : targetPlans;
-        return plans[courseCode] ?? [
-            { id: `${courseCode}-midterm`, name: 'Giữa kỳ', weight: '30', score: '' },
-            { id: `${courseCode}-final`, name: 'Cuối kỳ', weight: '70', score: '' },
+        const courseKey = getCourseStorageKey(course);
+        return plans[courseKey] ?? plans[course.code] ?? [
+            { id: `${courseKey}-midterm`, name: 'Giữa kỳ', weight: '30', score: '' },
+            { id: `${courseKey}-final`, name: 'Cuối kỳ', weight: '70', score: '' },
         ];
     };
 
-    const updateComponents = (courseCode: string, nextComponents: GradeComponent[]) => {
+    const updateComponents = (course: GPAPullCourse, nextComponents: GradeComponent[]) => {
+        const courseKey = getCourseStorageKey(course);
         const update = (current: Record<string, GradeComponent[]>) => ({
             ...current,
-            [courseCode]: nextComponents,
+            [courseKey]: nextComponents,
         });
         if (plannerMode === 'prediction') {
             setPredictionPlans(update);
@@ -199,38 +205,42 @@ export function GPAPullSemesterTable({
     };
 
     const updateCourseGradeFromInput = (course: GPAPullCourse, value: string) => {
+        if (course.isLocked) return;
+        const courseKey = getCourseStorageKey(course);
         if (value === '') {
-            onGradeChange(course.code, null);
+            onGradeChange(courseKey, null);
             return;
         }
 
         const grade = Number(value);
         if (!Number.isFinite(grade)) return;
         const nextGrade = Math.max(0, Math.min(10, roundCourseGrade(grade)));
-        onGradeChange(course.code, nextGrade);
+        onGradeChange(courseKey, nextGrade);
     };
 
     const updateCourseGradeFromComponents = (course: GPAPullCourse, grade: number | null) => {
-        if (plannerMode !== 'prediction') return;
-        onGradeChange(course.code, grade);
+        if (plannerMode !== 'prediction' || course.isLocked) return;
+        onGradeChange(getCourseStorageKey(course), grade);
     };
 
     const hasManualGrades = nextSemester.courses.some((course) => {
-        return getActiveGrade(course) !== null;
+        return !course.isLocked && getActiveGrade(course) !== null;
     });
 
     const resetManualGrades = () => {
         onResetGradeOverrides();
     };
 
-    const mobileOpenCourse = nextSemester.courses.find((course) => course.code === mobileOpenCourseCode) ?? null;
+    const mobileOpenCourse = nextSemester.courses.find(
+        (course) => getCourseStorageKey(course) === mobileOpenCourseCode,
+    ) ?? null;
 
     return (
         <div className="overflow-hidden bg-white">
             <div className="md:hidden">
                 <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3">
                     <div className="min-w-0">
-                        <p className="text-xs font-semibold text-gray-700">Môn học kỳ này</p>
+                        <p className="text-xs font-semibold text-gray-700">{nextSemester.label}</p>
                         <p className="mt-0.5 text-[10px] text-gray-500">{planningIntent === 'goal' && isGuidanceActive ? 'Sửa một môn để tính lại các môn còn lại.' : 'Nhập điểm dự kiến cho từng môn.'}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -262,15 +272,17 @@ export function GPAPullSemesterTable({
                                             value={activeGrade ?? (isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(COURSE_GRADE_DECIMALS) : '')}
                                             placeholder="-"
                                             onChange={(event) => updateCourseGradeFromInput(course, event.target.value)}
-                                            className={`w-16 rounded-lg border px-2 py-2 text-center text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 ${isGuidanceActive && activeGrade === null ? 'border-blue-200 bg-[#F4F8FF] text-[#004A98]' : 'border-gray-200 bg-white text-gray-900'}`}
+                                            disabled={course.isLocked}
+                                            className={`w-16 rounded-lg border px-2 py-2 text-center text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 disabled:cursor-not-allowed ${course.isLocked ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : isGuidanceActive && activeGrade === null ? 'border-blue-200 bg-[#F4F8FF] text-[#004A98]' : 'border-gray-200 bg-white text-gray-900'}`}
                                             aria-label={`Điểm dự kiến ${course.name}`}
                                         />
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => setMobileOpenCourseCode(course.code)}
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#004A98]"
-                                        title="Nhập điểm thành phần"
+                                        onClick={() => setMobileOpenCourseCode(getCourseStorageKey(course))}
+                                        disabled={course.isLocked}
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#004A98] disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+                                        title={course.isLocked ? 'Môn đã có điểm chính thức' : 'Nhập điểm thành phần'}
                                         aria-label={`Nhập điểm thành phần cho ${course.name}`}
                                     >
                                         <MoreVertical className="h-4 w-4" />
@@ -305,7 +317,8 @@ export function GPAPullSemesterTable({
                         {nextSemester.courses.map((course) => {
                             const activeGrade = getActiveGrade(course);
                             const targetGrade = activeGrade ?? (isGuidanceActive ? course.suggestedGrade : null);
-                            const isComponentPanelOpen = openCourseCode === course.code;
+                            const courseKey = getCourseStorageKey(course);
+                            const isComponentPanelOpen = openCourseCode === courseKey;
 
                             return (
                                 <Fragment key={course.id}>
@@ -319,7 +332,11 @@ export function GPAPullSemesterTable({
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <span className={`text-xs font-semibold ${isGuidanceActive && activeGrade === null ? 'text-[#004A98]' : 'text-gray-600'}`}>
-                                                {isGuidanceActive ? (activeGrade === null ? 'Gợi ý' : 'Đã sửa') : (activeGrade === null ? 'Chưa nhập' : 'Đã nhập')}
+                                                {course.isLocked
+                                                    ? 'Điểm chính thức'
+                                                    : isGuidanceActive
+                                                        ? (activeGrade === null ? 'Gợi ý' : 'Đã sửa')
+                                                        : (activeGrade === null ? 'Chưa nhập' : 'Dự kiến')}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-center">
@@ -332,7 +349,8 @@ export function GPAPullSemesterTable({
                                                     value={activeGrade ?? (isGuidanceActive && course.suggestedGrade != null ? course.suggestedGrade.toFixed(COURSE_GRADE_DECIMALS) : '')}
                                                     placeholder="-"
                                                     onChange={(event) => updateCourseGradeFromInput(course, event.target.value)}
-                                                    className={`w-16 rounded-lg border px-2 py-1.5 text-center text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 ${isGuidanceActive && activeGrade === null ? 'border-blue-200 bg-[#F4F8FF] text-[#004A98]' : 'border-gray-200 bg-white text-gray-900'}`}
+                                                    disabled={course.isLocked}
+                                                    className={`w-16 rounded-lg border px-2 py-1.5 text-center text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 disabled:cursor-not-allowed ${course.isLocked ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : isGuidanceActive && activeGrade === null ? 'border-blue-200 bg-[#F4F8FF] text-[#004A98]' : 'border-gray-200 bg-white text-gray-900'}`}
                                                     aria-label={`Điểm dự kiến ${course.name}`}
                                                 />
                                             </div>
@@ -340,9 +358,10 @@ export function GPAPullSemesterTable({
                                         <td className="px-3 py-3 text-center">
                                             <button
                                                 type="button"
-                                                onClick={() => setOpenCourseCode((current) => current === course.code ? null : course.code)}
-                                                className={`inline-flex h-8 w-8 items-center justify-center`}
-                                                title="Nhập điểm thành phần"
+                                                onClick={() => setOpenCourseCode((current) => current === courseKey ? null : courseKey)}
+                                                disabled={course.isLocked}
+                                                className="inline-flex h-8 w-8 items-center justify-center text-gray-500 disabled:cursor-not-allowed disabled:text-gray-300"
+                                                title={course.isLocked ? 'Môn đã có điểm chính thức' : 'Nhập điểm thành phần'}
                                                 aria-label={`Nhập điểm thành phần cho ${course.name}`}
                                                 aria-expanded={isComponentPanelOpen}
                                             >
@@ -357,8 +376,8 @@ export function GPAPullSemesterTable({
                                                     course={course}
                                                     targetGrade={targetGrade != null ? roundCourseGrade(targetGrade).toFixed(COURSE_GRADE_DECIMALS) : ''}
                                                     mode={plannerMode}
-                                                    components={getComponentPlan(course.code)}
-                                                    onComponentsChange={(components) => updateComponents(course.code, components)}
+                                                    components={getComponentPlan(course)}
+                                                    onComponentsChange={(components) => updateComponents(course, components)}
                                                     onPredictedGradeChange={(grade) => updateCourseGradeFromComponents(course, grade)}
                                                 />
                                             </td>
@@ -381,8 +400,20 @@ export function GPAPullSemesterTable({
             {mobileOpenCourse && (() => {
                 const activeGrade = getActiveGrade(mobileOpenCourse);
                 const targetGrade = activeGrade ?? (isGuidanceActive ? mobileOpenCourse.suggestedGrade : null);
-                const sourceLabel = mobileOpenCourse.source === 'ongoing' ? 'Đang học' : mobileOpenCourse.source === 'registration' ? 'Đăng ký' : 'Tương lai';
-                const gradeStatus = activeGrade !== null ? 'Đã nhập' : isGuidanceActive ? 'Gợi ý' : 'Chưa nhập';
+                const sourceLabel = mobileOpenCourse.source === 'official'
+                    ? 'Điểm chính thức'
+                    : mobileOpenCourse.source === 'ongoing'
+                        ? 'Đang học'
+                        : mobileOpenCourse.source === 'registration'
+                            ? 'Đăng ký'
+                            : 'Tương lai';
+                const gradeStatus = mobileOpenCourse.isLocked
+                    ? 'Đã có điểm'
+                    : activeGrade !== null
+                        ? 'Dự kiến'
+                        : isGuidanceActive
+                            ? 'Gợi ý'
+                            : 'Chưa nhập';
 
                 return (
                     <MobileCourseSheetFrame
@@ -402,8 +433,8 @@ export function GPAPullSemesterTable({
                                 course={mobileOpenCourse}
                                 targetGrade={targetGrade != null ? roundCourseGrade(targetGrade).toFixed(COURSE_GRADE_DECIMALS) : ''}
                                 mode={plannerMode}
-                                components={getComponentPlan(mobileOpenCourse.code)}
-                                onComponentsChange={(components) => updateComponents(mobileOpenCourse.code, components)}
+                                components={getComponentPlan(mobileOpenCourse)}
+                                onComponentsChange={(components) => updateComponents(mobileOpenCourse, components)}
                                 onTargetGradeChange={(value) => updateCourseGradeFromInput(mobileOpenCourse, value)}
                                 onPredictedGradeChange={(grade) => updateCourseGradeFromComponents(mobileOpenCourse, grade)}
                                 mobileSheet

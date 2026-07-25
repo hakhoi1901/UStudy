@@ -38,6 +38,8 @@ export const STORAGE_KEYS = {
     IMPORT_META: 'import_meta',
     /** Điểm dự đoán do người dùng nhập cho GPA Simulator */
     PROJECTED_GRADES: 'gpa_projected_grades',
+    /** Học kỳ đang được xem trong Kế hoạch GPA */
+    GPA_ACTIVE_PROJECTION_SEMESTER: 'gpa_active_projection_semester',
     /** Tab đang mở trong Quản lý điểm */
     GRADE_MAIN_TAB: 'grade_main_tab',
     /** Tab đang mở trong Lộ trình học tập */

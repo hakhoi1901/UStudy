@@ -34,6 +34,10 @@ export function GradesPage() {
     foundationGPA,
     majorSpecializedGPA,
     simulatorCourses,
+    projectionSemesters,
+    selectedProjectionSemester,
+    selectedProjectionSemesterId,
+    setSelectedProjectionSemesterId,
     semesterGPA,
     cumulativeGPA,
     uniqueSemesters,
@@ -158,6 +162,10 @@ export function GradesPage() {
               gradesHistory={gradesHistory}
               getClassification={getClassification}
               simulatorCourses={simulatorCourses}
+              projectionSemesters={projectionSemesters}
+              selectedProjectionSemester={selectedProjectionSemester}
+              selectedProjectionSemesterId={selectedProjectionSemesterId}
+              setSelectedProjectionSemesterId={setSelectedProjectionSemesterId}
               handleGradeChange={handleGradeChange}
               currentGPA={currentGPA}
               accumulatedCredits={accumulatedCredits}

@@ -225,8 +225,14 @@ export const GPACalculator = {
         if (coursesWithCredits.length === 0) return null;
 
         const totalCredits = coursesWithCredits.reduce((sum, c) => sum + c.credits!, 0);
+        const pendingCredits = coursesWithCredits.reduce(
+            (sum, course) => course.currentGrade == null ? sum + course.credits : sum,
+            0,
+        );
         const courses: GPAPullCourse[] = coursesWithCredits.map((c) => ({
-            id: c.code,
+            id: c.attemptKey,
+            attemptKey: c.attemptKey,
+            semester: c.semester,
             code: c.code,
             name: c.name,
             credits: c.credits!,
@@ -238,12 +244,12 @@ export const GPACalculator = {
         }));
 
         return {
-            id: 'next',
-            label: 'Học kỳ tiếp theo',
+            id: coursesWithCredits[0]?.semester ?? 'next',
+            label: coursesWithCredits[0]?.semesterLabel ?? 'Học kỳ đang chọn',
             courses,
             requiredGPA: requiredAverage,
             totalCredits,
-            pointsNeeded: requiredAverage * totalCredits,
+            pointsNeeded: requiredAverage * pendingCredits,
         };
     },
 

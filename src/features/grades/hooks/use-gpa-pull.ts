@@ -274,7 +274,10 @@ export function useGPAPull({
     }, [simulatorCourses, isFoundationMajorScopeActive, foundationCourseCodes, courseCategoryByCode]);
 
     const projectedScopeCourses = useMemo(() => {
-        return scopedSimulatorCourses.filter((course) => course.projectedGrade !== null && course.credits !== null);
+        return scopedSimulatorCourses.filter((course) => (
+            (course.currentGrade !== null || course.projectedGrade !== null)
+            && course.credits !== null
+        ));
     }, [scopedSimulatorCourses]);
 
     const projectedScopeCredits = useMemo(() => {
@@ -284,7 +287,7 @@ export function useGPAPull({
     const projectedScopeGPA = useMemo(() => {
         if (mode === 'currentSemester') {
             const totalPoints = projectedScopeCourses.reduce(
-                (sum, course) => sum + (course.projectedGrade ?? 0) * (course.credits ?? 0),
+                (sum, course) => sum + (course.currentGrade ?? course.projectedGrade ?? 0) * (course.credits ?? 0),
                 0
             );
             return projectedScopeCredits > 0 ? totalPoints / projectedScopeCredits : 0;
@@ -292,7 +295,9 @@ export function useGPAPull({
 
         return GPACalculator.calculateProjectedGPA(
             scopedGradesWithManualRetakes,
-            projectedScopeCourses.map((course) => ({
+            projectedScopeCourses
+                .filter((course) => course.currentGrade === null && course.projectedGrade !== null)
+                .map((course) => ({
                 code: course.code,
                 credits: course.credits ?? 0,
                 projectedGrade: course.projectedGrade!,
@@ -316,13 +321,43 @@ export function useGPAPull({
                     message: 'Chưa có học phần nào trong kỳ hiện tại để tính GPA.',
                 };
             }
+            const officialCourses = scopedSimulatorCourses.filter((course) => (
+                course.currentGrade !== null && (course.credits ?? 0) > 0
+            ));
+            const officialCredits = officialCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+            const officialPoints = officialCourses.reduce(
+                (sum, course) => sum + (course.currentGrade ?? 0) * (course.credits ?? 0),
+                0,
+            );
+            const remainingCredits = Math.max(0, currentSemesterCredits - officialCredits);
+            const remainingPoints = targetGPA * currentSemesterCredits - officialPoints;
+            const requiredAverage = remainingCredits > 0 ? Math.max(0, remainingPoints / remainingCredits) : null;
+
+            if (remainingCredits <= 0) {
+                const semesterGpa = officialCredits > 0 ? officialPoints / officialCredits : 0;
+                return {
+                    success: semesterGpa >= targetGPA,
+                    alreadyAchieved: semesterGpa >= targetGPA,
+                    impossible: semesterGpa < targetGPA,
+                    remainingCredits: 0,
+                    currentPoints: officialPoints,
+                    currentCredits: officialCredits,
+                    message: semesterGpa >= targetGPA
+                        ? 'Học kỳ này đã có đầy đủ điểm và đạt mục tiêu.'
+                        : 'Học kỳ này đã có đầy đủ điểm nên không còn môn để điều chỉnh mục tiêu.',
+                };
+            }
+
             return {
-                success: true,
-                remainingCredits: currentSemesterCredits,
-                requiredAverage: targetGPA,
-                currentPoints: 0,
-                currentCredits: 0,
-                message: 'Đã tính mục tiêu GPA cho học kỳ hiện tại.',
+                success: requiredAverage !== null && requiredAverage <= ACADEMIC_RULES.MAX_GPA,
+                impossible: requiredAverage !== null && requiredAverage > ACADEMIC_RULES.MAX_GPA,
+                remainingCredits,
+                requiredAverage: requiredAverage ?? undefined,
+                currentPoints: officialPoints,
+                currentCredits: officialCredits,
+                message: officialCredits > 0
+                    ? `Đã khóa ${officialCredits} tín chỉ có điểm chính thức và tính mục tiêu cho phần còn lại.`
+                    : 'Đã tính mục tiêu GPA cho học kỳ đang chọn.',
             };
         }
         return GPACalculator.calculateRequiredAverageForTargetGPAInScope(
@@ -331,7 +366,7 @@ export function useGPAPull({
             scopedTotalCredits,
             scopeName
         );
-    }, [scopedGradesWithManualRetakes, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
+    }, [scopedGradesWithManualRetakes, scopedSimulatorCourses, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
 
     /**
      * Dự báo học kỳ tiếp theo dựa trên dữ liệu Simulator.
@@ -368,6 +403,8 @@ export function useGPAPull({
 
         const epsilon = ACADEMIC_RULES.UI.EPSILON;
 
+        let semesterCredits = 0;
+        let semesterPoints = 0;
         let usedCredits = 0;
         let usedPoints = 0;
 
@@ -381,13 +418,18 @@ export function useGPAPull({
 
             if (grade == null || Number.isNaN(grade)) return;
 
-            usedCredits += c.credits;
-            usedPoints += grade * c.credits;
+            semesterCredits += c.credits;
+            semesterPoints += grade * c.credits;
+            if (!c.isLocked) {
+                usedCredits += c.credits;
+                usedPoints += grade * c.credits;
+            }
         });
 
-        if (usedCredits <= 0) return null;
+        if (semesterCredits <= 0) return null;
 
-        const semesterGpa = usedPoints / usedCredits;
+        const semesterGpa = semesterPoints / semesterCredits;
+        const plannedAverage = usedCredits > 0 ? usedPoints / usedCredits : null;
 
         const totalRemainingCredits = baseResult.remainingCredits;
         const futurePointsNeeded = baseResult.requiredAverage * totalRemainingCredits;
@@ -395,14 +437,15 @@ export function useGPAPull({
 
         let newRequiredAvgAfter: number | null = null;
         if (remainingCreditsAfter > 0) {
-            newRequiredAvgAfter = (futurePointsNeeded - usedPoints) / remainingCreditsAfter;
+            newRequiredAvgAfter = Math.max(0, (futurePointsNeeded - usedPoints) / remainingCreditsAfter);
         }
 
         let trend: 'ahead' | 'behind' | 'onTrack' | null = null;
-        if (semesterGpa >= baseResult.requiredAverage + epsilon) {
+        if (plannedAverage !== null && plannedAverage >= baseResult.requiredAverage + epsilon) {
             trend = 'ahead';
         } else if (
-            semesterGpa <= baseResult.requiredAverage - epsilon &&
+            plannedAverage !== null &&
+            plannedAverage <= baseResult.requiredAverage - epsilon &&
             newRequiredAvgAfter != null &&
             newRequiredAvgAfter >= ACADEMIC_RULES.PASS_GRADE_DECIMAL &&
             newRequiredAvgAfter <= 10

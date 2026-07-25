@@ -328,9 +328,10 @@ type ClassComponent = {
 
 | Key | Cấu trúc chính |
 | --- | --- |
-| `gpa_projected_grades` | `Record<courseId, number>` |
-| `gpa_component_grades` | `{ predictionPlans, targetPlans }`; điểm thành phần được tách riêng giữa Dự đoán và Mục tiêu |
-| `gpa_goal_grades` | `Record<courseCode, number | null>`; Dự đoán thay đổi sẽ ghi mềm sang Mục tiêu, còn thay đổi ở Mục tiêu không ghi ngược lại |
+| `gpa_projected_grades` | `{ version: 2, grades: Record<semester\|courseCode, number> }`; mỗi lần học được lưu riêng theo học kỳ và mã môn |
+| `gpa_active_projection_semester` | `string`; học kỳ đang được chọn trong Kế hoạch GPA |
+| `gpa_component_grades` | `{ predictionPlans, targetPlans }`; điểm thành phần được tách riêng giữa Dự đoán và Mục tiêu, mỗi plan mới dùng key `semester|courseCode` |
+| `gpa_goal_grades` | `Record<semester\|courseCode, number | null>`; Dự đoán thay đổi sẽ ghi mềm sang Mục tiêu, còn thay đổi ở Mục tiêu không ghi ngược lại |
 | `gpa_pull_future_grades` | Dữ liệu dự kiến GPA tương lai; key dự phòng/legacy |
 | `grade_main_tab` | `'overview' | 'target' | 'history'` |
 | `study_roadmap_active_tab` | Tab con gần nhất của Lộ trình học tập |

@@ -27,16 +27,35 @@ export interface GPASummary {
 
 export interface SimulatorCourseGrade {
     id: string;
+    attemptKey: string;
     code: string;
     name: string;
+    semester: string;
+    semesterLabel: string;
     credits: number | null;
     currentGrade: number | null;
     projectedGrade: number | null;
-    source: 'ongoing' | 'registration' | 'future';
+    source: 'official' | 'ongoing' | 'registration' | 'future';
+}
+
+export interface GPAProjectionSemester {
+    id: string;
+    label: string;
+    courses: SimulatorCourseGrade[];
+    totalCredits: number;
+    knownCredits: number;
+    officialCredits: number;
+    projectedCredits: number;
+    officialCourseCount: number;
+    projectedCourseCount: number;
+    missingCourseCount: number;
+    semesterGPA: number | null;
 }
 
 export interface GPAPullCourse {
     id: string;
+    attemptKey?: string;
+    semester?: string;
     code: string;
     name: string;
     credits: number;
@@ -44,7 +63,7 @@ export interface GPAPullCourse {
     isLocked: boolean;
     lockedGrade?: number | null;
     suggestedGrade?: number;
-    source?: 'future' | 'retake' | 'ongoing' | 'registration';
+    source?: 'future' | 'retake' | 'official' | 'ongoing' | 'registration';
 }
 
 export interface GPAPullSemester {
@@ -210,6 +229,6 @@ export interface GPAPullSemesterTableProps {
     decimals: number;
     planningIntent: GPAPlanningIntent;
     isGuidanceActive: boolean;
-    onGradeChange: (courseCode: string, grade: number | null) => void;
+    onGradeChange: (attemptKey: string, grade: number | null) => void;
     onResetGradeOverrides: () => void;
 }

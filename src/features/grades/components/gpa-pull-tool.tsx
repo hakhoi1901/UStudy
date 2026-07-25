@@ -7,13 +7,23 @@ import { useGPAPull } from '../hooks/use-gpa-pull';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
 import { GPAPullSemesterTable } from './gpa-pull-tool/gpa-pull-semester-table';
 import { GPAPullManualRetake } from './gpa-pull-tool/gpa-pull-manual-retake';
-import type { GPAPlanningIntent, GPAPullSemester, StudentCourseGrade, SimulatorCourseGrade } from '../types';
+import type {
+    GPAPlanningIntent,
+    GPAProjectionSemester,
+    GPAPullSemester,
+    StudentCourseGrade,
+    SimulatorCourseGrade,
+} from '../types';
 
 interface GPAPullToolProps {
     gradesHistory: StudentCourseGrade[];
     getClassification: (gpa: number) => string;
     simulatorCourses: SimulatorCourseGrade[];
-    handleGradeChange: (courseCode: string, grade: number | null) => void;
+    projectionSemesters: GPAProjectionSemester[];
+    selectedProjectionSemester: GPAProjectionSemester | null;
+    selectedProjectionSemesterId: string;
+    setSelectedProjectionSemesterId: (semesterId: string) => void;
+    handleGradeChange: (attemptKey: string, grade: number | null) => void;
     currentGPA: number;
     accumulatedCredits: number;
     totalCredits: number;
@@ -50,6 +60,10 @@ function readGoalGrades(): Record<string, number | null> {
 export function GPAPullTool({
     gradesHistory,
     simulatorCourses,
+    projectionSemesters,
+    selectedProjectionSemester,
+    selectedProjectionSemesterId,
+    setSelectedProjectionSemesterId,
     handleGradeChange,
     currentGPA,
     accumulatedCredits,
@@ -62,12 +76,18 @@ export function GPAPullTool({
     const activeSimulatorCourses = useMemo(() => {
         if (planningIntent === 'prediction') return simulatorCourses;
 
-        return simulatorCourses.map((course) => ({
-            ...course,
-            projectedGrade: Object.prototype.hasOwnProperty.call(goalGrades, course.code)
-                ? goalGrades[course.code]
-                : course.projectedGrade,
-        }));
+        return simulatorCourses.map((course) => {
+            const hasAttemptGrade = Object.prototype.hasOwnProperty.call(goalGrades, course.attemptKey);
+            const hasLegacyGrade = Object.prototype.hasOwnProperty.call(goalGrades, course.code);
+            return {
+                ...course,
+                projectedGrade: hasAttemptGrade
+                    ? goalGrades[course.attemptKey]
+                    : hasLegacyGrade
+                        ? goalGrades[course.code]
+                        : course.projectedGrade,
+            };
+        });
     }, [goalGrades, planningIntent, simulatorCourses]);
 
     useEffect(() => {
@@ -124,40 +144,43 @@ export function GPAPullTool({
         const courses = scopedSimulatorCourses
             .filter((course) => (course.credits ?? 0) > 0)
             .map((course) => ({
-                id: course.id,
+                id: course.attemptKey,
+                attemptKey: course.attemptKey,
+                semester: course.semester,
                 code: course.code,
                 name: course.name,
                 credits: course.credits ?? 0,
                 projectedGrade: course.projectedGrade,
-                isLocked: false,
+                lockedGrade: course.currentGrade,
+                isLocked: course.currentGrade !== null,
                 source: course.source,
             }));
 
         return {
-            id: 'current-semester',
-            label: 'Học kỳ hiện tại',
+            id: selectedProjectionSemester?.id ?? 'current-semester',
+            label: selectedProjectionSemester?.label ?? 'Học kỳ đang chọn',
             courses,
             requiredGPA: 0,
             totalCredits: courses.reduce((sum, course) => sum + course.credits, 0),
             pointsNeeded: 0,
         };
-    }, [guidanceActive, nextSemester, scopedSimulatorCourses]);
+    }, [guidanceActive, nextSemester, scopedSimulatorCourses, selectedProjectionSemester]);
 
     const changePlanningIntent = (nextIntent: GPAPlanningIntent) => {
         setPlanningIntent(nextIntent);
         setHasCalculated(false);
     };
 
-    const handleActiveGradeChange = (courseCode: string, grade: number | null) => {
+    const handleActiveGradeChange = (attemptKey: string, grade: number | null) => {
         if (planningIntent === 'prediction') {
-            handleGradeChange(courseCode, grade);
-            setGoalGrades((current) => ({ ...current, [courseCode]: grade }));
+            handleGradeChange(attemptKey, grade);
+            setGoalGrades((current) => ({ ...current, [attemptKey]: grade }));
             return;
         }
 
         setGoalGrades((current) => {
-            if (grade != null) return { ...current, [courseCode]: grade };
-            return { ...current, [courseCode]: null };
+            if (grade != null) return { ...current, [attemptKey]: grade };
+            return { ...current, [attemptKey]: null };
         });
     };
 
@@ -202,6 +225,36 @@ export function GPAPullTool({
                     })}
                 </div>
             </div>
+
+            {projectionSemesters.length > 0 && (
+                <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-3 md:px-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-700">Học kỳ đang tính</p>
+                            <p className="mt-0.5 text-[11px] text-gray-500">
+                                {selectedProjectionSemester
+                                    ? `${selectedProjectionSemester.officialCourseCount}/${selectedProjectionSemester.courses.length} môn đã có điểm chính thức`
+                                    : 'Chọn học kỳ cần dự đoán'}
+                            </p>
+                        </div>
+                        <select
+                            value={selectedProjectionSemesterId}
+                            onChange={(event) => {
+                                setSelectedProjectionSemesterId(event.target.value);
+                                setHasCalculated(false);
+                            }}
+                            className="h-9 min-w-0 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 outline-none transition-colors focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 sm:w-64"
+                            aria-label="Chọn học kỳ cần tính GPA"
+                        >
+                            {projectionSemesters.map((semester) => (
+                                <option key={semester.id} value={semester.id}>
+                                    {semester.label} · {semester.knownCredits}/{semester.totalCredits} TC đã biết
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
 
             <div className="px-3 py-4 md:px-5">
                 <GPAPullInputSection

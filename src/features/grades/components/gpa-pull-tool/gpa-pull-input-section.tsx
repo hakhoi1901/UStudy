@@ -43,7 +43,7 @@ export function GPAPullInputSection({
                     </p>
                     <p className="mt-1 text-xs leading-4 text-gray-600 sm:text-sm">
                         {hasProjectedGrades
-                            ? <>Đã nhập điểm: <span className="font-semibold tabular-nums text-gray-800">{projectedScopeCredits} TC</span></>
+                            ? <>Đã có dữ liệu: <span className="font-semibold tabular-nums text-gray-800">{projectedScopeCredits} TC</span></>
                             : <>Hiện tại: <span className="font-semibold tabular-nums text-gray-800">{displayCurrentGPA.toFixed(decimals)} · {displayAccumulatedCredits} TC</span></>}
                     </p>
                 </>
