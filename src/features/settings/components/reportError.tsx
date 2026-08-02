@@ -11,11 +11,11 @@ export function ReportError() {
     const fixedSubject = APP_CONFIG.CONTACT.REPORT_SUBJECT_PREFIX;
 
     return (
-        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
-            <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-2">
-                <MailWarning />Báo cáo lỗi
+        <div className="ustudy-settings-card">
+            <h2 className="ustudy-settings-title">
+                <MailWarning className="ustudy-settings-title-icon" />Báo cáo lỗi
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="ustudy-settings-description">
                 Nếu bạn gặp bất kỳ lỗi nào khi sử dụng hệ thống, vui lòng báo cáo cho chúng tôi.
             </p>
 

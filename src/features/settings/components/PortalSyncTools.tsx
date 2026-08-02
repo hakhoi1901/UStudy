@@ -20,11 +20,6 @@ function compareVersions(first: string, second: string) {
   return 0;
 }
 
-function formatSyncTime(value: string | null) {
-  if (!value) return 'Chưa đồng bộ';
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
-}
-
 function MobilePortalSyncTools() {
   const { academicYear, semesterNumber } = useDepartmentData();
   const [isOpening, setIsOpening] = useState(false);
@@ -112,14 +107,13 @@ function BrowserPortalSyncTools() {
   return (
     <>
       <div className="divide-y divide-gray-200">
-        <section className="pb-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <section className="pb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 gap-3">
-              <span className="ustudy-icon-badge ustudy-icon-primary"><Puzzle className="h-5 w-5" /></span>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-bold text-gray-900">UStudy Portal Sync</h3>
-                  {isUpdateAvailable ? (
+                  {/* {isUpdateAvailable ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700"><AlertTriangle className="h-3.5 w-3.5" />Cần cập nhật</span>
                   ) : extensionState ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#004A98] px-2 py-1 text-[11px] font-semibold text-white"><CheckCircle2 className="h-3.5 w-3.5" />Đã kết nối</span>
@@ -127,10 +121,10 @@ function BrowserPortalSyncTools() {
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#004A98] px-2 py-1 text-[11px] font-semibold text-white"><CheckCircle2 className="h-3.5 w-3.5" />Đã cài đặt</span>
                   ) : !isChecking ? (
                     <span className="rounded-full bg-gray-100 px-2 py-1 text-[11px] font-semibold text-gray-600">Chưa cài đặt</span>
-                  ) : null}
+                  ) : null} */}
                   {isExtensionInstalled && <span className="text-xs font-semibold tabular-nums text-gray-500">v{installedVersion || 'không rõ'}</span>}
                 </div>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Extension tự nhận diện Portal và chuyển dữ liệu vào màn hình xem trước của UStudy.</p>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">Đồng bộ dữ liệu trực tiếp từ Portal vào UStudy.</p>
               </div>
             </div>
 
@@ -146,33 +140,12 @@ function BrowserPortalSyncTools() {
             </div>
           </div>
 
-          {isUpdateAvailable && (
-            <div className="mt-4 flex flex-col gap-3 border-y border-amber-200 bg-amber-50/60 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-start gap-2.5">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <div><p className="text-sm font-semibold text-gray-900">Đã có UStudy Portal Sync v{latestVersion}</p><p className="mt-0.5 text-xs text-gray-600">Bạn đang dùng v{installedVersion}. Cập nhật để dùng đúng crawler và giao thức mới nhất.</p></div>
-              </div>
-              <button type="button" onClick={() => setDialogMode('update')} className="ustudy-button-outline shrink-0"><Download className="h-4 w-4" />Xem cách cập nhật</button>
-            </div>
-          )}
-
-          {extensionState && (
-            <div className="mt-4 flex flex-col text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap gap-x-5 gap-y-1">
-                <span>Lần gần nhất: <strong className="font-semibold text-gray-700">{formatSyncTime(extensionState.stats.lastSyncedAt)}</strong></span>
-                <span>Đã đồng bộ: <strong className="font-semibold text-gray-700">{extensionState.stats.successfulSyncs} lần</strong></span>
-                {extensionState.pendingImport && <span className="font-semibold text-[#004A98]">Có dữ liệu đang chờ xem trước</span>}
-              </div>
-              <span className="shrink-0">Thiết lập chế độ và nguồn dữ liệu trong popup Extension.</span>
-            </div>
-          )}
         </section>
 
-        <section className="pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="pt-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 gap-3">
-              <span className="ustudy-icon-badge ustudy-icon-primary-soft"><Bookmark className="h-5 w-5" /></span>
-              <div><h3 className="text-sm font-bold text-gray-900">Bookmarklet dự phòng</h3><p className="mt-1 text-sm text-gray-500">Không cần cài đặt, chạy thủ công ngay trên Portal.</p></div>
+              <div><h3 className="text-sm font-bold text-gray-900">Bookmarklet dự phòng</h3><p className="mt-1 text-sm text-gray-500">Chạy thủ công trên Portal, không cần cài đặt.</p></div>
             </div>
             <BookmarkletButton variant="outline" hideInstructions className="flex w-auto flex-row items-center justify-start" />
           </div>

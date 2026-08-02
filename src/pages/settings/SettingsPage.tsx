@@ -1,4 +1,4 @@
-import { User, Shield, Lock } from 'lucide-react';
+import { User, Shield, Lock, Puzzle } from 'lucide-react';
 import { useState } from 'react';
 import { DataSourceCenter, ImportData, OpticalDataTransfer, PortalSyncTools, ReportError, SettingUserProfile } from '../../features/settings';
 import { useStudentDb } from '../../hooks/useStudentDb';
@@ -28,11 +28,11 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
             <div className="flex flex-col items-center">
                 <div className="w-full max-w-4xl flex flex-col gap-4 md:gap-6">
                     {/* Thông tin cá nhân */}
-                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
-                        <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
-                            <User className="w-7 h-7" />Thông tin cá nhân
+                    <div className="ustudy-settings-card">
+                        <h2 className="ustudy-settings-title">
+                            <User className="ustudy-settings-title-icon" />Thông tin cá nhân
                         </h2>
-                        <p className="text-sm text-gray-500 mb-6">Quản lý thông tin cá nhân của bạn.</p>
+                        <p className="ustudy-settings-description">Quản lý thông tin cá nhân của bạn.</p>
                         <div className="flex flex-col gap-2">
                             <div className="text-gray-600"> Tên: {name}</div>
                         </div>
@@ -41,17 +41,20 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
                     <SettingUserProfile onPageChange={onPageChange} />
 
                     {/* Công cụ đồng bộ dữ liệu */}
-                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
-                        <div className="pb-6 border-b border-gray-200">
-                            <h2 className="text-gray-900 font-semibold mb-1">Công cụ đồng bộ dữ liệu</h2>
-                            <p className="mb-6 text-sm text-gray-500">Chọn Extension để đồng bộ thuận tiện hoặc Bookmarklet cho chế độ thủ công nhẹ.</p>
+                    <div className="ustudy-settings-card">
+                        <h2 className="ustudy-settings-title">
+                            <Puzzle className="ustudy-settings-title-icon" />Công cụ đồng bộ dữ liệu
+                        </h2>
+
+                        <div className="ustudy-settings-section pt-0">
                             <PortalSyncTools />
                         </div>
-                        <div className="py-6 border-b border-gray-200">
+
+                        <div className="ustudy-settings-section">
                             <ImportData />
                         </div>
 
-                        <div className="pt-6">
+                        <div className="pt-4">
                             <OpticalDataTransfer />
                         </div>
                     </div>
@@ -61,12 +64,12 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
 
                     {/* Bảo mật */}
                     {hasData && (
-                        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
-                            <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
-                                <Shield className="w-5 h-5 text-blue-600" />
+                        <div className="ustudy-settings-card">
+                            <h2 className="ustudy-settings-title">
+                                <Shield className="ustudy-settings-title-icon" />
                                 Bảo mật
                             </h2>
-                            <p className="text-sm text-gray-500 mb-6">
+                            <p className="ustudy-settings-description">
                                 Dữ liệu của bạn được mã hóa bằng PBKDF2 + AES-GCM. Chỉ bạn mới có thể giải mã bằng mật khẩu.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">

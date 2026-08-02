@@ -125,7 +125,7 @@ export function PrivacySecurity() {
 
                     {/* Sections */}
                     {sections.map((section) => (
-                        <div key={section.id} className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                        <div key={section.id} className="ustudy-settings-card">
                             <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                                 <div className={`w-8 h-8 rounded-lg ${section.iconBg} flex items-center justify-center`}>
                                     <section.icon className={`w-4 h-4 ${section.iconColor}`} />
@@ -156,7 +156,7 @@ export function PrivacySecurity() {
                     ))}
 
                     {/* Architecture diagram */}
-                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                    <div className="ustudy-settings-card">
                         <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-6">
                             <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
                                 <ArrowRight className="w-4 h-4 text-slate-600" />
@@ -189,7 +189,7 @@ export function PrivacySecurity() {
                     </div>
 
                     {/* Data classification */}
-                    <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+                    <div className="ustudy-settings-card">
                         <h2 className="flex items-center gap-2 text-gray-900 font-semibold mb-4">
                             <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
                                 <Eye className="w-4 h-4 text-sky-600" />

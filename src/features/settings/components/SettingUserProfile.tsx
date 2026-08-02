@@ -200,7 +200,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
     };
 
     return (
-        <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200 shadow-sm w-full">
+        <div className="ustudy-settings-card">
             {pendingImport && (
                 <SecurityLock 
                     setupMode={!hasData} 
@@ -242,8 +242,8 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                     <div className="p-2"></div>
                 </div>
             }
-            <h2 className="text-gray-900 flex items-center gap-2 font-semibold mb-4"><GraduationCap className="w-7 h-7" />Chương trình đào tạo</h2>
-            <p className="text-sm text-gray-500 mb-6">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
+            <h2 className="ustudy-settings-title"><GraduationCap className="ustudy-settings-title-icon" />Chương trình đào tạo</h2>
+            <p className="ustudy-settings-description">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
 
             <div className="w grid grid-cols-1 md:grid-cols-1 gap-6">
                 <Select
