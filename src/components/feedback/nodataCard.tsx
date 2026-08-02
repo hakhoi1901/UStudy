@@ -9,7 +9,7 @@ import {
     Smartphone,
 } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
-import { ImportData } from '../../features/settings';
+import { ImportData, OpticalDataTransfer } from '../../features/settings';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../../mobile/portal-sync';
 
 const ANDROID_APP_DOWNLOAD_URL = '/downloads/UStudy-android.apk';
@@ -184,6 +184,21 @@ export function NoDataCard() {
                                 <InstructionStep number={2} title="Mở Portal trong UStudy" description="Trong ứng dụng, nhấn Mở Portal và đồng bộ rồi đăng nhập tài khoản sinh viên." />
                                 <InstructionStep number={3} title="Nhận dữ liệu" description="Nhấn Đồng bộ với UStudy trên Portal, xem trước thay đổi và xác nhận những mục muốn nhập." />
                             </div>
+                        </section>
+
+                        <section className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 md:hidden">
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white">
+                                    <Smartphone className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-900">Nhận từ laptop</h3>
+                                    <p className="mt-1 text-xs leading-5 text-gray-600">
+                                        Mở UStudy trên laptop, chọn Gửi sang điện thoại rồi quét QR động tại đây.
+                                    </p>
+                                </div>
+                            </div>
+                            <OpticalDataTransfer compact />
                         </section>
 
                         <section className="rounded-xl border border-gray-200 bg-white p-4">

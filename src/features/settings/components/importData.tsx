@@ -1,12 +1,23 @@
-import { CheckCircle2, Database, Download, FileUp, RefreshCw, Upload } from 'lucide-react';
+import { CheckCircle2, Database, Download, FileUp, QrCode, RefreshCw, ScanLine, Upload } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { SecurityLock } from '../../../components/security';
-import { useCrypto } from '../../../context/CryptoContext';
-import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
+import { CACHE_POPULATED_EVENT, useCrypto } from '../../../context/CryptoContext';
+import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, populateSecureCache, saveSecure, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
+import { processRawData } from '../../../logic/dataProcessor';
+import { OpticalReceiverDialog, OpticalSenderDialog } from '../../optical-sync';
+import { buildOpticalSyncPayload, isOpticalSyncKey } from '../../optical-sync/services/optical-sync-payload';
+import {
+  isSystemBackupData,
+  normalizeStorageBackupData,
+  parseStorageBackupValue,
+  SYSTEM_BACKUP_SOURCE,
+  unwrapSystemBackup,
+} from '../services/system-backup';
 
 type ImportStatus = 'add' | 'update' | 'unchanged';
+type ExportDestination = 'file' | 'optical';
 
 interface ImportItem {
   key: string;
@@ -70,22 +81,21 @@ function getImportItem(key: string, value: string): ImportItem {
   };
 }
 
-function isPortalBackup(data: Record<string, string>): boolean {
-  return Object.keys(data).some((key) => (
-    key.startsWith('db_') || key.startsWith('app_') || key.includes('semester') || key === 'raw_student_db' || key === 'student_db_full'
-  ));
-}
-
 interface ImportDataProps {
   compact?: boolean;
   importButtonLabel?: string;
+  transferMode?: ExportDestination;
 }
 
-export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ liệu' }: ImportDataProps = {}) {
+export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ liệu', transferMode = 'file' }: ImportDataProps = {}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [pendingImport, setPendingImport] = useState<ImportPreview | null>(null);
+  const [pendingPlainSecureImport, setPendingPlainSecureImport] = useState<ImportPreview | null>(null);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
+  const [exportDestination, setExportDestination] = useState<ExportDestination>(transferMode);
+  const [opticalPayload, setOpticalPayload] = useState<string | null>(null);
+  const [isOpticalReceiverOpen, setIsOpticalReceiverOpen] = useState(false);
   const { cryptoKey } = useCrypto();
 
   const previewGroups = useMemo(() => {
@@ -102,7 +112,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     unchanged: preview?.items.filter((item) => item.status === 'unchanged').length ?? 0,
   }), [preview]);
 
-  function openExportPreview() {
+  function openExportPreview(destination: ExportDestination) {
     try {
       const store: Record<string, string> = {};
       for (let index = 0; index < localStorage.length; index += 1) {
@@ -112,6 +122,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
 
       const items = Object.entries(store)
         .filter(([key]) => !INTERNAL_BACKUP_KEYS.has(key))
+        .filter(([key]) => destination === 'file' || isOpticalSyncKey(key))
         .map(([key]) => ({ key, label: IMPORT_LABELS[key]?.label ?? key, group: IMPORT_LABELS[key]?.group ?? 'Cài đặt và dữ liệu khác' }));
       const groups = items.reduce<Record<string, ExportItem[]>>((result, item) => {
           result[item.group] = [...(result[item.group] ?? []), { key: item.key, label: item.label }];
@@ -119,6 +130,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
         }, {});
 
       const exportGroups = Object.entries(groups).map(([name, groupItems]) => ({ name, items: groupItems }));
+      setExportDestination(destination);
       setExportPreview({ data: store, groups: exportGroups, selectedKeys: items.map((item) => item.key) });
     } catch {
       window.alert('Đã xảy ra lỗi khi chuẩn bị xuất dữ liệu.');
@@ -129,6 +141,12 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     if (!exportPreview || exportPreview.selectedKeys.length === 0) return;
     try {
       const selectedKeys = exportPreview.selectedKeys;
+      if (exportDestination === 'optical') {
+        const payload = buildOpticalSyncPayload(selectedKeys, exportPreview.data);
+        setExportPreview(null);
+        setOpticalPayload(payload);
+        return;
+      }
       const exportData = Object.fromEntries(selectedKeys.map((key) => [key, exportPreview.data[key]]));
       const includesSecureData = selectedKeys.some((key) => (SECURE_DATA_KEYS as readonly string[]).includes(key));
 
@@ -140,7 +158,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       }
 
       const blob = new Blob([JSON.stringify({
-        metadata: { version: '2.0', exportedAt: new Date().toISOString(), source: 'hcmus-portal-tool' },
+        metadata: { version: '2.0', exportedAt: new Date().toISOString(), source: SYSTEM_BACKUP_SOURCE },
         data: exportData,
       }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -172,6 +190,33 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     } : current);
   }
 
+  function prepareImportPreview(importedContent: unknown, sourceName: string): boolean {
+    const backup = unwrapSystemBackup(importedContent);
+
+    if (!backup || !isSystemBackupData(backup.data, backup.hasSystemEnvelope)) {
+      window.alert('Tệp này không chứa dữ liệu hợp lệ của hệ thống.');
+      return false;
+    }
+
+    const importData = normalizeStorageBackupData(backup.data);
+    const items = Object.entries(importData)
+      .filter(([key]) => !INTERNAL_BACKUP_KEYS.has(key))
+      .map(([key, value]) => getImportItem(key, value));
+    if (items.length === 0) {
+      window.alert('Gói đồng bộ không chứa mục dữ liệu có thể nhập.');
+      return false;
+    }
+    const encrypted = Boolean(importData.__pbkdf2_salt__ && importData.__pin_verify__);
+    setPreview({
+      data: importData,
+      encrypted,
+      sourceName,
+      items,
+      selectedKeys: items.filter((item) => item.status !== 'unchanged').map((item) => item.key),
+    });
+    return true;
+  }
+
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -181,27 +226,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     reader.onload = () => {
       try {
         const importedContent = JSON.parse(String(reader.result));
-        const data = importedContent?.metadata?.source === 'hcmus-portal-tool' && importedContent.data
-          ? importedContent.data
-          : importedContent;
-
-        if (!data || typeof data !== 'object' || Array.isArray(data) || !isPortalBackup(data)) {
-          window.alert('Tệp này không chứa dữ liệu hợp lệ của hệ thống.');
-          return;
-        }
-
-        const importData = data as Record<string, string>;
-        const items = Object.entries(importData)
-          .filter(([key]) => !INTERNAL_BACKUP_KEYS.has(key))
-          .map(([key, value]) => getImportItem(key, value));
-        const encrypted = Boolean(importData.__pbkdf2_salt__ && importData.__pin_verify__);
-        setPreview({
-          data: importData,
-          encrypted,
-          sourceName: file.name.replace(/\.json$/i, ''),
-          items,
-          selectedKeys: items.filter((item) => item.status !== 'unchanged').map((item) => item.key),
-        });
+        prepareImportPreview(importedContent, file.name.replace(/\.json$/i, ''));
       } catch {
         window.alert('Tệp không hợp lệ hoặc bị lỗi.');
       }
@@ -226,8 +251,29 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     } : current);
   }
 
-  function applyPlainImport(importPreview: ImportPreview) {
-    importPreview.selectedKeys.forEach((key) => localStorage.setItem(key, importPreview.data[key]));
+  async function applyPlainImport(importPreview: ImportPreview, encryptionKey?: CryptoKey | null) {
+    const secureKeys = new Set<string>(SECURE_DATA_KEYS);
+    for (const key of importPreview.selectedKeys) {
+      const value = importPreview.data[key];
+      if (secureKeys.has(key)) {
+        if (!encryptionKey) throw new Error('Cần mở khóa ứng dụng để nhập dữ liệu được bảo vệ.');
+        const parsedValue = parseStorageBackupValue(value);
+        await saveSecure(key, parsedValue, encryptionKey);
+        populateSecureCache(key, parsedValue);
+      } else {
+        localStorage.setItem(key, value);
+      }
+    }
+
+    if (importPreview.selectedKeys.includes('raw_student_db') && encryptionKey) {
+      const raw = parseStorageBackupValue(importPreview.data.raw_student_db) as any;
+      const { student, courses } = processRawData(raw);
+      await saveSecure('student_db_full', student, encryptionKey);
+      await saveSecure('course_db_offline', courses, encryptionKey);
+      populateSecureCache('student_db_full', student);
+      populateSecureCache('course_db_offline', courses);
+    }
+    window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
     window.location.reload();
   }
 
@@ -251,21 +297,53 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       setPendingImport(preview);
       return;
     }
-    applyPlainImport(preview);
+    const includesSecureData = preview.selectedKeys.some((key) => (SECURE_DATA_KEYS as readonly string[]).includes(key));
+    if (includesSecureData && !cryptoKey) {
+      setPendingPlainSecureImport(preview);
+      return;
+    }
+    void applyPlainImport(preview, cryptoKey).catch((error) => {
+      window.alert(error instanceof Error ? error.message : 'Không thể nhập dữ liệu.');
+    });
+  }
+
+  function handleOpticalPayload(text: string): boolean {
+    try {
+      return prepareImportPreview(JSON.parse(text), 'Đồng bộ quang học');
+    } catch {
+      window.alert('Gói nhận được không phải JSON hợp lệ.');
+      return false;
+    }
   }
 
   return (
     <div className={compact ? '' : 'flex h-full flex-col'}>
       {!compact && (
         <>
-          <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900"><Database className="h-5 w-5" />Nhập / Xuất dữ liệu</h2>
-          <p className="mb-6 flex-grow text-sm text-gray-500">Xuất dữ liệu cục bộ thành tệp sao lưu, hoặc chọn từng khối dữ liệu cần nhận trước khi nhập.</p>
+          <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900">
+            {transferMode === 'optical' ? <QrCode className="h-5 w-5 text-[#004A98]" /> : <Database className="h-5 w-5" />}
+            {transferMode === 'optical' ? 'Đồng bộ với điện thoại' : 'Nhập / Xuất dữ liệu'}
+          </h2>
+          <p className="mb-6 flex-grow text-sm text-gray-500">
+            {transferMode === 'optical'
+              ? 'Truyền trực tiếp dữ liệu đã chọn từ màn hình laptop sang camera điện thoại bằng QR động.'
+              : 'Xuất dữ liệu cục bộ thành tệp sao lưu, hoặc chọn từng khối dữ liệu cần nhận trước khi nhập.'}
+          </p>
         </>
       )}
-      <div className={compact ? 'flex w-full' : 'mt-auto flex flex-wrap items-center justify-start gap-3'}>
-        {!compact && <button type="button" onClick={openExportPreview} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>}
-        <button type="button" onClick={() => fileInputRef.current?.click()} className={compact ? 'flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#004A98] bg-white px-4 py-2.5 text-sm font-semibold text-[#004A98] transition-colors hover:bg-blue-50' : 'flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none'}><Download className="h-4 w-4" strokeWidth={2.5} />{importButtonLabel}</button>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+      <div className={compact ? 'grid w-full grid-cols-1 gap-2' : 'mt-auto flex flex-wrap items-center justify-start gap-3'}>
+        {transferMode === 'file' ? (
+          <>
+            {!compact && <button type="button" onClick={() => openExportPreview('file')} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>}
+            <button type="button" onClick={() => fileInputRef.current?.click()} className={compact ? 'flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#004A98] bg-white px-3 py-2.5 text-xs font-semibold text-[#004A98] transition-colors hover:bg-blue-50' : 'flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none'}><Download className="h-4 w-4" strokeWidth={2.5} />{importButtonLabel}</button>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={() => openExportPreview('optical')} className="hidden items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none md:inline-flex"><QrCode className="h-4 w-4" strokeWidth={2.5} />Gửi sang điện thoại</button>
+            <button type="button" onClick={() => setIsOpticalReceiverOpen(true)} className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none md:hidden"><ScanLine className="h-4 w-4" strokeWidth={2.5} />Nhận từ laptop</button>
+          </>
+        )}
       </div>
 
       <AppDialog
@@ -275,6 +353,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
         description={preview?.encrypted ? 'Tệp được mã hóa. Bạn vẫn có thể chọn các khối dữ liệu trước khi xác thực PIN.' : 'Chỉ các mục được chọn mới ghi vào dữ liệu hiện tại.'}
         icon={FileUp}
         size="lg"
+        mobileFullScreen={transferMode === 'optical'}
         footer={(
           <>
             <button type="button" onClick={() => setPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
@@ -312,25 +391,25 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       <AppDialog
         open={Boolean(exportPreview)}
         onOpenChange={(open) => { if (!open) setExportPreview(null); }}
-        title="Chọn dữ liệu để xuất"
-        description="Chọn cả nhóm dữ liệu cần đưa vào tệp sao lưu. Dữ liệu đã mã hóa sẽ kèm thông tin xác thực cần thiết."
-        icon={Download}
+        title={exportDestination === 'optical' ? 'Chọn dữ liệu gửi sang điện thoại' : 'Chọn dữ liệu để xuất'}
+        description={exportDestination === 'optical' ? 'Chỉ dữ liệu nguồn và thiết lập cần thiết được đưa vào phiên truyền.' : 'Chọn cả nhóm dữ liệu cần đưa vào tệp sao lưu. Dữ liệu đã mã hóa sẽ kèm thông tin xác thực cần thiết.'}
+        icon={exportDestination === 'optical' ? QrCode : Download}
         size="lg"
         footer={(
           <>
             <button type="button" onClick={() => setExportPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
-            <button type="button" disabled={!exportPreview?.selectedKeys.length} onClick={confirmExport} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">Xuất {exportPreview?.selectedKeys.length ?? 0} mục</button>
+            <button type="button" disabled={!exportPreview?.selectedKeys.length} onClick={confirmExport} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">{exportDestination === 'optical' ? 'Tạo QR' : 'Xuất'} {exportPreview?.selectedKeys.length ?? 0} mục</button>
           </>
         )}
       >
-        <div className="mb-4 max-h-[90vh] flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <p className="text-sm text-slate-600">Đã chọn {exportPreview?.selectedKeys.length ?? 0} mục</p>
           <div className="flex items-center gap-3 text-sm font-semibold">
             <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: current.groups.flatMap((group) => group.items.map((item) => item.key)) } : current)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
             <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: [] } : current)} className="text-slate-600 hover:text-slate-900">Bỏ chọn tất cả</button>
           </div>
         </div>
-        <div className="divide-y divide-slate-200">
+        <div className="max-h-[min(52vh,520px)] divide-y divide-slate-200 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {exportPreview?.groups.map((group) => (
             <section key={group.name} className="py-3">
               <div className="flex items-center justify-between gap-3 pb-1">
@@ -350,6 +429,9 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
           ))}
         </div>
       </AppDialog>
+
+      {transferMode === 'optical' && <OpticalSenderDialog open={Boolean(opticalPayload)} onOpenChange={(open) => { if (!open) setOpticalPayload(null); }} payloadText={opticalPayload} />}
+      {transferMode === 'optical' && <OpticalReceiverDialog open={isOpticalReceiverOpen} onOpenChange={setIsOpticalReceiverOpen} onReceivedText={handleOpticalPayload} />}
 
       {pendingImport && (
         <SecurityLock
@@ -374,6 +456,21 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
           onUnlock={() => {
             setPendingImport(null);
             window.location.reload();
+          }}
+        />
+      )}
+
+      {pendingPlainSecureImport && (
+        <SecurityLock
+          setupMode={!hasSecureData()}
+          customTitle={hasSecureData() ? 'Mở khóa để nhận dữ liệu' : 'Bảo vệ dữ liệu trên thiết bị này'}
+          customSubtitle={hasSecureData() ? 'Nhập mật khẩu UStudy hiện tại để mã hóa dữ liệu vừa nhận.' : 'Tạo mật khẩu để mã hóa dữ liệu vừa nhận trên thiết bị này.'}
+          onUnlock={(key) => {
+            const pending = pendingPlainSecureImport;
+            setPendingPlainSecureImport(null);
+            void applyPlainImport(pending, key).catch((error) => {
+              window.alert(error instanceof Error ? error.message : 'Không thể nhập dữ liệu.');
+            });
           }}
         />
       )}

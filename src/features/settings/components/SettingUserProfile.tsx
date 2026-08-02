@@ -11,6 +11,12 @@ import { SecurityLock } from "../../../components/security";
 import { STORAGE_KEYS } from "../../../config/storageKeys";
 import { buildRawImportPreview } from "../../../logic/import-preview";
 import { mergeImportMetadata, type PortalDataSource } from "../../../logic/import-metadata";
+import {
+    isSystemBackupData,
+    normalizeStorageBackupData,
+    parseStorageBackupValue,
+    unwrapSystemBackup,
+} from "../services/system-backup";
 
 export function SettingUserProfile({ onPageChange }: { onPageChange: (page: string) => void }) {
     const {
@@ -92,31 +98,26 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                 const importedContent = JSON.parse(content);
 
                 // Hỗ trợ cả định dạng mới (có metadata) và định dạng cũ (flat object)
-                let data = importedContent;
-                if (importedContent.metadata && importedContent.data && importedContent.metadata.source === "hcmus-portal-tool") {
-                    data = importedContent.data;
-                }
+                const backup = unwrapSystemBackup(importedContent);
+                const data = backup?.data ?? importedContent;
+                const storageData = backup ? normalizeStorageBackupData(backup.data) : null;
 
                 // 1. Kiểm tra xem có phải là bản export toàn bộ localStorage (từ trang Setting) không
-                const isFullDump = typeof data === 'object' && !Array.isArray(data) && Object.keys(data).some(key =>
-                    key.startsWith('db_') || key.startsWith('app_') || key.includes('semester') || key === 'raw_student_db'
+                const isFullDump = Boolean(
+                    backup && isSystemBackupData(backup.data, backup.hasSystemEnvelope)
                 );
 
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
-                        if (!createJsonImportRollback('Tệp JSON sao lưu', data)) {
+                        if (!storageData || !createJsonImportRollback('Tệp JSON sao lưu', storageData)) {
                             throw new Error('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
                         }
                         if (!cryptoKey) {
                             // Nếu backup có salt → là bản backup đã mã hóa
-                            // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu
-                            if (data['__pbkdf2_salt__']) {
-                                for (const [k, v] of Object.entries(data)) {
-                                    if (typeof v === 'string') {
-                                        localStorage.setItem(k, v);
-                                    } else {
-                                        localStorage.setItem(k, JSON.stringify(v));
-                                    }
+                            // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu.
+                            if (storageData['__pbkdf2_salt__']) {
+                                for (const [key, value] of Object.entries(storageData)) {
+                                    localStorage.setItem(key, value);
                                 }
                                 // Sau khi reload salt + pin_verify vào localStorage,
                                 // refreshHasData() → hasData=true → SecurityGate tự chặn và hỏi mật khẩu cũ
@@ -129,18 +130,19 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                                 return;
                             }
                             // Backup không mã hóa → yêu cầu tạo mật khẩu mới
-                            setPendingImport({ type: 'FULL_DUMP', data });
+                            setPendingImport({ type: 'FULL_DUMP', data: storageData });
                             return;
                         }
 
                         // Lưu từng key: secure keys thì mã hóa, các key khác thì plain
                         const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
-                        for (const key of Object.keys(data)) {
+                        for (const [key, value] of Object.entries(storageData)) {
                             if (SECURE_KEYS.has(key)) {
-                                await saveSecure(key, data[key], cryptoKey);
-                                populateSecureCache(key, data[key]);
+                                const parsedValue = parseStorageBackupValue(value);
+                                await saveSecure(key, parsedValue, cryptoKey);
+                                populateSecureCache(key, parsedValue);
                             } else {
-                                savePlain(key, data[key]);
+                                localStorage.setItem(key, value);
                             }
                         }
                         // Báo các hook re-render
@@ -207,12 +209,13 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                         const { type, data } = pendingImport;
                         if (type === 'FULL_DUMP') {
                             const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
-                            for (const k of Object.keys(data)) {
-                                if (SECURE_KEYS.has(k)) {
-                                    await saveSecure(k, data[k], key);
-                                    populateSecureCache(k, data[k]);
+                            for (const [storageKey, value] of Object.entries(data as Record<string, string>)) {
+                                if (SECURE_KEYS.has(storageKey)) {
+                                    const parsedValue = parseStorageBackupValue(value);
+                                    await saveSecure(storageKey, parsedValue, key);
+                                    populateSecureCache(storageKey, parsedValue);
                                 } else {
-                                    savePlain(k, data[k]);
+                                    localStorage.setItem(storageKey, value);
                                 }
                             }
                         } else {
