@@ -102,7 +102,7 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
                 <ol className="space-y-3 text-sm leading-6 text-slate-600">
                     <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#004A98]">1</span><span>Hiện thanh dấu trang bằng <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-xs text-slate-700">Ctrl + Shift + B</kbd>.</span></li>
                     <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#004A98]">2</span><span>Kéo nút <strong className="font-semibold text-slate-800">HCMUS Portal Tool</strong> lên thanh dấu trang.</span></li>
-                    <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#004A98]">3</span><span>Mở Portal trường, sau đó bấm bookmarklet để nhập dữ liệu.</span></li>
+                    <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#004A98]">3</span><span>Mở Portal trường bằng ustudy, sau đó bấm bookmarklet để nhập dữ liệu.</span></li>
                 </ol>
             </AppDialog>
         </>

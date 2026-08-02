@@ -46,16 +46,18 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
                             <Puzzle className="ustudy-settings-title-icon" />Công cụ đồng bộ dữ liệu
                         </h2>
 
-                        <div className="ustudy-settings-section pt-0">
+                        <div className="space-y-3">
+                          <div className="ustudy-settings-group">
                             <PortalSyncTools />
-                        </div>
+                          </div>
 
-                        <div className="ustudy-settings-section">
+                          <div className="ustudy-settings-group">
                             <ImportData />
-                        </div>
+                          </div>
 
-                        <div className="pt-4">
+                          <div className="ustudy-settings-group">
                             <OpticalDataTransfer />
+                          </div>
                         </div>
                     </div>
 

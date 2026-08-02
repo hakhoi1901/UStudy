@@ -321,7 +321,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       {!compact && (
         <>
           <h2 className="mb-2 flex items-center gap-2 font-semibold text-gray-900">
-            {transferMode === 'optical' ? <QrCode className="h-5 w-5 text-[#004A98]" /> : <Database className="h-5 w-5" />}
+            {transferMode === 'optical' ? <QrCode className="h-5 w-5" /> : <Database className="h-5 w-5" />}
             {transferMode === 'optical' ? 'Đồng bộ với điện thoại' : 'Nhập / Xuất dữ liệu'}
           </h2>
           <p className="mb-4 flex-grow text-sm text-gray-500">

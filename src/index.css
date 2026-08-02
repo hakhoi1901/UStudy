@@ -91,8 +91,8 @@
     @apply mb-5 text-sm leading-6 text-gray-500;
   }
 
-  .ustudy-settings-section {
-    @apply border-b border-gray-200 py-4;
+  .ustudy-settings-group {
+    @apply rounded-lg bg-slate-50 p-3.5 md:p-4;
   }
 
   .ustudy-icon-badge {

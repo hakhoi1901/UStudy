@@ -364,9 +364,7 @@ export function DataSourceCenter() {
         onClick={() => setIsExpanded((value) => !value)}
         className="group flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-gray-50/60 md:px-6"
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98]/10 text-[#004A98] transition group-hover:bg-[#004A98]/15">
-          <Database className="h-4.5 w-4.5" />
-        </div>
+        <Database className="h-6 w-6" />
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-slate-900">Trung tâm dữ liệu</h3>
           <p className="mt-0.5 truncate text-xs text-slate-500 sm:text-sm">Kiểm tra nguồn, độ mới và lịch sử nhập dữ liệu.</p>
