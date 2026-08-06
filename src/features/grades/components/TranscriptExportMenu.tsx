@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { downloadXlsxWorkbook } from '../../../helpers/export/xlsx';
 
 interface TranscriptCourse {
   code: string;
@@ -147,23 +148,6 @@ async function exportTranscriptPdf(data: TranscriptData, fileName: string): Prom
 }
 
 async function exportTranscriptXlsx(data: TranscriptData, fileName: string): Promise<void> {
-  const XLSX = await import('xlsx');
-  const workbook = XLSX.utils.book_new();
-  const infoSheet = XLSX.utils.aoa_to_sheet([
-    ['BẢNG ĐIỂM'],
-    [],
-    ['Họ tên', data.name],
-    ['Ngày sinh', data.dob || '---'],
-    ['Mã số sinh viên', data.studentId || '---'],
-    ['Chương trình', data.program || '---'],
-    ['Ngành học', data.major],
-    ['Niên khóa', data.cohort],
-    ['Tổng số tín chỉ', data.totalCredits],
-    ['Điểm trung bình thang 10', data.gpa10.toFixed(2)],
-    ['Điểm trung bình thang 4', data.gpa4],
-  ]);
-  infoSheet['!cols'] = [{ wch: 28 }, { wch: 42 }];
-
   const gradeRows = [
     ['STT', 'Mã môn', 'Tên môn', 'Tín chỉ', 'Thang 10', 'Thang 4'],
     ...data.rows.map((row) => [row.stt, row.maMon, row.tenMon, row.tinChi, Number(row.diem10), Number(row.diem4)]),
@@ -171,13 +155,31 @@ async function exportTranscriptXlsx(data: TranscriptData, fileName: string): Pro
     ['', '', 'Tổng số tín chỉ', data.totalCredits, '', ''],
     ['', '', 'Điểm trung bình', '', Number(data.gpa10.toFixed(2)), Number(data.gpa4)],
   ];
-  const gradesSheet = XLSX.utils.aoa_to_sheet(gradeRows);
-  gradesSheet['!cols'] = [{ wch: 7 }, { wch: 14 }, { wch: 44 }, { wch: 10 }, { wch: 12 }, { wch: 10 }];
-  gradesSheet['!autofilter'] = { ref: `A1:F${Math.max(1, data.rows.length + 1)}` };
-
-  XLSX.utils.book_append_sheet(workbook, infoSheet, 'Thông tin');
-  XLSX.utils.book_append_sheet(workbook, gradesSheet, 'Bảng điểm');
-  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  await downloadXlsxWorkbook(fileName, [
+    {
+      name: 'Thông tin',
+      rows: [
+        ['BẢNG ĐIỂM'],
+        [],
+        ['Họ tên', data.name],
+        ['Ngày sinh', data.dob || '---'],
+        ['Mã số sinh viên', data.studentId || '---'],
+        ['Chương trình', data.program || '---'],
+        ['Ngành học', data.major],
+        ['Niên khóa', data.cohort],
+        ['Tổng số tín chỉ', data.totalCredits],
+        ['Điểm trung bình thang 10', data.gpa10.toFixed(2)],
+        ['Điểm trung bình thang 4', data.gpa4],
+      ],
+      columnWidths: [28, 42],
+    },
+    {
+      name: 'Bảng điểm',
+      rows: gradeRows,
+      columnWidths: [7, 14, 44, 10, 12, 10],
+      autoFilter: { from: 'A1', to: `F${Math.max(1, data.rows.length + 1)}` },
+    },
+  ]);
 }
 
 const exportLabels: Record<TranscriptExportFormat, string> = {

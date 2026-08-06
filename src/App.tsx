@@ -29,6 +29,7 @@ interface PendingRawImport {
   changes: RawImportChange[];
   selectedIds: string[];
   source: PortalImportTransport;
+  extensionPendingId?: string;
 }
 
 interface ImportSummary {
@@ -143,7 +144,7 @@ function AppContent() {
     return student;
   }, [refreshHasData]);
 
-  const preparePortalImport = useCallback((payload: PortalSyncPacket, source: PortalImportTransport, suppressIfUnchanged = false) => {
+  const preparePortalImport = useCallback((payload: PortalSyncPacket, source: PortalImportTransport, suppressIfUnchanged = false, extensionPendingId?: string) => {
       const incomingVersion = payload.scraperVersion || payload.version || String(payload.meta?.scraperVersion || payload.meta?.version || '');
       if (incomingVersion && incomingVersion !== PORTAL_SCRAPER_VERSION) {
         addNotification({
@@ -165,6 +166,7 @@ function AppContent() {
         changes,
         selectedIds: changes.filter((change) => change.status !== 'unchanged').map((change) => change.id),
         source,
+        extensionPendingId,
       });
       return true;
   }, [addNotification]);
@@ -200,8 +202,7 @@ function AppContent() {
       if (!isPortalSyncPacket(pendingImport.packet)) return;
 
       handledExtensionImports.current.add(pendingImport.id);
-      preparePortalImport(pendingImport.packet, 'extension', pendingImport.trigger === 'auto');
-      await requestPortalExtension('ACK_PENDING_IMPORT', { id: pendingImport.id });
+      preparePortalImport(pendingImport.packet, 'extension', pendingImport.trigger === 'auto', pendingImport.id);
     }
 
     function handlePendingAvailable(event: MessageEvent) {
@@ -266,11 +267,14 @@ function AppContent() {
     setIsImportDetailsOpen(false);
 
     if (!cryptoKey) {
-      setPendingData({ ...payload, summary, source: importPreview.source });
+      setPendingData({ ...payload, summary, source: importPreview.source, extensionPendingId: importPreview.extensionPendingId });
       return;
     }
 
     const student = await saveImportedData(payload.raw, payload.meta, cryptoKey);
+    if (importPreview.extensionPendingId) {
+      await requestPortalExtension('ACK_PENDING_IMPORT', { id: importPreview.extensionPendingId });
+    }
     addNotification({ title: 'Nhập dữ liệu thành công', message: `Đã áp dụng ${selectedCount} thay đổi cho ${student.name}: thêm ${summary.added}, cập nhật ${summary.updated}, xóa ${summary.removed}, trùng ${summary.unchanged}. Có thể hoàn tác trong Cài đặt.`, type: 'success' });
   }, [addNotification, cryptoKey, importPreview, saveImportedData]);
 
@@ -299,6 +303,9 @@ function AppContent() {
           onUnlock={async (key) => {
             unlock(key);
             const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
+            if (pendingData.extensionPendingId) {
+              await requestPortalExtension('ACK_PENDING_IMPORT', { id: pendingData.extensionPendingId });
+            }
             const summary: ImportSummary | undefined = pendingData.summary;
             addNotification({ title: 'Nhập dữ liệu thành công', message: `Dữ liệu đã được mã hóa và sẵn sàng cho ${student.name}.${summary ? ` Thêm ${summary.added}, cập nhật ${summary.updated}, xóa ${summary.removed}, trùng ${summary.unchanged}.` : ''} Có thể hoàn tác trong Cài đặt.`, type: 'success' });
             setPendingData(null);

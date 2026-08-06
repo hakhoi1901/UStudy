@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import * as XLSX from 'xlsx';
 import { AlertTriangle, ChevronDown, ChevronRight, Download, FileSpreadsheet, FileText, Plus, RotateCcw, Trash2, Info, MoreVertical, Maximize, GraduationCap } from 'lucide-react';
 import { AppDialog } from '../../components/ui/overlays/app-dialog';
+import { downloadXlsxWorkbook } from '../../helpers/export/xlsx';
 import type { CourseDragStartHandler, CourseMeta, StudyPlanStorage } from './types';
 import { DEFAULT_SEMESTER_COUNT, SEMESTERS_PER_STUDY_YEAR, formatStudyPlanSemesterLabel, getStudyPlanSemesterIndex } from './semester-utils';
 
@@ -87,7 +87,8 @@ function FlyoutMenu({ open, onToggle, icon, label, children, contentClassName = 
 }
 
 function escapeCsvCell(value: string | number): string {
-    const text = String(value);
+    const rawText = String(value);
+    const text = /^[=+\-@\t\r]/.test(rawText) ? `'${rawText}` : rawText;
     return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
@@ -215,7 +216,7 @@ export function StudyPlanSemesterPanel({
         };
     }, []);
 
-    const exportCourseList = (format: CourseListExportFormat) => {
+    const exportCourseList = async (format: CourseListExportFormat) => {
         const rows = studyPlan.semesters.flatMap((semester) => (
             (studyPlan.plan[semester.id] || []).map((courseId) => {
                 const course = courseById.get(courseId);
@@ -231,17 +232,15 @@ export function StudyPlanSemesterPanel({
         const fileName = `ke-hoach-hoc-tap-${new Date().toISOString().slice(0, 10)}`;
 
         if (format === 'xlsx') {
-            const worksheet = XLSX.utils.json_to_sheet(rows.map((row) => ({
-                'Học kỳ': row.semester,
-                'Mã môn': row.courseId,
-                'Tên môn': row.courseName,
-                'Tín chỉ': row.credits,
-                'Trạng thái': row.status,
-            })));
-            worksheet['!cols'] = [{ wch: 18 }, { wch: 14 }, { wch: 42 }, { wch: 10 }, { wch: 18 }];
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Kế hoạch học tập');
-            XLSX.writeFile(workbook, `${fileName}.xlsx`);
+            await downloadXlsxWorkbook(fileName, [{
+                name: 'Kế hoạch học tập',
+                rows: [
+                    ['Học kỳ', 'Mã môn', 'Tên môn', 'Tín chỉ', 'Trạng thái'],
+                    ...rows.map((row) => [row.semester, row.courseId, row.courseName, row.credits, row.status]),
+                ],
+                columnWidths: [18, 14, 42, 10, 18],
+                autoFilter: { from: 'A1', to: `E${Math.max(1, rows.length + 1)}` },
+            }]);
         } else {
             const content = format === 'csv'
                 ? [

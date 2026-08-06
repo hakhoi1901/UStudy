@@ -2,7 +2,6 @@ package com.ustudy.app;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Bitmap;
@@ -14,7 +13,6 @@ import android.net.http.SslError;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.SslErrorHandler;
-import android.net.http.SslCertificate;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -34,10 +32,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -48,6 +42,7 @@ public class PortalSyncActivity extends AppCompatActivity {
     public static final String EXTRA_RUNNER_SOURCE = "portal_runner_source";
     public static final String EXTRA_RUNTIME_JSON = "portal_runtime_json";
     public static final String EXTRA_RESULT_PATH = "portal_result_path";
+    public static final int MAX_PORTAL_RESULT_BYTES = 4 * 1024 * 1024;
 
     private static final Pattern PORTAL_HOST = Pattern.compile("^new-portal\\d+\\.hcmus\\.edu\\.vn$", Pattern.CASE_INSENSITIVE);
     private static final Pattern LOGIN_PATH = Pattern.compile("^/Login\\.aspx(?:/.*)?$", Pattern.CASE_INSENSITIVE);
@@ -60,7 +55,6 @@ public class PortalSyncActivity extends AppCompatActivity {
     private String startUrl;
     private String runnerSource;
     private String runtimeJson;
-    private String acceptedCertificateFingerprint;
     private boolean hasMainFrameError;
     private final String bridgeToken = UUID.randomUUID().toString();
     private final AtomicBoolean syncRunning = new AtomicBoolean(false);
@@ -97,7 +91,7 @@ public class PortalSyncActivity extends AppCompatActivity {
         webView.getSettings().setUserAgentString(userAgent.replace("; wv", "") + " UStudyMobile/0.2");
         webView.setBackgroundColor(Color.WHITE);
         CookieManager.getInstance().setAcceptCookie(true);
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false);
         webView.addJavascriptInterface(new PortalJavascriptBridge(), "UStudyAndroid");
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -270,73 +264,11 @@ public class PortalSyncActivity extends AppCompatActivity {
     }
 
     private void handlePortalSslError(SslErrorHandler handler, SslError error) {
-        Uri uri = Uri.parse(error.getUrl());
-        SslCertificate certificate = error.getCertificate();
-        String commonName = certificate == null ? null : certificate.getIssuedTo().getCName();
-        Date validFrom = certificate == null ? null : certificate.getValidNotBeforeDate();
-        Date validUntil = certificate == null ? null : certificate.getValidNotAfterDate();
-        Date now = new Date();
-        boolean validDate = validFrom != null && validUntil != null && !now.before(validFrom) && !now.after(validUntil);
-        boolean expectedCertificate = "*.hcmus.edu.vn".equalsIgnoreCase(commonName);
-        boolean canConfirm = isSupportedPortalUri(uri)
-            && error.getPrimaryError() == SslError.SSL_UNTRUSTED
-            && expectedCertificate
-            && validDate;
-        String fingerprint = getCertificateFingerprint(certificate);
-
-        if (canConfirm && !fingerprint.isEmpty() && fingerprint.equals(acceptedCertificateFingerprint)) {
-            handler.proceed();
-            return;
-        }
-
-        if (!canConfirm) {
-            handler.cancel();
-            hasMainFrameError = true;
-            showLoadError(getSslErrorMessage(error));
-            return;
-        }
-
-        showLoading("Đang chờ xác nhận chứng chỉ Portal...");
-        String validUntilLabel = DateFormat.getDateInstance(DateFormat.MEDIUM, new Locale("vi", "VN")).format(validUntil);
-        new AlertDialog.Builder(this)
-            .setTitle("Xác nhận chứng chỉ HCMUS Portal")
-            .setMessage(
-                "Android trên máy chưa tin cậy CA của Portal, nhưng chứng chỉ được cấp đúng cho *.hcmus.edu.vn " +
-                "và còn hạn đến " + validUntilLabel + ".\n\n" +
-                "Chỉ tiếp tục khi thanh địa chỉ đang là new-portal<so>.hcmus.edu.vn."
-            )
-            .setPositiveButton("Tiếp tục lần này", (dialog, which) -> {
-                acceptedCertificateFingerprint = fingerprint;
-                hasMainFrameError = false;
-                showLoading("Đang tải HCMUS Portal...");
-                handler.proceed();
-            })
-            .setNegativeButton("Hủy", (dialog, which) -> {
-                handler.cancel();
-                hasMainFrameError = true;
-                showLoadError("Bạn đã hủy tải Portal do cảnh báo chứng chỉ.");
-            })
-            .setOnCancelListener(dialog -> {
-                handler.cancel();
-                hasMainFrameError = true;
-                showLoadError("Bạn đã hủy tải Portal do cảnh báo chứng chỉ.");
-            })
-            .show();
-    }
-
-    private String getCertificateFingerprint(SslCertificate certificate) {
-        if (certificate == null) return "";
-        try {
-            Bundle state = SslCertificate.saveState(certificate);
-            byte[] encoded = state == null ? null : state.getByteArray("x509-certificate");
-            if (encoded == null) return "";
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(encoded);
-            StringBuilder result = new StringBuilder();
-            for (byte value : digest) result.append(String.format(Locale.US, "%02X", value));
-            return result.toString();
-        } catch (Exception ignored) {
-            return "";
-        }
+        // Only the Android trust store can validate the Portal certificate.
+        // Hostname or fingerprint checks are not safe grounds to override an SSL error.
+        handler.cancel();
+        hasMainFrameError = true;
+        showLoadError(getSslErrorMessage(error));
     }
 
     private String getSslErrorMessage(SslError error) {
@@ -403,9 +335,13 @@ public class PortalSyncActivity extends AppCompatActivity {
     private void completeSync(String packetJson) {
         cancelSyncTimeout();
         try {
+            byte[] packetBytes = packetJson.getBytes(StandardCharsets.UTF_8);
+            if (packetBytes.length > MAX_PORTAL_RESULT_BYTES) {
+                throw new IllegalArgumentException("Kết quả Portal vượt quá giới hạn 4 MB.");
+            }
             File resultFile = File.createTempFile("portal-sync-", ".json", getCacheDir());
             try (FileOutputStream output = new FileOutputStream(resultFile)) {
-                output.write(packetJson.getBytes(StandardCharsets.UTF_8));
+                output.write(packetBytes);
             }
             Intent result = new Intent();
             result.putExtra(EXTRA_RESULT_PATH, resultFile.getAbsolutePath());
@@ -486,7 +422,7 @@ public class PortalSyncActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void onSyncResult(String token, String packetJson) {
-            if (!bridgeToken.equals(token) || packetJson == null || packetJson.length() < 2) return;
+            if (!bridgeToken.equals(token) || packetJson == null || packetJson.length() < 2 || packetJson.length() > MAX_PORTAL_RESULT_BYTES) return;
             runOnUiThread(() -> completeSync(packetJson));
         }
 

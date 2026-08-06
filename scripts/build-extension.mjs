@@ -7,7 +7,8 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sourceDir = join(projectRoot, 'extension');
 const outputDir = join(projectRoot, 'dist-extension');
 const downloadsDir = join(projectRoot, 'public', 'downloads');
-const configPath = join(projectRoot, 'src', 'portal-sync', 'config.json');
+const profile = process.env.USTUDY_EXTENSION_PROFILE === 'development' ? 'development' : 'production';
+const configPath = join(projectRoot, 'src', 'portal-sync', profile === 'development' ? 'config.development.json' : 'config.json');
 
 if (!outputDir.startsWith(`${projectRoot}${sep}`)) {
   throw new Error('Thư mục build extension nằm ngoài workspace.');
@@ -19,9 +20,13 @@ await mkdir(outputDir, { recursive: true });
 await cp(sourceDir, outputDir, { recursive: true });
 
 const manifestPath = join(outputDir, 'manifest.json');
+if (profile === 'development') {
+  await cp(join(sourceDir, 'manifest.development.json'), manifestPath);
+}
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 manifest.version = config.extensionVersion;
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+await rm(join(outputDir, 'manifest.development.json'), { force: true });
 
 await writeFile(
   join(outputDir, 'config.js'),
@@ -45,10 +50,12 @@ async function addDirectoryToZip(zip, directory) {
 
 const zip = new PizZip();
 await addDirectoryToZip(zip, outputDir);
-await mkdir(downloadsDir, { recursive: true });
-await writeFile(
-  join(downloadsDir, 'ustudy-portal-sync.zip'),
-  zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }),
-);
+if (profile === 'production') {
+  await mkdir(downloadsDir, { recursive: true });
+  await writeFile(
+    join(downloadsDir, 'ustudy-portal-sync.zip'),
+    zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }),
+  );
+}
 
-console.log(`Extension ${config.extensionVersion} đã được build tại ${outputDir}`);
+console.log(`Extension ${config.extensionVersion} (${profile}) đã được build tại ${outputDir}`);

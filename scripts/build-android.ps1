@@ -1,3 +1,7 @@
+param(
+    [switch]$Debug
+)
+
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -30,11 +34,26 @@ $env:Path = "$(Join-Path $env:JAVA_HOME 'bin');$(Join-Path $env:ANDROID_SDK_ROOT
 $publicDownloadDirectory = Join-Path $repoRoot 'public\downloads'
 $publicDownloadPath = Join-Path $publicDownloadDirectory 'UStudy-android.apk'
 $stashedPublicApk = Join-Path ([System.IO.Path]::GetTempPath()) "UStudy-android-$([Guid]::NewGuid().ToString('N')).apk"
+$buildVariant = if ($Debug) { 'debug' } else { 'release' }
+$gradleTask = if ($Debug) { ':app:assembleDebug' } else { ':app:assembleRelease' }
+
+if (-not $Debug) {
+    $requiredSigningVariables = @(
+        'USTUDY_RELEASE_STORE_FILE',
+        'USTUDY_RELEASE_STORE_PASSWORD',
+        'USTUDY_RELEASE_KEY_ALIAS',
+        'USTUDY_RELEASE_KEY_PASSWORD'
+    )
+    $missingSigningVariables = $requiredSigningVariables | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) }
+    if ($missingSigningVariables.Count -gt 0) {
+        throw "Khong the build APK phat hanh. Thieu bien moi truong: $($missingSigningVariables -join ', '). Dung -Debug chi cho ban noi bo."
+    }
+}
 
 Push-Location $repoRoot
 try {
-    # Prevent the previous downloadable APK from being embedded inside the next APK.
-    if (Test-Path $publicDownloadPath) {
+    # Prevent the previous public APK from being embedded inside the next release APK.
+    if (-not $Debug -and (Test-Path $publicDownloadPath)) {
         Move-Item -LiteralPath $publicDownloadPath -Destination $stashedPublicApk
     }
 
@@ -46,25 +65,27 @@ try {
 
     Push-Location (Join-Path $repoRoot 'android')
     try {
-        .\gradlew.bat :app:assembleDebug
+        .\gradlew.bat $gradleTask
         if ($LASTEXITCODE -ne 0) { throw 'Android build that bai.' }
     } finally {
         Pop-Location
     }
 
-    $sourceApk = Join-Path $repoRoot 'android\app\build\outputs\apk\debug\UStudy-debug.apk'
+    $sourceApk = Join-Path $repoRoot "android\app\build\outputs\apk\$buildVariant\UStudy-$buildVariant.apk"
     if (-not (Test-Path $sourceApk)) { throw "Khong tim thay APK tai $sourceApk" }
 
     $artifactDirectory = Join-Path $repoRoot 'artifacts'
     New-Item -ItemType Directory -Path $artifactDirectory -Force | Out-Null
-    $artifactPath = Join-Path $artifactDirectory 'UStudy-debug.apk'
+    $artifactPath = Join-Path $artifactDirectory "UStudy-$buildVariant.apk"
     Copy-Item -LiteralPath $sourceApk -Destination $artifactPath -Force
 
-    New-Item -ItemType Directory -Path $publicDownloadDirectory -Force | Out-Null
-    Copy-Item -LiteralPath $sourceApk -Destination $publicDownloadPath -Force
+    if (-not $Debug) {
+        New-Item -ItemType Directory -Path $publicDownloadDirectory -Force | Out-Null
+        Copy-Item -LiteralPath $sourceApk -Destination $publicDownloadPath -Force
+    }
 
     Write-Host "APK: $artifactPath"
-    Write-Host "Public download: $publicDownloadPath"
+    if (-not $Debug) { Write-Host "Public download: $publicDownloadPath" }
 } finally {
     if (Test-Path $stashedPublicApk) {
         if (Test-Path $publicDownloadPath) {

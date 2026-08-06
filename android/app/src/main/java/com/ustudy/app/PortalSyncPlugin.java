@@ -56,6 +56,10 @@ public class PortalSyncPlugin extends Plugin {
                 call.reject("Đường dẫn kết quả không hợp lệ.");
                 return;
             }
+            if (resultFile.length() > PortalSyncActivity.MAX_PORTAL_RESULT_BYTES) {
+                call.reject("Kết quả Portal vượt quá giới hạn 4 MB.");
+                return;
+            }
 
             StringBuilder packetJson = new StringBuilder();
             try (

@@ -20,8 +20,6 @@ interface SecurityLockProps {
 type SetupStep = 'enter' | 'confirm';
 
 const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
-
     @keyframes sec-fadeUp {
         from { opacity: 0; transform: translateY(28px) scale(0.97); }
         to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -55,7 +53,7 @@ const styles = `
         overflow-y: auto;
         overflow-x: hidden;
         padding: 20px;
-        font-family: 'DM Sans', sans-serif;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background: #f2f0ec;
         background-image:
             radial-gradient(ellipse 70% 60% at 15% 40%, rgba(218,214,255,0.55) 0%, transparent 60%),
@@ -133,7 +131,7 @@ const styles = `
     .sec-line.idle { background: #dde1ea; }
 
     .sec-title {
-        font-family: 'Lora', serif;
+        font-family: Georgia, "Times New Roman", serif;
         font-size: 27px;
         font-weight: 600;
         color: #16163a;
@@ -185,7 +183,7 @@ const styles = `
         border-radius: 18px;
         padding: 0 50px 0 20px;
         font-size: 16px;
-        font-family: 'DM Sans', sans-serif;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         color: #16163a;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
@@ -239,7 +237,7 @@ const styles = `
         height: 54px;
         border: none;
         border-radius: 16px;
-        font-family: 'DM Sans', sans-serif;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         font-size: 15px;
         font-weight: 600;
         letter-spacing: 0.01em;
@@ -268,7 +266,7 @@ const styles = `
     .sec-ghost {
         background: none;
         border: none;
-        font-family: 'DM Sans', sans-serif;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         font-size: 13px;
         font-weight: 500;
         color: #9daabb;

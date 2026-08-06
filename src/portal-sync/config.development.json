@@ -7,7 +7,12 @@
   "portalLoginPathPattern": "^/Login\\.aspx(?:/.*)?$",
   "productionAppUrl": "https://ustudy.hakhoi.io.vn/",
   "appOrigins": [
-    "https://ustudy.hakhoi.io.vn"
+    "https://ustudy.hakhoi.io.vn",
+    "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app",
+    "https://localhost:3005",
+    "http://localhost:3005",
+    "https://127.0.0.1:3005",
+    "http://127.0.0.1:3005"
   ],
   "endpoints": {
     "grades": "/SinhVien.aspx?pid=211",

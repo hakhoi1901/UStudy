@@ -39,9 +39,8 @@
         "@react-pdf/renderer": "^4.5.1",
         "@tailwindcss/vite": "^4.3.0",
         "@vercel/analytics": "^2.0.1",
-        "analytics": "github:vercel/analytics",
         "class-variance-authority": "^0.7.1",
-        "clsx": "*",
+        "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "docxtemplater": "^3.69.0",
         "embla-carousel-react": "^8.6.0",
@@ -56,14 +55,12 @@
         "react-dom": "^18.3.1",
         "react-hook-form": "^7.55.0",
         "react-resizable-panels": "^2.1.7",
-        "react-router-dom": "^6.30.1",
+        "react-router-dom": "^7.18.2",
         "recharts": "^2.15.2",
         "sonner": "^2.0.3",
-        "tailwind-merge": "*",
+        "tailwind-merge": "^3.6.0",
         "tailwindcss-animate": "^1.0.7",
-        "tsc": "^2.0.4",
         "vaul": "^1.1.2",
-        "xlsx": "^0.18.5",
         "zxing-wasm": "^3.1.2"
     },
     "devDependencies": {
@@ -76,16 +73,22 @@
         "@vitejs/plugin-basic-ssl": "^2.3.0",
         "@vitejs/plugin-react-swc": "^3.11.0",
         "autoprefixer": "^10.4.27",
-        "postcss": "^8.5.8",
+        "postcss": "^8.5.26",
         "tailwindcss": "^4.2.2",
         "typescript": "^6.0.3",
-        "vite": "^6.4.2"
+        "vite": "^6.4.3"
     },
     "scripts": {
         "dev": "vite",
         "build": "npm run build:extension && vite build",
         "build:extension": "node scripts/build-extension.mjs",
+        "build:extension:dev": "set USTUDY_EXTENSION_PROFILE=development&& node scripts/build-extension.mjs",
         "build:apk": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
+        "build:apk:debug": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1 -Debug",
         "typecheck": "tsc -b"
+    },
+    "overrides": {
+        "brace-expansion": "5.0.9",
+        "tar": "7.5.22"
     }
 }

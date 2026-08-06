@@ -9,8 +9,7 @@
   const READY_EVENT = 'ustudy:extension-ready';
   const MARKER_ATTRIBUTE = 'data-ustudy-extension-version';
 
-  const isSupportedApp = APP_CONFIG.appOrigins.includes(window.location.origin)
-    || APP_CONFIG.developmentAppHostnames.includes(window.location.hostname);
+  const isSupportedApp = APP_CONFIG.appOrigins.includes(window.location.origin);
   if (!isSupportedApp) return;
 
   globalThis.__USTUDY_APP_BRIDGE_INITIALIZED__ = true;

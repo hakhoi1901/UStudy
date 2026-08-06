@@ -1046,8 +1046,6 @@
             source: IS_EXTENSION ? 'extension' : 'bookmarklet'
         };
 
-        console.log("🔥 FULL DATA PACKET:", fullDataPacket);
-
         if (IS_EXTENSION) {
             emitExtensionEvent('USTUDY_PORTAL_SYNC_RESULT', { payload: fullDataPacket });
         } else if (window.opener) {

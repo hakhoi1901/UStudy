@@ -13,6 +13,7 @@ import {
   normalizeStorageBackupData,
   parseStorageBackupValue,
   SYSTEM_BACKUP_SOURCE,
+  isManagedStorageKey,
   unwrapSystemBackup,
 } from '../services/system-backup';
 
@@ -51,6 +52,7 @@ interface ExportPreview {
 }
 
 const INTERNAL_BACKUP_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__', '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY, IMPORT_HISTORY_STORAGE_KEY]);
+const MAX_BACKUP_FILE_BYTES = 8 * 1024 * 1024;
 
 const IMPORT_LABELS: Record<string, { label: string; group: string }> = {
   raw_student_db: { label: 'Dữ liệu Portal gốc', group: 'Dữ liệu học tập' },
@@ -122,6 +124,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
 
       const items = Object.entries(store)
         .filter(([key]) => !INTERNAL_BACKUP_KEYS.has(key))
+        .filter(([key]) => isManagedStorageKey(key))
         .filter(([key]) => destination === 'file' || isOpticalSyncKey(key))
         .map(([key]) => ({ key, label: IMPORT_LABELS[key]?.label ?? key, group: IMPORT_LABELS[key]?.group ?? 'Cài đặt và dữ liệu khác' }));
       const groups = items.reduce<Record<string, ExportItem[]>>((result, item) => {
@@ -221,6 +224,10 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    if (file.size > MAX_BACKUP_FILE_BYTES) {
+      window.alert('Tệp sao lưu vượt quá giới hạn 8 MB.');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {

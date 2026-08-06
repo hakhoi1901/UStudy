@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "UStudy Portal Sync (Development)",
+  "version": "0.2.5",
+  "description": "Development build for UStudy Portal Sync.",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": [
+    "https://*.hcmus.edu.vn/*",
+    "https://ustudy.hakhoi.io.vn/*",
+    "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app/*",
+    "http://localhost:3005/*",
+    "https://localhost:3005/*",
+    "http://127.0.0.1:3005/*",
+    "https://127.0.0.1:3005/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "UStudy Portal Sync", "default_popup": "popup.html" },
+  "content_scripts": [
+    {
+      "matches": ["https://*.hcmus.edu.vn/*"],
+      "js": ["config.js", "portal-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://ustudy.hakhoi.io.vn/*",
+        "https://u-study-git-hk-deploy-hakhoicontact-archs-projects.vercel.app/*",
+        "http://localhost:3005/*",
+        "https://localhost:3005/*",
+        "http://127.0.0.1:3005/*",
+        "https://127.0.0.1:3005/*"
+      ],
+      "js": ["config.js", "app-bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon.svg"],
+      "matches": ["https://*.hcmus.edu.vn/*"]
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 
+def releaseSigningValues = [
+    System.getenv('USTUDY_RELEASE_STORE_FILE'),
+    System.getenv('USTUDY_RELEASE_STORE_PASSWORD'),
+    System.getenv('USTUDY_RELEASE_KEY_ALIAS'),
+    System.getenv('USTUDY_RELEASE_KEY_PASSWORD'),
+]
+def hasReleaseSigning = releaseSigningValues.every { value -> value != null && !value.trim().isEmpty() }
+
 android {
     namespace = "com.ustudy.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,9 +24,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    if (hasReleaseSigning) {
+        signingConfigs {
+            release {
+                storeFile file(System.getenv('USTUDY_RELEASE_STORE_FILE'))
+                storePassword System.getenv('USTUDY_RELEASE_STORE_PASSWORD')
+                keyAlias System.getenv('USTUDY_RELEASE_KEY_ALIAS')
+                keyPassword System.getenv('USTUDY_RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -30,6 +52,13 @@ android {
             // Ví dụ: UStudy-debug.apk hoặc UStudy-release.apk
             outputFileName = "${projectName}-${variant.name}.apk"
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def requestsRelease = graph.allTasks.any { task -> task.name.toLowerCase().contains('release') }
+    if (requestsRelease && !hasReleaseSigning) {
+        throw new GradleException('Thieu USTUDY_RELEASE_STORE_FILE, USTUDY_RELEASE_STORE_PASSWORD, USTUDY_RELEASE_KEY_ALIAS hoac USTUDY_RELEASE_KEY_PASSWORD de build release.')
     }
 }
 

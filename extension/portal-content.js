@@ -110,7 +110,7 @@ function renderSettingsBody(settings) {
     <section class="section">
       <div class="section-heading"><h2>Kỳ cho lớp mở và ĐKHP</h2></div>
       <div class="period-grid">
-        <label for="ustudy-year">Năm học<input id="ustudy-year" value="${settings.academicYear}" maxlength="5" placeholder="25-26"></label>
+        <label for="ustudy-year">Năm học<input id="ustudy-year" maxlength="5" placeholder="25-26"></label>
         <label for="ustudy-semester">Học kỳ<select id="ustudy-semester"><option value="1" ${settings.semester === '1' ? 'selected' : ''}>Học kỳ 1</option><option value="2" ${settings.semester === '2' ? 'selected' : ''}>Học kỳ 2</option><option value="3" ${settings.semester === '3' ? 'selected' : ''}>Học kỳ 3</option></select></label>
       </div>
     </section>
@@ -215,6 +215,9 @@ function render() {
       </section>
     </div>
   `;
+
+  const academicYearInput = shadow.getElementById('ustudy-year');
+  if (academicYearInput) academicYearInput.value = settings.academicYear;
 
   const hidePanel = () => {
     if (settings.onboardingComplete) isPanelExpanded = false;

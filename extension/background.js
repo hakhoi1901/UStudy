@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   autoCooldowns: 'ustudyAutoCooldowns',
 };
 const SYNC_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
+const PENDING_IMPORT_TTL_MS = 30 * 60 * 1000;
 
 const DEFAULT_SETTINGS = {
   onboardingComplete: false,
@@ -60,6 +61,38 @@ async function writeSyncSessions(sessions) {
   await chrome.storage.session.set({ [STORAGE_KEYS.syncSessions]: sessions });
 }
 
+function isPendingImportFresh(pending) {
+  const createdAt = new Date(pending?.createdAt || '').getTime();
+  return Boolean(pending?.id && pending?.packet && Number.isFinite(createdAt) && Date.now() - createdAt <= PENDING_IMPORT_TTL_MS);
+}
+
+async function clearPendingImport() {
+  await Promise.all([
+    chrome.storage.session.remove(STORAGE_KEYS.pendingImport),
+    chrome.storage.local.remove(STORAGE_KEYS.pendingImport),
+  ]);
+  await chrome.action.setBadgeText({ text: '' });
+}
+
+async function readPendingImport() {
+  const sessionStored = await chrome.storage.session.get(STORAGE_KEYS.pendingImport);
+  const sessionPending = sessionStored[STORAGE_KEYS.pendingImport];
+  if (isPendingImportFresh(sessionPending)) return sessionPending;
+  if (sessionPending) await clearPendingImport();
+
+  // One-time migration for packets created by older extension versions.
+  const legacyStored = await chrome.storage.local.get(STORAGE_KEYS.pendingImport);
+  const legacyPending = legacyStored[STORAGE_KEYS.pendingImport];
+  if (!legacyPending) return null;
+  if (!isPendingImportFresh(legacyPending)) {
+    await clearPendingImport();
+    return null;
+  }
+  await chrome.storage.session.set({ [STORAGE_KEYS.pendingImport]: legacyPending });
+  await chrome.storage.local.remove(STORAGE_KEYS.pendingImport);
+  return legacyPending;
+}
+
 async function removeSyncSession(tabId) {
   return enqueueCheckpoint(tabId, async () => {
     const sessions = await readSyncSessions();
@@ -98,30 +131,38 @@ function hasSameSourceSelection(session, selectedSources) {
 function mergeSettings(value) {
   const incoming = value && typeof value === 'object' ? value : {};
   const mode = ['off', 'manual', 'ask', 'auto'].includes(incoming.mode) ? incoming.mode : DEFAULT_SETTINGS.mode;
+  const academicYear = /^\d{2}-\d{2}$/.test(String(incoming.academicYear || ''))
+    ? String(incoming.academicYear)
+    : DEFAULT_SETTINGS.academicYear;
   const semester = ['1', '2', '3'].includes(String(incoming.semester))
     ? String(incoming.semester)
     : DEFAULT_SETTINGS.semester;
   const cooldownMinutes = Math.max(1, Math.min(1440, Number(incoming.cooldownMinutes) || DEFAULT_SETTINGS.cooldownMinutes));
+  const sources = {};
+  for (const source of Object.keys(DEFAULT_SETTINGS.sources)) {
+    sources[source] = source === 'grades' || Boolean(incoming.sources?.[source]);
+  }
 
   return {
     ...DEFAULT_SETTINGS,
-    ...incoming,
     mode,
+    academicYear,
     semester,
     cooldownMinutes,
-    sources: {
-      ...DEFAULT_SETTINGS.sources,
-      ...(incoming.sources || {}),
-      grades: true,
-    },
+    onboardingComplete: Boolean(incoming.onboardingComplete),
+    openAppAfterSync: Boolean(incoming.openAppAfterSync),
+    autoSuggestionDismissed: Boolean(incoming.autoSuggestionDismissed),
+    sources,
   };
 }
 
 async function getStoredState() {
-  const stored = await chrome.storage.local.get(Object.values(STORAGE_KEYS));
+  const [stored, pending] = await Promise.all([
+    chrome.storage.local.get([STORAGE_KEYS.settings, STORAGE_KEYS.stats, STORAGE_KEYS.pendingSyncRequest]),
+    readPendingImport(),
+  ]);
   const settings = mergeSettings(stored[STORAGE_KEYS.settings]);
   const stats = { ...DEFAULT_STATS, ...(stored[STORAGE_KEYS.stats] || {}) };
-  const pending = stored[STORAGE_KEYS.pendingImport] || null;
 
   return {
     installed: true,
@@ -178,11 +219,47 @@ function isAppUrl(url) {
   if (typeof url !== 'string') return false;
   try {
     const parsedUrl = new URL(url);
-    return CONFIG.appOrigins.includes(parsedUrl.origin)
-      || CONFIG.developmentAppHostnames.includes(parsedUrl.hostname);
+    return CONFIG.appOrigins.includes(parsedUrl.origin);
   } catch {
     return false;
   }
+}
+
+function getSenderUrl(sender) {
+  return sender?.url || sender?.tab?.url || '';
+}
+
+function isExtensionPageSender(sender) {
+  return sender?.id === chrome.runtime.id
+    && typeof sender?.url === 'string'
+    && sender.url.startsWith(chrome.runtime.getURL(''));
+}
+
+function isPortalSender(sender) {
+  return sender?.id === chrome.runtime.id && isPortalUrl(getSenderUrl(sender));
+}
+
+function isAppSender(sender) {
+  return sender?.id === chrome.runtime.id && isAppUrl(getSenderUrl(sender));
+}
+
+function assertAuthorizedSender(message, sender) {
+  const action = message?.action;
+  const fromPortal = isPortalSender(sender);
+  const fromApp = isAppSender(sender);
+  const fromExtensionPage = isExtensionPageSender(sender);
+  const isPortalAction = ['RUN_PORTAL_SYNC', 'SYNC_SOURCE_COMPLETE', 'SYNC_HEARTBEAT', 'SYNC_COMPLETE', 'SYNC_FAILED'].includes(action);
+  const isPendingImportAction = action === 'GET_PENDING_IMPORT' || action === 'ACK_PENDING_IMPORT';
+
+  const allowed = (
+    (action === 'GET_STATE' && (fromPortal || fromApp || fromExtensionPage))
+    || (action === 'SAVE_SETTINGS' && (fromPortal || fromApp || fromExtensionPage))
+    || (action === 'OPEN_PORTAL' && (fromApp || fromExtensionPage))
+    || (isPendingImportAction && fromApp)
+    || (isPortalAction && fromPortal)
+  );
+
+  if (!allowed) throw new Error('Nguồn gửi yêu cầu extension không hợp lệ.');
 }
 
 async function findTab(predicate) {
@@ -430,10 +507,10 @@ async function storeSyncResult(packet, trigger = 'manual', tabId, requestId) {
     lastError: null,
   };
 
-  await chrome.storage.local.set({
-    [STORAGE_KEYS.pendingImport]: pendingImport,
-    [STORAGE_KEYS.stats]: stats,
-  });
+  await Promise.all([
+    chrome.storage.session.set({ [STORAGE_KEYS.pendingImport]: pendingImport }),
+    chrome.storage.local.set({ [STORAGE_KEYS.stats]: stats }),
+  ]);
   await chrome.action.setBadgeBackgroundColor({ color: '#004A98' });
   await chrome.action.setBadgeText({ text: '1' });
   if (tabId) {
@@ -450,6 +527,7 @@ async function storeSyncResult(packet, trigger = 'manual', tabId, requestId) {
 }
 
 async function handleMessage(message, sender) {
+  assertAuthorizedSender(message, sender);
   switch (message?.action) {
     case 'GET_STATE':
       return getStateForSender(sender);
@@ -478,16 +556,12 @@ async function handleMessage(message, sender) {
       return { recorded: true };
     }
     case 'GET_PENDING_IMPORT': {
-      const stored = await chrome.storage.local.get(STORAGE_KEYS.pendingImport);
-      return stored[STORAGE_KEYS.pendingImport] || null;
+      return readPendingImport();
     }
     case 'ACK_PENDING_IMPORT': {
-      const stored = await chrome.storage.local.get(STORAGE_KEYS.pendingImport);
-      const pending = stored[STORAGE_KEYS.pendingImport];
-      if (!pending || pending.id === message.payload?.id) {
-        await chrome.storage.local.remove(STORAGE_KEYS.pendingImport);
-        await chrome.action.setBadgeText({ text: '' });
-      }
+      const pending = await readPendingImport();
+      if (!pending || pending.id !== message.payload?.id) return { acknowledged: false };
+      await clearPendingImport();
       return { acknowledged: true };
     }
     default:

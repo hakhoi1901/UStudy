@@ -19,6 +19,12 @@ import type {
 
 const GROUP_URL_PREFIX = 'v1_';
 const MASK_PARTS = 10;
+const MAX_GROUP_URL_COMPRESSED_BYTES = 12 * 1024;
+const MAX_GROUP_URL_JSON_LENGTH = 64 * 1024;
+const MAX_GROUP_MEMBERS = 20;
+const MAX_GROUP_COURSES_PER_MEMBER = 60;
+const MAX_GROUP_NICKNAME_LENGTH = 80;
+const MAX_GROUP_COURSE_ID_LENGTH = 32;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
 type PreferenceConstraintMode = 'strict' | 'relaxed';
 
@@ -80,6 +86,53 @@ function fromBase64Url(value: string): Uint8Array {
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes;
+}
+
+function inflateGroupPayload(bytes: Uint8Array): string {
+  let output = '';
+  const inflater = new pako.Inflate({ to: 'string' });
+  inflater.onData = (chunk) => {
+    const textChunk = chunk as string;
+    if (output.length + textChunk.length > MAX_GROUP_URL_JSON_LENGTH) {
+      throw new Error('Payload giải nén vượt quá giới hạn cho phép.');
+    }
+    output += textChunk;
+  };
+  inflater.push(bytes, true);
+  if (inflater.err) throw new Error(inflater.msg || 'Không thể giải nén payload.');
+  return output;
+}
+
+function readCourseIds(value: unknown, fieldName: string): string[] {
+  if (!Array.isArray(value) || value.length > MAX_GROUP_COURSES_PER_MEMBER) {
+    throw new Error(`${fieldName} không hợp lệ hoặc vượt quá giới hạn.`);
+  }
+  return value.map((courseId) => {
+    if (typeof courseId !== 'string' || courseId.length > MAX_GROUP_COURSE_ID_LENGTH) {
+      throw new Error(`${fieldName} chứa mã môn không hợp lệ.`);
+    }
+    return courseId;
+  });
+}
+
+function parseGroupMembers(value: unknown): GroupMemberToken[] {
+  if (!Array.isArray(value) || value.length > MAX_GROUP_MEMBERS) {
+    throw new Error('Danh sách thành viên nhóm không hợp lệ hoặc quá lớn.');
+  }
+  return value.map((candidate) => {
+    if (!candidate || typeof candidate !== 'object') throw new Error('Thành viên nhóm không hợp lệ.');
+    const member = candidate as Record<string, unknown>;
+    const nickname = member.nickname;
+    if (nickname !== undefined && (typeof nickname !== 'string' || nickname.length > MAX_GROUP_NICKNAME_LENGTH)) {
+      throw new Error('Tên thành viên vượt quá giới hạn.');
+    }
+    return sanitizeGroupMember({
+      nickname: typeof nickname === 'string' ? nickname : undefined,
+      sharedCourses: readCourseIds(member.sharedCourses, 'Danh sách môn chung'),
+      personalCourses: readCourseIds(member.personalCourses, 'Danh sách môn riêng'),
+      busyMask: Array(21).fill(0),
+    });
+  });
 }
 
 function getCourse(db: CourseDatabase, courseId: string): CourseLike | null {
@@ -234,11 +287,16 @@ export function decodeGroupURL(hash: string): GroupMemberToken[] {
   }
 
   try {
-    const bytes = fromBase64Url(fragment.slice(GROUP_URL_PREFIX.length));
-    const json = pako.inflate(bytes, { to: 'string' });
-    const parsed = JSON.parse(json) as GroupMemberToken[];
-    if (!Array.isArray(parsed)) throw new Error('Payload is not an array');
-    return parsed.map(sanitizeGroupMember);
+    const encoded = fragment.slice(GROUP_URL_PREFIX.length);
+    if (!encoded || encoded.length > MAX_GROUP_URL_COMPRESSED_BYTES * 2 || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
+      throw new Error('Payload nén không hợp lệ hoặc vượt quá giới hạn.');
+    }
+    const bytes = fromBase64Url(encoded);
+    if (bytes.length > MAX_GROUP_URL_COMPRESSED_BYTES) {
+      throw new Error('Payload nén vượt quá giới hạn cho phép.');
+    }
+    const json = inflateGroupPayload(bytes);
+    return parseGroupMembers(JSON.parse(json));
   } catch (error) {
     throw new GroupURLDecodeError(error instanceof Error ? `Link nhóm bị lỗi hoặc bị cắt ngắn: ${error.message}` : 'Link nhóm bị lỗi hoặc bị cắt ngắn.');
   }
