@@ -5,6 +5,9 @@ interface GradeHistoryMobileCardProps {
 }
 
 export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) {
+    const hasGrade = course.hasGrade ?? course.grade > 0;
+    const isExempted = course.isExempted === true || course.semester === 'Miễn';
+
     return (
         <div className={`px-4 py-3 ${course.needsRetake ? 'bg-red-50/40' : ''}`}>
             <div className="flex items-start justify-between gap-2">
@@ -13,7 +16,7 @@ export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) 
                     <p className="text-[10px] text-gray-600">{course.code}</p>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className={`px-2 py-0.5 rounded-md font-semibold text-xs ${course.grade > 0 ? (
+                    <span className={`px-2 py-0.5 rounded-md font-semibold text-xs ${hasGrade ? (
                         course.grade >= 9.0 ? 'bg-green-100 text-green-700' :
                             course.grade >= 8.0 ? 'bg-blue-100 text-blue-700' :
                                 course.grade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
@@ -21,9 +24,11 @@ export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) 
                                         'bg-red-100 text-red-700'
                     ) : 'bg-gray-100 text-gray-400'
                         }`}>
-                        {course.grade > 0 ? course.grade.toFixed(1) : '-'}
+                        {hasGrade ? course.grade.toFixed(1) : '-'}
                     </span>
-                    {course.grade > 0 ? (
+                    {isExempted ? (
+                        <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700">Được miễn</span>
+                    ) : hasGrade ? (
                         course.needsRetake ? (
                             <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] rounded-full font-medium">Học lại</span>
                         ) : (
@@ -31,7 +36,7 @@ export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) 
                         )
                     ) : (
                         <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full font-medium">
-                            {course.status === 'ongoing' ? 'Đang học' : 'Chưa có'}
+                            {course.status === 'ongoing' && course.isCurrentSemester ? 'Đang học' : 'Chưa có điểm'}
                         </span>
                     )}
                 </div>

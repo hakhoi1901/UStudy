@@ -15,6 +15,7 @@ export * from './hooks/use-grade-management';
 // Services (For direct logic access if needed)
 export * from './services/academic-rules-engine';
 export * from './services/gpa-calculator';
+export * from './services/grade-history-filter';
 
 // Types
 export * from './types';

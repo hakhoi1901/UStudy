@@ -41,7 +41,11 @@ export function GradesPage() {
     semesterGPA,
     cumulativeGPA,
     uniqueSemesters,
+    semesterScopedHistory,
     filteredHistory,
+    historyFilters,
+    setHistoryFilters,
+    categoryIndex,
     retakeCoursesList,
     getClassification,
     
@@ -181,9 +185,13 @@ export function GradesPage() {
             {retakeCoursesList.length > 0 && <RetakeCourses retakeCourses={retakeCoursesList} />}
             <GradeHistoryTable
               filteredHistory={filteredHistory}
+              semesterScopedHistory={semesterScopedHistory}
               selectedSemester={selectedSemester}
               uniqueSemesters={uniqueSemesters}
               setSelectedSemester={setSelectedSemester}
+              historyFilters={historyFilters}
+              setHistoryFilters={setHistoryFilters}
+              categoryIndex={categoryIndex}
             />
           </div>
         )}

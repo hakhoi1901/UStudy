@@ -60,7 +60,13 @@ export function useStudentGradeData() {
             majorGPA,
             foundationGPA,
             majorSpecializedGPA
-        } = AcademicRulesEngine.calculateGPASummary(studentDb.grades, effectiveGrades, hasBLMExemption, allCoursesMeta);
+        } = AcademicRulesEngine.calculateGPASummary(
+            studentDb.grades,
+            effectiveGrades,
+            hasBLMExemption,
+            allCoursesMeta,
+            selectedSemesterKey,
+        );
 
         // ── BLM Exemption ghost courses ──
         const ghostCourses = AcademicRulesEngine.buildExemptedGhostCourses(effectiveGrades, hasBLMExemption);

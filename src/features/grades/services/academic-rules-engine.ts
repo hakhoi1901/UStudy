@@ -2,6 +2,22 @@ import { ACADEMIC_RULES } from '../../../constants';
 import { ENGLISH_COURSE_IDS } from '../../../constants/academic';
 import type { StudentCourseGrade } from '../types';
 
+function normalizeSemesterKey(value: unknown): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+
+    const normalized = raw
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase();
+    const yearMatch = normalized.match(/(?:20)?(\d{2})\s*[-/]\s*(?:20)?(\d{2})/);
+    const semesterMatch = normalized.match(/\/\s*([123])(?:\D|$)/) ?? normalized.match(/(?:hoc ky|hk|ky)\s*([123])/);
+
+    return yearMatch && semesterMatch ? `${yearMatch[1]}-${yearMatch[2]}/${semesterMatch[1]}` : normalized.replace(/\s+/g, ' ');
+}
+
 
 /** Trạng thái chi tiết 4-state (dùng cho Training Program, UI hiển thị) */
 export type CourseStatus4 = 'passed' | 'failed' | 'studying' | 'none';
@@ -243,7 +259,8 @@ export const AcademicRulesEngine = {
         rawGrades: any[],
         effectiveGrades: any[],
         hasBLMExemption: boolean,
-        allCoursesMeta: any[] = []
+        allCoursesMeta: any[] = [],
+        currentSemesterKey = ''
     ): {
         gradesHistory: StudentCourseGrade[];
         currentGPA: number;
@@ -265,6 +282,7 @@ export const AcademicRulesEngine = {
 
         let foundationPoints = 0;
         let foundationCredits = 0;
+        const normalizedCurrentSemester = normalizeSemesterKey(currentSemesterKey);
 
         effectiveGrades.forEach((g: any) => {
             const code = String(g.id).trim();
@@ -309,9 +327,13 @@ export const AcademicRulesEngine = {
                 nameVi,
                 credits,
                 grade: score ?? 0,
+                hasGrade: hasValidScore,
                 semester: g.semester || 'Không rõ',
                 needsRetake,
                 status,
+                isExempted: isExemptedEnglish,
+                isCurrentSemester: normalizedCurrentSemester !== ''
+                    && normalizeSemesterKey(g.semester) === normalizedCurrentSemester,
             });
         });
 
@@ -385,9 +407,11 @@ export const AcademicRulesEngine = {
                     nameVi: `Anh văn (miễn)`,
                     credits: 0,
                     grade: 10,
+                    hasGrade: true,
                     semester: 'Miễn',
                     needsRetake: false,
                     status: 'passed',
+                    isExempted: true,
                 });
             }
         });

@@ -5,8 +5,10 @@ interface GradeHistoryRowProps {
 }
 
 export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
+    const hasGrade = course.hasGrade ?? course.grade > 0;
+    const isExempted = course.isExempted === true || course.semester === 'Miễn';
     const gradeClass =
-        course.grade <= 0
+        !hasGrade
             ? "text-gray-400 italic"
             : course.grade >= 9
                 ? "text-emerald-700"
@@ -19,7 +21,13 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
                             : "text-red-700";
 
     const statusConfig =
-        course.grade > 0
+        isExempted
+            ? {
+                  label: "Được miễn",
+                  barClass: "bg-sky-500",
+                  textClass: "text-sky-700",
+              }
+            : hasGrade
             ? course.needsRetake
                 ? {
                       label: "Cần học lại",
@@ -33,7 +41,7 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
                   }
             : course.status === "ongoing"
                 ? {
-                      label: "Đang học",
+                      label: course.isCurrentSemester ? "Đang học" : "Chưa có điểm",
                       barClass: "bg-blue-500",
                       textClass: "text-blue-700",
                   }
@@ -71,7 +79,7 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
     <span
         className={`text-sm font-extrabold tabular-nums ${gradeClass}`}
     >
-        {course.grade > 0
+        {hasGrade
             ? course.grade.toFixed(1)
             : "Chưa có"}
     </span>

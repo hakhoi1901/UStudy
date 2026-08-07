@@ -8,11 +8,38 @@ export interface StudentCourseGrade {
     nameVi: string;
     credits: number;
     grade: number;
+    hasGrade?: boolean;
     semester: string;
     status: 'passed' | 'ongoing' | 'retake';
     type?: string;
     needsRetake?: boolean;
     isExcluded?: boolean;
+    isExempted?: boolean;
+    isCurrentSemester?: boolean;
+}
+
+export type GradeHistoryStatusFilter = 'passed' | 'retake' | 'ongoing' | 'ungraded' | 'exempted';
+
+export interface GradeHistoryFilters {
+    query: string;
+    statuses: GradeHistoryStatusFilter[];
+    gradeRange: { min: number; max: number };
+    creditRange: { min: number; max: number };
+    categoryIds: string[];
+}
+
+export interface GradeHistoryCategoryNode {
+    id: string;
+    key: string;
+    name: string;
+    courseCodes: string[];
+    children: GradeHistoryCategoryNode[];
+}
+
+export interface GradeHistoryCategoryIndex {
+    tree: GradeHistoryCategoryNode[];
+    courseCodesByCategory: Map<string, Set<string>>;
+    categorizedCourseCodes: Set<string>;
 }
 
 export interface GPASummary {
@@ -130,9 +157,13 @@ export interface GPAPerSemesterTableProps {
 
 export interface GradeHistoryTableProps {
     filteredHistory: StudentCourseGrade[];
+    semesterScopedHistory: StudentCourseGrade[];
     selectedSemester: string;
     uniqueSemesters: string[];
     setSelectedSemester: (semester: string) => void;
+    historyFilters: GradeHistoryFilters;
+    setHistoryFilters: (filters: GradeHistoryFilters) => void;
+    categoryIndex: GradeHistoryCategoryIndex;
     embedded?: boolean;
 }
 

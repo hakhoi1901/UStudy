@@ -1,15 +1,20 @@
 import { useState, useMemo } from "react";
-import { Filter, History, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { History, ArrowUpDown, ArrowUp, ArrowDown, SearchX } from "lucide-react";
 import type { StudentCourseGrade } from "../types";
 import { GradeHistoryMobileCard } from "./grade-history-mobile-card";
 import { GradeHistoryRow } from "./grade-history-row";
+import { GradeHistoryFilterControls } from "./grade-history-filter-controls";
 import type { GradeHistoryTableProps } from "../types";
 
 export function GradeHistoryTable({
     filteredHistory,
+    semesterScopedHistory,
     selectedSemester,
     uniqueSemesters,
     setSelectedSemester,
+    historyFilters,
+    setHistoryFilters,
+    categoryIndex,
     embedded = false
 }: GradeHistoryTableProps) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof StudentCourseGrade, direction: 'asc' | 'desc' } | null>(null);
@@ -58,40 +63,45 @@ export function GradeHistoryTable({
 
     return (
         <div className={embedded ? "overflow-hidden" : "overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"}>
-            <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <History className="w-6 h-6 md:w-8 md:h-8 text-[#004A98]" />
-                    <h3 className="text-sm font-semibold text-gray-800">Lịch sử điểm</h3>
-                    <span className="px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full">
-                        {filteredHistory.length} môn
-                    </span>
-                </div>
+            <div className="border-b border-gray-200 px-4 py-3 md:px-6 md:py-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <History className="h-6 w-6 text-[#004A98] md:h-8 md:w-8" />
+                        <h3 className="text-sm font-semibold text-gray-800">Lịch sử điểm</h3>
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            {filteredHistory.length} môn
+                        </span>
+                    </div>
 
-                {/* Lọc theo học kỳ */}
-                <div className="flex items-center gap-1.5 md:gap-2">
-                    <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500" />
-                    <select
-                        value={selectedSemester}
-                        onChange={(e) => setSelectedSemester(e.target.value)}
-                        className="px-2 md:px-3 py-1 md:py-1.5 border border-gray-200 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98]"
-                    >
-                        <option value="all">Tất cả</option>
-                        {uniqueSemesters.map(sem => (
-                            <option key={sem} value={sem}>{sem}</option>
-                        ))}
-                    </select>
+                    <GradeHistoryFilterControls
+                        selectedSemester={selectedSemester}
+                        uniqueSemesters={uniqueSemesters}
+                        setSelectedSemester={setSelectedSemester}
+                        filters={historyFilters}
+                        setFilters={setHistoryFilters}
+                        categoryIndex={categoryIndex}
+                        semesterScopedHistory={semesterScopedHistory}
+                    />
                 </div>
             </div>
 
+            {sortedHistory.length === 0 && (
+                <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
+                    <SearchX className="h-8 w-8 text-gray-300" />
+                    <p className="mt-3 text-sm font-medium text-gray-700">Không có môn học phù hợp</p>
+                    <p className="mt-1 text-xs text-gray-500">Thử đổi học kỳ hoặc xóa bớt điều kiện lọc.</p>
+                </div>
+            )}
+
             {/* Mobile: Card view */}
-            <div className="md:hidden divide-y divide-gray-100">
+            <div className={`${sortedHistory.length === 0 ? 'hidden ' : ''}divide-y divide-gray-100 md:hidden`}>
                 {sortedHistory.map((course, idx) => (
                     <GradeHistoryMobileCard key={`${course.code}-${idx}`} course={course} />
                 ))}
             </div>
 
             {/* Desktop: Table view */}
-            <div className="hidden overflow-x-auto md:block">
+            <div className={`${sortedHistory.length === 0 ? 'hidden ' : ''}overflow-x-auto md:block`}>
                 <table className="w-full table-fixed">
                     <colgroup>
                         <col className="w-[14%]" />
