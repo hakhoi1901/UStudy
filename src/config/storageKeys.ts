@@ -1,5 +1,6 @@
 /**
  * Các Document Key để lưu dữ liệu xuống Local Storage
+ * Schema và quy tắc sử dụng: docs/local-storage-schema.md
  */
 export const STORAGE_KEYS = {
     /** Dữ liệu sinh viên đầy đủ (thông tin cá nhân, điểm thi, lịch thi) */
@@ -37,14 +38,44 @@ export const STORAGE_KEYS = {
     IMPORT_META: 'import_meta',
     /** Điểm dự đoán do người dùng nhập cho GPA Simulator */
     PROJECTED_GRADES: 'gpa_projected_grades',
+    /** Học kỳ đang được xem trong Kế hoạch GPA */
+    GPA_ACTIVE_PROJECTION_SEMESTER: 'gpa_active_projection_semester',
+    /** Tab đang mở trong Quản lý điểm */
+    GRADE_MAIN_TAB: 'grade_main_tab',
+    /** Tab đang mở trong Lộ trình học tập */
+    STUDY_ROADMAP_ACTIVE_TAB: 'study_roadmap_active_tab',
+    /** Thứ tự, trạng thái ẩn/hiện và cấu hình các thẻ trên trang Tổng quan */
+    DASHBOARD_LAYOUT: 'dashboard_layout_preferences',
     /** Điểm dự kiến cho các kỳ tương lai trong Công cụ Kéo GPA (môn chưa có trong simulator) */
     GPA_PULL_FUTURE_GRADES: 'gpa_pull_future_grades',
+    /** Cấu hình điểm thành phần theo từng môn trong Kế hoạch GPA */
+    GPA_COMPONENT_GRADES: 'gpa_component_grades',
+    /** Điểm môn được chỉnh riêng trong chế độ Mục tiêu của Kế hoạch GPA */
+    GPA_GOAL_GRADES: 'gpa_goal_grades',
     /** Cấu hình ưu tiên xếp lịch */
     SOLVER_PREFERENCES: 'solver_preferences',
+    /** Bản nháp kế hoạch học tập theo học kỳ */
+    STUDY_PLAN: 'study_plan_draft',
+    /** Tỷ lệ chiều rộng danh sách môn/khung học kỳ trong bản nháp */
+    STUDY_PLAN_LAYOUT: 'study_plan_draft_layout',
+    STUDY_PLAN_CATEGORY_EXPANSION: 'study_plan_category_expansion',
     /** Bản đồ các lớp được chọn cho mỗi môn (filter) */
     ALLOWED_CLASSES_MAP: 'allowed_classes_map',
     /** Danh sách các lịch đã lưu */
     SAVED_SCHEDULES: 'saved_schedules',
+    ACTIVE_GROUP_SCHEDULE: 'active_group_schedule',
+    /** Lịch sử chat của chatbot */
+    CHAT_HISTORY: 'chatbot_chat_history',
     /** Các tùy chỉnh ghi đè thời khóa biểu (phòng, tiết, ngày nghỉ) */
     SCHEDULE_OVERRIDES: 'schedule_overrides',
+    /** Thành viên nhóm (lưu tạm) */
+    GROUP_SCHEDULER_MEMBERS: 'group_scheduler_members',
+    /** Trạng thái UI (chế độ xem, tab đang mở, trạng thái ẩn/hiện) của Xếp lịch Nhóm */
+    GROUP_SCHEDULE_UI_STATE: 'group_schedule_ui_state',
+    /** Toàn bộ kết quả thành công gần nhất của bộ xếp lịch nhóm */
+    GROUP_SCHEDULE_LAST_RESULT: 'group_schedule_last_result',
+    /** Vault test WebAuthn PRF; tách biệt hoàn toàn khỏi dữ liệu UStudy thật */
+    SECURITY_LAB_VAULT: 'ustudy_security_lab_vault_v1',
+    /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
+    SCHEDULE_MODE: 'schedule_mode',
 };

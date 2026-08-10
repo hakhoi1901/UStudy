@@ -4,6 +4,7 @@
  */
 import { tuition_2024_2025 } from './2024-2025';
 import { tuition_2025_2026 } from './2025-2026';
+import { tuition_2026_2027 } from './2026-2027';
 
 interface TuitionYear {
     default_price: number;
@@ -14,6 +15,7 @@ interface TuitionYear {
 import { APP_CONFIG } from '../../../config/appConfig';
 
 export const ACADEMIC_YEARS = [
+    { id: '2026-2027', name: 'Năm học 2026-2027 (dự báo)' },
     { id: '2025-2026', name: 'Năm học 2025-2026' },
     { id: '2024-2025', name: 'Năm học 2024-2025' },
 ];
@@ -21,6 +23,7 @@ export const ACADEMIC_YEARS = [
 export const DEFAULT_ACADEMIC_YEAR = APP_CONFIG.DEFAULT_ACADEMIC_YEAR;
 
 const tuitionMap: Record<string, TuitionYear> = {
+    '2026-2027': tuition_2026_2027,
     '2025-2026': tuition_2025_2026,
     '2024-2025': tuition_2024_2025,
 };

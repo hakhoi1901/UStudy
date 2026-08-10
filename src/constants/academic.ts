@@ -24,13 +24,24 @@ export const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034
  */
 export const ACADEMIC_RULES = {
     /**
-     * Các mã môn không tính vào Điểm trung bình (GPA) và Tích lũy
+     * Các mã môn không tính vào Điểm trung bình (GPA)
      */
+    
     EXCLUDED_COURSE_PREFIXES: [
-        { id: 'BAA0002', name: 'Giáo dục quốc phòng - An ninh' },
-        { id: 'ADD0003', name: 'Giáo dục thể chất' },
-        { id: 'BAA0003', name: 'Ngoại ngữ (Anh văn)' },
+        { id: 'BAA0002', name: 'Giáo dục thể chất' },
+        { id: 'ADD0003', name: 'Ngoại ngữ (Anh văn)' },
+        { id: 'BAA0003', name: 'Giáo dục quốc phòng - An ninh' },
         { id: 'CSC00003', name: 'Tin học cơ sở' }
+    ],
+
+    /**
+     * Các mã môn không tính vào tín chỉ tích lũy.
+     * Vẫn tính trong nhóm môn của chính nó, nhưng không cộng lên nhóm cha/tổng tích lũy.
+     */
+    ACCUMULATION_EXCLUDED_COURSE_PREFIXES: [
+        { id: 'BAA0002', name: 'Giáo dục thể chất' },
+        { id: 'ADD0003', name: 'Ngoại ngữ (Anh văn)' },
+        { id: 'BAA0003', name: 'Giáo dục quốc phòng - An ninh' }
     ],
 
     /** Số chữ số sau dấu phẩy của GPA */

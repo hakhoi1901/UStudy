@@ -68,22 +68,46 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                                 </td>
                                                 <td className="px-3 py-3 text-sm text-center text-gray-600">{s.credits}</td>
                                                 <td className="px-3 py-3 text-center">
-                                                    <span className={`px-2 py-0.5 rounded-full text-sm font-medium ${s.gpa >= 9.0 ? 'bg-green-100 text-green-700' :
-                                                        s.gpa >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                                                            s.gpa >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
-                                                                s.gpa >= 6.5 ? 'bg-orange-100 text-orange-600' :
-                                                                    s.gpa >= 5.0 ? 'bg-orange-100 text-orange-700' :
-                                                                        'bg-red-100 text-red-700'
-                                                        }`}>
+                                                    <span
+                                                        className={`text-sm font-semibold ${
+                                                            s.gpa >= 9.0
+                                                                ? "text-emerald-700"
+                                                                : s.gpa >= 8.0
+                                                                    ? "text-blue-700"
+                                                                    : s.gpa >= 7.0
+                                                                        ? "text-amber-700"
+                                                                        : s.gpa >= 6.5
+                                                                            ? "text-orange-600"
+                                                                            : s.gpa >= 5.0
+                                                                                ? "text-orange-700"
+                                                                                : "text-red-700"
+                                                        }`}
+                                                    >
                                                         {getClassification(s.gpa)}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-3 text-sm text-center">
+                                                                                                <td className="px-3 py-3 text-center text-sm">
                                                     {diff === null ? (
-                                                        <div className="text-gray-400 text-sm">-</div>
+                                                        <span className="text-gray-400">—</span>
                                                     ) : (
-                                                        <div className={`text-sm font-medium ${diff > 0.05 ? 'text-green-600' : diff < -0.05 ? 'text-red-600' : 'text-gray-500'}`}>
-                                                            {diff > 0 ? '+' : ''}{diff.toFixed(ACADEMIC_RULES.UI.HISTORY_DECIMALS)}
+                                                        <div
+                                                            className={`inline-flex items-center justify-center gap-1 font-semibold tabular-nums ${
+                                                                diff > 0.05
+                                                                    ? "text-emerald-600"
+                                                                    : diff < -0.05
+                                                                        ? "text-red-600"
+                                                                        : "text-gray-500"
+                                                            }`}
+                                                        >
+                                                            <span>
+                                                                {diff > 0.05 ? "↑" : diff < -0.05 ? "↓" : "→"}
+                                                            </span>
+
+                                                            <span>
+                                                                {Math.abs(diff).toFixed(
+                                                                    ACADEMIC_RULES.UI.HISTORY_DECIMALS
+                                                                )}
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </td>

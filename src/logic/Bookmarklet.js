@@ -2,7 +2,10 @@
     console.clear();
 
     // === 1. CẤU HÌNH ===
-    const CONFIG = window.__HCMUS_PORTAL_CONFIG__ || {
+    const EXTENSION_RUNTIME = window.__USTUDY_PORTAL_SYNC_RUNTIME__ || null;
+    if (EXTENSION_RUNTIME) delete window.__USTUDY_PORTAL_SYNC_RUNTIME__;
+
+    const CONFIG = EXTENSION_RUNTIME?.config || window.__HCMUS_PORTAL_CONFIG__ || {
         URL_DIEM: "/SinhVien.aspx?pid=211",
         URL_LICHTHI: "/SinhVien.aspx?pid=180",
         URL_HOCPHI: "/SinhVien.aspx?pid=331",
@@ -16,6 +19,18 @@
         REG_TARGET_SEM: "2",
         CONCURRENCY: "10"
     };
+    const IS_EXTENSION = EXTENSION_RUNTIME?.transport === 'extension';
+    const EXTENSION_REQUEST_ID = EXTENSION_RUNTIME?.requestId || '';
+
+    function emitExtensionEvent(type, detail = {}) {
+        if (!IS_EXTENSION) return;
+        window.postMessage({
+            channel: 'USTUDY_PORTAL_SYNC',
+            type,
+            requestId: EXTENSION_REQUEST_ID,
+            ...detail,
+        }, window.location.origin);
+    }
 
     //  Kiểm tra hạn sử dụng 30 ngày
     if (CONFIG.EXPIRES_AT && Date.now() > CONFIG.EXPIRES_AT) {
@@ -24,15 +39,17 @@
     }
 
     const URLS = {
-        DIEM: "/SinhVien.aspx?pid=211",
-        LICHTHI: "/SinhVien.aspx?pid=180",
-        HOCPHI: "/SinhVien.aspx?pid=331",
-        LOPMO: "/SinhVien.aspx?pid=327",
-        DKHP: "/SinhVien.aspx?pid=212"
+        DIEM: CONFIG.URL_DIEM || "/SinhVien.aspx?pid=211",
+        LICHTHI: CONFIG.URL_LICHTHI || "/SinhVien.aspx?pid=180",
+        HOCPHI: CONFIG.URL_HOCPHI || "/SinhVien.aspx?pid=331",
+        LOPMO: CONFIG.URL_LOPMO || "/SinhVien.aspx?pid=327",
+        DKHP: CONFIG.URL_DKHP || "/SinhVien.aspx?pid=212"
     };
 
     // UI: Hiển thị trạng thái loading lên màn hình hiện tại
     const showLoading = (msg) => {
+        emitExtensionEvent('USTUDY_PORTAL_SYNC_PROGRESS', { message: msg });
+        if (IS_EXTENSION) return;
         let el = document.getElementById('hcmus-tool-loading');
         if (!el) {
             el = document.createElement('div');
@@ -366,7 +383,36 @@
     }
 
     // Cào Kết quả ĐKHP (Target: Virtual Document)
-    function scrapeRegisteredCourses(doc) {
+    function getRegistrationPeriod(doc) {
+        const heading = Array.from(doc.querySelectorAll('h1, h2, h3'))
+            .map((element) => element.textContent?.trim() || '')
+            .find((text) => /\d{2,4}-\d{2,4}\s*\/\s*(?:HK\s*)?[1-3]\b/i.test(text));
+        const headingMatch = heading?.match(/(\d{2,4}-\d{2,4})\s*\/\s*(?:HK\s*)?([1-3])\b/i);
+        if (headingMatch) {
+            return {
+                year: headingMatch[1],
+                sem: headingMatch[2],
+                semester: `${headingMatch[1]}/${headingMatch[2]}`,
+            };
+        }
+
+        const readValue = (name, id) => (
+            doc.querySelector(`input[name="${name}"]`)?.value?.trim() ||
+            doc.getElementById(id)?.value?.trim() ||
+            ''
+        );
+        const year = readValue(
+            'ctl00$ContentPlaceHolder1$ctl00$cboNamHoc',
+            'ctl00_ContentPlaceHolder1_ctl00_cboNamHoc'
+        );
+        const sem = readValue(
+            'ctl00$ContentPlaceHolder1$ctl00$cboHocKy',
+            'ctl00_ContentPlaceHolder1_ctl00_cboHocKy'
+        );
+        return { year, sem, semester: year && sem ? `${year}/${sem}` : '' };
+    }
+
+    function scrapeRegisteredCourses(doc, semester) {
         try {
             const table = doc.getElementById('tbSVKQ');
             if (!table) return [];
@@ -392,7 +438,8 @@
                         regType,
                         courseType,
                         schedule,
-                        startWeek
+                        startWeek,
+                        semester
                     });
                 }
             });
@@ -636,11 +683,22 @@
 
     // === 3. MAIN RUNNER ===
     try {
-        if (!window.opener) {
+        if (!IS_EXTENSION && !window.opener) {
             alert("Vui lòng mở Portal bằng nút \"Đăng nhập\" để công cụ hoạt động.");
             return;
         }
-        const config = await showPrivacyAndConfigModal();
+        const runtimeOptions = EXTENSION_RUNTIME?.syncOptions;
+        const config = runtimeOptions ? {
+            getGrades: runtimeOptions.getGrades !== false,
+            getTuition: Boolean(runtimeOptions.getTuition),
+            getExam: Boolean(runtimeOptions.getExam),
+            getClass: Boolean(runtimeOptions.getClass),
+            classYear: String(runtimeOptions.classYear || CONFIG.CLASS_TARGET_YEAR || CONFIG.TARGET_YEAR),
+            classSem: String(runtimeOptions.classSem || CONFIG.CLASS_TARGET_SEM || CONFIG.TARGET_SEM),
+            getReg: Boolean(runtimeOptions.getReg),
+            regYear: String(runtimeOptions.regYear || CONFIG.REG_TARGET_YEAR || CONFIG.TARGET_YEAR),
+            regSem: String(runtimeOptions.regSem || CONFIG.REG_TARGET_SEM || CONFIG.TARGET_SEM),
+        } : await showPrivacyAndConfigModal();
 
         showLoading("Đang khởi tạo & Lấy dữ liệu cơ bản...");
 
@@ -649,10 +707,19 @@
         let examData = { midterm: [], final: [] };
         let courses = [];
         let registrations = [];
+        let registrationPeriod = { year: '', sem: '', semester: '' };
 
         // 2. Lấy dữ liệu cơ bản (Điểm - Bắt buộc)
-        const docDiemFull = await getFullGradesPage();
-        gradeData = scrapeGrades(docDiemFull);
+        if (config.getGrades !== false) {
+            const docDiemFull = await getFullGradesPage();
+            gradeData = scrapeGrades(docDiemFull);
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'grades',
+                    rawPatch: { name: gradeData.name, grades: gradeData.grades }
+                }
+            });
+        }
 
         showLoading("Đang tải Bảng điểm đầy đủ...");
         // Lấy Học phí
@@ -732,6 +799,13 @@
                 }
             }
             tuitionData = allTuition;
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'tuition',
+                    rawPatch: { tuition: tuitionData },
+                    metaPatch: { params: { tuition: { year: tuitionData.year || '', sem: tuitionData.sem || '' } } }
+                }
+            });
             return tuitionData;
         })() : Promise.resolve(tuitionData);
 
@@ -836,6 +910,9 @@
             results.forEach(r => { if (r) allExams[r.key] = r.data; });
 
             examData = allExams;
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: { source: 'exams', rawPatch: { exams: examData } }
+            });
             return examData;
         })() : Promise.resolve(examData);
 
@@ -862,6 +939,15 @@
 
             showLoading(`Đang cào dữ liệu lớp mở...`);
             courses = await scrapeOpenClassesRaw(docLopMo);
+            if (courses.length > 0) {
+                emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                    payload: {
+                        source: 'courses',
+                        rawPatch: { courses },
+                        metaPatch: { params: { class: { year: config.classYear, sem: config.classSem } } }
+                    }
+                });
+            }
             return courses;
         })() : Promise.resolve(courses);
 
@@ -908,6 +994,15 @@
             }
 
             registrations = scrapeRegisteredCourses(docDKHP);
+            registrationPeriod = getRegistrationPeriod(docDKHP);
+            registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
+                payload: {
+                    source: 'registrations',
+                    rawPatch: { registrations },
+                    metaPatch: { params: { registration: registrationPeriod } }
+                }
+            });
             return registrations;
         })() : Promise.resolve(registrations);
 
@@ -922,36 +1017,41 @@
 
         // Raw data - nguyên vẹn từ Portal, không xử lý
         const rawData = {
-            name: gradeData.name,
-            grades: gradeData.grades,
-            exams: examData,
-            tuition: tuitionData,
-            registrations: registrations,
-            courses: courses
+            ...(config.getGrades !== false ? { name: gradeData.name, grades: gradeData.grades } : {}),
+            ...(config.getExam ? { exams: examData } : {}),
+            ...(config.getTuition ? { tuition: tuitionData } : {}),
+            ...(config.getReg ? { registrations } : {}),
+            ...(config.getClass ? { courses } : {})
         };
 
         const metaData = {
             version: CONFIG.VERSION,
+            protocolVersion: CONFIG.PROTOCOL_VERSION,
+            scraperVersion: CONFIG.VERSION,
+            source: IS_EXTENSION ? 'extension' : 'bookmarklet',
             scrapedAt: new Date().toISOString(),
             params: {
                 tuition: config.getTuition ? { year: tuitionData.year, sem: tuitionData.sem } : null,
                 exam: config.getExam ? { year: config.examYear, sem: config.examSem } : null,
                 class: config.getClass ? { year: config.classYear, sem: config.classSem } : null,
-                registration: config.getReg ? { year: config.regYear, sem: config.regSem } : null,
+                registration: config.getReg ? registrationPeriod : null,
             }
         };
 
         const fullDataPacket = {
             raw: rawData,
             meta: metaData,
-            version: CONFIG.VERSION
+            version: CONFIG.VERSION,
+            protocolVersion: CONFIG.PROTOCOL_VERSION,
+            scraperVersion: CONFIG.VERSION,
+            source: IS_EXTENSION ? 'extension' : 'bookmarklet'
         };
 
-        console.log("🔥 FULL DATA PACKET:", fullDataPacket);
-
-        if (window.opener) {
-            window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, '*');
-            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades.length} dòng điểm\n- ${(rawData.exams.midterm?.length || 0) + (rawData.exams.final?.length || 0)} lịch thi\n- ${rawData.tuition.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
+        if (IS_EXTENSION) {
+            emitExtensionEvent('USTUDY_PORTAL_SYNC_RESULT', { payload: fullDataPacket });
+        } else if (window.opener) {
+            window.opener.postMessage({ type: 'IMPORT_FULL_DATA', payload: fullDataPacket }, CONFIG.APP_ORIGIN || '*');
+            alert(`✅ HOÀN TẤT QUÁ TRÌNH!\n\nĐã gửi gói dữ liệu RAW gồm:\n- ${rawData.grades?.length || 0} dòng điểm\n- ${(rawData.exams?.midterm?.length || 0) + (rawData.exams?.final?.length || 0)} lịch thi\n- ${rawData.tuition?.details?.length || 0} dòng học phí\n- ${courses.length} dòng lớp mở\n- ${registrations.length} môn đã đăng ký\n\nKiểm tra bên tab Tool nhé!`);
         } else {
             // giờ cụm này kh hoạt động nma để lại cho HK nha :>
             alert(`Vui lòng mở Portal bằng nút "Đăng nhập" để công cụ hoạt động.`);
@@ -970,7 +1070,11 @@
             console.log("Người dùng đã hủy.");
         } else {
             console.error(e);
-            alert("❌ Lỗi: " + e.message);
+            if (IS_EXTENSION) {
+                emitExtensionEvent('USTUDY_PORTAL_SYNC_ERROR', { message: e?.message || String(e) });
+            } else {
+                alert("❌ Lỗi: " + e.message);
+            }
         }
     }
 

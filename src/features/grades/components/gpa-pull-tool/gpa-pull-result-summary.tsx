@@ -1,4 +1,3 @@
-import { Target, TrendingUp, BookOpen } from 'lucide-react';
 import type { GPAPullResultSummaryProps } from '../../types';
 
 export function GPAPullResultSummary({
@@ -12,45 +11,33 @@ export function GPAPullResultSummary({
     if (targetGPA === null) return null;
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <div className="flex items-center gap-2 text-blue-700 mb-1">
-                    <BookOpen className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Hiện tại ({scopeName})</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-blue-900">{displayCurrentGPA.toFixed(decimals)}</span>
-                    <span className="text-xs text-blue-600">/ {displayAccumulatedCredits} TC</span>
-                </div>
-            </div>
-
-            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                <div className="flex items-center gap-2 text-indigo-700 mb-1">
-                    <Target className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Mục tiêu</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-indigo-900">{targetGPA.toFixed(decimals)}</span>
-                    <span className="text-xs text-indigo-600">GPA</span>
-                </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border ${baseResult?.success ? (baseResult.alreadyAchieved ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100') : 'bg-red-50 border-red-100'}`}>
-                <div className={`flex items-center gap-2 mb-1 ${baseResult?.success ? (baseResult.alreadyAchieved ? 'text-green-700' : 'text-orange-700') : 'text-red-700'}`}>
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Cần đạt trung bình</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                    {baseResult?.success ? (
-                        <span className={`text-2xl font-bold ${baseResult.alreadyAchieved ? 'text-green-900' : 'text-orange-900'}`}>
-                            {baseResult.alreadyAchieved ? '-' : (baseResult.requiredAverage?.toFixed(decimals) ?? '-')}
-                        </span>
+        <div className={`rounded-lg border px-4 py-3 ${
+            baseResult?.success
+                ? baseResult.alreadyAchieved
+                    ? 'border-emerald-200 bg-emerald-50'
+                    : 'border-blue-100 bg-[#EAF3FF]'
+                : 'border-rose-200 bg-rose-50'
+        }`}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-xs font-medium text-gray-500">
+                        {scopeName} · GPA hiện tại {displayCurrentGPA.toFixed(decimals)} · {displayAccumulatedCredits} TC
+                    </p>
+                    {baseResult?.success && !baseResult.alreadyAchieved && baseResult.requiredAverage !== undefined ? (
+                        <p className="mt-1 text-sm text-gray-700">
+                            Mục tiêu GPA <span className="font-semibold text-gray-900">{targetGPA.toFixed(decimals)}</span> cho {baseResult.remainingCredits} tín chỉ còn lại.
+                        </p>
                     ) : (
-                        <span className="text-2xl font-bold text-red-900">! ! !</span>
+                        <p className="mt-1 text-sm font-medium text-gray-700">{baseResult?.message ?? 'Chưa có kết quả phù hợp.'}</p>
                     )}
-                    <span className={`text-xs ${baseResult?.success ? (baseResult.alreadyAchieved ? 'text-green-600' : 'text-orange-600') : 'text-red-600'}`}>
-                        {baseResult?.remainingCredits} TC còn lại
-                    </span>
+                </div>
+                <div className="shrink-0 border-l-2 border-[#004A98] pl-3 sm:text-right">
+                    <p className="text-xs font-medium text-[#004A98]">Cần đạt TB</p>
+                    <p className="mt-0.5 text-2xl font-bold tabular-nums text-[#004A98]">
+                        {baseResult?.success && !baseResult.alreadyAchieved
+                            ? (baseResult.requiredAverage?.toFixed(decimals) ?? '-')
+                            : '-'}
+                    </p>
                 </div>
             </div>
         </div>

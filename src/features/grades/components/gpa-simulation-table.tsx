@@ -1,10 +1,8 @@
-import { ChevronUp, ChevronDown, ArrowUpNarrowWideIcon } from "lucide-react";
+import { ArrowUpNarrowWideIcon } from "lucide-react";
 import type { SimulatorCourseGrade } from "../types";
 
 interface GPASimulationTableProps {
     courses: SimulatorCourseGrade[];
-    expandedSection: string;
-    setExpandedSection: (section: "history" | "simulator") => void;
     handleGradeChange: (id: string, grade: number | null) => void;
     semesterGPA: number;
     cumulativeGPA: number;
@@ -13,8 +11,6 @@ interface GPASimulationTableProps {
 
 export function GPASimulationTable({
     courses,
-    expandedSection,
-    setExpandedSection,
     handleGradeChange,
     semesterGPA,
     cumulativeGPA,
@@ -22,27 +18,16 @@ export function GPASimulationTable({
 }: GPASimulationTableProps) {
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <button
-                onClick={() => setExpandedSection(expandedSection === 'simulator' ? 'history' : 'simulator')}
-                className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
-            >
-                <div className="flex items-center gap-3">
-                    <ArrowUpNarrowWideIcon className="w-8 h-8 text-[#004A98]" />
-                    <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA - Học kỳ tiếp theo</h3>
-                    <span className="px-2 py-0.5 bg-[#004A98] text-white text-xs rounded-full">
-                        {courses.length} môn
-                    </span>
+        <div className="ustudy-card">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-gray-100 px-4 py-3 md:px-5">
+                <ArrowUpNarrowWideIcon className="h-5 w-5 text-[#004A98]" />
+                <div>
+                    <h3 className="text-sm font-semibold text-gray-800">Mô phỏng GPA kỳ tiếp theo</h3>
+                    <p className="mt-0.5 text-xs text-gray-500">{courses.length} môn · {courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} tín chỉ</p>
                 </div>
-                {expandedSection === 'simulator' ? (
-                    <ChevronUp className="w-5 h-5 text-gray-600" />
-                ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-600" />
-                )}
-            </button>
+            </div>
 
-            {expandedSection === 'simulator' && (
-                <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
                     {courses.length === 0 && (
                         <div className="px-6 py-10 text-center text-gray-500">
                             <p className="text-sm font-medium">Chưa có môn học nào.</p>
@@ -62,6 +47,9 @@ export function GPASimulationTable({
                                     <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
                                         Tên môn học
                                     </th>
+                                    <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                                        Trạng thái
+                                    </th>
                                     <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">
                                         Tín chỉ
                                     </th>
@@ -75,29 +63,59 @@ export function GPASimulationTable({
                             </thead>
 
                             <tbody className="divide-y divide-gray-200">
-                                {courses.map((course) => (
+                                {courses.map((course) => {
+                                    const classification =
+                                        course.projectedGrade !== null
+                                            ? getClassification(course.projectedGrade)
+                                            : null;
+
+                                    const classificationClass =
+                                        course.projectedGrade === null
+                                            ? "text-gray-400"
+                                            : course.projectedGrade >= 9
+                                                ? "text-emerald-700"
+                                                : course.projectedGrade >= 8
+                                                    ? "text-blue-700"
+                                                    : course.projectedGrade >= 7
+                                                        ? "text-amber-700"
+                                                        : "text-orange-700";
+                             return (
                                     <tr key={course.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                        <td className="px-4 py-3 text-sm text-gray-900">
                                             {course.id}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">
+                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span>{course.name}</span>
-                                                {course.source === 'ongoing' ? (
-                                                    <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                                                        Đang học
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
-                                                        Đã đăng ký
-                                                    </span>
-                                                )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900 text-center">
-                                            <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
-                                                {course.credits !== null ? `${course.credits} TC` : '-'}
-                                            </span>
+                                        <td className="px-4 py-4 text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={`h-4 w-1 rounded-full ${
+                                                        course.source === "ongoing"
+                                                            ? "bg-emerald-500"
+                                                            : "bg-blue-500"
+                                                    }`}
+                                                />
+
+                                                <span className="font-medium text-gray-700">
+                                                    {course.source === "ongoing"
+                                                        ? "Đang học"
+                                                        : "Đã đăng ký"}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-4 text-center text-sm">
+                                            {course.credits !== null ? (
+                                                <>
+                                                    <span className="font-semibold tabular-nums text-gray-800">
+                                                        {course.credits} TC
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-gray-400">—</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <input
@@ -105,48 +123,47 @@ export function GPASimulationTable({
                                                 min="0"
                                                 max="10"
                                                 step="0.1"
-                                                value={course.projectedGrade ?? ''}
+                                                value={course.projectedGrade ?? ""}
                                                 placeholder="-"
                                                 onChange={(e) => {
                                                     const val = e.target.value;
-                                                    handleGradeChange(course.code, val === '' ? null : (parseFloat(val) || 0));
+
+                                                    if (val === "") {
+                                                        handleGradeChange(course.code, null);
+                                                        return;
+                                                    }
+
+                                                    const numberValue = Number(val);
+
+                                                    if (Number.isNaN(numberValue)) return;
+
+                                                    handleGradeChange(
+                                                        course.code,
+                                                        Math.min(10, Math.max(0, numberValue))
+                                                    );
                                                 }}
-                                                className="w-20 px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+                                                className="w-20 rounded-lg border border-gray-200 bg-gray-100 px-2 py-1.5 text-center text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#004A98]"
                                             />
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-center">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${course.projectedGrade === null ? 'bg-gray-100 text-gray-400' :
-                                                course.projectedGrade >= 9.0 ? 'bg-green-100 text-green-700' :
-                                                    course.projectedGrade >= 8.0 ? 'bg-blue-100 text-blue-700' :
-                                                        course.projectedGrade >= 7.0 ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-orange-100 text-orange-700'
-                                                }`}>
-                                                {course.projectedGrade !== null ? getClassification(course.projectedGrade) : '-'}
+                                        <td className="px-4 py-4 text-center text-sm">
+                                            <span className={`font-semibold ${classificationClass}`}>
+                                                {classification ?? "Chưa có"}
                                             </span>
                                         </td>
                                     </tr>
-                                ))}
+                                )})}
                             </tbody>
 
-                            <tfoot className="bg-gray-50 border-t border-gray-200">
-                                <tr>
-                                    <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-gray-900">
-                                        Tổng kết
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        {courses.reduce((sum, c) => sum + (c.credits ?? 0), 0)} TC
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        <div className="text-[#004A98]">GPA kỳ: {semesterGPA.toFixed(2)}</div>
-                                        <div className="text-gray-500 text-xs mt-0.5">GPA tích lũy: {cumulativeGPA.toFixed(2)}</div>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-semibold">
-                                        {getClassification(cumulativeGPA)}
-                                    </td>
-                                </tr>
-                            </tfoot>
                         </table>
                     )}
+            </div>
+
+            {courses.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm md:grid-cols-4 md:px-5">
+                    <div><p className="text-xs text-gray-500">Tín chỉ dự kiến</p><p className="mt-0.5 font-semibold text-gray-900">{courses.reduce((sum, course) => sum + (course.credits ?? 0), 0)} TC</p></div>
+                    <div><p className="text-xs text-gray-500">GPA kỳ</p><p className="mt-0.5 font-semibold text-[#004A98]">{semesterGPA.toFixed(2)}</p></div>
+                    <div><p className="text-xs text-gray-500">GPA tích lũy</p><p className="mt-0.5 font-semibold text-gray-900">{cumulativeGPA.toFixed(2)}</p></div>
+                    <div><p className="text-xs text-gray-500">Xếp loại</p><p className="mt-0.5 font-semibold text-gray-900">{getClassification(cumulativeGPA)}</p></div>
                 </div>
             )}
         </div>

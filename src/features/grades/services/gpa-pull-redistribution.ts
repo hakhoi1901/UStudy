@@ -4,18 +4,21 @@ import { MIN_GRADE_FOR_RETKE_SUGGESTION, MAX_GRADE_FOR_RETKE_SUGGESTION } from '
 
 /**
  * Phân bổ lại điểm đề xuất (suggestedGrade) cho các môn chưa cố định trong kỳ,
- * sao cho GPA kỳ = requiredAverage.
- * - Môn cố định: isLocked → dùng lockedGrade; hoặc projectedGrade !== null → dùng projectedGrade.
+ * sao cho trung bình của phần chưa có điểm chính thức = requiredAverage.
+ * - Môn có điểm chính thức không tham gia phân bổ.
+ * - Môn dự kiến đã nhập được giữ cố định trong phần tín chỉ đang dự đoán.
  * - Môn còn lại: suggestedGrade = remainingPoints / editableCredits (clamp 5–10, vì điểm < 5 phải học lại).
  */
 export function redistributeSuggestedGrades(
     courses: GPAPullCourse[],
     requiredAverage: number
 ): GPAPullCourse[] {
-    const totalCreditsInSemester = courses.reduce((sum, c) => sum + c.credits, 0);
-    if (totalCreditsInSemester <= 0) return courses;
+    const pendingCredits = courses.reduce((sum, course) => (
+        course.isLocked ? sum : sum + course.credits
+    ), 0);
+    if (pendingCredits <= 0) return courses;
 
-    const pointsNeededForSemester = requiredAverage * totalCreditsInSemester;
+    const pointsNeededForPendingCourses = requiredAverage * pendingCredits;
     const decimals = ACADEMIC_RULES.GPA_POINT_DECIMAL;
     const roundToDisplay = (n: number) => Math.round(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
@@ -24,7 +27,11 @@ export function redistributeSuggestedGrades(
     const fixedSet = new Set<number>();
 
     courses.forEach((c, i) => {
-        const grade = c.isLocked ? (c.lockedGrade ?? null) : (c.projectedGrade ?? null);
+        if (c.isLocked) {
+            fixedSet.add(i);
+            return;
+        }
+        const grade = c.projectedGrade ?? null;
         if (grade !== null && typeof grade === 'number' && !Number.isNaN(grade)) {
             fixedPoints += grade * c.credits;
             fixedCredits += c.credits;
@@ -32,8 +39,8 @@ export function redistributeSuggestedGrades(
         }
     });
 
-    const editableCredits = totalCreditsInSemester - fixedCredits;
-    const remainingPoints = pointsNeededForSemester - fixedPoints;
+    const editableCredits = pendingCredits - fixedCredits;
+    const remainingPoints = pointsNeededForPendingCourses - fixedPoints;
 
     if (editableCredits <= 0) {
         return courses.map((c, i) => {
@@ -64,42 +71,39 @@ export function getSemesterWarning(
     courses: GPAPullCourse[],
     requiredAverage: number
 ): string | null {
-    const totalCreditsInSemester = courses.reduce((sum, c) => sum + c.credits, 0);
-    if (totalCreditsInSemester <= 0) return null;
+    const pendingCredits = courses.reduce((sum, course) => (
+        course.isLocked ? sum : sum + course.credits
+    ), 0);
+    if (pendingCredits <= 0) return null;
 
-    const pointsNeededForSemester = requiredAverage * totalCreditsInSemester;
+    const pointsNeededForPendingCourses = requiredAverage * pendingCredits;
     let fixedPoints = 0;
     let fixedCredits = 0;
 
     courses.forEach((c) => {
-        const grade = c.isLocked ? (c.lockedGrade ?? null) : (c.projectedGrade ?? null);
+        if (c.isLocked) return;
+        const grade = c.projectedGrade ?? null;
         if (grade !== null && typeof grade === 'number' && !Number.isNaN(grade)) {
             fixedPoints += grade * c.credits;
             fixedCredits += c.credits;
         }
     });
 
-    const editableCredits = totalCreditsInSemester - fixedCredits;
-    const remainingPoints = pointsNeededForSemester - fixedPoints;
+    const editableCredits = pendingCredits - fixedCredits;
+    const remainingPoints = pointsNeededForPendingCourses - fixedPoints;
 
     if (editableCredits <= 0) {
-        const diff = fixedPoints - pointsNeededForSemester;
+        const diff = fixedPoints - pointsNeededForPendingCourses;
         // Nếu tổng điểm đã nhập *thấp hơn* mức cần → không thể đạt GPA kỳ yêu cầu.
         if (diff < -0.001) {
-            return `Với điểm đã nhập, không thể đạt GPA kỳ ${requiredAverage.toFixed(2)}. Tổng điểm đã nhập: ${fixedPoints.toFixed(2)}; cần: ${pointsNeededForSemester.toFixed(2)}.`;
+            return `Với điểm đã nhập, không thể đạt trung bình ${requiredAverage.toFixed(2)} cho các môn còn lại. Tổng điểm đã nhập: ${fixedPoints.toFixed(2)}; cần: ${pointsNeededForPendingCourses.toFixed(2)}.`;
         }
         // Nếu bằng hoặc cao hơn (diff >= 0) → coi là hợp lệ, không cảnh báo.
         return null;
     }
 
-    if (remainingPoints < 0) {
-        return `Tổng điểm đã nhập/khóa vượt quá điểm cần cho GPA kỳ ${requiredAverage.toFixed(2)}. Cần giảm điểm một số môn đã nhập.`;
-    }
     if (remainingPoints > 10 * editableCredits) {
-        return `Để đạt GPA kỳ ${requiredAverage.toFixed(2)}, các môn còn lại cần trung bình trên 10 điểm (không khả thi). Hãy tăng điểm các môn đã nhập.`;
-    }
-    if (remainingPoints < MIN_GRADE_FOR_RETKE_SUGGESTION * editableCredits) {
-        return `Để đạt GPA kỳ ${requiredAverage.toFixed(2)} với điểm tối thiểu ${MIN_GRADE_FOR_RETKE_SUGGESTION} (qua môn), không đủ điểm cần phân bổ. Hãy giảm điểm một số môn đã nhập.`;
+        return `Để đạt mức trung bình ${requiredAverage.toFixed(2)}, các môn chưa nhập cần trên 10 điểm (không khả thi). Hãy tăng điểm các môn đã nhập.`;
     }
     return null;
 }

@@ -29,4 +29,15 @@ export interface SavedSchedule {
     sessions: ClassSection[];
     selectedCourses: string[]; // List of course IDs
     allowedClassesMap: Record<string, string[]>;
+    groupSchedule?: {
+        option: number;
+        members: Array<{
+            memberIndex: number;
+            nickname: string;
+            sessions: ClassSection[];
+            selectedCourses: string[];
+            allowedClassesMap: Record<string, string[]>;
+        }>;
+        rawOption?: any; // GroupScheduleOption
+    };
 }

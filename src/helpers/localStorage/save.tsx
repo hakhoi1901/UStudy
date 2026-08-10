@@ -249,7 +249,8 @@ export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayloa
 export async function importBackupWithCurrentKey(
     backupData: Record<string, string>,
     backupPin: string,
-    currentKey: CryptoKey
+    currentKey: CryptoKey,
+    selectedKeys?: readonly string[],
 ): Promise<void> {
     const backupSaltRaw = backupData[INTERNAL_KEYS.SALT];
     if (!backupSaltRaw) throw new Error('File backup không hợp lệ');
@@ -257,6 +258,10 @@ export async function importBackupWithCurrentKey(
     const backupKey = await deriveKey(backupPin, backupSalt);
 
     for (const [k, v] of Object.entries(backupData)) {
+        if (selectedKeys && !selectedKeys.includes(k)) {
+            continue;
+        }
+
         if (k === INTERNAL_KEYS.SALT || k === INTERNAL_KEYS.PIN_VERIFY || k === INTERNAL_KEYS.FAIL_COUNT || k === INTERNAL_KEYS.LOCKOUT_UNTIL) {
             continue; // Bỏ qua các key hệ thống của backup
         }
@@ -375,6 +380,162 @@ export function hasSecureData(): boolean {
         localStorage.getItem('raw_student_db') ||
         localStorage.getItem('student_db_full')
     );
+}
+
+export const IMPORT_ROLLBACK_STORAGE_KEY = '__ustudy_last_import_rollback__';
+export const IMPORT_ROLLBACK_EVENT = 'ustudy:import-rollback-created';
+export const IMPORT_HISTORY_STORAGE_KEY = '__ustudy_import_history__';
+
+export interface ImportRollbackSummary {
+    added: number;
+    updated: number;
+    removed?: number;
+    unchanged: number;
+}
+
+export interface ImportRollbackSnapshot {
+    createdAt: string;
+    source: string;
+    summary: ImportRollbackSummary;
+    data: Record<string, string>;
+    details?: ImportHistoryDetail[];
+    restoredSources?: string[];
+}
+
+export interface ImportHistoryDetail extends ImportRollbackSummary {
+    source: string;
+}
+
+export interface ImportHistoryEntry {
+    id: string;
+    createdAt: string;
+    source: string;
+    displayName?: string;
+    summary: ImportRollbackSummary;
+    details: ImportHistoryDetail[];
+    restoredSources?: string[];
+}
+
+export function getImportHistory(): ImportHistoryEntry[] {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(IMPORT_HISTORY_STORAGE_KEY) || '[]');
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .filter((entry): entry is ImportHistoryEntry => Boolean(entry?.id && entry?.createdAt && entry?.summary))
+            .map((entry) => ({
+                ...entry,
+                details: Array.isArray(entry.details) ? entry.details : [],
+                restoredSources: Array.isArray(entry.restoredSources) ? entry.restoredSources : [],
+            }));
+    } catch {
+        return [];
+    }
+}
+
+function appendImportHistory(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[], displayName?: string) {
+    const entry: ImportHistoryEntry = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        createdAt: new Date().toISOString(),
+        source,
+        displayName: displayName?.trim() || undefined,
+        summary,
+        details,
+    };
+    localStorage.setItem(IMPORT_HISTORY_STORAGE_KEY, JSON.stringify([entry, ...getImportHistory()].slice(0, 20)));
+}
+
+/** Lưu đúng trạng thái localStorage trước lần nhập gần nhất để có thể hoàn tác một lần. */
+export function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[] = [], displayName?: string): boolean {
+    try {
+        const data: Record<string, string> = {};
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            if (key && key !== IMPORT_ROLLBACK_STORAGE_KEY) {
+                data[key] = localStorage.getItem(key) || '';
+            }
+        }
+        const snapshot: ImportRollbackSnapshot = { createdAt: new Date().toISOString(), source, summary, data, details };
+        localStorage.setItem(IMPORT_ROLLBACK_STORAGE_KEY, JSON.stringify(snapshot));
+        appendImportHistory(source, summary, details, displayName);
+        window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
+        return true;
+    } catch (error) {
+        console.error('[createImportRollbackSnapshot] Không thể lưu snapshot:', error);
+        return false;
+    }
+}
+
+export function renameImportHistoryEntry(id: string, displayName: string): boolean {
+    try {
+        const history = getImportHistory();
+        const entryIndex = history.findIndex((entry) => entry.id === id);
+        if (entryIndex < 0) return false;
+        const normalizedName = displayName.trim().slice(0, 80);
+        history[entryIndex] = { ...history[entryIndex], displayName: normalizedName || undefined };
+        localStorage.setItem(IMPORT_HISTORY_STORAGE_KEY, JSON.stringify(history));
+        window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
+        return true;
+    } catch (error) {
+        console.error('[renameImportHistoryEntry] Không thể đổi tên lịch sử:', error);
+        return false;
+    }
+}
+
+export function getImportRollbackSnapshot(): ImportRollbackSnapshot | null {
+    try {
+        const raw = localStorage.getItem(IMPORT_ROLLBACK_STORAGE_KEY);
+        if (!raw) return null;
+        const snapshot = JSON.parse(raw) as ImportRollbackSnapshot;
+        return snapshot?.data && snapshot?.createdAt ? snapshot : null;
+    } catch {
+        return null;
+    }
+}
+
+/** Đọc một giá trị trong snapshot bằng khóa hiện tại mà không ghi dữ liệu thô xuống storage. */
+export async function readImportRollbackValue<T>(key: string, cryptoKey: CryptoKey, fallback: T): Promise<T> {
+    const snapshot = getImportRollbackSnapshot();
+    const raw = snapshot?.data[key];
+    if (!raw) return fallback;
+    try {
+        return await decryptWithKey(raw, cryptoKey) as T;
+    } catch {
+        try {
+            return JSON.parse(raw) as T;
+        } catch {
+            return fallback;
+        }
+    }
+}
+
+/** Ghi nhận các nguồn đã được hoàn tác riêng trong snapshot và lịch sử gần nhất. */
+export function markImportRollbackSourcesRestored(sources: readonly string[]): void {
+    const snapshot = getImportRollbackSnapshot();
+    if (!snapshot) return;
+
+    const restoredSources = Array.from(new Set([...(snapshot.restoredSources || []), ...sources]));
+    localStorage.setItem(IMPORT_ROLLBACK_STORAGE_KEY, JSON.stringify({ ...snapshot, restoredSources }));
+
+    const history = getImportHistory();
+    if (history[0]) {
+        history[0] = { ...history[0], restoredSources };
+        localStorage.setItem(IMPORT_HISTORY_STORAGE_KEY, JSON.stringify(history));
+    }
+    window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
+}
+
+/** Khôi phục toàn bộ localStorage về trạng thái trước lần nhập gần nhất. */
+export function restoreLastImportRollback(): boolean {
+    const snapshot = getImportRollbackSnapshot();
+    if (!snapshot) return false;
+    try {
+        localStorage.clear();
+        Object.entries(snapshot.data).forEach(([key, value]) => localStorage.setItem(key, value));
+        return true;
+    } catch (error) {
+        console.error('[restoreLastImportRollback] Không thể khôi phục snapshot:', error);
+        return false;
+    }
 }
 
 /** Xóa toàn bộ localStorage + sessionStorage. Caller tự gọi reload nếu cần. */

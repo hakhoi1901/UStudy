@@ -61,6 +61,7 @@ interface RawSubClass {
     MaDiaDiem?: string;
     DiaDiem?: string;
     LichHoc?: string;
+    [key: string]: unknown;
 }
 
 interface RawOpenClass {
@@ -77,6 +78,7 @@ interface RawOpenClass {
     location: string;
     practicalClasses: RawSubClass[];
     exerciseClasses: RawSubClass[];
+    [key: string]: unknown;
 }
 
 interface RawRegistration {
@@ -87,6 +89,7 @@ interface RawRegistration {
     courseType: string;
     schedule: string;
     startWeek: string;
+    semester?: string;
 }
 
 interface RawData {
@@ -112,6 +115,50 @@ interface RawData {
     }>;
     registrations: RawRegistration[];
     courses: RawOpenClass[];
+    [key: string]: unknown;
+}
+
+interface EnrollmentSnapshot {
+    capacity: number | null;
+    enrolled: number | null;
+    remaining: number | null;
+    rawCapacity: string;
+    rawEnrolled: string;
+}
+
+interface ProcessedClassComponent {
+    group: string;
+    schedule: string[];
+    rawSchedules: string[];
+    locations: string[];
+    enrollment: EnrollmentSnapshot;
+}
+
+interface ProcessedOpenClass {
+    id: string;
+    schedule: string[];
+    components: {
+        theory: ProcessedClassComponent;
+        practical: ProcessedClassComponent | null;
+        exercise: ProcessedClassComponent | null;
+    };
+    enrollment: {
+        theory: EnrollmentSnapshot;
+        practical: EnrollmentSnapshot | null;
+        exercise: EnrollmentSnapshot | null;
+    };
+}
+
+interface GroupedSubClass {
+    schedule: string[];
+    records: RawSubClass[];
+}
+
+interface GroupedOpenClass {
+    theorySchedule: string[];
+    theoryRows: RawOpenClass[];
+    practical: Record<string, GroupedSubClass>;
+    exercise: Record<string, GroupedSubClass>;
 }
 
 // === PROCESSORS ===
@@ -180,27 +227,76 @@ function processTuition(rawTuitionMap: RawData['tuition']) {
     return processedMap;
 }
 
+function uniqueStrings(values: unknown[]): string[] {
+    return [...new Set(values.map(value => String(value ?? '').trim()).filter(Boolean))];
+}
+
+function parsePortalCount(value: unknown): number | null {
+    const match = String(value ?? '').match(/-?\d+/);
+    if (!match) return null;
+    const parsed = Number.parseInt(match[0], 10);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildEnrollment(capacityValue: unknown, enrolledValue: unknown): EnrollmentSnapshot {
+    const rawCapacity = String(capacityValue ?? '').trim();
+    const rawEnrolled = String(enrolledValue ?? '').trim();
+    const capacity = parsePortalCount(rawCapacity);
+    const enrolled = parsePortalCount(rawEnrolled);
+    return {
+        capacity,
+        enrolled,
+        remaining: capacity !== null && enrolled !== null ? Math.max(0, capacity - enrolled) : null,
+        rawCapacity,
+        rawEnrolled,
+    };
+}
+
+function firstNonEmpty(values: unknown[]): string {
+    return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
+}
+
+function buildTheoryComponent(classID: string, rows: RawOpenClass[], schedule: string[]): ProcessedClassComponent {
+    return {
+        group: classID,
+        schedule,
+        rawSchedules: uniqueStrings(rows.map(row => row.schedule)),
+        locations: uniqueStrings(rows.map(row => row.location)),
+        enrollment: buildEnrollment(
+            firstNonEmpty(rows.map(row => row.capacity)),
+            firstNonEmpty(rows.map(row => row.enrolled)),
+        ),
+    };
+}
+
+function buildSubClassComponent(group: string, data: GroupedSubClass): ProcessedClassComponent {
+    return {
+        group,
+        schedule: uniqueStrings(data.schedule),
+        rawSchedules: uniqueStrings(data.records.map(record => record.LichHoc)),
+        locations: uniqueStrings(data.records.flatMap(record => [record.DiaDiem, record.MaDiaDiem])),
+        enrollment: buildEnrollment(
+            firstNonEmpty(data.records.map(record => record.SiSo)),
+            firstNonEmpty(data.records.map(record => record.DaDK)),
+        ),
+    };
+}
+
 /**
- * Xử lý lớp mở: group by courseId → build courseMap với classes + parsed schedule
+ * Keep the complete Portal rows while deriving a scheduler-friendly class list.
  */
-function processOpenClasses(rawClasses: RawOpenClass[]) {
+function processOpenClasses(rawClasses: RawOpenClass[] = []) {
     const courseMap: Record<string, {
         id: string;
         name: string;
         credits: number;
-        classes: { id: string; schedule: string[] }[];
+        classes: ProcessedOpenClass[];
+        source: { portalRows: RawOpenClass[] };
     }> = {};
-
-    // Group rows by SubjectID -> ClassID
-    // To handle edge cases where the university splits a single class LT into multiple rows
-    const groupedData: Record<string, Record<string, {
-        lt: string[],
-        th: Record<string, string[]>,
-        bt: Record<string, string[]>
-    }>> = {};
+    const groupedData: Record<string, Record<string, GroupedOpenClass>> = {};
 
     for (const row of rawClasses) {
-        const subjID = row.id;
+        const subjID = String(row?.id ?? '').trim();
         if (!subjID) continue;
 
         if (!groupedData[subjID]) {
@@ -208,90 +304,79 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
             courseMap[subjID] = {
                 id: subjID,
                 name: row.name,
-                credits: parseInt(row.credits) || 0,
-                classes: []
+                credits: Number.parseFloat(row.credits) || 0,
+                classes: [],
+                source: { portalRows: [] },
             };
         }
+        courseMap[subjID].source.portalRows.push(row);
 
-        const classID = row.className;
-        if (!groupedData[subjID][classID]) {
-            groupedData[subjID][classID] = { lt: [], th: {}, bt: {} };
+        const classID = String(row.className ?? '').trim() || 'Unknown';
+        groupedData[subjID][classID] ??= {
+            theorySchedule: [],
+            theoryRows: [],
+            practical: {},
+            exercise: {},
+        };
+
+        const classData = groupedData[subjID][classID];
+        classData.theoryRows.push(row);
+        classData.theorySchedule.push(...ScheduleLogic.parseScheduleSlots(row.schedule || ''));
+
+        for (const practical of Array.isArray(row.practicalClasses) ? row.practicalClasses : []) {
+            const group = String(practical.Nhom ?? '').trim() || 'Unknown';
+            classData.practical[group] ??= { schedule: [], records: [] };
+            classData.practical[group].schedule.push(...ScheduleLogic.parseScheduleSlots(practical.LichHoc || ''));
+            classData.practical[group].records.push(practical);
         }
 
-        const parsedSchedule = ScheduleLogic.parseScheduleSlots(row.schedule);
-        if (parsedSchedule.length > 0) {
-            groupedData[subjID][classID].lt.push(...parsedSchedule);
-        }
-
-        // Add practical classes (TH)
-        if (Array.isArray(row.practicalClasses)) {
-            for (const th of row.practicalClasses) {
-                const thSched = ScheduleLogic.parseScheduleSlots(th.LichHoc || "");
-                const thNhom = th.Nhom || "Unknown";
-                if (!groupedData[subjID][classID].th[thNhom]) {
-                    groupedData[subjID][classID].th[thNhom] = [];
-                }
-                groupedData[subjID][classID].th[thNhom].push(...thSched);
-            }
-        }
-
-        // Add exercise classes (BT)
-        if (Array.isArray(row.exerciseClasses)) {
-            for (const bt of row.exerciseClasses) {
-                const btSched = ScheduleLogic.parseScheduleSlots(bt.LichHoc || "");
-                const btNhom = bt.Nhom || "Unknown";
-                if (!groupedData[subjID][classID].bt[btNhom]) {
-                    groupedData[subjID][classID].bt[btNhom] = [];
-                }
-                groupedData[subjID][classID].bt[btNhom].push(...btSched);
-            }
+        for (const exercise of Array.isArray(row.exerciseClasses) ? row.exerciseClasses : []) {
+            const group = String(exercise.Nhom ?? '').trim() || 'Unknown';
+            classData.exercise[group] ??= { schedule: [], records: [] };
+            classData.exercise[group].schedule.push(...ScheduleLogic.parseScheduleSlots(exercise.LichHoc || ''));
+            classData.exercise[group].records.push(exercise);
         }
     }
 
-    // Cross-join lấy tổ hợp hợp lệ
-    for (const subjID in groupedData) {
-        for (const classID in groupedData[subjID]) {
-            const classData = groupedData[subjID][classID];
+    for (const subjID of Object.keys(groupedData)) {
+        for (const [classID, classData] of Object.entries(groupedData[subjID])) {
+            const theory = buildTheoryComponent(classID, classData.theoryRows, uniqueStrings(classData.theorySchedule));
+            const practicalGroups = Object.entries(classData.practical);
+            const exerciseGroups = Object.entries(classData.exercise);
+            const practicalChoices: Array<[string, GroupedSubClass | null]> = practicalGroups.length > 0 ? practicalGroups : [['', null]];
+            const exerciseChoices: Array<[string, GroupedSubClass | null]> = exerciseGroups.length > 0 ? exerciseGroups : [['', null]];
 
-            // Lọc unique các ca LT
-            const combinedLTSchedule = [...new Set(classData.lt)];
+            for (const [practicalGroup, practicalData] of practicalChoices) {
+                for (const [exerciseGroup, exerciseData] of exerciseChoices) {
+                    const practical = practicalData ? buildSubClassComponent(practicalGroup, practicalData) : null;
+                    const exercise = exerciseData ? buildSubClassComponent(exerciseGroup, exerciseData) : null;
+                    const combinedSchedule = uniqueStrings([
+                        ...theory.schedule,
+                        ...(practical?.schedule ?? []),
+                        ...(exercise?.schedule ?? []),
+                    ]);
+                    if (combinedSchedule.length === 0) continue;
 
-            const thGroups = Object.entries(classData.th);
-            const btGroups = Object.entries(classData.bt);
+                    let classOptionID = classID;
+                    if (practicalGroup) classOptionID += `_TH_${practicalGroup.replace(/\s+/g, '')}`;
+                    if (exerciseGroup) classOptionID += `_BT_${exerciseGroup.replace(/\s+/g, '')}`;
 
-            // Dummy values để map cross-join nếu không có mảng con
-            const thMultiplier = thGroups.length > 0 ? thGroups : [["", []] as [string, string[]]];
-            const btMultiplier = btGroups.length > 0 ? btGroups : [["", []] as [string, string[]]];
-
-            for (const [thNhom, thSched] of thMultiplier) {
-                for (const [btNhom, btSched] of btMultiplier) {
-
-                    const combinedSchedule = [...new Set([
-                        ...combinedLTSchedule,
-                        ...thSched,
-                        ...btSched
-                    ])];
-
-                    if (combinedSchedule.length > 0) {
-                        let newClassID = classID;
-                        if (thNhom) {
-                            newClassID += `_TH_${thNhom.replace(/\s+/g, '')}`;
-                        }
-                        if (btNhom) {
-                            newClassID += `_BT_${btNhom.replace(/\s+/g, '')}`;
-                        }
-
-                        // Không được thêm trùng id (hãn hữu xảy ra)
-                        const exists = courseMap[subjID].classes.find(c => c.id === newClassID);
-                        if (!exists) {
-                            courseMap[subjID].classes.push({
-                                id: newClassID,
-                                schedule: combinedSchedule
-                            });
-                        } else {
-                            exists.schedule = [...new Set([...exists.schedule, ...combinedSchedule])];
-                        }
+                    const existing = courseMap[subjID].classes.find(option => option.id === classOptionID);
+                    if (existing) {
+                        existing.schedule = uniqueStrings([...existing.schedule, ...combinedSchedule]);
+                        continue;
                     }
+
+                    courseMap[subjID].classes.push({
+                        id: classOptionID,
+                        schedule: combinedSchedule,
+                        components: { theory, practical, exercise },
+                        enrollment: {
+                            theory: theory.enrollment,
+                            practical: practical?.enrollment ?? null,
+                            exercise: exercise?.enrollment ?? null,
+                        },
+                    });
                 }
             }
         }
@@ -306,22 +391,30 @@ function processOpenClasses(rawClasses: RawOpenClass[]) {
  */
 export function processRawData(rawData: RawData) {
     // Xử lý grades
-    const processedGrades = processGrades(rawData.grades);
+    const processedGrades = processGrades(Array.isArray(rawData.grades) ? rawData.grades : []);
 
     // Xử lý tuition
-    const processedTuition = processTuition(rawData.tuition);
+    const processedTuition = processTuition(rawData.tuition || {});
 
     // Xử lý open classes
-    const processedCourses = processOpenClasses(rawData.courses);
+    const processedCourses = processOpenClasses(Array.isArray(rawData.courses) ? rawData.courses : []);
+
+    const knownFields = new Set(['name', 'grades', 'exams', 'tuition', 'registrations', 'courses']);
+    const additionalPortalFields = Object.fromEntries(
+        Object.entries(rawData).filter(([key]) => !knownFields.has(key)),
+    );
 
     // Build student payload (format cũ cho student_db_full)
     const studentPayload = {
         name: rawData.name,
         grades: processedGrades,
-        exams: rawData.exams,  // Exams giữ nguyên format (đã có đủ fields)
+        exams: rawData.exams || {},  // Exams giữ nguyên format (đã có đủ fields)
         tuition: processedTuition,
-        registrations: rawData.registrations,  // Registrations giữ nguyên
-        program: []
+        registrations: Array.isArray(rawData.registrations) ? rawData.registrations : [],  // Registrations giữ nguyên
+        program: [],
+        source: {
+            additionalPortalFields,
+        },
     };
 
     return {

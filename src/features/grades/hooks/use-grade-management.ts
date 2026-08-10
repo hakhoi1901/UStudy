@@ -5,6 +5,13 @@ import { ACADEMIC_RULES } from '../../../constants';
 import { useStudentGradeData } from './use-student-grade-data';
 import { useGPASimulator } from './use-gpa-simulator';
 import { GPACalculator } from '../services/gpa-calculator';
+import {
+    applyGradeHistoryFilters,
+    buildGradeHistoryCategoryIndex,
+    createEmptyGradeHistoryFilters,
+    UNCATEGORIZED_CATEGORY_ID,
+} from '../services/grade-history-filter';
+import type { GradeHistoryFilters } from '../types';
 
 /**
  * Controller Hook cho trang Quản lý điểm.
@@ -12,14 +19,17 @@ import { GPACalculator } from '../services/gpa-calculator';
  */
 export function useGradeManagement() {
     const [selectedSemester, setSelectedSemester] = useState('all');
-    const [expandedSection, setExpandedSection] = useState<'history' | 'simulator'>('simulator');
-    const [mobileActivePanel, setMobileActivePanel] = useState<'gpaPull' | 'gpaSimulation' | null>(null);
+    const [historyFilters, setHistoryFilters] = useState<GradeHistoryFilters>(createEmptyGradeHistoryFilters);
     const hasAlertedRef = useRef(false);
 
     const { data, currentFaculty, currentMajor, currentCohort } = useDepartmentData();
     const gradeData = useStudentGradeData();
     
     const {
+        projectionSemesters,
+        selectedProjectionSemester,
+        selectedProjectionSemesterId,
+        setSelectedProjectionSemesterId,
         simulatorCourses,
         handleGradeChange,
         semesterGPA,
@@ -52,12 +62,33 @@ export function useGradeManagement() {
         }
     }, [cumulativeGPA, gradeData.hasData, addNotification, getClassification]);
 
-    // Lọc lịch sử điểm theo kỳ được chọn
-    const filteredHistory = useMemo(() => 
+    const categoryIndex = useMemo(
+        () => buildGradeHistoryCategoryIndex(data.categories),
+        [data.categories]
+    );
+
+    useEffect(() => {
+        setHistoryFilters((current) => {
+            const categoryIds = current.categoryIds.filter((id) => (
+                id === UNCATEGORIZED_CATEGORY_ID || categoryIndex.courseCodesByCategory.has(id)
+            ));
+            return categoryIds.length === current.categoryIds.length
+                ? current
+                : { ...current, categoryIds };
+        });
+    }, [categoryIndex]);
+
+    // Học kỳ là phạm vi dữ liệu độc lập với các điều kiện trong bộ lọc.
+    const semesterScopedHistory = useMemo(() =>
         selectedSemester === 'all'
             ? gradeData.gradesHistory
             : gradeData.gradesHistory.filter(c => c.semester === selectedSemester),
         [gradeData.gradesHistory, selectedSemester]
+    );
+
+    const filteredHistory = useMemo(
+        () => applyGradeHistoryFilters(semesterScopedHistory, historyFilters, categoryIndex),
+        [semesterScopedHistory, historyFilters, categoryIndex]
     );
 
     // Danh sách môn cần học lại
@@ -70,10 +101,18 @@ export function useGradeManagement() {
         // Data
         ...gradeData,
         simulatorCourses,
+        projectionSemesters,
+        selectedProjectionSemester,
+        selectedProjectionSemesterId,
+        setSelectedProjectionSemesterId,
         semesterGPA,
         cumulativeGPA,
         uniqueSemesters,
+        semesterScopedHistory,
         filteredHistory,
+        historyFilters,
+        setHistoryFilters,
+        categoryIndex,
         retakeCoursesList,
         getClassification,
         
@@ -85,10 +124,6 @@ export function useGradeManagement() {
         // UI State & Actions
         selectedSemester,
         setSelectedSemester,
-        expandedSection,
-        setExpandedSection,
-        mobileActivePanel,
-        setMobileActivePanel,
         handleGradeChange
     };
 }

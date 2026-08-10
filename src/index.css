@@ -1,6 +1,223 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    --ustudy-brand: #004a98;
+    --ustudy-brand-strong: #003a78;
+    --ustudy-brand-soft: #eaf3ff;
+    --ustudy-surface: #ffffff;
+    --ustudy-surface-muted: #f8fafc;
+    --ustudy-border: #e5e7eb;
+    --ustudy-text: #111827;
+    --ustudy-text-muted: #64748b;
+    --ustudy-ring: rgba(0, 74, 152, 0.28);
+  }
+}
+
 @layer components {
+  .ustudy-app-shell {
+    @apply flex h-screen bg-slate-50 text-gray-900;
+  }
+
+  .ustudy-main-column {
+    @apply flex min-w-0 flex-1 flex-col overflow-hidden;
+  }
+
+  .ustudy-main-scroll {
+    @apply relative flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0;
+  }
+
+  .ustudy-page-container {
+    @apply mx-auto w-full max-w-[1600px] p-4 md:p-6;
+  }
+
+  .ustudy-page-shell {
+    @apply px-1 md:px-0;
+  }
+
+  .ustudy-page-content {
+    @apply min-w-0;
+  }
+
+  .ustudy-page-header {
+    @apply mb-4 flex items-start justify-between gap-4 md:mb-6;
+  }
+
+  .ustudy-page-title {
+    @apply mb-2 text-2xl font-bold leading-tight text-gray-950;
+  }
+
+  .ustudy-page-description {
+    @apply text-sm leading-relaxed text-slate-600 md:text-base hidden md:block;
+  }
+
+  .ustudy-card {
+    @apply min-w-0 rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+
+  .ustudy-card-padding {
+    @apply p-4 md:p-6;
+  }
+
+  .ustudy-panel-padding {
+    @apply p-4 md:p-5;
+  }
+
+  .ustudy-card-header {
+    @apply mb-4 flex items-center gap-2 md:mb-6 md:gap-3;
+  }
+
+  .ustudy-card-title {
+    @apply text-sm font-semibold text-gray-950 md:text-base;
+  }
+
+  .ustudy-card-subtitle {
+    @apply text-xs text-slate-500 md:text-sm;
+  }
+
+  .ustudy-settings-card {
+    @apply w-full min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6;
+  }
+
+  .ustudy-settings-title {
+    @apply mb-4 flex items-center gap-2 text-base font-semibold text-gray-900;
+  }
+
+  .ustudy-settings-title-icon {
+    @apply h-6 w-6 shrink-0;
+  }
+
+  .ustudy-settings-description {
+    @apply mb-5 text-sm leading-6 text-gray-500;
+  }
+
+  .ustudy-settings-group {
+    @apply rounded-lg bg-slate-50 p-3.5 md:p-4;
+  }
+
+  .ustudy-icon-badge {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg md:h-10 md:w-10;
+  }
+
+  .ustudy-icon-primary {
+    @apply bg-[#004A98] text-white;
+  }
+
+  .ustudy-icon-primary-soft {
+    @apply bg-blue-50 text-[#004A98];
+  }
+
+  .ustudy-icon-success {
+    @apply bg-emerald-500 text-white;
+  }
+
+  .ustudy-icon-success-soft {
+    @apply bg-emerald-50 text-emerald-600;
+  }
+
+  .ustudy-stat-row {
+    @apply flex items-center justify-between text-xs md:text-sm;
+  }
+
+  .ustudy-stat-label {
+    @apply text-slate-600;
+  }
+
+  .ustudy-muted-panel {
+    @apply rounded-lg bg-slate-50 px-3 py-2;
+  }
+
+  .ustudy-empty-state {
+    @apply flex min-h-[220px] items-center justify-center rounded-lg border border-dashed border-gray-200 bg-slate-50 px-4 text-center text-sm text-slate-500;
+  }
+
+  .ustudy-tabs {
+    @apply mb-6 flex gap-1 overflow-x-auto border-b border-gray-200;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ustudy-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ustudy-schedule-page {
+    --schedule-row-height: 36px;
+  }
+
+  @media (min-width: 768px) {
+    .ustudy-schedule-page {
+      --schedule-row-height: 56px;
+    }
+  }
+
+  .ustudy-tab {
+    @apply flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:text-gray-950 md:text-base;
+  }
+
+  .ustudy-tab-active {
+    @apply border-[#004A98] text-[#004A98];
+  }
+
+  .ustudy-badge-count {
+    @apply min-w-[20px] rounded-full bg-[#004A98] px-1.5 py-0.5 text-center text-xs text-white;
+  }
+
+  .ustudy-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#003A78] hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none;
+  }
+
+  .ustudy-button-success {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ustudy-button-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#004A98]/30 bg-white px-4 py-2 text-sm font-semibold text-[#004A98] shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ustudy-action-icon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .ustudy-action-icon-primary {
+    @apply text-[#004A98] hover:bg-blue-50 hover:text-[#003A78];
+  }
+
+  .ustudy-action-icon-danger {
+    @apply text-rose-600 hover:bg-rose-50 hover:text-rose-700;
+  }
+
+  .ustudy-list-item {
+    @apply rounded-lg border border-gray-200 bg-slate-50 p-3 transition-colors hover:bg-white hover:border-blue-200;
+  }
+
+  .ustudy-section-title {
+    @apply text-lg font-semibold text-gray-950;
+  }
+
+  .ustudy-section-subtitle {
+    @apply mt-1 text-sm leading-relaxed text-slate-500;
+  }
+
+  .ustudy-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .ustudy-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .ustudy-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ustudy-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 999px;
+  }
+
   /* Custom Pastel Cards */
   .card-pastel-blue {
     @apply bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-colors duration-200;
@@ -53,5 +270,32 @@
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-only {
+  display: flex;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+
+  .desktop-only {
+    display: block;
   }
 }

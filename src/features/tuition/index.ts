@@ -1,4 +1,4 @@
-export * from './components/tuition-management';
+export * from './tuition-management';
 export * from './types';
 export * from './hooks/use-tuition-calculator';
 export * from './services/financial-logic';

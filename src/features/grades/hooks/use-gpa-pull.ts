@@ -23,6 +23,31 @@ export const isFoundationCategory = (categoryRaw: unknown): boolean => {
     return category === ACADEMIC_RULES.CATEGORIES.FOUNDATION;
 };
 
+function collectCategoryCourseCodes(category: any, result = new Set<string>()): Set<string> {
+    if (!category || typeof category !== 'object') return result;
+
+    if (Array.isArray(category.courses)) {
+        category.courses.forEach((course: unknown) => {
+            const code = normalizeCourseCode(
+                typeof course === 'object' && course !== null
+                    ? (course as any).course_id ?? (course as any).id
+                    : course
+            );
+            if (code) result.add(code);
+        });
+    }
+
+    if (category.breakdown && typeof category.breakdown === 'object') {
+        Object.values(category.breakdown).forEach((child) => collectCategoryCourseCodes(child, result));
+    }
+
+    if (Array.isArray(category.options)) {
+        category.options.forEach((option: unknown) => collectCategoryCourseCodes(option, result));
+    }
+
+    return result;
+}
+
 /**
  * Hook useGPAPull: Đầu não xử lý chiến lược "về đích" GPA.
  * 
@@ -37,7 +62,7 @@ export function useGPAPull({
 }: UseGPAPullProps) {
     const [targetGPAInput, setTargetGPAInput] = useState<string>('');
     const [expanded, setExpanded] = useState(true);
-    const [mode, setMode] = useState<'all' | 'foundationMajor'>('all');
+    const [mode, setMode] = useState<'all' | 'foundationMajor' | 'currentSemester'>('all');
     const [draftProjectedGrades, setDraftProjectedGrades] = useState<Record<string, string>>({});
     const [draftProjectedGradeErrors] = useState<Record<string, string>>({});
     const [manualRetakeTargets, setManualRetakeTargets] = useState<Record<string, number>>({});
@@ -47,32 +72,12 @@ export function useGPAPull({
     const [retakeSearchTerm, setRetakeSearchTerm] = useState<string>('');
     const [isRetakePickerOpen, setIsRetakePickerOpen] = useState<boolean>(false);
     const retakePickerRef = useRef<HTMLDivElement | null>(null);
-    const { data: { courses: departmentCourses } } = useDepartmentData();
+    const { data: { courses: departmentCourses, categories: departmentCategories } } = useDepartmentData();
 
     const pullDecimals = ACADEMIC_RULES.UI.PULL_DECIMALS;
     const minTargetGpa = ACADEMIC_RULES.PASS_GRADE_DECIMAL;
 
     const parsedTargetGpa = useMemo(() => parseFloat(targetGPAInput.replace(',', '.')), [targetGPAInput]);
-    /**
-     * Logic kiểm tra lỗi input: 
-     * Tại sao: Chặn các giá trị vô lý (điểm âm hoặc > 10) ngay từ đầu để tránh gây lỗi 
-     * tràn số hoặc kết quả âm trong các hàm toán học phức tạp phía sau.
-     */
-    const targetGpaError = useMemo(() => {
-        if (targetGPAInput.trim() === '') return null;
-        if (Number.isNaN(parsedTargetGpa)) return `Vui lòng nhập GPA hợp lệ từ ${minTargetGpa} đến ${ACADEMIC_RULES.MAX_GPA}.`;
-        if (parsedTargetGpa < minTargetGpa) return `GPA mục tiêu không được nhỏ hơn ${minTargetGpa.toFixed(pullDecimals)}.`;
-        if (parsedTargetGpa > ACADEMIC_RULES.MAX_GPA) return `GPA mục tiêu không được lớn hơn ${ACADEMIC_RULES.MAX_GPA.toFixed(pullDecimals)}.`;
-        return null;
-    }, [targetGPAInput, parsedTargetGpa, minTargetGpa]);
-
-    const targetGPA = useMemo(() => {
-        if (targetGPAInput.trim() === '') return null;
-        if (targetGpaError) return null;
-        if (Number.isNaN(parsedTargetGpa)) return null;
-        return parsedTargetGpa;
-    }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
-
     /**
      * Tạo bản đồ phân loại môn học từ dữ liệu khoa/ngành.
      * Tại sao: Dữ liệu điểm từ portal thường không có thông tin 'Cơ sở ngành', 
@@ -90,33 +95,53 @@ export function useGPAPull({
         return map;
     }, [departmentCourses]);
 
+    const foundationCategory = useMemo<any>(() => {
+        if (!departmentCategories || typeof departmentCategories !== 'object') return null;
+        const entry = Object.entries(departmentCategories).find(([key]) => isFoundationCategory(key));
+        return entry?.[1] ?? null;
+    }, [departmentCategories]);
+
+    const foundationCourseCodes = useMemo(
+        () => collectCategoryCourseCodes(foundationCategory),
+        [foundationCategory]
+    );
+
     const foundationMajorTotalCredits = useMemo(() => {
+        const configuredCredits = Number(
+            foundationCategory?.total_credits_required
+            ?? foundationCategory?.credits_required
+            ?? foundationCategory?.credits
+        );
+        if (Number.isFinite(configuredCredits) && configuredCredits > 0) return configuredCredits;
+
         const list = Array.isArray(departmentCourses) ? departmentCourses : [];
-        return list.reduce((sum, course) => {
+        const creditsByCode = new Map<string, number>();
+        list.forEach((course) => {
             const code = normalizeCourseCode(course?.course_id ?? course?.id);
             const category = (course?.category ?? '').toString().trim().toUpperCase();
             const credits = Number(course?.credits) || 0;
-            if (!code || credits <= 0) return sum;
-            if (!isFoundationCategory(category)) return sum;
-            if (AcademicRulesEngine.isCourseExcludedFromGPA(code)) return sum;
-            return sum + credits;
-        }, 0);
-    }, [departmentCourses]);
-
-    const hasCategoryDataForSimulator = useMemo(() => {
-        return simulatorCourses.some((course) => {
-            const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationCategory(category);
+            if (!code || credits <= 0) return;
+            const belongsToFoundation = foundationCourseCodes.size > 0
+                ? foundationCourseCodes.has(code)
+                : isFoundationCategory(category);
+            if (!belongsToFoundation || AcademicRulesEngine.isCourseExcludedFromGPA(code)) return;
+            creditsByCode.set(code, Math.max(creditsByCode.get(code) ?? 0, credits));
         });
-    }, [simulatorCourses, courseCategoryByCode]);
+        return Array.from(creditsByCode.values()).reduce((sum, credits) => sum + credits, 0);
+    }, [departmentCourses, foundationCategory, foundationCourseCodes]);
+
+    const hasFoundationScopeData = foundationMajorTotalCredits > 0 && (
+        foundationCourseCodes.size > 0
+        || Array.from(courseCategoryByCode.values()).some(isFoundationCategory)
+    );
 
     /**
      * Kiểm tra tính khả dụng của dữ liệu theo phạm vi (Scope).
      * Tại sao: Tránh tình trạng chia cho 0 (Division by zero) khi người dùng chọn 'Cơ sở ngành' 
      * nhưng hệ thống chưa load kịp danh mục môn học tương ứng.
      */
-    const isFoundationMajorModeUnavailable = mode === 'foundationMajor' && !hasCategoryDataForSimulator;
-    const isFoundationMajorScopeActive = mode === 'foundationMajor' && hasCategoryDataForSimulator;
+    const isFoundationMajorModeUnavailable = mode === 'foundationMajor' && !hasFoundationScopeData;
+    const isFoundationMajorScopeActive = mode === 'foundationMajor' && hasFoundationScopeData;
 
     /**
      * Lọc lịch sử điểm theo phạm vi đang chọn.
@@ -126,10 +151,29 @@ export function useGPAPull({
     const scopedGradesHistory = useMemo(() => {
         if (!isFoundationMajorScopeActive) return gradesHistory;
         return gradesHistory.filter((course) => {
-            const category = courseCategoryByCode.get(normalizeCourseCode(course.code));
-            return isFoundationCategory(category);
+            const code = normalizeCourseCode(course.code);
+            return foundationCourseCodes.size > 0
+                ? foundationCourseCodes.has(code)
+                : isFoundationCategory(courseCategoryByCode.get(code));
         });
-    }, [gradesHistory, isFoundationMajorScopeActive, courseCategoryByCode]);
+    }, [gradesHistory, isFoundationMajorScopeActive, foundationCourseCodes, courseCategoryByCode]);
+
+    const scopedGradesWithManualRetakes = useMemo(() => {
+        const targetByCode = new Map(
+            Object.entries(manualRetakeTargets).map(([code, target]) => [normalizeCourseCode(code), target])
+        );
+
+        return scopedGradesHistory.map((course) => {
+            const targetGrade = targetByCode.get(normalizeCourseCode(course.code));
+            if (targetGrade === undefined) return course;
+
+            return {
+                ...course,
+                grade: targetGrade,
+                status: AcademicRulesEngine.evaluateCourseStatus(targetGrade),
+            };
+        });
+    }, [scopedGradesHistory, manualRetakeTargets]);
 
     const scopedCurrentSnapshot = useMemo(() => {
         let points = 0;
@@ -157,11 +201,109 @@ export function useGPAPull({
         };
     }, [scopedGradesHistory]);
 
+    const currentSemesterCredits = useMemo(() => {
+        return simulatorCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+    }, [simulatorCourses]);
     const scopedTotalCredits = isFoundationMajorScopeActive ? foundationMajorTotalCredits : (ACADEMIC_RULES.TOTAL_CREDITS ?? totalCredits);
     const displayCurrentGPA = isFoundationMajorScopeActive ? scopedCurrentSnapshot.gpa : currentGPA;
     const displayAccumulatedCredits = isFoundationMajorScopeActive ? scopedCurrentSnapshot.earnedCredits : accumulatedCredits;
     const scopeLabelSuffix = isFoundationMajorScopeActive ? ' (Cơ sở ngành)' : '';
-    const scopeName = isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
+    const scopeName = mode === 'currentSemester' ? 'Kỳ này' : isFoundationMajorScopeActive ? 'Cơ sở ngành' : 'Toàn khóa';
+
+    const maxAchievableGpaAtGraduation = useMemo(() => {
+        if (mode === 'currentSemester') return ACADEMIC_RULES.MAX_GPA;
+        if (scopedTotalCredits <= 0) return null;
+
+        let currentPoints = 0;
+        let currentCredits = 0;
+        for (const course of scopedGradesWithManualRetakes) {
+            if (course.status === 'ongoing') continue;
+            const result = AcademicRulesEngine.calculateAccumulationParams(
+                course.code,
+                course.credits,
+                course.grade,
+                course.status,
+            );
+            currentPoints += result.pointsForGPA;
+            currentCredits += result.creditsForGPA;
+        }
+
+        // Mobile/app storage can temporarily have the GPA summary before the
+        // detailed grade rows finish hydrating. Keep the personal ceiling
+        // instead of falling back to 10.0 in that state.
+        if (!isFoundationMajorScopeActive && currentCredits <= 0 && accumulatedCredits > 0 && currentGPA > 0) {
+            currentCredits = accumulatedCredits;
+            currentPoints = currentGPA * accumulatedCredits;
+        }
+
+        const remainingCredits = Math.max(0, scopedTotalCredits - currentCredits);
+        const finalCreditsForGPA = currentCredits + remainingCredits;
+        if (finalCreditsForGPA <= 0) return null;
+        const maximumGpa = (currentPoints + ACADEMIC_RULES.MAX_GPA * remainingCredits) / finalCreditsForGPA;
+        return Math.min(ACADEMIC_RULES.MAX_GPA, maximumGpa);
+    }, [mode, scopedGradesWithManualRetakes, scopedTotalCredits, isFoundationMajorScopeActive, accumulatedCredits, currentGPA]);
+
+    const targetGpaError = useMemo(() => {
+        const maximumTargetGpa = maxAchievableGpaAtGraduation ?? ACADEMIC_RULES.MAX_GPA;
+        if (targetGPAInput.trim() === '') return null;
+        if (Number.isNaN(parsedTargetGpa)) return `Vui lòng nhập GPA hợp lệ từ ${minTargetGpa} đến ${maximumTargetGpa.toFixed(pullDecimals)}.`;
+        if (parsedTargetGpa < minTargetGpa) return `GPA mục tiêu không được nhỏ hơn ${minTargetGpa.toFixed(pullDecimals)}.`;
+        if (parsedTargetGpa > maximumTargetGpa + 1e-6 && maxAchievableGpaAtGraduation != null) {
+            return `GPA tối đa bạn có thể đạt là ${maxAchievableGpaAtGraduation.toFixed(pullDecimals)}.`;
+        }
+        if (parsedTargetGpa > ACADEMIC_RULES.MAX_GPA) return `GPA mục tiêu không được lớn hơn ${ACADEMIC_RULES.MAX_GPA.toFixed(pullDecimals)}.`;
+        return null;
+    }, [targetGPAInput, parsedTargetGpa, minTargetGpa, pullDecimals, maxAchievableGpaAtGraduation]);
+
+    const targetGPA = useMemo(() => {
+        if (targetGPAInput.trim() === '') return null;
+        if (targetGpaError) return null;
+        if (Number.isNaN(parsedTargetGpa)) return null;
+        return parsedTargetGpa;
+    }, [targetGPAInput, parsedTargetGpa, targetGpaError]);
+
+    const scopedSimulatorCourses = useMemo(() => {
+        return isFoundationMajorScopeActive
+            ? simulatorCourses.filter((course) => {
+                const code = normalizeCourseCode(course.code);
+                return foundationCourseCodes.size > 0
+                    ? foundationCourseCodes.has(code)
+                    : isFoundationCategory(courseCategoryByCode.get(code));
+            })
+            : simulatorCourses;
+    }, [simulatorCourses, isFoundationMajorScopeActive, foundationCourseCodes, courseCategoryByCode]);
+
+    const projectedScopeCourses = useMemo(() => {
+        return scopedSimulatorCourses.filter((course) => (
+            (course.currentGrade !== null || course.projectedGrade !== null)
+            && course.credits !== null
+        ));
+    }, [scopedSimulatorCourses]);
+
+    const projectedScopeCredits = useMemo(() => {
+        return projectedScopeCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+    }, [projectedScopeCourses]);
+
+    const projectedScopeGPA = useMemo(() => {
+        if (mode === 'currentSemester') {
+            const totalPoints = projectedScopeCourses.reduce(
+                (sum, course) => sum + (course.currentGrade ?? course.projectedGrade ?? 0) * (course.credits ?? 0),
+                0
+            );
+            return projectedScopeCredits > 0 ? totalPoints / projectedScopeCredits : 0;
+        }
+
+        return GPACalculator.calculateProjectedGPA(
+            scopedGradesWithManualRetakes,
+            projectedScopeCourses
+                .filter((course) => course.currentGrade === null && course.projectedGrade !== null)
+                .map((course) => ({
+                code: course.code,
+                credits: course.credits ?? 0,
+                projectedGrade: course.projectedGrade!,
+            }))
+        );
+    }, [mode, scopedGradesWithManualRetakes, projectedScopeCourses, projectedScopeCredits]);
 
     /**
      * Tính toán số điểm trung bình cần thiết (Required Average).
@@ -171,13 +313,60 @@ export function useGPAPull({
      */
     const baseResult = useMemo(() => {
         if (targetGPA === null) return null;
+        if (mode === 'currentSemester') {
+            if (currentSemesterCredits <= 0) {
+                return {
+                    success: false,
+                    impossible: true,
+                    message: 'Chưa có học phần nào trong kỳ hiện tại để tính GPA.',
+                };
+            }
+            const officialCourses = scopedSimulatorCourses.filter((course) => (
+                course.currentGrade !== null && (course.credits ?? 0) > 0
+            ));
+            const officialCredits = officialCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+            const officialPoints = officialCourses.reduce(
+                (sum, course) => sum + (course.currentGrade ?? 0) * (course.credits ?? 0),
+                0,
+            );
+            const remainingCredits = Math.max(0, currentSemesterCredits - officialCredits);
+            const remainingPoints = targetGPA * currentSemesterCredits - officialPoints;
+            const requiredAverage = remainingCredits > 0 ? Math.max(0, remainingPoints / remainingCredits) : null;
+
+            if (remainingCredits <= 0) {
+                const semesterGpa = officialCredits > 0 ? officialPoints / officialCredits : 0;
+                return {
+                    success: semesterGpa >= targetGPA,
+                    alreadyAchieved: semesterGpa >= targetGPA,
+                    impossible: semesterGpa < targetGPA,
+                    remainingCredits: 0,
+                    currentPoints: officialPoints,
+                    currentCredits: officialCredits,
+                    message: semesterGpa >= targetGPA
+                        ? 'Học kỳ này đã có đầy đủ điểm và đạt mục tiêu.'
+                        : 'Học kỳ này đã có đầy đủ điểm nên không còn môn để điều chỉnh mục tiêu.',
+                };
+            }
+
+            return {
+                success: requiredAverage !== null && requiredAverage <= ACADEMIC_RULES.MAX_GPA,
+                impossible: requiredAverage !== null && requiredAverage > ACADEMIC_RULES.MAX_GPA,
+                remainingCredits,
+                requiredAverage: requiredAverage ?? undefined,
+                currentPoints: officialPoints,
+                currentCredits: officialCredits,
+                message: officialCredits > 0
+                    ? `Đã khóa ${officialCredits} tín chỉ có điểm chính thức và tính mục tiêu cho phần còn lại.`
+                    : 'Đã tính mục tiêu GPA cho học kỳ đang chọn.',
+            };
+        }
         return GPACalculator.calculateRequiredAverageForTargetGPAInScope(
-            scopedGradesHistory,
+            scopedGradesWithManualRetakes,
             targetGPA,
             scopedTotalCredits,
             scopeName
         );
-    }, [scopedGradesHistory, targetGPA, scopedTotalCredits, scopeName]);
+    }, [scopedGradesWithManualRetakes, scopedSimulatorCourses, targetGPA, scopedTotalCredits, scopeName, mode, currentSemesterCredits]);
 
     /**
      * Dự báo học kỳ tiếp theo dựa trên dữ liệu Simulator.
@@ -188,31 +377,11 @@ export function useGPAPull({
     const nextSemester = useMemo((): GPAPullSemester | null => {
         if (!baseResult?.success || baseResult.requiredAverage == null || baseResult.impossible || baseResult.alreadyAchieved)
             return null;
-        const filteredSimulator =
-            isFoundationMajorScopeActive
-                ? simulatorCourses.filter((c) => {
-                    const category = courseCategoryByCode.get(normalizeCourseCode(c.code));
-                    return isFoundationCategory(category);
-                })
-                : simulatorCourses;
-        const raw = GPACalculator.buildNextSemesterFromSimulator(filteredSimulator, baseResult.requiredAverage);
+        const raw = GPACalculator.buildNextSemesterFromSimulator(scopedSimulatorCourses, baseResult.requiredAverage);
         if (!raw) return null;
         const courses = redistributeSuggestedGrades(raw.courses, baseResult.requiredAverage);
         return { ...raw, courses };
-    }, [baseResult, simulatorCourses, courseCategoryByCode, isFoundationMajorScopeActive]);
-
-    /**
-     * Giới hạn trần GPA (The Ceiling).
-     * Tại sao: Tính toán GPA tối đa nếu tất cả các môn còn lại đều được 10.0. 
-     * Nếu mục tiêu của người dùng cao hơn con số này, hệ thống sẽ tự động chuyển sang 
-     * trạng thái 'Impossible' để người dùng không nuôi hy vọng hão huyền.
-     */
-    const maxAchievableGpaAtGraduation = useMemo(() => {
-        if (baseResult?.currentPoints == null || baseResult.currentCredits == null) return null;
-        const remainingCredits = scopedTotalCredits - baseResult.currentCredits;
-        if (remainingCredits <= 0) return null;
-        return (baseResult.currentPoints + 10 * remainingCredits) / scopedTotalCredits;
-    }, [baseResult, scopedTotalCredits]);
+    }, [baseResult, scopedSimulatorCourses]);
 
     /**
      * Đánh giá hiệu quả học tập của học kỳ dự kiến so với mục tiêu dài hạn.
@@ -234,6 +403,8 @@ export function useGPAPull({
 
         const epsilon = ACADEMIC_RULES.UI.EPSILON;
 
+        let semesterCredits = 0;
+        let semesterPoints = 0;
         let usedCredits = 0;
         let usedPoints = 0;
 
@@ -247,13 +418,18 @@ export function useGPAPull({
 
             if (grade == null || Number.isNaN(grade)) return;
 
-            usedCredits += c.credits;
-            usedPoints += grade * c.credits;
+            semesterCredits += c.credits;
+            semesterPoints += grade * c.credits;
+            if (!c.isLocked) {
+                usedCredits += c.credits;
+                usedPoints += grade * c.credits;
+            }
         });
 
-        if (usedCredits <= 0) return null;
+        if (semesterCredits <= 0) return null;
 
-        const semesterGpa = usedPoints / usedCredits;
+        const semesterGpa = semesterPoints / semesterCredits;
+        const plannedAverage = usedCredits > 0 ? usedPoints / usedCredits : null;
 
         const totalRemainingCredits = baseResult.remainingCredits;
         const futurePointsNeeded = baseResult.requiredAverage * totalRemainingCredits;
@@ -261,14 +437,15 @@ export function useGPAPull({
 
         let newRequiredAvgAfter: number | null = null;
         if (remainingCreditsAfter > 0) {
-            newRequiredAvgAfter = (futurePointsNeeded - usedPoints) / remainingCreditsAfter;
+            newRequiredAvgAfter = Math.max(0, (futurePointsNeeded - usedPoints) / remainingCreditsAfter);
         }
 
         let trend: 'ahead' | 'behind' | 'onTrack' | null = null;
-        if (semesterGpa >= baseResult.requiredAverage + epsilon) {
+        if (plannedAverage !== null && plannedAverage >= baseResult.requiredAverage + epsilon) {
             trend = 'ahead';
         } else if (
-            semesterGpa <= baseResult.requiredAverage - epsilon &&
+            plannedAverage !== null &&
+            plannedAverage <= baseResult.requiredAverage - epsilon &&
             newRequiredAvgAfter != null &&
             newRequiredAvgAfter >= ACADEMIC_RULES.PASS_GRADE_DECIMAL &&
             newRequiredAvgAfter <= 10
@@ -435,6 +612,7 @@ export function useGPAPull({
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Node | null;
             if (!target) return;
+            if (target instanceof Element && target.closest('[data-mobile-sheet="retake-picker"]')) return;
             if (retakePickerRef.current && !retakePickerRef.current.contains(target)) {
                 setIsRetakePickerOpen(false);
             }
@@ -680,6 +858,9 @@ export function useGPAPull({
         displayAccumulatedCredits,
         scopeLabelSuffix,
         scopeName,
+        scopedSimulatorCourses,
+        projectedScopeGPA,
+        projectedScopeCredits,
         baseResult,
         nextSemester,
         maxAchievableGpaAtGraduation,

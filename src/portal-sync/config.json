@@ -1,0 +1,25 @@
+{
+  "protocolVersion": "1.0.0",
+  "scraperVersion": "0.2.0",
+  "extensionVersion": "0.2.5",
+  "portalHostnamePattern": "^new-portal\\d+\\.hcmus\\.edu\\.vn$",
+  "portalLoginUrl": "https://new-portal3.hcmus.edu.vn/Login.aspx",
+  "portalLoginPathPattern": "^/Login\\.aspx(?:/.*)?$",
+  "productionAppUrl": "https://ustudy.hakhoi.io.vn/",
+  "appOrigins": [
+    "https://ustudy.hakhoi.io.vn"
+  ],
+  "endpoints": {
+    "grades": "/SinhVien.aspx?pid=211",
+    "exams": "/SinhVien.aspx?pid=180",
+    "tuition": "/SinhVien.aspx?pid=331",
+    "openClasses": "/SinhVien.aspx?pid=327",
+    "registrations": "/SinhVien.aspx?pid=212"
+  },
+  "defaults": {
+    "academicYear": "25-26",
+    "semester": "3",
+    "cooldownMinutes": 30,
+    "mode": "ask"
+  }
+}

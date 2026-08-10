@@ -1,3 +1,5 @@
+import portalSyncConfig from '../portal-sync/config.json';
+
 /**
  * Cấu hình chung cho toàn bộ ứng dụng
  */
@@ -5,7 +7,7 @@ export const APP_CONFIG = {
     /**
      * Đường dẫn đăng nhập Portal
      */
-    PORTAL_LOGIN_URL: 'https://new-portal4.hcmus.edu.vn/',
+    PORTAL_LOGIN_URL: portalSyncConfig.portalLoginUrl,
 
     /**
      * Danh sách học kỳ hiển thị trên dropdown
@@ -28,17 +30,22 @@ export const APP_CONFIG = {
     /**
      * Năm/Học kỳ mặc định cho Bookmarklet
      */
-    DEFAULT_TARGET_YEAR: "25-26",
-    DEFAULT_TARGET_SEM: "3",
-    DEFAULT_CLASS_TARGET_YEAR: "25-26",
-    DEFAULT_CLASS_TARGET_SEM: "3",
-    DEFAULT_REG_TARGET_YEAR: "25-26",
-    DEFAULT_REG_TARGET_SEM: "3",
+    DEFAULT_TARGET_YEAR: portalSyncConfig.defaults.academicYear,
+    DEFAULT_TARGET_SEM: portalSyncConfig.defaults.semester,
+    DEFAULT_CLASS_TARGET_YEAR: portalSyncConfig.defaults.academicYear,
+    DEFAULT_CLASS_TARGET_SEM: portalSyncConfig.defaults.semester,
+    DEFAULT_REG_TARGET_YEAR: portalSyncConfig.defaults.academicYear,
+    DEFAULT_REG_TARGET_SEM: portalSyncConfig.defaults.semester,
 
     /**
      * Phiên bản hiện tại của Bookmarklet
      */
-    BOOKMARKLET_VERSION: '0.1.4',
+    BOOKMARKLET_VERSION: portalSyncConfig.scraperVersion,
+    PORTAL_SYNC_PROTOCOL_VERSION: portalSyncConfig.protocolVersion,
+    EXTENSION_VERSION: portalSyncConfig.extensionVersion,
+
+    /** Bật/tắt khu vực Trợ lý học thuật trong giao diện. */
+    CHATBOT_ENABLED: false,
 
     /**
      * Thông tin liên hệ và báo cáo

@@ -6,7 +6,23 @@ export function exportCalendar(schedule: WeeklySchedule) {
     const toIcsDateTime = (d: Date) =>
         `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
     const esc = (t: string) =>
-        t.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+        t.replace(/\r/g, '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    const foldLine = (line: string) => {
+        const encoder = new TextEncoder();
+        const chunks: string[] = [];
+        let current = '';
+        for (const character of line) {
+            const next = current + character;
+            if (current && encoder.encode(next).byteLength > 75) {
+                chunks.push(current);
+                current = ` ${character}`;
+            } else {
+                current = next;
+            }
+        }
+        if (current) chunks.push(current);
+        return chunks;
+    };
 
     const semesterStart = schedule.semesterStartDate
         ? new Date(schedule.semesterStartDate) : null;
@@ -66,7 +82,8 @@ export function exportCalendar(schedule: WeeklySchedule) {
     });
 
     lines.push('END:VCALENDAR');
-    const blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
+    const foldedLines = lines.flatMap(foldLine);
+    const blob = new Blob([foldedLines.join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "UStudy Portal Sync",
+  "version": "0.2.5",
+  "description": "Đồng bộ dữ liệu HCMUS Portal vào UStudy ngay trên thiết bị của bạn.",
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.hcmus.edu.vn/*",
+    "https://ustudy.hakhoi.io.vn/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "UStudy Portal Sync",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.hcmus.edu.vn/*"],
+      "js": ["config.js", "portal-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://ustudy.hakhoi.io.vn/*"
+      ],
+      "js": ["config.js", "app-bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon.svg"],
+      "matches": ["https://*.hcmus.edu.vn/*"]
+    }
+  ]
+}

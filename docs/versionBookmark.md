@@ -1,5 +1,22 @@
 # Lich su thay doi Bookmarklet
 
+## v0.1.4.
+
+- Chuyển học kỳ mặc định sang học kỳ 3 - 2025-2026.
+
+## v0.1.3
+
+- Thu nghiem chay song song cac nhom lay du lieu optional sau khi lay bang diem xong.
+- Cac task `hoc phi`, `lich thi`, `lop mo`, `ket qua DKHP` duoc khoi dong cung luc va cho bang `Promise.all`.
+- Logic ben trong tung nhom van duoc giu nguyen de de rollback neu Portal khong on dinh khi co nhieu request song song.
+
+## v0.1.2
+
+- Them hang doi concurrency gioi han trong `Bookmarklet.js`.
+- Tang toc quet chi tiet `Thuc hanh` / `Bai tap` cua danh sach lop mo bang cach chay song song toi da 3 task mac dinh.
+- Giu cac flow phu thuoc ViewState nhu hoc phi va DKHP chay tuan tu de tranh Portal tra sai state.
+- Them tai lieu chi tiet logic vao `docs/bookmarklet_logic.md`.
+
 ## v0.1.1
 
 - Tách cấu hình mặc định cho 2 nhóm dữ liệu
@@ -14,6 +31,3 @@
 - Sửa default fallback trong `Bookmarklet.js` tu `TARGET_SEM = "1"` thành `TARGET_SEM = "2"` để đồng bộ với config app hiện tại
 
 
-## v0.1.4.
-
-- Chuyển học kỳ mặc định sang học kỳ 3 - 2025-2026.

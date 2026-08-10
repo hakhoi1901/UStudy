@@ -8,11 +8,38 @@ export interface StudentCourseGrade {
     nameVi: string;
     credits: number;
     grade: number;
+    hasGrade?: boolean;
     semester: string;
     status: 'passed' | 'ongoing' | 'retake';
     type?: string;
     needsRetake?: boolean;
     isExcluded?: boolean;
+    isExempted?: boolean;
+    isCurrentSemester?: boolean;
+}
+
+export type GradeHistoryStatusFilter = 'passed' | 'retake' | 'ongoing' | 'ungraded' | 'exempted';
+
+export interface GradeHistoryFilters {
+    query: string;
+    statuses: GradeHistoryStatusFilter[];
+    gradeRange: { min: number; max: number };
+    creditRange: { min: number; max: number };
+    categoryIds: string[];
+}
+
+export interface GradeHistoryCategoryNode {
+    id: string;
+    key: string;
+    name: string;
+    courseCodes: string[];
+    children: GradeHistoryCategoryNode[];
+}
+
+export interface GradeHistoryCategoryIndex {
+    tree: GradeHistoryCategoryNode[];
+    courseCodesByCategory: Map<string, Set<string>>;
+    categorizedCourseCodes: Set<string>;
 }
 
 export interface GPASummary {
@@ -27,16 +54,35 @@ export interface GPASummary {
 
 export interface SimulatorCourseGrade {
     id: string;
+    attemptKey: string;
     code: string;
     name: string;
+    semester: string;
+    semesterLabel: string;
     credits: number | null;
     currentGrade: number | null;
     projectedGrade: number | null;
-    source: 'ongoing' | 'registration' | 'future';
+    source: 'official' | 'ongoing' | 'registration' | 'future';
+}
+
+export interface GPAProjectionSemester {
+    id: string;
+    label: string;
+    courses: SimulatorCourseGrade[];
+    totalCredits: number;
+    knownCredits: number;
+    officialCredits: number;
+    projectedCredits: number;
+    officialCourseCount: number;
+    projectedCourseCount: number;
+    missingCourseCount: number;
+    semesterGPA: number | null;
 }
 
 export interface GPAPullCourse {
     id: string;
+    attemptKey?: string;
+    semester?: string;
     code: string;
     name: string;
     credits: number;
@@ -44,7 +90,7 @@ export interface GPAPullCourse {
     isLocked: boolean;
     lockedGrade?: number | null;
     suggestedGrade?: number;
-    source?: 'future' | 'retake' | 'ongoing' | 'registration';
+    source?: 'future' | 'retake' | 'official' | 'ongoing' | 'registration';
 }
 
 export interface GPAPullSemester {
@@ -55,6 +101,8 @@ export interface GPAPullSemester {
     totalCredits: number;
     pointsNeeded: number;
 }
+
+export type GPAPlanningIntent = 'prediction' | 'goal';
 
 export interface RemainingCourseItem {
     code: string;
@@ -109,9 +157,14 @@ export interface GPAPerSemesterTableProps {
 
 export interface GradeHistoryTableProps {
     filteredHistory: StudentCourseGrade[];
+    semesterScopedHistory: StudentCourseGrade[];
     selectedSemester: string;
     uniqueSemesters: string[];
     setSelectedSemester: (semester: string) => void;
+    historyFilters: GradeHistoryFilters;
+    setHistoryFilters: (filters: GradeHistoryFilters) => void;
+    categoryIndex: GradeHistoryCategoryIndex;
+    embedded?: boolean;
 }
 
 
@@ -135,10 +188,30 @@ export interface GPAPullHeaderProps {
     setExpanded: (val: boolean) => void;
 }
 export interface GPAPullInputSectionProps {
+    planningIntent: GPAPlanningIntent;
     targetGPAInput: string;
     setTargetGPAInput: (val: string) => void;
     targetGpaError: string | null;
     minTargetGpa: number;
+    maxTargetGpa: number | null;
+    mode: 'all' | 'foundationMajor' | 'currentSemester';
+    setMode: (mode: 'all' | 'foundationMajor' | 'currentSemester') => void;
+    isFoundationMajorModeUnavailable: boolean;
+    onCalculate: () => void;
+    isCalculateDisabled: boolean;
+    isGuidanceActive: boolean;
+    targetGPA: number | null;
+    baseResult: GPAPullResult | null;
+    semesterStats: {
+        semesterGpa: number;
+        newRequiredAvgAfter: number | null;
+    } | null;
+    scopeName: string;
+    displayCurrentGPA: number;
+    displayAccumulatedCredits: number;
+    projectedScopeGPA: number;
+    projectedScopeCredits: number;
+    decimals: number;
 }
 
 export interface GPAPullManualRetakeProps {
@@ -184,12 +257,9 @@ export interface GPAPullRetakeSuggestionsProps {
 
 export interface GPAPullSemesterTableProps {
     nextSemester: GPAPullSemester;
-    semesterStats: {
-        semesterGpa: number;
-        usedCredits: number;
-        newRequiredAvgAfter: number | null;
-        trend: 'ahead' | 'behind' | 'onTrack' | null;
-    } | null;
-    baseResult: { requiredAverage?: number } | null;
     decimals: number;
+    planningIntent: GPAPlanningIntent;
+    isGuidanceActive: boolean;
+    onGradeChange: (attemptKey: string, grade: number | null) => void;
+    onResetGradeOverrides: () => void;
 }

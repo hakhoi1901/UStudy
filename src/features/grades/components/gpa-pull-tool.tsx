@@ -1,58 +1,123 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, Calculator, Info, PencilLine, Target } from 'lucide-react';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { STORAGE_KEYS } from '../../../config';
+import { readPlain, savePlain } from '../../../helpers/localStorage/save';
 import { useGPAPull } from '../hooks/use-gpa-pull';
-import { GPAPullHeader } from './gpa-pull-tool/gpa-pull-header';
 import { GPAPullInputSection } from './gpa-pull-tool/gpa-pull-input-section';
-import { GPAPullResultSummary } from './gpa-pull-tool/gpa-pull-result-summary';
 import { GPAPullSemesterTable } from './gpa-pull-tool/gpa-pull-semester-table';
 import { GPAPullManualRetake } from './gpa-pull-tool/gpa-pull-manual-retake';
-import { GPAPullRetakeSuggestions } from './gpa-pull-tool/gpa-pull-retake-suggestions';
-import type { StudentCourseGrade, SimulatorCourseGrade } from '../types';
+import type {
+    GPAPlanningIntent,
+    GPAProjectionSemester,
+    GPAPullSemester,
+    StudentCourseGrade,
+    SimulatorCourseGrade,
+} from '../types';
 
 interface GPAPullToolProps {
     gradesHistory: StudentCourseGrade[];
     getClassification: (gpa: number) => string;
     simulatorCourses: SimulatorCourseGrade[];
-    handleGradeChange: (courseCode: string, grade: number | null) => void;
+    projectionSemesters: GPAProjectionSemester[];
+    selectedProjectionSemester: GPAProjectionSemester | null;
+    selectedProjectionSemesterId: string;
+    setSelectedProjectionSemesterId: (semesterId: string) => void;
+    handleGradeChange: (attemptKey: string, grade: number | null) => void;
     currentGPA: number;
     accumulatedCredits: number;
     totalCredits: number;
+    semesterGPA: number;
+    cumulativeGPA: number;
+}
+
+const planningModes: Array<{
+    id: GPAPlanningIntent;
+    label: string;
+}> = [
+    {
+        id: 'prediction',
+        label: 'Dự đoán',
+    },
+    {
+        id: 'goal',
+        label: 'Mục tiêu',
+    },
+];
+
+function readGoalGrades(): Record<string, number | null> {
+    const hasSavedGoalGrades = localStorage.getItem(STORAGE_KEYS.GPA_GOAL_GRADES) !== null;
+    const saved = readPlain<Record<string, number | null>>(STORAGE_KEYS.GPA_GOAL_GRADES, {});
+    const legacy = readPlain<{ targetGrades?: Record<string, number> }>(STORAGE_KEYS.GPA_COMPONENT_GRADES, {});
+    const source = hasSavedGoalGrades ? saved : legacy.targetGrades ?? {};
+    return Object.fromEntries(
+        Object.entries(source).filter((entry): entry is [string, number | null] => (
+            entry[1] === null || (Number.isFinite(entry[1]) && entry[1] >= 0 && entry[1] <= 10)
+        )),
+    );
 }
 
 export function GPAPullTool({
     gradesHistory,
     simulatorCourses,
+    projectionSemesters,
+    selectedProjectionSemester,
+    selectedProjectionSemesterId,
+    setSelectedProjectionSemesterId,
+    handleGradeChange,
     currentGPA,
     accumulatedCredits,
     totalCredits,
 }: GPAPullToolProps) {
+    const [planningIntent, setPlanningIntent] = useState<GPAPlanningIntent>('prediction');
+    const [hasCalculated, setHasCalculated] = useState(false);
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
+    const [goalGrades, setGoalGrades] = useState<Record<string, number | null>>(readGoalGrades);
+    const activeSimulatorCourses = useMemo(() => {
+        if (planningIntent === 'prediction') return simulatorCourses;
+
+        return simulatorCourses.map((course) => {
+            const hasAttemptGrade = Object.prototype.hasOwnProperty.call(goalGrades, course.attemptKey);
+            const hasLegacyGrade = Object.prototype.hasOwnProperty.call(goalGrades, course.code);
+            return {
+                ...course,
+                projectedGrade: hasAttemptGrade
+                    ? goalGrades[course.attemptKey]
+                    : hasLegacyGrade
+                        ? goalGrades[course.code]
+                        : course.projectedGrade,
+            };
+        });
+    }, [goalGrades, planningIntent, simulatorCourses]);
+
+    useEffect(() => {
+        savePlain(STORAGE_KEYS.GPA_GOAL_GRADES, goalGrades);
+    }, [goalGrades]);
+
     const {
-        // State & Computed
         targetGPAInput, setTargetGPAInput,
-        expanded, setExpanded,
         mode, setMode,
         draftManualRetakeTargets,
         draftManualRetakeTargetErrors,
         retakeSearchTerm, setRetakeSearchTerm,
         isRetakePickerOpen, setIsRetakePickerOpen,
         retakePickerRef,
-        targetGPA, targetGpaError,
+        targetGPA, targetGpaError, maxAchievableGpaAtGraduation,
         isFoundationMajorModeUnavailable,
-        isFoundationMajorScopeActive,
         displayCurrentGPA,
         displayAccumulatedCredits,
         scopeName,
+        scopedSimulatorCourses,
+        projectedScopeGPA,
+        projectedScopeCredits,
         baseResult,
         nextSemester,
         semesterStats,
-        shouldShowRetakeSuggestions,
-        retakeSuggestions,
         manualRetakeItems,
         manualRetakeImpact,
         selectableRetakeCourses,
         filteredSelectableRetakeCourses,
         pendingRetakeCodeSet,
-
-        // Actions
-        addManualRetake,
         togglePendingRetakeCode,
         addPendingRetakes,
         selectAllFilteredRetakes,
@@ -62,131 +127,279 @@ export function GPAPullTool({
         commitManualRetakeTargetInput,
         clearAllManualRetakes,
         decimals,
-        minTargetGpa
+        minTargetGpa,
     } = useGPAPull({
         gradesHistory,
-        simulatorCourses,
+        simulatorCourses: activeSimulatorCourses,
         currentGPA,
         accumulatedCredits,
         totalCredits,
     });
 
+    const guidanceActive = planningIntent === 'goal' && hasCalculated && Boolean(nextSemester);
+
+    const workingSemester = useMemo<GPAPullSemester>(() => {
+        if (guidanceActive && nextSemester) return nextSemester;
+
+        const courses = scopedSimulatorCourses
+            .filter((course) => (course.credits ?? 0) > 0)
+            .map((course) => ({
+                id: course.attemptKey,
+                attemptKey: course.attemptKey,
+                semester: course.semester,
+                code: course.code,
+                name: course.name,
+                credits: course.credits ?? 0,
+                projectedGrade: course.projectedGrade,
+                lockedGrade: course.currentGrade,
+                isLocked: course.currentGrade !== null,
+                source: course.source,
+            }));
+
+        return {
+            id: selectedProjectionSemester?.id ?? 'current-semester',
+            label: selectedProjectionSemester?.label ?? 'Học kỳ đang chọn',
+            courses,
+            requiredGPA: 0,
+            totalCredits: courses.reduce((sum, course) => sum + course.credits, 0),
+            pointsNeeded: 0,
+        };
+    }, [guidanceActive, nextSemester, scopedSimulatorCourses, selectedProjectionSemester]);
+
+    const changePlanningIntent = (nextIntent: GPAPlanningIntent) => {
+        setPlanningIntent(nextIntent);
+        setHasCalculated(false);
+    };
+
+    const handleActiveGradeChange = (attemptKey: string, grade: number | null) => {
+        if (planningIntent === 'prediction') {
+            handleGradeChange(attemptKey, grade);
+            setGoalGrades((current) => ({ ...current, [attemptKey]: grade }));
+            return;
+        }
+
+        setGoalGrades((current) => {
+            if (grade != null) return { ...current, [attemptKey]: grade };
+            return { ...current, [attemptKey]: null };
+        });
+    };
+
+    const resetGoalGradeOverrides = () => {
+        setGoalGrades({});
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <GPAPullHeader expanded={expanded} setExpanded={setExpanded} />
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 md:px-5">
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <h3 className="truncate text-[15px] font-semibold text-gray-800">Kế hoạch GPA</h3>
+                    <button
+                        type="button"
+                        onClick={() => setIsGuideOpen(true)}
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-blue-50 hover:text-[#004A98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/25"
+                        title="Hướng dẫn Kế hoạch GPA"
+                        aria-label="Mở hướng dẫn Kế hoạch GPA"
+                    >
+                        <Info className="h-4 w-4" />
+                    </button>
+                </div>
 
-            {expanded && (
-                <div className="px-6 py-5 border-t border-gray-100 space-y-5">
-                    <GPAPullInputSection
-                        targetGPAInput={targetGPAInput}
-                        setTargetGPAInput={setTargetGPAInput}
-                        targetGpaError={targetGpaError}
-                        minTargetGpa={minTargetGpa}
-                    />
-
-                    <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
+                <div className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="tablist" aria-label="Chế độ kế hoạch GPA">
+                    {planningModes.map((planningMode) => {
+                        const isActive = planningIntent === planningMode.id;
+                        return (
                             <button
-                                onClick={() => setMode('all')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${mode === 'all'
-                                    ? 'bg-[#004A98] text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                key={planningMode.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={isActive}
+                                onClick={() => changePlanningIntent(planningMode.id)}
+                                className={`h-8 rounded-md px-2.5 text-xs font-semibold transition-colors sm:px-3 ${isActive
+                                    ? 'bg-white text-[#004A98] shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-800'
                                     }`}
                             >
-                                Tính toàn khóa
+                                {planningMode.label}
                             </button>
-                            <button
-                                onClick={() => setMode('foundationMajor')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${mode === 'foundationMajor'
-                                    ? 'bg-[#004A98] text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                    }`}
-                            >
-                                Tính Cơ sở ngành
-                            </button>
-                        </div>
-                        {isFoundationMajorModeUnavailable && (
-                            <p className="text-[10px] text-orange-600 font-medium">
-                                * Chưa có dữ liệu danh mục môn học để lọc riêng Cơ sở ngành.
+                        );
+                    })}
+                </div>
+            </div>
+
+            {projectionSemesters.length > 0 && (
+                <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-3 md:px-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-700">Học kỳ đang tính</p>
+                            <p className="mt-0.5 text-[11px] text-gray-500">
+                                {selectedProjectionSemester
+                                    ? `${selectedProjectionSemester.officialCourseCount}/${selectedProjectionSemester.courses.length} môn đã có điểm chính thức`
+                                    : 'Chọn học kỳ cần dự đoán'}
                             </p>
-                        )}
-                    </div>
-
-                    {baseResult && (
-                        <div className="space-y-6 pt-2 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
-                            <GPAPullResultSummary
-                                targetGPA={targetGPA}
-                                displayCurrentGPA={displayCurrentGPA}
-                                displayAccumulatedCredits={displayAccumulatedCredits}
-                                scopeName={scopeName}
-                                baseResult={baseResult}
-                                decimals={decimals}
-                            />
-
-                            {baseResult.success && !baseResult.alreadyAchieved && !baseResult.impossible && (
-                                <div className="space-y-8">
-                                    {nextSemester && (
-                                        <GPAPullSemesterTable
-                                            nextSemester={nextSemester}
-                                            semesterStats={semesterStats}
-                                            baseResult={baseResult}
-                                            decimals={decimals}
-                                        />
-                                    )}
-
-                                    <GPAPullManualRetake
-                                        manualRetakeItems={manualRetakeItems}
-                                        removeManualRetake={removeManualRetake}
-                                        handleManualRetakeTargetInputChange={handleManualRetakeTargetInputChange}
-                                        commitManualRetakeTargetInput={commitManualRetakeTargetInput}
-                                        draftManualRetakeTargets={draftManualRetakeTargets}
-                                        draftManualRetakeTargetErrors={draftManualRetakeTargetErrors}
-                                        manualRetakeImpact={manualRetakeImpact}
-                                        selectableRetakeCourses={selectableRetakeCourses}
-                                        filteredSelectableRetakeCourses={filteredSelectableRetakeCourses}
-                                        retakeSearchTerm={retakeSearchTerm}
-                                        setRetakeSearchTerm={setRetakeSearchTerm}
-                                        isRetakePickerOpen={isRetakePickerOpen}
-                                        setIsRetakePickerOpen={setIsRetakePickerOpen}
-                                        retakePickerRef={retakePickerRef}
-                                        pendingRetakeCodeSet={pendingRetakeCodeSet}
-                                        togglePendingRetakeCode={togglePendingRetakeCode}
-                                        addPendingRetakes={addPendingRetakes}
-                                        selectAllFilteredRetakes={selectAllFilteredRetakes}
-                                        clearPendingFilteredRetakes={clearPendingFilteredRetakes}
-                                        clearAllManualRetakes={clearAllManualRetakes}
-                                        decimals={decimals}
-                                        scopeName={scopeName}
-                                    />
-
-                                    {shouldShowRetakeSuggestions && (
-                                        <GPAPullRetakeSuggestions
-                                            retakeSuggestions={retakeSuggestions}
-                                            addManualRetake={addManualRetake}
-                                            decimals={decimals}
-                                            scopeName={scopeName}
-                                        />
-                                    )}
-                                </div>
-                            )}
-
-                            {baseResult.impossible && (
-                                <div className="p-4 bg-red-50 rounded-xl border border-red-100 flex flex-col gap-3">
-                                    <p className="text-sm text-red-800 leading-relaxed font-medium">
-                                        Mục tiêu GPA {targetGPA?.toFixed(decimals)} trong phạm vi {scopeName} là <b>không khả thi</b> nếu chỉ dựa vào các tín chỉ còn lại (cần trung bình &gt; 10.0).
-                                    </p>
-                                    <GPAPullRetakeSuggestions
-                                        retakeSuggestions={retakeSuggestions}
-                                        addManualRetake={addManualRetake}
-                                        decimals={decimals}
-                                        scopeName={scopeName}
-                                    />
-                                </div>
-                            )}
                         </div>
-                    )}
+                        <select
+                            value={selectedProjectionSemesterId}
+                            onChange={(event) => {
+                                setSelectedProjectionSemesterId(event.target.value);
+                                setHasCalculated(false);
+                            }}
+                            className="h-9 min-w-0 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 outline-none transition-colors focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 sm:w-64"
+                            aria-label="Chọn học kỳ cần tính GPA"
+                        >
+                            {projectionSemesters.map((semester) => (
+                                <option key={semester.id} value={semester.id}>
+                                    {semester.label} · {semester.knownCredits}/{semester.totalCredits} TC đã biết
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             )}
+
+            <div className="px-3 py-4 md:px-5">
+                <GPAPullInputSection
+                    planningIntent={planningIntent}
+                    targetGPAInput={targetGPAInput}
+                    setTargetGPAInput={(value) => {
+                        setTargetGPAInput(value);
+                        setHasCalculated(false);
+                    }}
+                    targetGpaError={targetGpaError}
+                    minTargetGpa={minTargetGpa}
+                    maxTargetGpa={maxAchievableGpaAtGraduation}
+                    mode={mode}
+                    setMode={(nextMode) => {
+                        setMode(nextMode);
+                        setHasCalculated(false);
+                    }}
+                    isFoundationMajorModeUnavailable={isFoundationMajorModeUnavailable}
+                    onCalculate={() => setHasCalculated(true)}
+                    isCalculateDisabled={Boolean(targetGpaError) || targetGPA === null}
+                    isGuidanceActive={planningIntent === 'goal' && hasCalculated}
+                    targetGPA={targetGPA}
+                    baseResult={planningIntent === 'goal' && hasCalculated ? baseResult : null}
+                    semesterStats={planningIntent === 'goal' && hasCalculated ? semesterStats : null}
+                    scopeName={scopeName}
+                    displayCurrentGPA={displayCurrentGPA}
+                    displayAccumulatedCredits={displayAccumulatedCredits}
+                    projectedScopeGPA={projectedScopeGPA}
+                    projectedScopeCredits={projectedScopeCredits}
+                    decimals={decimals}
+                />
+            </div>
+
+            <div className="border-t border-gray-200">
+                <GPAPullSemesterTable
+                    nextSemester={workingSemester}
+                    decimals={decimals}
+                    planningIntent={planningIntent}
+                    isGuidanceActive={guidanceActive}
+                    onGradeChange={handleActiveGradeChange}
+                    onResetGradeOverrides={resetGoalGradeOverrides}
+                />
+            </div>
+
+            <div className="border-t border-gray-200 px-4 py-4 md:px-5">
+                <GPAPullManualRetake
+                    manualRetakeItems={manualRetakeItems}
+                    removeManualRetake={removeManualRetake}
+                    handleManualRetakeTargetInputChange={handleManualRetakeTargetInputChange}
+                    commitManualRetakeTargetInput={commitManualRetakeTargetInput}
+                    draftManualRetakeTargets={draftManualRetakeTargets}
+                    draftManualRetakeTargetErrors={draftManualRetakeTargetErrors}
+                    manualRetakeImpact={manualRetakeImpact}
+                    selectableRetakeCourses={selectableRetakeCourses}
+                    filteredSelectableRetakeCourses={filteredSelectableRetakeCourses}
+                    retakeSearchTerm={retakeSearchTerm}
+                    setRetakeSearchTerm={setRetakeSearchTerm}
+                    isRetakePickerOpen={isRetakePickerOpen}
+                    setIsRetakePickerOpen={setIsRetakePickerOpen}
+                    retakePickerRef={retakePickerRef}
+                    pendingRetakeCodeSet={pendingRetakeCodeSet}
+                    togglePendingRetakeCode={togglePendingRetakeCode}
+                    addPendingRetakes={addPendingRetakes}
+                    selectAllFilteredRetakes={selectAllFilteredRetakes}
+                    clearPendingFilteredRetakes={clearPendingFilteredRetakes}
+                    clearAllManualRetakes={clearAllManualRetakes}
+                    decimals={decimals}
+                    scopeName={scopeName}
+                />
+            </div>
+
+            <AppDialog
+                open={isGuideOpen}
+                onOpenChange={setIsGuideOpen}
+                title="Hướng dẫn Kế hoạch GPA"
+                description="Dự đoán kết quả học tập hoặc tìm mức điểm cần đạt cho mục tiêu GPA của bạn."
+                icon={Calculator}
+                size="md"
+                footer={(
+                    <button
+                        type="button"
+                        onClick={() => setIsGuideOpen(false)}
+                        className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] sm:w-auto"
+                    >
+                        Đã hiểu
+                    </button>
+                )}
+            >
+                <div className="divide-y divide-gray-200">
+                    <section className="pb-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#004A98]">
+                                <PencilLine className="h-4.5 w-4.5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900">Dự đoán kết quả</h4>
+                                <p className="mt-1 text-sm leading-6 text-gray-600">
+                                    Nhập điểm dự kiến trực tiếp cho từng môn để xem GPA kỳ này và GPA tích lũy sau kỳ.
+                                </p>
+                                <p className="mt-2 text-xs leading-5 text-gray-500">
+                                    Khi nhập điểm thành phần, điểm môn bên ngoài sẽ được tính và cập nhật tự động.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="py-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                                <Target className="h-4.5 w-4.5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900">Lập mục tiêu GPA</h4>
+                                <p className="mt-1 text-sm leading-6 text-gray-600">
+                                    Chọn phạm vi, nhập GPA mong muốn rồi nhấn tính toán để nhận gợi ý điểm cho từng môn.
+                                </p>
+                                <p className="mt-2 text-xs leading-5 text-gray-500">
+                                    Bạn có thể sửa điểm môn được gợi ý. Các môn chưa sửa thủ công sẽ được phân bổ lại để bám theo mục tiêu.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="py-4">
+                        <h4 className="text-sm font-semibold text-gray-900">Điểm được đồng bộ như thế nào?</h4>
+                        <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#004A98]">
+                            <span>Dự đoán</span>
+                            <ArrowRight className="h-4 w-4" />
+                            <span>Mục tiêu</span>
+                        </div>
+                        <ul className="mt-2 space-y-1.5 text-xs leading-5 text-gray-600">
+                            <li>Mỗi lần điểm Dự đoán thay đổi hoặc bị xóa, điểm Mục tiêu được cập nhật theo ngay.</li>
+                            <li>Sửa hoặc xóa điểm bên Mục tiêu không làm thay đổi điểm Dự đoán.</li>
+                            <li>Nếu Dự đoán thay đổi lần nữa, giá trị mới tiếp tục được chuyển sang Mục tiêu.</li>
+                        </ul>
+                    </section>
+
+                    <section className="pt-4">
+                        <h4 className="text-sm font-semibold text-gray-900">Điểm thành phần trong Mục tiêu</h4>
+                        <p className="mt-1 text-xs leading-5 text-gray-600">
+                            Sửa điểm môn bên ngoài sẽ cập nhật gợi ý cho các mục thành phần còn trống. Điểm thành phần đã nhập vẫn được giữ nguyên, và sửa chúng không ghi ngược ra điểm môn.
+                        </p>
+                    </section>
+                </div>
+            </AppDialog>
         </div>
     );
 }

@@ -48,10 +48,15 @@ export interface Day {
 
 export interface Holiday {
     id: string;
-    startWeek: number;
-    duration: number;
+    /** Ngày địa phương dạng YYYY-MM-DD. Dữ liệu cũ có thể chỉ có startWeek/duration. */
+    startDate?: string;
+    endDate?: string;
+    startWeek?: number;
+    duration?: number;
     affectedCourseCodes: string[] | 'all';
     reason: string;
+    /** true: bù buổi đã nghỉ ở cuối lịch; false: hủy buổi và giữ nguyên ngày kết thúc. */
+    makeUp?: boolean;
 }
 
 export interface SessionOverride {
