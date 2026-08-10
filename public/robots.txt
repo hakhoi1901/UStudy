@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /grades
+Disallow: /schedule
+Disallow: /exam-schedule
+Disallow: /tuition
+Disallow: /settings
+Disallow: /setup
+Disallow: /security-lab
+
+Sitemap: https://ustudy.hakhoi.io.vn/sitemap.xml
