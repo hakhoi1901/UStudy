@@ -74,6 +74,8 @@ export const STORAGE_KEYS = {
     GROUP_SCHEDULE_UI_STATE: 'group_schedule_ui_state',
     /** Toàn bộ kết quả thành công gần nhất của bộ xếp lịch nhóm */
     GROUP_SCHEDULE_LAST_RESULT: 'group_schedule_last_result',
+    /** Vault test WebAuthn PRF; tách biệt hoàn toàn khỏi dữ liệu UStudy thật */
+    SECURITY_LAB_VAULT: 'ustudy_security_lab_vault_v1',
     /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
     SCHEDULE_MODE: 'schedule_mode',
 };

@@ -35,6 +35,7 @@ data.json
 temp/*
 
 *.txt
+!public/robots.txt
 public/downloads/*.zip
 artifacts/*.apk
 
