@@ -993,6 +993,7 @@
                 docDKHP = parseHTML(await res.text());
             }
 
+            registrations = scrapeRegisteredCourses(docDKHP);
             registrationPeriod = getRegistrationPeriod(docDKHP);
             registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
             emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
