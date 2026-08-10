@@ -1,28 +1,64 @@
 import { useEffect, useState } from 'react';
 import {
+    Bookmark,
     Download,
     ExternalLink,
     FileUp,
     LoaderCircle,
     Monitor,
+    Puzzle,
     ShieldCheck,
     Smartphone,
 } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { ImportData, OpticalDataTransfer } from '../../features/settings';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../../mobile/portal-sync';
+import { BookmarkletButton } from '../portal';
+import { portalSyncConfig } from '../../portal-sync/protocol';
 
 const ANDROID_APP_DOWNLOAD_URL = '/downloads/UStudy-android.apk';
+type DesktopSyncMethod = 'extension' | 'bookmarklet' | 'json';
+
+const DESKTOP_SYNC_GUIDES: Record<DesktopSyncMethod, { title: string; description: string; steps: InstructionStepProps[] }> = {
+    extension: {
+        title: 'Đồng bộ bằng Extension',
+        description: 'Phù hợp khi bạn thường xuyên lấy dữ liệu từ HCMUS Portal.',
+        steps: [
+            { number: 1, title: 'Tải và cài UStudy Portal Sync', description: 'Tải file ZIP bên dưới, giải nén rồi thêm extension vào trình duyệt theo hướng dẫn.' },
+            { number: 2, title: 'Mở và đăng nhập Portal', description: 'Extension sẽ nhận diện các trang Portal sau khi bạn đã đăng nhập.' },
+            { number: 3, title: 'Đồng bộ và xem trước thay đổi', description: 'Chọn Đồng bộ ngay hoặc để extension chạy theo chế độ đã thiết lập, rồi xác nhận dữ liệu cần nhận.' },
+        ],
+    },
+    bookmarklet: {
+        title: 'Đồng bộ bằng Bookmarklet',
+        description: 'Cách thủ công, nhẹ và không cần cài extension.',
+        steps: [
+            { number: 1, title: 'Thêm HCMUS Portal Tool', description: 'Kéo nút bookmarklet bên dưới vào thanh dấu trang của trình duyệt.' },
+            { number: 2, title: 'Mở và đăng nhập Portal', description: 'Truy cập Portal trường, sau đó đăng nhập tài khoản sinh viên của bạn.' },
+            { number: 3, title: 'Bấm bookmarklet và xác nhận', description: 'Nhấn HCMUS Portal Tool trên thanh dấu trang, xem trước thay đổi rồi chọn dữ liệu muốn nhập.' },
+        ],
+    },
+    json: {
+        title: 'Nhập từ file JSON',
+        description: 'Dùng khi bạn đã có bản sao lưu UStudy từ máy tính hoặc thiết bị khác.',
+        steps: [
+            { number: 1, title: 'Xuất dữ liệu từ thiết bị nguồn', description: 'Vào Cài đặt của UStudy trên thiết bị đang có dữ liệu và chọn Xuất dữ liệu.' },
+            { number: 2, title: 'Chuyển file sang thiết bị này', description: 'Bạn có thể dùng Drive, email, Zalo hoặc bất kỳ cách gửi file nào thuận tiện.' },
+            { number: 3, title: 'Chọn file và xem trước', description: 'Chọn file JSON bên dưới, sau đó chỉ tích những nhóm dữ liệu bạn muốn nhận.' },
+        ],
+    },
+};
 
 interface InstructionStepProps {
     number: number;
     title: string;
     description: string;
+    className?: string;
 }
 
-function InstructionStep({ number, title, description }: InstructionStepProps) {
+function InstructionStep({ number, title, description, className = '' }: InstructionStepProps) {
     return (
-        <div className="flex gap-3 px-4 py-3.5">
+        <div className={`flex gap-3 px-4 py-3.5 ${className}`}>
             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#004A98] text-xs font-bold text-white">
                 {number}
             </span>
@@ -40,7 +76,9 @@ export function NoDataCard() {
     const [isMobile, setIsMobile] = useState(false);
     const [isOpeningPortal, setIsOpeningPortal] = useState(false);
     const [portalError, setPortalError] = useState('');
+    const [desktopSyncMethod, setDesktopSyncMethod] = useState<DesktopSyncMethod>('extension');
     const nativePortalSyncAvailable = isNativePortalSyncAvailable();
+    const desktopGuide = DESKTOP_SYNC_GUIDES[desktopSyncMethod];
 
     useEffect(() => {
         const checkMobile = () => {
@@ -70,8 +108,8 @@ export function NoDataCard() {
     };
 
     return (
-        <div className="flex min-h-[calc(100dvh-150px)] items-start justify-center md:h-[calc(100vh-100px)] md:min-h-0 md:items-center md:rounded-xl md:border md:p-4">
-            <div className="max-h-full w-full overflow-y-auto bg-white px-1 py-3 md:rounded-xl md:border md:border-gray-100 md:p-8 md:shadow-xl md:shadow-gray-200/50">
+        <div className="flex w-full items-start justify-center md:rounded-xl md:border md:p-4">
+            <div className="w-full bg-white px-1 py-3 md:rounded-xl md:border md:border-gray-100 md:p-8 md:shadow-xl md:shadow-gray-200/50">
                 <div className="mb-5 flex flex-col items-center md:mb-8">
                     {isMobile && (
                         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-[#004A98]">
@@ -89,42 +127,41 @@ export function NoDataCard() {
                 </div>
 
                 {!isMobile ? (
-                    <>
-                        <div className="space-y-5 mb-8">
-                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">1</div>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Chọn thông tin</p>
-                                    <p className="text-sm text-gray-600 mt-1">Vào tab cài đặt và chọn khoa, ngành, khóa tuyển của bạn.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">2</div>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Cài đặt công cụ</p>
-                                    <p className="text-sm text-gray-600 mt-1">Kéo nút <span className="font-medium text-[#004A98] px-1.5 py-0.5 bg-blue-50 rounded-md">HCMUS Portal tool</span> ở góc trên bên phải vào Bookmark bar của bạn.</p>
-                                    <p className="text-sm text-gray-600 mt-1">Nếu chưa mở Bookmark bar, nhấn Ctrl + Shift + B để mở.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Đăng nhập</p>
-                                    <p className="text-sm text-gray-600 mt-1">Nhấn nút "Đăng nhập" để chuyển sang Portal.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 items-start p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors hover:bg-white hover:border-blue-200">
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#004A98] text-white flex items-center justify-center text-sm font-bold mt-0.5">4</div>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Lấy dữ liệu</p>
-                                    <p className="text-sm text-gray-600 mt-1">Đợi trang web tải xong, đăng nhập và nhấn vào <span className="font-medium text-[#004A98] px-1.5 py-0.5 bg-blue-50 rounded-md">HCMUS Portal tool</span> vừa kéo về thanh dấu trang để tự động cào dữ liệu.</p>
-                                </div>
-                            </div>
+                    <div className="mx-auto max-w-2xl">
+                        <div className="grid grid-cols-3 gap-2 rounded-xl bg-gray-100 p-1.5" role="tablist" aria-label="Chọn cách đồng bộ dữ liệu">
+                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'extension'} onClick={() => setDesktopSyncMethod('extension')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'extension' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                                <Puzzle className="h-4 w-4" />Extension
+                            </button>
+                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'bookmarklet'} onClick={() => setDesktopSyncMethod('bookmarklet')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'bookmarklet' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                                <Bookmark className="h-4 w-4" />Bookmarklet
+                            </button>
+                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'json'} onClick={() => setDesktopSyncMethod('json')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'json' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                                <FileUp className="h-4 w-4" />File JSON
+                            </button>
                         </div>
-                    </>
+
+                        <section className="mt-4 rounded-xl border border-gray-200 bg-white p-4 md:p-5">
+                            <h3 className="text-sm font-bold text-gray-900">{desktopGuide.title}</h3>
+                            <p className="mt-1 text-xs leading-5 text-gray-600">{desktopGuide.description}</p>
+                            <div className="mt-4 space-y-3">
+                                {desktopGuide.steps.map((step) => (
+                                    <InstructionStep key={step.number} {...step} className="rounded-xl border border-gray-100 bg-gray-50" />
+                                ))}
+                            </div>
+
+                            {desktopSyncMethod === 'json' ? (
+                                <div className="mt-4 max-w-xs"><ImportData compact importButtonLabel="Chọn file JSON" /></div>
+                            ) : desktopSyncMethod === 'extension' ? (
+                                <a href={`/downloads/ustudy-portal-sync.zip?v=${encodeURIComponent(portalSyncConfig.extensionVersion)}`} download className="ustudy-button-primary mt-4 inline-flex h-10 px-4 text-sm">
+                                    <Download className="h-4 w-4" />Tải Extension v{portalSyncConfig.extensionVersion}
+                                </a>
+                            ) : (
+                                <div className="mt-4">
+                                    <BookmarkletButton variant="primary" hideInstructions={false} className="flex w-fit flex-col items-start" />
+                                </div>
+                            )}
+                        </section>
+                    </div>
                 ) : nativePortalSyncAvailable ? (
                     <div className="mx-auto max-w-lg">
                         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">

@@ -1,4 +1,4 @@
-:root{font-family:"Inter",ui-sans-serif,system-ui,sans-serif;color:#172033;background:#f4f7fb;font-synthesis:none}
+:root{font-family:"Inter",ui-sans-serif,system-ui,sans-serif;color:#172033;background:#f4f7fb;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 *{box-sizing:border-box;letter-spacing:0}
 body{width:380px;margin:0;background:#f4f7fb}
 button,input,select{font:inherit}

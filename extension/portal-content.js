@@ -36,13 +36,13 @@ function trackCheckpoint(promise) {
 
 const host = document.createElement('div');
 host.id = HOST_ID;
-host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
+host.style.cssText = 'all:initial;font-family:"Inter",ui-sans-serif,system-ui,sans-serif;font-synthesis:none;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
 const shadow = host.attachShadow({ mode: 'open' });
 document.documentElement.appendChild(host);
 
 shadow.innerHTML = `
   <style>
-    :host{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033}
+    :host{font-family:"Inter",ui-sans-serif,system-ui,sans-serif;color:#172033;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     *{box-sizing:border-box;letter-spacing:0}
     button,input,select{font:inherit}
     button{cursor:pointer}
