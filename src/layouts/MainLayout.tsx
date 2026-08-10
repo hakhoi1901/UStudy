@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Header, Sidebar } from '../components/layout';
 import { ChatbotWidget } from '../features/chatbot';
+import { APP_CONFIG } from '../config/appConfig';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -29,7 +30,7 @@ export function MainLayout({
         </main>
       </div>
 
-      {currentPage !== 'chatbot' && <ChatbotWidget />}
+      {APP_CONFIG.CHATBOT_ENABLED && currentPage !== 'chatbot' && <ChatbotWidget />}
     </div>
   );
 }

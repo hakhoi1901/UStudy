@@ -15,6 +15,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { APP_ROUTES, getPageIdFromPath, getPathForPage } from './routes';
+import { APP_CONFIG } from '../config/appConfig';
 
 function RequireConfigured({ isConfigured }: { isConfigured: boolean }) {
     const location = useLocation();
@@ -91,7 +92,10 @@ function RoutedApp() {
                     <Route path={APP_ROUTES.tuition} element={<TuitionPage selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.schedule} element={<SchedulePage selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.examSchedule} element={<ExamSchedulePage />} />
-                    <Route path={APP_ROUTES.chatbot} element={<ChatbotPage />} />
+                    <Route
+                        path={APP_ROUTES.chatbot}
+                        element={APP_CONFIG.CHATBOT_ENABLED ? <ChatbotPage /> : <Navigate to={APP_ROUTES.dashboard} replace />}
+                    />
                     <Route path={APP_ROUTES.settings} element={<SettingsPage onPageChange={handlePageChange} />} />
                 </Route>
 

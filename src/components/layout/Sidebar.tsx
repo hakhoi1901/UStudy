@@ -2,6 +2,7 @@ import { Home, Map, BarChart3, Bot, DollarSign, Calendar, Settings, ChevronLeft,
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getPathForPage } from '../../app/routes';
+import { APP_CONFIG } from '../../config/appConfig';
 
 // định nghĩa các nhóm điều hướng
 const navGroups = [
@@ -23,7 +24,9 @@ const navGroups = [
   {
     title: 'Công cụ',
     items: [
-      { icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' },
+      ...(APP_CONFIG.CHATBOT_ENABLED
+        ? [{ icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' }]
+        : []),
       { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
       { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
       { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },

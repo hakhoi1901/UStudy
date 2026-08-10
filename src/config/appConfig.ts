@@ -44,6 +44,9 @@ export const APP_CONFIG = {
     PORTAL_SYNC_PROTOCOL_VERSION: portalSyncConfig.protocolVersion,
     EXTENSION_VERSION: portalSyncConfig.extensionVersion,
 
+    /** Bật/tắt khu vực Trợ lý học thuật trong giao diện. */
+    CHATBOT_ENABLED: false,
+
     /**
      * Thông tin liên hệ và báo cáo
      */

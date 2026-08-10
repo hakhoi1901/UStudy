@@ -11,7 +11,7 @@
  * Khi nha truong thong bao han moi, chi can sua/thêm trong object nay.
  */
 export const TUITION_DEADLINES_BY_SEMESTER: Record<string, string> = {
-    '25-26/2': '2026-05-01',
+    '25-26/3': '2026-08-20',
 };
 
 function formatLocalDateISO(date: Date): string {
