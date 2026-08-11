@@ -9,6 +9,7 @@ export type PageId =
     | 'settings'
     | 'privacy'
     | 'securityLab'
+    | 'bookmarkLab'
     | 'setup';
 
 export type StudyRoadmapTabId = 'trainingProgram' | 'studyPlan' | 'selection' | 'calendar';
@@ -31,6 +32,7 @@ export const APP_ROUTES = {
     settings: '/settings',
     privacy: '/privacy',
     securityLab: '/security-lab',
+    bookmarkLab: '/lab/bookmark',
     setup: '/setup',
 } as const;
 
@@ -45,6 +47,7 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     settings: APP_ROUTES.settings,
     privacy: APP_ROUTES.privacy,
     securityLab: APP_ROUTES.securityLab,
+    bookmarkLab: APP_ROUTES.bookmarkLab,
     setup: APP_ROUTES.setup,
 };
 
@@ -67,6 +70,7 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/settings\/?$/, 'settings'],
     [/^\/privacy\/?$/, 'privacy'],
     [/^\/security-lab\/?$/, 'securityLab'],
+    [/^\/lab\/bookmark\/?$/, 'bookmarkLab'],
     [/^\/setup\/?$/, 'setup'],
 ];
 

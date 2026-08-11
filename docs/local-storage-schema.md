@@ -18,6 +18,7 @@ raw_student_db           Dữ liệu gốc, giữ nguyên mọi trường đã c
         +--> course_db_offline     Môn, lớp và lịch đã chuẩn hóa cho solver
 
 import_meta              Thời gian, phiên bản và tham số lần đồng bộ
+ustudy_last_data_import  Mốc đã từng nhận dữ liệu học tập
 ```
 
 Nguyên tắc nguồn dữ liệu:
@@ -290,6 +291,19 @@ type ClassComponent = {
     string
   >>;
   [futureField: string]: unknown;
+}
+```
+
+### `ustudy_last_data_import` (plain)
+
+Mốc nhỏ, không chứa dữ liệu sinh viên. Nó xác nhận UStudy đã từng nhận một gói
+dữ liệu học tập, kể cả khi các danh sách trong gói đều rỗng. Các tab dùng mốc này
+để chỉ hiển thị `NoDataCard` cho trạng thái chưa từng đồng bộ.
+
+```ts
+{
+  at: string; // ISO timestamp
+  source: 'bookmarklet' | 'extension' | 'mobile-app' | 'json' | 'optical';
 }
 ```
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
+import { hasImportedData } from '../helpers/localStorage/data-import-status';
 import { CourseRecommender } from '../logic/scheduler/Recommender';
 import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
@@ -36,7 +37,7 @@ export function useCourseData() {
         // NoDataCard chỉ dùng khi UStudy chưa nhận bất kỳ dữ liệu Portal nào.
         // Từng nguồn (lớp mở, bảng điểm...) có thể rỗng và vẫn cần render tab.
         if (!studentDb) {
-            setHasData(false);
+            setHasData(hasImportedData());
             setIsReady(true);
             const emptyGroup = { core: [], major: [], electives: [] };
             return { recommended: emptyGroup, all: emptyGroup };

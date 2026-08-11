@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { readFromStorage } from '../../../helpers/localStorage/save';
+import { hasImportedData } from '../../../helpers/localStorage/data-import-status';
 import { STORAGE_KEYS } from '../../../config';
 import { ACADEMIC_RULES } from '../../../constants';
 import { AcademicRulesEngine } from '../services/academic-rules-engine';
@@ -41,7 +42,7 @@ export function useStudentGradeData() {
         const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
         if (!studentDb) {
-            setHasData(false);
+            setHasData(hasImportedData());
             setIsReady(true);
             return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS, estimatedTuition: 0, tuitionSource: 'none' as const };
         }

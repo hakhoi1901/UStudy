@@ -11,6 +11,7 @@ import { PrivacySecurity, SettingUserProfile } from '../features/settings';
 import { ExamSchedulePage } from '../pages/exams/ExamSchedulePage';
 import { ChatbotPage } from '../pages/chatbot/ChatbotPage';
 import { SecurityLabPage } from '../pages/security-lab/SecurityLabPage';
+import { BookmarkLabPage } from '../pages/bookmark-lab/BookmarkLabPage';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
@@ -82,6 +83,7 @@ function RoutedApp() {
                 <Route path={APP_ROUTES.root} element={<Navigate to={APP_ROUTES.dashboard} replace />} />
                 <Route path={APP_ROUTES.privacy} element={<PrivacySecurity />} />
                 <Route path={APP_ROUTES.securityLab} element={<SecurityLabPage />} />
+                <Route path={APP_ROUTES.bookmarkLab} element={<BookmarkLabPage />} />
                 <Route path={APP_ROUTES.setup} element={<SetupRoute isConfigured={isConfigured} onPageChange={handlePageChange} />} />
 
                 <Route element={<RequireConfigured isConfigured={isConfigured} />}>

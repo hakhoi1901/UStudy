@@ -5,6 +5,7 @@ import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { SecurityLock } from '../../../components/security';
 import { CACHE_POPULATED_EVENT, useCrypto } from '../../../context/CryptoContext';
 import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, populateSecureCache, saveSecure, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
+import { recordDataImport } from '../../../helpers/localStorage/data-import-status';
 import { processRawData } from '../../../logic/dataProcessor';
 import { OpticalReceiverDialog, OpticalSenderDialog } from '../../optical-sync';
 import { buildOpticalSyncPayload, isOpticalSyncKey } from '../../optical-sync/services/optical-sync-payload';
@@ -53,6 +54,7 @@ interface ExportPreview {
 
 const INTERNAL_BACKUP_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__', '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY, IMPORT_HISTORY_STORAGE_KEY]);
 const MAX_BACKUP_FILE_BYTES = 8 * 1024 * 1024;
+const ACADEMIC_DATA_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline']);
 
 const IMPORT_LABELS: Record<string, { label: string; group: string }> = {
   raw_student_db: { label: 'Dữ liệu Portal gốc', group: 'Dữ liệu học tập' },
@@ -280,6 +282,9 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       populateSecureCache('student_db_full', student);
       populateSecureCache('course_db_offline', courses);
     }
+    if (importPreview.selectedKeys.some((key) => ACADEMIC_DATA_KEYS.has(key))) {
+      recordDataImport(transferMode === 'optical' ? 'optical' : 'json');
+    }
     window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
     window.location.reload();
   }
@@ -457,6 +462,9 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
               localStorage.setItem('__pbkdf2_salt__', pendingImport.data.__pbkdf2_salt__);
               localStorage.setItem('__pin_verify__', pendingImport.data.__pin_verify__);
               pendingImport.selectedKeys.forEach((key) => localStorage.setItem(key, pendingImport.data[key]));
+            }
+            if (pendingImport.selectedKeys.some((key) => ACADEMIC_DATA_KEYS.has(key))) {
+              recordDataImport(transferMode === 'optical' ? 'optical' : 'json');
             }
             return true;
           }}

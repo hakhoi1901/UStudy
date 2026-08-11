@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../../hooks/useStudentDb';
+import { hasImportedData } from '../../../helpers/localStorage/data-import-status';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 import { NoDataCard } from '../../../components/feedback';
 import { PageHeader } from '../../../components/layout/page-header';
@@ -194,7 +195,7 @@ export function ExamScheduleVi() {
         );
     }
 
-    if (!rawObject) {
+    if (!rawObject && !hasImportedData()) {
         return (
             <PageShell
                 header={

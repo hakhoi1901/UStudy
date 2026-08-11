@@ -36,6 +36,8 @@ export const STORAGE_KEYS = {
 
     /** Metadata từ Bookmarklet (thời gian cào, năm/học kỳ của từng loại dữ liệu) */
     IMPORT_META: 'import_meta',
+    /** Lần gần nhất UStudy nhận dữ liệu học tập, kể cả khi các danh sách nguồn đều rỗng */
+    LAST_DATA_IMPORT: 'ustudy_last_data_import',
     /** Điểm dự đoán do người dùng nhập cho GPA Simulator */
     PROJECTED_GRADES: 'gpa_projected_grades',
     /** Học kỳ đang được xem trong Kế hoạch GPA */
