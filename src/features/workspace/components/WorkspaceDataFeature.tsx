@@ -3,6 +3,8 @@ import {
     BookOpen,
     CheckCircle2,
     ChevronRight,
+    ChevronDown,
+    ChevronUp,
     CircleAlert,
     CircleDollarSign,
     Database,
@@ -41,6 +43,14 @@ type DataStats = { courses: number; prerequisites: number; categories: number };
 type ProgramContent = keyof DataStats;
 type DataRecord = Record<string, unknown>;
 type LoadedData = Record<ProgramContent, unknown>;
+type CategoryDetail = {
+    id: string;
+    name: string;
+    credits?: unknown;
+    note?: string;
+    courses: string[];
+    depth: number;
+};
 
 const PROGRAM_CONTENT_TABS = [
     { id: 'courses', label: 'Môn học', icon: BookOpen },
@@ -62,6 +72,32 @@ function asRecords(value: unknown): DataRecord[] {
 
 function textValue(value: unknown) {
     return typeof value === 'string' || typeof value === 'number' ? String(value) : '-';
+}
+
+function getCategoryDetails(value: unknown, id: string, depth = 0): CategoryDetail[] {
+    const category = asRecord(value);
+    if (!category) return [];
+
+    const courses = Array.isArray(category.courses)
+        ? category.courses.filter((course): course is string => typeof course === 'string')
+        : [];
+    const details: CategoryDetail[] = [{
+        id,
+        name: textValue(category.name ?? id),
+        credits: category.total_credits_required ?? category.credits_required ?? category.credits,
+        note: typeof category.note === 'string' ? category.note : undefined,
+        courses,
+        depth,
+    }];
+    const breakdown = asRecord(category.breakdown);
+
+    if (breakdown) {
+        Object.entries(breakdown).forEach(([childId, child]) => {
+            details.push(...getCategoryDetails(child, childId, depth + 1));
+        });
+    }
+
+    return details;
 }
 
 function ProgramContentPanel({ content, data }: { content: ProgramContent; data: LoadedData }) {
@@ -95,13 +131,25 @@ function ProgramContentPanel({ content, data }: { content: ProgramContent; data:
         );
     }
 
-    const categories = Object.entries(asRecord(data.categories) ?? {});
+    const categories = Object.entries(asRecord(data.categories) ?? {})
+        .flatMap(([id, value]) => getCategoryDetails(value, id));
     return (
         <div className="divide-y divide-gray-100">
-            {categories.map(([id, value]) => {
-                const category = asRecord(value);
-                const credits = category?.total_credits_required ?? category?.credits_required ?? category?.credits;
-                return <div key={id} className="flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5"><div className="min-w-0"><p className="text-sm font-semibold text-gray-900">{textValue(category?.name ?? id)}</p><p className="mt-0.5 font-mono text-xs text-gray-500">{id}</p></div><span className="shrink-0 text-sm font-bold text-[#004A98]">{credits === undefined ? '-' : `${textValue(credits)} TC`}</span></div>;
+            {categories.map((category, index) => {
+                const isRoot = category.depth === 0;
+                return (
+                    <div key={`${category.id}-${index}`} className="px-4 py-3.5 sm:px-5" style={{ paddingLeft: `${Math.min(category.depth * 20 + 16, 76)}px` }}>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                                <p className={`text-sm ${isRoot ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'}`}>{category.name}</p>
+                                <p className="mt-0.5 font-mono text-xs text-gray-500">{category.id}</p>
+                            </div>
+                            <span className="shrink-0 text-sm font-bold text-[#004A98]">{category.credits === undefined ? '-' : `${textValue(category.credits)} TC`}</span>
+                        </div>
+                        {category.note && <p className="mt-2 text-xs leading-5 text-gray-500">{category.note}</p>}
+                        {category.courses.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{category.courses.map((course) => <code key={course} className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-600">{course}</code>)}</div>}
+                    </div>
+                );
             })}
             {categories.length === 0 && <p className="px-4 py-6 text-center text-sm text-gray-500">Chưa có khung chương trình để hiển thị.</p>}
         </div>
@@ -166,6 +214,7 @@ export function WorkspaceDataFeature() {
     const [stats, setStats] = useState<DataStats | null>(null);
     const [loadedData, setLoadedData] = useState<LoadedData | null>(null);
     const [content, setContent] = useState<ProgramContent>('courses');
+    const [isProgramDataOpen, setIsProgramDataOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const activeCatalog = getAcademicYearMajorCatalog(cohortId);
@@ -185,6 +234,10 @@ export function WorkspaceDataFeature() {
             setMajorId(major.id);
         }
     }, [major, majorId]);
+
+    useEffect(() => {
+        setIsProgramDataOpen(false);
+    }, [faculty?.id, major?.id, cohortId]);
 
     const selectedCoverage = useMemo(
         () => (faculty && major ? getMajorDataCoverage(faculty, major, cohortId) : null),
@@ -274,17 +327,25 @@ export function WorkspaceDataFeature() {
 
                     {loadedData && (
                         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                            <div className="border-b border-gray-100 px-4 py-4 sm:px-5">
-                                <h2 className="text-base font-bold text-gray-900">Xem dữ liệu trực tiếp</h2>
-                                <p className="mt-1 text-sm text-gray-500">Đọc nội dung từ các file chương trình hiện có, không cần rời khỏi Workspace.</p>
+                            <div className={`flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5 ${isProgramDataOpen ? 'border-b border-gray-100' : ''}`}>
+                                <div>
+                                    <h2 className="text-base font-bold text-gray-900">Xem dữ liệu trực tiếp</h2>
+                                    <p className="mt-1 text-sm text-gray-500">Mở khi cần xem danh sách môn, quan hệ tiên quyết và khung chi tiết.</p>
+                                </div>
+                                <button type="button" onClick={() => setIsProgramDataOpen((open) => !open)} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-[#004A98] transition hover:border-blue-300 hover:bg-blue-50">
+                                    {isProgramDataOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    {isProgramDataOpen ? 'Ẩn dữ liệu' : 'Xem dữ liệu'}
+                                </button>
                             </div>
-                            <SectionTabs
-                                ariaLabel="Nội dung dữ liệu chương trình"
-                                tabs={PROGRAM_CONTENT_TABS}
-                                activeTab={content}
-                                onChange={setContent}
-                            />
-                            <ProgramContentPanel content={content} data={loadedData} />
+                            {isProgramDataOpen && <>
+                                <SectionTabs
+                                    ariaLabel="Nội dung dữ liệu chương trình"
+                                    tabs={PROGRAM_CONTENT_TABS}
+                                    activeTab={content}
+                                    onChange={setContent}
+                                />
+                                <ProgramContentPanel content={content} data={loadedData} />
+                            </>}
                         </section>
                     )}
 
