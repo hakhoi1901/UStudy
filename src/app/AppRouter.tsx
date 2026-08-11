@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
@@ -10,13 +10,16 @@ import { SettingsPage } from '../pages/settings/SettingsPage';
 import { PrivacySecurity, SettingUserProfile } from '../features/settings';
 import { ExamSchedulePage } from '../pages/exams/ExamSchedulePage';
 import { ChatbotPage } from '../pages/chatbot/ChatbotPage';
-import { SecurityLabPage } from '../pages/security-lab/SecurityLabPage';
-import { BookmarkLabPage } from '../pages/bookmark-lab/BookmarkLabPage';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
 import { APP_ROUTES, getPageIdFromPath, getPathForPage } from './routes';
 import { APP_CONFIG } from '../config/appConfig';
+
+const isWorkspaceEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_WORKSPACE === 'true';
+const WorkspacePage = isWorkspaceEnabled
+    ? lazy(() => import('../pages/workspace/WorkspacePage').then(({ WorkspacePage: Page }) => ({ default: Page })))
+    : null;
 
 function RequireConfigured({ isConfigured }: { isConfigured: boolean }) {
     const location = useLocation();
@@ -82,8 +85,16 @@ function RoutedApp() {
             <Routes>
                 <Route path={APP_ROUTES.root} element={<Navigate to={APP_ROUTES.dashboard} replace />} />
                 <Route path={APP_ROUTES.privacy} element={<PrivacySecurity />} />
-                <Route path={APP_ROUTES.securityLab} element={<SecurityLabPage />} />
-                <Route path={APP_ROUTES.bookmarkLab} element={<BookmarkLabPage />} />
+                {WorkspacePage && (
+                    <Route
+                        path="/workspace/*"
+                        element={(
+                            <Suspense fallback={<div className="flex h-40 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#004A98]" /></div>}>
+                                <WorkspacePage />
+                            </Suspense>
+                        )}
+                    />
+                )}
                 <Route path={APP_ROUTES.setup} element={<SetupRoute isConfigured={isConfigured} onPageChange={handlePageChange} />} />
 
                 <Route element={<RequireConfigured isConfigured={isConfigured} />}>

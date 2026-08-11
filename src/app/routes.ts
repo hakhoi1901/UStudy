@@ -8,8 +8,6 @@ export type PageId =
     | 'chatbot'
     | 'settings'
     | 'privacy'
-    | 'securityLab'
-    | 'bookmarkLab'
     | 'setup';
 
 export type StudyRoadmapTabId = 'trainingProgram' | 'studyPlan' | 'selection' | 'calendar';
@@ -31,8 +29,6 @@ export const APP_ROUTES = {
     chatbot: '/chatbot',
     settings: '/settings',
     privacy: '/privacy',
-    securityLab: '/security-lab',
-    bookmarkLab: '/lab/bookmark',
     setup: '/setup',
 } as const;
 
@@ -46,8 +42,6 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     chatbot: APP_ROUTES.chatbot,
     settings: APP_ROUTES.settings,
     privacy: APP_ROUTES.privacy,
-    securityLab: APP_ROUTES.securityLab,
-    bookmarkLab: APP_ROUTES.bookmarkLab,
     setup: APP_ROUTES.setup,
 };
 
@@ -69,8 +63,6 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/chatbot\/?$/, 'chatbot'],
     [/^\/settings\/?$/, 'settings'],
     [/^\/privacy\/?$/, 'privacy'],
-    [/^\/security-lab\/?$/, 'securityLab'],
-    [/^\/lab\/bookmark\/?$/, 'bookmarkLab'],
     [/^\/setup\/?$/, 'setup'],
 ];
 

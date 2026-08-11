@@ -2,6 +2,7 @@
  * Registry: Đăng ký tất cả Khoa → Ngành → Khóa tuyển.
  * Khi thêm Khoa/Ngành/Khóa mới, chỉ cần thêm entry vào đây và tạo thư mục data tương ứng.
  */
+import { getProgramDataSourceCohort } from './data/academic-year-majors';
 
 export interface CohortInfo {
     id: string;       // 'k24'
@@ -164,7 +165,7 @@ export function resolveDataCohort(facultyId: string, majorId: string, cohortId: 
  * Tuition được load riêng theo năm học (xem data/tuition/).
  */
 export async function loadCohortData(facultyId: string, majorId: string, cohortId: string) {
-    const sourceCohort = resolveDataCohort(facultyId, majorId, cohortId);
+    const sourceCohort = getProgramDataSourceCohort(cohortId) ?? resolveDataCohort(facultyId, majorId, cohortId);
 
     const [coursesModule, prerequisitesModule, categoriesModule] = await Promise.all([
         import(`./data/${facultyId}/${majorId}/${sourceCohort}/courses.ts`),

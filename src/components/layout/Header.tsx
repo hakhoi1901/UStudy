@@ -123,7 +123,7 @@ export function Header({
           <div className="flex items-center gap-2 md:gap-4 min-w-0">
             {/* Tiêu đề: ẩn trên mobile nếu có bộ chọn, ngược lại hiện trên cả mobile và desktop */}
             <h2 className={`desktop-only text-gray-900 whitespace-nowrap text-sm sm:text-base md:text-lg`} style={{ fontWeight: 600 }}>
-              Hệ thống quản lý học tập
+              Hệ thống hỗ trợ quản lý học tập
             </h2>
             <h2
               className="mobile-only flex items-center gap-2 whitespace-nowrap text-sm text-gray-900 sm:text-base md:text-lg"

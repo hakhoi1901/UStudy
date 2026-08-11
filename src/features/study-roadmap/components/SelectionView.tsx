@@ -114,13 +114,13 @@ export function SelectionView({
             {/* Empty state */}
             {filteredCourses.core.length + filteredCourses.electives.length + filteredCourses.major.length === 0 && (
                 <div className="flex flex-col items-center justify-center mt-4">
-                    <div className="flex flex-col items-center justify-center py-12 md:py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center">
+                    <div className="flex flex-col items-center w-full justify-center py-12 md:py-20 px-4 bg-white border border-blue-100 rounded-2xl shadow-sm text-center">
                         <div className="w-14 h-14 md:w-20 md:h-20 p-3 md:p-5 bg-blue-50 rounded-full flex items-center justify-center mb-4 md:mb-5 border border-blue-100 shadow-sm">
                             <DatabaseBackup className="w-7 h-7 md:w-10 md:h-10 text-blue-500" />
                         </div>
                         <h2 className="text-base md:text-xl font-bold text-gray-900 mb-2 md:mb-3">Đang cập nhật dữ liệu</h2>
                         <p className="text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
-                            Chương trình đào tạo cho chuyên ngành và khóa học này hiện đang trong quá trình thu thập và cập nhật.
+                            Danh sách lớp mở cho học kỳ này hiện chưa có.
                         </p>
                     </div>
                 </div>

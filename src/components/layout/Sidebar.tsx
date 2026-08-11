@@ -76,8 +76,8 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <h3 className="text-white truncate" style={{ fontWeight: 600 }}>HCMUS</h3>
-              <p className="text-blue-200 text-sm truncate" style={{ fontWeight: 400 }}>Cổng SV</p>
+              <h3 className="text-white truncate" style={{ fontWeight: 600 }}>UStudy</h3>
+              <p className="text-blue-200 text-sm truncate" style={{ fontWeight: 400 }}>Hỗ trợ quản lý học tập</p>
             </div>
           )}
         </div>
