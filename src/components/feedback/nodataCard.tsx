@@ -108,7 +108,7 @@ export function NoDataCard() {
     };
 
     return (
-        <div className="flex w-full items-start justify-center md:rounded-xl md:border md:p-4">
+        <div className="flex w-full items-start justify-center md:rounded-xl md:border border-gray-300">
             <div className="w-full bg-white px-1 py-3 md:rounded-xl md:border md:border-gray-100 md:p-8 md:shadow-xl md:shadow-gray-200/50">
                 <div className="mb-5 flex flex-col items-center md:mb-8">
                     {isMobile && (

@@ -120,7 +120,6 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
   const { data: { courses: allCoursesMeta } } = useDepartmentData();
   
   const [availableClasses, setAvailableClasses] = useState<CourseSchedule[]>([]);
-
   const handleDetailsToggle = () => {
     if (onOpenMobileDetails && window.matchMedia('(max-width: 767px)').matches) {
       onOpenMobileDetails(course);
@@ -145,7 +144,15 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
               label: "Chưa đủ điều kiện",
               barClass: "bg-gray-300",
               textClass: "text-gray-500",
-          };
+      };
+
+  const detailSurfaceClass = course.needsRetake
+    ? 'border-red-200 bg-red-50'
+    : isSelected
+      ? 'border-[#004A98] bg-blue-50'
+      : course.isAvailable
+        ? 'border-gray-200 bg-white'
+        : 'border-gray-200 bg-gray-50';
 
   useEffect(() => {
     if (!showDescription) return;
@@ -172,13 +179,13 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
     <div className="group">
       <div
         onClick={handleDetailsToggle}
-        className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg transition-all ${course.needsRetake
-          ? 'border-red-200 bg-red-50 hover:bg-red-100'
+        className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border transition-all ${showDescription ? 'rounded-t-lg' : 'rounded-lg'} ${course.needsRetake
+          ? 'border-red-300 bg-red-100 hover:bg-red-100'
           : isSelected
-            ? 'border-[#004A98] bg-blue-50 shadow-sm'
+            ? 'border-[#004A98] bg-blue-100 shadow-sm'
             : course.isAvailable
-              ? 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300'
-              : 'border-gray-200 bg-gray-50 opacity-60'
+              ? 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+              : 'border-gray-300 bg-gray-100 opacity-60'
           }`}
       >
         {/* Checkbox */}
@@ -256,7 +263,7 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
 
       {/* Description Dropdown */}
       {showDescription && (
-        <div className="ml-6 mr-6 overflow-hidden rounded-b-lg border-x border-b border-gray-200 bg-white md:ml-1 md:mr-1">
+        <div className={`w-full overflow-hidden rounded-b-lg border-x border-b ${detailSurfaceClass}`}>
           <div className="space-y-4 px-4 py-4 text-sm md:px-5">
             {/* Mobile status */}
             <div className="border-b border-gray-200 pb-3 md:hidden">

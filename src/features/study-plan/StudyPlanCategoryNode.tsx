@@ -75,7 +75,7 @@ export function StudyPlanCategoryNode({
                     {category.note && <p className="mt-0.5 text-xs text-gray-500">{category.note}</p>}
                 </div>
                 {requiredCredits > 0 && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#004A98] text-white`}>
+                    <span className={`flex rounded-full px-2 py-0.5 justify-center w-17 text-[10px] font-medium bg-[#004A98] text-white`}>
                         {displayCredits} / {requiredCredits} TC
                     </span>
                 )}

@@ -565,9 +565,9 @@ export function ExamScheduleVi() {
                                         <tr
                                             key={exam.id}
                                             className={`
-                      hover:bg-gray-50 transition-colors
-                      ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-                    `}
+                                                hover:bg-gray-50 transition-colors
+                                                ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
+                                            `}
                                         >
                                             <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
                                             <td className="px-3 py-3 text-sm text-gray-900">{exam.courseCode}</td>
@@ -597,14 +597,14 @@ export function ExamScheduleVi() {
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className={`h-4 w-1 rounded-full ${exam.examType === "Giữa kỳ"
-                                                            ? "bg-green-700"
+                                                            ? "bg-emerald-600"
                                                             : "bg-blue-800"
                                                             }`}
                                                     />
 
                                                     <span
                                                         className={`text-sm font-medium ${exam.examType === "Giữa kỳ"
-                                                            ? "text-green-700"
+                                                            ? "text-emerald-600"
                                                             : "text-blue-800"
                                                             }`}
                                                     >

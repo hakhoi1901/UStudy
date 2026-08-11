@@ -42,22 +42,22 @@ export function StudyPlanCourseRow({
     const isLocked = status === 'passed' || status === 'studying' || rootCompleted;
     const getContainerStyle = () => {
     if (isPlanned) {
-        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-indigo-500";
+        return "border-gray-200 bg-white hover:bg-gray-50"; //  border-l-3 border-l-indigo-500
     }
 
     if (status === "passed" || rootCompleted) {
-        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-emerald-600";
+        return "border-gray-200 bg-white hover:bg-gray-50"; //  border-l-3 border-l-emerald-500
     }
 
     if (status === "failed") {
-        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-red-500";
+        return "border-gray-200 bg-white hover:bg-gray-50"; //  border-l-3 border-l-red-500
     }
 
     if (status === "studying") {
-        return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-blue-500";
+        return "border-gray-200 bg-white hover:bg-gray-50"; //  border-l-3 border-l-blue-500
     }
 
-    return "border-gray-200 bg-white hover:bg-gray-50 border-l-3 border-l-gray-300";
+    return "border-gray-200 bg-white hover:bg-gray-"; // border-l-3 border-l-gray-300
 };
 
     return (
