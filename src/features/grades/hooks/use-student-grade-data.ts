@@ -40,16 +40,17 @@ export function useStudentGradeData() {
 
         const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
 
-        if (!studentDb || !studentDb.grades) {
+        if (!studentDb) {
             setHasData(false);
             setIsReady(true);
             return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS, estimatedTuition: 0, tuitionSource: 'none' as const };
         }
 
         setHasData(true);
+        const grades = Array.isArray(studentDb.grades) ? studentDb.grades : [];
 
-        const hasBLMExemption = AcademicRulesEngine.checkBLMExemption(studentDb.grades);
-        const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(studentDb.grades);
+        const hasBLMExemption = AcademicRulesEngine.checkBLMExemption(grades);
+        const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(grades);
 
         // ── GPA Summary: delegate to AcademicRulesEngine ──
         const {
@@ -61,7 +62,7 @@ export function useStudentGradeData() {
             foundationGPA,
             majorSpecializedGPA
         } = AcademicRulesEngine.calculateGPASummary(
-            studentDb.grades,
+            grades,
             effectiveGrades,
             hasBLMExemption,
             allCoursesMeta,

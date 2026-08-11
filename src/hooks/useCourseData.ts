@@ -33,7 +33,9 @@ export function useCourseData() {
         const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null)
         const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
 
-        if (!studentDb || !studentDb.grades || courseDb.length === 0) {
+        // NoDataCard chỉ dùng khi UStudy chưa nhận bất kỳ dữ liệu Portal nào.
+        // Từng nguồn (lớp mở, bảng điểm...) có thể rỗng và vẫn cần render tab.
+        if (!studentDb) {
             setHasData(false);
             setIsReady(true);
             const emptyGroup = { core: [], major: [], electives: [] };

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../../hooks/useStudentDb';
 import { useDepartmentData } from '../../../context/DepartmentContext';
+import { NoDataCard } from '../../../components/feedback';
 import { PageHeader } from '../../../components/layout/page-header';
 import { PageShell } from '../../../components/layout/page-shell';
 
@@ -36,7 +37,7 @@ function startOfDay(value: Date): Date {
 }
 
 export function ExamScheduleVi() {
-    const { exams } = useStudentDb();
+    const { exams, isReady, rawObject } = useStudentDb();
     const { academicYear, semesterNumber } = useDepartmentData();
 
     const [selectedType, setSelectedType] = useState<'all' | 'Giữa kỳ' | 'Cuối kỳ'>('all');
@@ -184,6 +185,29 @@ export function ExamScheduleVi() {
     };
 
     const nextExamDays = upcomingExams.length > 0 ? getDaysUntilExam(upcomingExams[0].examDate) : null;
+
+    if (!isReady) {
+        return (
+            <div className="flex h-[calc(100vh-100px)] items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#004A98]" />
+            </div>
+        );
+    }
+
+    if (!rawObject) {
+        return (
+            <PageShell
+                header={
+                    <PageHeader
+                        title="Lịch thi"
+                        description="Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn."
+                    />
+                }
+            >
+                <NoDataCard />
+            </PageShell>
+        );
+    }
 
     return (
         <PageShell
