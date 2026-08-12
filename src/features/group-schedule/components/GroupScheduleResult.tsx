@@ -62,7 +62,7 @@ export function GroupScheduleResult({ option, viewMode, onOpenClassDetails }: Gr
         <div>
           <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
             <CalendarCheck className="h-5 w-5 text-emerald-600" />
-            Kịch bản {option.option}
+            Phương án {option.option}
           </h3>
           <p className="text-sm text-gray-500">Điểm nhóm: {Math.round(option.fitness)}</p>
         </div>

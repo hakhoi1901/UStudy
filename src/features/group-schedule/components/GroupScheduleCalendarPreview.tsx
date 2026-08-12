@@ -145,26 +145,28 @@ export function GroupScheduleCalendarPreview({
 
   return (
     <div className="space-y-4 rounded-lg">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 text-xs font-medium text-gray-500">Phương án:</span>
+      <div className="flex flex-col gap-3 border-b border-gray-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <span className="shrink-0 pr-1 text-xs font-medium text-gray-500">Phương án</span>
           <button
             type="button"
             onClick={() => setActiveOptionIndex(Math.max(0, activeOptionIndex - 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            disabled={activeOptionIndex === 0}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label="Phương án trước"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center gap-1">
             {options.map((item, index) => (
               <button
                 key={item.option}
                 type="button"
                 onClick={() => setActiveOptionIndex(index)}
-                className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                className={`h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-colors ${
                   activeOptionIndex === index
-                    ? 'bg-[#004A98] text-white shadow-md'
-                    : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-[#004A98] text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 PA {item.option}
@@ -174,29 +176,29 @@ export function GroupScheduleCalendarPreview({
           <button
             type="button"
             onClick={() => setActiveOptionIndex(Math.min(options.length - 1, activeOptionIndex + 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            disabled={activeOptionIndex === options.length - 1}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label="Phương án tiếp theo"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 py-1 text-xs font-medium text-gray-500">Thành viên:</span>
-          {option.schedules.map((schedule) => (
-            <button
-              key={schedule.memberIndex}
-              type="button"
-              onClick={() => setActiveMemberIndex(schedule.memberIndex)}
-              className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                effectiveMemberIndex === schedule.memberIndex
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              {schedule.nickname}
-            </button>
-          ))}
-        </div>
+        <label className="flex shrink-0 items-center gap-2 lg:pl-3 lg:border-l lg:border-gray-200">
+          <span className="text-xs font-medium text-gray-500">Thành viên</span>
+          <select
+            value={effectiveMemberIndex}
+            onChange={(event) => setActiveMemberIndex(Number(event.target.value))}
+            className="h-9 min-w-40 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 outline-none transition-colors focus:border-[#004A98] focus:ring-2 focus:ring-blue-100"
+            aria-label="Chọn thành viên để xem lịch"
+          >
+            {option.schedules.map((schedule) => (
+              <option key={schedule.memberIndex} value={schedule.memberIndex}>
+                {schedule.nickname}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
