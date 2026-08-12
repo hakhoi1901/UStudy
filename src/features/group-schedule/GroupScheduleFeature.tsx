@@ -1158,7 +1158,7 @@ export function GroupSchedulePage({
     );
 
     return (
-        <div className={embedded ? 'space-y-6 pb-20 md:pb-4' : 'mx-auto max-w-6xl space-y-6 pb-20 md:pb-4'}>
+        <div className={embedded ? 'space-y-4 pb-20 md:pb-4' : 'mx-auto max-w-6xl space-y-4 pb-20 md:pb-4'}>
             {!embedded && (
                 <PageHeader
                     title="Xếp lịch nhóm"

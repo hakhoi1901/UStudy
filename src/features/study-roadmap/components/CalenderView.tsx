@@ -264,11 +264,17 @@ export function CalendarView({
         </div>
     );
 
+    const renderModeToolbar = () => (
+        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
+            {renderModeSwitch()}
+        </div>
+    );
+
     if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
-            <div>
+            <div className="space-y-4">
+                {renderModeToolbar()}
                 <div className="space-y-3 md:hidden">
-                    {renderModeSwitch()}
                     <div className="rounded-xl border border-gray-200 bg-white px-5 py-8 text-center shadow-sm">
                         <Calendar className="mx-auto mb-3 h-10 w-10 text-blue-400" />
                         <h3 className="text-base font-semibold text-gray-900">Chưa có môn để xếp lịch</h3>
@@ -283,9 +289,6 @@ export function CalendarView({
                 </div>
 
                 <div className="ustudy-card hidden p-12 text-center md:block">
-                    <div className="mb-6 flex justify-center">
-                        {renderModeSwitch()}
-                    </div>
                     <Calendar className="mx-auto mb-4 h-16 w-16 text-blue-400" />
                     <h3 className="mb-2 text-lg text-gray-900">Chưa chọn môn học nào</h3>
                     <p className="mb-4 text-sm text-gray-600">
@@ -309,7 +312,7 @@ export function CalendarView({
         return (
             <div className="space-y-4">
                 {groupScheduleContent && isValidElement(groupScheduleContent) && cloneElement(groupScheduleContent as ReactElement, {
-                    modeSwitch: renderModeSwitch()
+                    modeSwitch: renderModeSwitch(),
                 })}
             </div>
         );
@@ -317,8 +320,15 @@ export function CalendarView({
 
     return (
         <div className="space-y-4">
+            {renderModeToolbar()}
+            {solverError && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{solverError}</span>
+                </div>
+            )}
             <div className="space-y-3 md:hidden">
-                <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                <div className="hidden">
                     <div className="flex items-center gap-2">
                         <div className="min-w-0 flex-1">
                             {renderModeSwitch()}
@@ -423,16 +433,16 @@ export function CalendarView({
                 )}
             </div>
 
-            <div className="hidden space-y-4 md:block">
+            <div className="hidden">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
-            <div className="ustudy-card p-2 md:p-3">
-                <div className="flex flex-col gap-2 md:gap-3">
+            <div className="flex">
+                <div className="flex">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                             {renderModeSwitch()}
-                            <div className="h-6 w-px bg-blue-200 hidden md:block"></div>
+                            <div className="hidden h-6 w-px bg-blue-200" />
 
-                            <div className="min-w-0">
+                            <div className="hidden min-w-0">
                                 <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
                                     {currentSections.length > 0
                                         ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
@@ -445,7 +455,7 @@ export function CalendarView({
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="hidden items-center gap-2 shrink-0">
                             <button
                                 onClick={() => setIsConfigOpen(true)}
                                 className="
@@ -638,7 +648,7 @@ export function CalendarView({
 
             {/* ═══ Option navigator ══════════════════════════════════════════ */}
             {options.length > 1 && (
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="hidden items-center gap-2 flex-wrap">
                     <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
                         <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Phương án:</span>
                         <button
@@ -721,17 +731,35 @@ export function CalendarView({
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
-                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                            <Clock className="h-3 w-3 text-[#004A98]" />
-                            Sáng 1–5
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                            <Clock className="h-3 w-3 text-orange-500" />
-                            Chiều 6–10
-                        </span>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <button type="button" onClick={() => setIsConfigOpen(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]" title="Cấu hình ưu tiên">
+                            <Settings className="h-4 w-4" /> Cấu hình
+                        </button>
+                        <button type="button" onClick={() => setShowListModal(true)} className="relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]">
+                            <List className="h-4 w-4" /> Lịch đã lưu
+                            {savedSchedules.length > 0 && <span className="ustudy-badge-count text-[10px] font-bold">{savedSchedules.length > 99 ? '99+' : savedSchedules.length}</span>}
+                        </button>
+                        {currentSections.length > 0 && (
+                            <button type="button" onClick={() => setShowSaveModal(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
+                                <Save className="h-4 w-4" /> Lưu phương án
+                            </button>
+                        )}
+                        <button type="button" onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)} disabled={solving} className="ustudy-button-primary h-9 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60">
+                            <Cpu className="h-4 w-4" /> {solving ? 'Đang xếp...' : currentSections.length ? 'Xếp lại' : 'Xếp lịch'}
+                        </button>
                     </div>
                 </div>
+
+                {options.length > 1 && (
+                    <div className="flex items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white px-3 py-2.5 md:px-4" style={{ scrollbarWidth: 'none' }}>
+                        <span className="shrink-0 text-xs font-medium text-gray-500">Phương án</span>
+                        <button type="button" onClick={() => setActiveOption(Math.max(0, activeOption - 1))} disabled={activeOption === 0} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30" aria-label="Phương án trước"><ChevronLeft className="h-4 w-4" /></button>
+                        {options.map((option, index) => (
+                            <button key={option.option} type="button" onClick={() => setActiveOption(index)} className={`h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-colors ${activeOption === index ? 'bg-[#004A98] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}>PA {option.option}</button>
+                        ))}
+                        <button type="button" onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))} disabled={activeOption === options.length - 1} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30" aria-label="Phương án sau"><ChevronRight className="h-4 w-4" /></button>
+                    </div>
+                )}
 
                 <div className="overflow-auto">
                     <div className="min-w-[620px] md:min-w-[1000px]">
