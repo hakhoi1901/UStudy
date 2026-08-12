@@ -1,4 +1,5 @@
 import { AppSelect } from "../../../components/ui/form";
+import { COHORTS } from "../../../assets/registry";
 import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
@@ -243,28 +244,28 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                 </div>
             }
             <h2 className="ustudy-settings-title"><GraduationCap className="ustudy-settings-title-icon" />Chương trình đào tạo</h2>
-            <p className="ustudy-settings-description">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
+            <p className="ustudy-settings-description">Chọn Khóa tuyển, Khoa, Ngành và Năm học để hiển thị đúng dữ liệu của bạn.</p>
 
             <div className="w grid grid-cols-1 md:grid-cols-1 gap-6">
                 <AppSelect
+                    label="Khóa tuyển"
+                    value={cohortId}
+                    options={COHORTS}
+                    onChange={setCohort}
+                />
+
+                <AppSelect
                     label="Khoa"
                     value={facultyId}
-                    options={faculties.sort((a, b) => a.name.localeCompare(b.name))}
+                    options={[...faculties].sort((a, b) => a.name.localeCompare(b.name))}
                     onChange={setFaculty}
                 />
 
                 <AppSelect
                     label="Ngành"
                     value={majorId}
-                    options={currentFaculty?.majors.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    options={[...(currentFaculty?.majors || [])].sort((a, b) => a.name.localeCompare(b.name))}
                     onChange={setMajor}
-                />
-
-                <AppSelect
-                    label="Khóa tuyển"
-                    value={cohortId}
-                    options={currentMajor?.cohorts || []}
-                    onChange={setCohort}
                 />
 
                 <AppSelect

@@ -1,12 +1,13 @@
 import {
     FACULTIES,
+    getAcademicYearMajorCatalog,
+    getProgramDataSourceCohort,
     resolveDataCohort,
     type CohortInfo,
     type FacultyInfo,
     type MajorInfo,
 } from '../../../assets/registry';
 import { ACADEMIC_YEARS, getTuitionRates } from '../../../assets/data/tuition';
-import { getAcademicYearMajorCatalog, getProgramDataSourceCohort } from '../../../assets/data/academic-year-majors';
 
 export type ProgramDataKind = 'courses' | 'prerequisites' | 'categories';
 
@@ -81,10 +82,15 @@ export function getAllMajorDataCoverage(cohortId: string) {
     const catalog = getAcademicYearMajorCatalog(cohortId);
     if (!catalog) return [];
 
-    return FACULTIES.flatMap((faculty) => (catalog.facultyMajors[faculty.id] ?? []).flatMap((majorId) => {
-        const major = faculty.majors.find((item) => item.id === majorId);
-        return major ? [getMajorDataCoverage(faculty, major, cohortId)] : [];
-    }));
+    return catalog.faculties.flatMap((catalogFaculty) => {
+        const faculty = FACULTIES.find((item) => item.id === catalogFaculty.id);
+        if (!faculty) return [];
+
+        return catalogFaculty.majors.flatMap((catalogMajor) => {
+            const major = faculty.majors.find((item) => item.id === catalogMajor.id);
+            return major ? [getMajorDataCoverage(faculty, major, cohortId)] : [];
+        });
+    });
 }
 
 export function getCollectionSize(value: unknown) {

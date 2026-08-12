@@ -14,8 +14,7 @@ import {
     LoaderCircle,
     School,
 } from 'lucide-react';
-import { FACULTIES, loadCohortData } from '../../../assets/registry';
-import { ACADEMIC_YEAR_MAJOR_CATALOGS, getAcademicYearMajorCatalog } from '../../../assets/data/academic-year-majors';
+import { ACADEMIC_YEAR_MAJOR_CATALOGS, FACULTIES, getAcademicYearMajorCatalog, loadCohortData } from '../../../assets/registry';
 import { ACADEMIC_YEARS, getTuitionRateDetails } from '../../../assets/data/tuition';
 import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
 import { AppSelect } from '../../../components/ui/form';
@@ -219,9 +218,13 @@ export function WorkspaceDataFeature() {
     const [isLoading, setIsLoading] = useState(false);
 
     const activeCatalog = getAcademicYearMajorCatalog(cohortId);
-    const availableFaculties = FACULTIES.filter((item) => (activeCatalog?.facultyMajors[item.id] ?? []).length > 0);
+    const availableFaculties = FACULTIES.filter((item) => activeCatalog?.faculties.some((faculty) => faculty.id === item.id));
     const faculty = availableFaculties.find((item) => item.id === facultyId) ?? availableFaculties[0];
-    const availableMajors = faculty ? faculty.majors.filter((item) => activeCatalog?.facultyMajors[faculty.id]?.includes(item.id)) : [];
+    const availableMajors = faculty
+        ? faculty.majors.filter((item) => activeCatalog?.faculties
+            .find((catalogFaculty) => catalogFaculty.id === faculty.id)
+            ?.majors.some((major) => major.id === item.id))
+        : [];
     const major = availableMajors.find((item) => item.id === majorId) ?? availableMajors[0];
 
     useEffect(() => {
@@ -468,7 +471,7 @@ export function WorkspaceDataFeature() {
                         </div>
                     </section>
 
-                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách ngành theo khóa nằm tại src/assets/data/academic-year-majors.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
+                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách khoa, ngành và khóa nằm tại src/assets/registry.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
                 </>
             )}
         </section>
