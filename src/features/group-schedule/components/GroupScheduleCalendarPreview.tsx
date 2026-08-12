@@ -1,14 +1,14 @@
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Clock, ExternalLink, Save, X } from 'lucide-react';
+import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { STORAGE_KEYS, UI_COLORS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { weekDays, timePeriods } from '../../../constants';
 import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
-import { Button } from '../../../components/ui/form/button';
 import type { OpenClassDetailTarget } from '../../../components/course';
+import { ScheduleOptionSelector } from '../../schedule';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -16,7 +16,6 @@ interface GroupScheduleCalendarPreviewProps {
   activeMemberIndex: number;
   setActiveOptionIndex: (index: number) => void;
   setActiveMemberIndex: (index: number) => void;
-  onUseSchedule: (option: GroupScheduleOption, memberIndex: number) => void;
   onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }
 
@@ -146,43 +145,11 @@ export function GroupScheduleCalendarPreview({
   return (
     <div className="space-y-4 rounded-lg">
       <div className="flex flex-col gap-3 border-b border-gray-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 pr-1 text-xs font-medium text-gray-500">Phương án</span>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.max(0, activeOptionIndex - 1))}
-            disabled={activeOptionIndex === 0}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Phương án trước"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex items-center gap-1">
-            {options.map((item, index) => (
-              <button
-                key={item.option}
-                type="button"
-                onClick={() => setActiveOptionIndex(index)}
-                className={`h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-colors ${
-                  activeOptionIndex === index
-                    ? 'bg-[#004A98] text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                PA {item.option}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.min(options.length - 1, activeOptionIndex + 1))}
-            disabled={activeOptionIndex === options.length - 1}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Phương án tiếp theo"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+        <ScheduleOptionSelector
+          options={options.map((item) => ({ id: item.option, label: `PA ${item.option}` }))}
+          activeIndex={activeOptionIndex}
+          onChange={setActiveOptionIndex}
+        />
 
         <label className="flex shrink-0 items-center gap-2 lg:pl-3 lg:border-l lg:border-gray-200">
           <span className="text-xs font-medium text-gray-500">Thành viên</span>

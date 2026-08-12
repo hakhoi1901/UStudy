@@ -1,9 +1,10 @@
 ﻿import { useEffect, useMemo, useState, Fragment } from 'react';
-import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, LayoutList, UsersRound, List, Info } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, List, Info } from 'lucide-react';
 
 import { GroupMemberCard } from './components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from './components/GroupScheduleResult';
+import { GroupScheduleResultViewTabs } from './components/GroupScheduleResultViewTabs';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
@@ -21,6 +22,7 @@ import type { SolverPreferences } from '../study-roadmap';
 import courseDbJson from '../../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../../utils/dayOffPreferences';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../components/course';
+import { ScheduleOptionSelector } from '../schedule';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -1031,17 +1033,18 @@ export function GroupSchedulePage({
                 </div>
             </div>
 
-            <div className="mb-4 flex overflow-x-auto rounded-xl bg-gray-100 p-1" aria-label="Chế độ xem kết quả">
-                {[
-                    { id: 'calendar', label: 'Tổng quát', icon: Calendar },
-                    { id: 'course', label: 'Theo môn', icon: LayoutList },
-                    { id: 'member', label: 'Theo thành viên', icon: UsersRound },
-                ].map((item) => {
-                    const isActive = item.id === 'calendar' ? showGroupCalendarPreview : !showGroupCalendarPreview && resultViewMode === item.id;
-                    const Icon = item.icon;
-                    return <button key={item.id} type="button" onClick={() => item.id === 'calendar' ? setShowGroupCalendarPreview(true) : (setShowGroupCalendarPreview(false), setResultViewMode(item.id as GroupScheduleResultViewMode))} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:text-sm ${isActive ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Icon className="h-4 w-4" />{item.label}</button>;
-                })}
-            </div>
+            <GroupScheduleResultViewTabs
+                value={showGroupCalendarPreview ? 'calendar' : resultViewMode}
+                onChange={(view) => {
+                    if (view === 'calendar') {
+                        setShowGroupCalendarPreview(true);
+                        return;
+                    }
+
+                    setShowGroupCalendarPreview(false);
+                    setResultViewMode(view);
+                }}
+            />
 
             {result?.warnings.length ? (
                 <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -1063,58 +1066,16 @@ export function GroupSchedulePage({
                             setActiveResultIndex(index);
                         }}
                         setActiveMemberIndex={setActivePreviewMemberIndex}
-                        onUseSchedule={handleUseSchedule}
                         onOpenClassDetails={setOpenClassDetails}
                     />
                 ) : (
                     <>
-                        <div className="mb-4 flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-gray-200 pb-3" style={{ scrollbarWidth: 'none' }}>
-                            <span className="shrink-0 pr-1 text-xs font-medium text-gray-500">Phương án</span>
-                            <button
-                                type="button"
-                                onClick={() => setActiveResultIndex(Math.max(0, activeResultIndex - 1))}
-                                disabled={activeResultIndex === 0}
-                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-                                aria-label="Phương án trước"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </button>
-                            {result.solutions.length > 5 ? (
-                                <select
-                                    value={activeResultIndex}
-                                    onChange={(event) => setActiveResultIndex(Number(event.target.value))}
-                                    className="h-8 min-w-28 shrink-0 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-blue-100"
-                                    aria-label="Chọn phương án"
-                                >
-                                    {result.solutions.map((option, index) => <option key={option.option} value={index}>PA {option.option}</option>)}
-                                </select>
-                            ) : (
-                                <div className="flex items-center gap-1">
-                                    {result.solutions.map((option, index) => (
-                                        <button
-                                            key={option.option}
-                                            type="button"
-                                            onClick={() => setActiveResultIndex(index)}
-                                            className={`h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-colors ${activeResultIndex === index
-                                                ? 'bg-[#004A98] text-white shadow-sm'
-                                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                                }`}
-                                        >
-                                            PA {option.option}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setActiveResultIndex(Math.min(result.solutions.length - 1, activeResultIndex + 1))}
-                                disabled={activeResultIndex === result.solutions.length - 1}
-                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-                                aria-label="Phương án tiếp theo"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
-                        </div>
+                        <ScheduleOptionSelector
+                            className="mb-4 border-b border-gray-200 pb-3"
+                            options={result.solutions.map((option) => ({ id: option.option, label: `PA ${option.option}` }))}
+                            activeIndex={activeResultIndex}
+                            onChange={setActiveResultIndex}
+                        />
 
 
                         {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} onOpenClassDetails={setOpenClassDetails} />}

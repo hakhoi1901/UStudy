@@ -11,6 +11,7 @@ import { Note } from './note.tsx'
 import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../../utils/dayOffPreferences';
 import type { Tab } from './../types.ts';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
+import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -112,9 +113,9 @@ export function CalendarView({
     setOptions,
     groupScheduleContent,
 }: CalendarViewProps) {
-    const [scheduleMode, setScheduleMode] = useState<'personal' | 'group'>(() => {
+    const [scheduleMode, setScheduleMode] = useState<ScheduleMode>(() => {
         if (window.location.hash.startsWith('#v1_')) return 'group';
-        return readFromStorage<'personal' | 'group'>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
+        return readFromStorage<ScheduleMode>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
     });
 
     useEffect(() => {
@@ -237,32 +238,7 @@ export function CalendarView({
         .filter((c): c is NonNullable<typeof c> => !!c);
 
     // ── Empty state ────────────────────────────────────────────────────────────
-    const renderModeSwitch = () => (
-        <div className="flex w-full shrink-0 items-center rounded-lg border border-gray-200 bg-slate-50 p-1 md:inline-flex md:w-auto">
-            <button
-                type="button"
-                onClick={() => setScheduleMode('personal')}
-                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
-                    scheduleMode === 'personal'
-                        ? 'bg-white text-[#004A98] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
-                }`}
-            >
-                Cá nhân
-            </button>
-            <button
-                type="button"
-                onClick={() => setScheduleMode('group')}
-                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
-                    scheduleMode === 'group'
-                        ? 'bg-white text-[#004A98] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
-                }`}
-            >
-                Nhóm
-            </button>
-        </div>
-    );
+    const renderModeSwitch = () => <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />;
 
     const renderModeToolbar = () => (
         <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
@@ -750,16 +726,12 @@ export function CalendarView({
                     </div>
                 </div>
 
-                {options.length > 1 && (
-                    <div className="flex items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white px-3 py-2.5 md:px-4" style={{ scrollbarWidth: 'none' }}>
-                        <span className="shrink-0 text-xs font-medium text-gray-500">Phương án</span>
-                        <button type="button" onClick={() => setActiveOption(Math.max(0, activeOption - 1))} disabled={activeOption === 0} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30" aria-label="Phương án trước"><ChevronLeft className="h-4 w-4" /></button>
-                        {options.map((option, index) => (
-                            <button key={option.option} type="button" onClick={() => setActiveOption(index)} className={`h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-colors ${activeOption === index ? 'bg-[#004A98] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}>PA {option.option}</button>
-                        ))}
-                        <button type="button" onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))} disabled={activeOption === options.length - 1} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30" aria-label="Phương án sau"><ChevronRight className="h-4 w-4" /></button>
-                    </div>
-                )}
+                <ScheduleOptionSelector
+                    className="border-b border-gray-200 bg-white px-3 py-2.5 md:px-4"
+                    options={options.map((option) => ({ id: option.option, label: `PA ${option.option}` }))}
+                    activeIndex={activeOption}
+                    onChange={setActiveOption}
+                />
 
                 <div className="overflow-auto">
                     <div className="min-w-[620px] md:min-w-[1000px]">
