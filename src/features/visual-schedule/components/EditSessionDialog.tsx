@@ -10,6 +10,7 @@ import { Button } from '../../../components/ui/form/button';
 import { Input } from '../../../components/ui/form/input';
 import { Label } from '../../../components/ui/form/label';
 import { type ScheduleSession, type ScheduleOverrides, DAYS } from '../types';
+import type { OpenClassDetailTarget } from '../../../components/course';
 import { calculateRowSpan, getDisplayEnd } from '../services/schedule-helpers';
 
 function EditSessionDialog({
@@ -271,13 +272,15 @@ function CourseCard({
     hasConflict = false,
     weekNumber,
     overrides,
-    onSave
+    onSave,
+    onOpenClassDetails
 }: {
     sessions: ScheduleSession | ScheduleSession[];
     hasConflict?: boolean;
     weekNumber: number;
     overrides: ScheduleOverrides;
     onSave: (newOverrides: ScheduleOverrides) => void;
+    onOpenClassDetails?: (target: OpenClassDetailTarget) => void;
 }) {
     const [showInfo, setShowInfo] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
@@ -474,6 +477,18 @@ function CourseCard({
 
                         {/* Nút chỉnh sửa */}
                         <div className="mt-3 pt-2 border-t border-gray-100">
+                            {onOpenClassDetails && sessionArray.length === 1 && (
+                                <button
+                                    type="button"
+                                    className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-[#004A98] transition-colors hover:bg-blue-50"
+                                    onClick={() => {
+                                        onOpenClassDetails({ courseCode: primarySession.courseCode, courseName: primarySession.courseName, classId: primarySession.classCode });
+                                        setShowInfo(false);
+                                    }}
+                                >
+                                    Xem chi tiết lớp mở
+                                </button>
+                            )}
                             <DialogTrigger asChild>
                                 <button
                                     className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#004A98] hover:bg-[#003d7a] text-white text-xs font-medium rounded-lg transition-colors"

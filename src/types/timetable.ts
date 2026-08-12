@@ -4,6 +4,8 @@ export interface ClassSection {
     courseName: string; // tên môn học
     courseNameVi: string; // tên môn học tiếng việt
     sectionNumber: string; // mã lớp học
+    /** Mã lớp đầy đủ mà thuật toán đã chọn, có thể gồm nhóm TH/BT. */
+    selectedClassId?: string;
     lecturer: string; // giảng viên
     room: string; // phòng học
     day: number; // 2-8 (Mon-Sun)

@@ -20,6 +20,7 @@ import type { Course, SavedSchedule } from '../../types';
 import type { SolverPreferences } from '../study-roadmap';
 import courseDbJson from '../../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../../utils/dayOffPreferences';
+import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../components/course';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -174,6 +175,7 @@ export function GroupSchedulePage({
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
+    const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.GROUP_SCHEDULE_UI_STATE, {
@@ -633,7 +635,7 @@ export function GroupSchedulePage({
                         <Textarea
                             value={manualCourseInput}
                             onChange={(event) => setManualCourseInput(event.target.value)}
-                            placeholder="CSC10001, MTH00003, PHY00001"
+                            placeholder='CSC10001, MTH00003, PHY00001, hoặc chọn môn tại "Chọn môn & học phí"'
                             className="min-h-28 border-slate-200 focus-visible:ring-[#004A98]/25"
                         />
                     )}
@@ -1062,6 +1064,7 @@ export function GroupSchedulePage({
                         }}
                         setActiveMemberIndex={setActivePreviewMemberIndex}
                         onUseSchedule={handleUseSchedule}
+                        onOpenClassDetails={setOpenClassDetails}
                     />
                 ) : (
                     <>
@@ -1091,12 +1094,14 @@ export function GroupSchedulePage({
                         </div>
 
 
-                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} />}
+                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} onOpenClassDetails={setOpenClassDetails} />}
                     </>
                 )
             ) : (
                 <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-500">Chưa có kết quả. Hãy chạy xếp lịch trước.</div>
             )}
+
+            <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
             {showSaveGroupScheduleModal && selectedOption && (
                 <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">

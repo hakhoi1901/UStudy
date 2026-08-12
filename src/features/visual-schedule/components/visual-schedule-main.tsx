@@ -12,6 +12,7 @@ import { CourseDetailCard } from './CourseDetailCard';
 import { PeriodRow } from './PeriodRow';
 import { QuickStatsCard } from './QuickStatsCard';
 import { timePeriods } from '../../../constants';
+import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
 
 interface VisualScheduleMainProps {
   selectedSemester?: string;
@@ -19,6 +20,7 @@ interface VisualScheduleMainProps {
 
 export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps) {
   const [isHolidayManagerOpen, setIsHolidayManagerOpen] = useState(false);
+  const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
   const {
     isReady,
     hasData,
@@ -215,6 +217,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
                 currentPeriod={currentPeriod}
                 overrides={schedule.overrides}
                 onSave={schedule.updateOverrides}
+                onOpenClassDetails={setOpenClassDetails}
               />
             ))}
 
@@ -235,6 +238,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
                 currentPeriod={currentPeriod}
                 overrides={schedule.overrides}
                 onSave={schedule.updateOverrides}
+                onOpenClassDetails={setOpenClassDetails}
               />
             ))}
           </tbody>
@@ -249,10 +253,12 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
         </h3>
         <div className="space-y-0">
           {uniqueCourses.map((session) => (
-            <CourseDetailCard key={session.id} session={session} />
+            <CourseDetailCard key={session.id} session={session} onOpenClassDetails={setOpenClassDetails} />
           ))}
         </div>
       </div>
+
+      <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
     </PageShell>
   );

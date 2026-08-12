@@ -1,5 +1,6 @@
 import { CourseCard } from './EditSessionDialog';
 import { type WeeklySchedule, type ScheduleOverrides, DAYS } from '../types';
+import type { OpenClassDetailTarget } from '../../../components/course';
 import {
     getSessionsForCell,
     hasOverlappingSession,
@@ -17,7 +18,8 @@ export function PeriodRow({
     isToday,
     currentPeriod,
     overrides,
-    onSave
+    onSave,
+    onOpenClassDetails,
 }: {
     period: number;
     time: string;
@@ -26,6 +28,7 @@ export function PeriodRow({
     currentPeriod: number | null;
     overrides: ScheduleOverrides;
     onSave: (newOverrides: ScheduleOverrides) => void;
+    onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }) {
     return (
         <tr>
@@ -53,6 +56,7 @@ export function PeriodRow({
                                 weekNumber={schedule.weekNumber}
                                 overrides={overrides}
                                 onSave={onSave}
+                                onOpenClassDetails={onOpenClassDetails}
                             />
                         </td>
                     );
@@ -64,4 +68,4 @@ export function PeriodRow({
             })}
         </tr>
     );
-}
+}

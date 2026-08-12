@@ -8,6 +8,7 @@ import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
 import { Button } from '../../../components/ui/form/button';
+import type { OpenClassDetailTarget } from '../../../components/course';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -16,6 +17,7 @@ interface GroupScheduleCalendarPreviewProps {
   setActiveOptionIndex: (index: number) => void;
   setActiveMemberIndex: (index: number) => void;
   onUseSchedule: (option: GroupScheduleOption, memberIndex: number) => void;
+  onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }
 
 const PALETTE = UI_COLORS.SCHEDULE_PALETTE;
@@ -125,6 +127,7 @@ export function GroupScheduleCalendarPreview({
   activeMemberIndex,
   setActiveOptionIndex,
   setActiveMemberIndex,
+  onOpenClassDetails,
 }: GroupScheduleCalendarPreviewProps) {
   const option = options[activeOptionIndex] ?? options[0];
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
@@ -300,6 +303,24 @@ export function GroupScheduleCalendarPreview({
                   return (
                     <div
                       key={section.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Xem lớp mở ${section.sectionNumber} của môn ${section.courseCode}`}
+                      onClick={() => onOpenClassDetails({
+                        courseCode: section.courseCode,
+                        courseName: section.courseNameVi || section.courseName,
+                        classId: section.selectedClassId || section.sectionNumber,
+                      })}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onOpenClassDetails({
+                            courseCode: section.courseCode,
+                            courseName: section.courseNameVi || section.courseName,
+                            classId: section.selectedClassId || section.sectionNumber,
+                          });
+                        }
+                      }}
                       style={{
                         position: 'absolute',
                         top: top + 2,
@@ -318,7 +339,7 @@ export function GroupScheduleCalendarPreview({
                         gap: 0,
                         boxSizing: 'border-box',
                         boxShadow: hasConflict ? '0 2px 8px rgba(239,68,68,0.15)' : '0 1px 4px rgba(15,23,42,0.08)',
-                        cursor: 'default',
+                        cursor: 'pointer',
                         zIndex: 2,
                         pointerEvents: 'auto',
                       }}

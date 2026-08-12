@@ -10,6 +10,7 @@ import type { Course } from '../../../types';
 import { Note } from './note.tsx'
 import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../../utils/dayOffPreferences';
 import type { Tab } from './../types.ts';
+import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -142,6 +143,7 @@ export function CalendarView({
     const [newScheduleName, setNewScheduleName] = useState('');
     const [loadedGroupSchedule, setLoadedGroupSchedule] = useState<SavedSchedule['groupSchedule'] | null>(null);
     const [activeLoadedGroupMemberIndex, setActiveLoadedGroupMemberIndex] = useState<number | null>(null);
+    const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -840,6 +842,24 @@ export function CalendarView({
                                 return (
                                     <div
                                         key={classSection.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`Xem chi tiết lớp mở ${classSection.sectionNumber} của môn ${classSection.courseCode}`}
+                                        onClick={() => setOpenClassDetails({
+                                            courseCode: classSection.courseCode,
+                                            courseName: classSection.courseNameVi || classSection.courseName,
+                                            classId: classSection.selectedClassId || classSection.sectionNumber,
+                                        })}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                setOpenClassDetails({
+                                                    courseCode: classSection.courseCode,
+                                                    courseName: classSection.courseNameVi || classSection.courseName,
+                                                    classId: classSection.selectedClassId || classSection.sectionNumber,
+                                                });
+                                            }
+                                        }}
                                         style={{
                                             position: 'absolute',
                                             top: topPx + 2,
@@ -861,7 +881,7 @@ export function CalendarView({
                                             boxShadow: hasConflict
                                                 ? '0 2px 8px rgba(239,68,68,0.15)'
                                                 : '0 1px 4px rgba(15,23,42,0.08)',
-                                            cursor: 'default',
+                                            cursor: 'pointer',
                                             zIndex: 2,
                                             pointerEvents: 'auto',
                                         }}
@@ -989,6 +1009,8 @@ export function CalendarView({
             {/* Chú thích */}
             <Note />
             </div>
+
+            <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
             {/* ═══ Modal: Lưu phương án ══════════════════════════════════════ */}
             {showSaveModal && (
