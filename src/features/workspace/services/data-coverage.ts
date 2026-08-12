@@ -49,7 +49,7 @@ function getCohortInfo(major: MajorInfo, cohortId: string) {
 }
 
 export function getProgramAssets(facultyId: string, majorId: string, cohortId: string): ProgramDataAsset[] {
-    const sourceCohort = getProgramDataSourceCohort(cohortId) ?? resolveDataCohort(facultyId, majorId, cohortId);
+    const sourceCohort = getProgramDataSourceCohort(cohortId, facultyId, majorId) ?? resolveDataCohort(facultyId, majorId, cohortId);
 
     return PROGRAM_FILES.map((file) => {
         const path = `${facultyId}/${majorId}/${sourceCohort}/${file.fileName}`;
@@ -70,7 +70,7 @@ export function getMajorDataCoverage(faculty: FacultyInfo, major: MajorInfo, coh
         faculty,
         major,
         cohort,
-        sourceCohort: getProgramDataSourceCohort(cohort.id) ?? resolveDataCohort(faculty.id, major.id, cohort.id),
+        sourceCohort: getProgramDataSourceCohort(cohort.id, faculty.id, major.id) ?? resolveDataCohort(faculty.id, major.id, cohort.id),
         assets,
         availableCount: assets.filter((asset) => asset.present).length,
         tuitionYears: tuition.length,

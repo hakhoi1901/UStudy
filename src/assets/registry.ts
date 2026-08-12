@@ -14,6 +14,8 @@ export interface CohortInfo {
 export interface CohortMajorInfo {
     id: string;
     name: string;
+    /** Nguồn chương trình riêng, dùng để ghi đè nguồn mặc định của khóa. */
+    dataSourceCohort?: string;
 }
 
 export interface CohortFacultyInfo {
@@ -104,7 +106,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Hóa học',
                 majors: [
                     { id: 'hoa-hoc', name: 'Hóa học' },
-                    { id: 'hoa-hoc-cntn', name: 'Cử nhân tài năng ngành hóa học' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
                 ],
             },
             {
@@ -128,16 +130,14 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-dien-tu-vien-thong',
                 name: 'Khoa Điện tử - Viễn thông',
                 majors: [
-                    { id: 'ky-thuat-dien-dien-tu', name: 'Kỹ thuật Điện - Điện tử' },
                     { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
-                    { id: 'cong-nghe-ban-dan', name: 'Công nghệ Bán dẫn' },
                     { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch' },
                 ],
             },
         ],
     }, {
         cohortId: 'k25',
-        label: 'Khóa 2025 (Chưa cập nhật chương trình đào tạo, sử dụng dữ liệu K24)',
+        label: 'Khóa 2025',
         defaultProgramDataSource: 'k24',
         faculties: [
             {
@@ -145,32 +145,32 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Công nghệ Thông tin',
                 majors: [
                     { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)' },
-                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
-                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
-                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },
-                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính' },
-                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo' },
-                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
+                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSourceCohort: 'k25' },
+                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSourceCohort: 'k25' },
+                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSourceCohort: 'k25' },
+                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSourceCohort: 'k25' },
+                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSourceCohort: 'k25' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSourceCohort: 'k25' },
                 ],
             },
             {
                 id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
                 name: 'Khoa Khoa học và Công nghệ Vật liệu',
                 majors: [
-                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu' },
-                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu' },
+                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSourceCohort: 'k25' },
+                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSourceCohort: 'k25' },
                 ],
             },
             {
                 id: 'khoa-toan',
                 name: 'Khoa Toán - Tin học',
                 majors: [
-                    { id: 'toan-hoc', name: 'Toán học' },
-                    { id: 'toan-tin', name: 'Toán - Tin' },
-                    { id: 'toan-ung-dung', name: 'Toán ứng dụng' },
-                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu' },
+                    { id: 'toan-hoc', name: 'Toán học', dataSourceCohort: 'k25' },
+                    { id: 'toan-tin', name: 'Toán - Tin', dataSourceCohort: 'k25' },
+                    { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSourceCohort: 'k25' },
+                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSourceCohort: 'k25' },
                     { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
-                    { id: 'thong-ke', name: 'Thống kê' },
+                    { id: 'thong-ke', name: 'Thống kê', dataSourceCohort: 'k25' },
                 ],
             },
             {
@@ -199,15 +199,15 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Hóa học',
                 majors: [
                     { id: 'hoa-hoc', name: 'Hóa học' },
-                    { id: 'hoa-hoc-cntn', name: 'Cử nhân tài năng ngành hóa học' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
                 ],
             },
             {
                 id: 'khoa-sinh',
                 name: 'Khoa Sinh học - Công nghệ sinh học',
                 majors: [
-                    { id: 'sinh-hoc', name: 'Sinh học' },
-                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học' },
+                    { id: 'sinh-hoc', name: 'Sinh học', dataSourceCohort: 'k25' },
+                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSourceCohort: 'k25' },
                 ],
             },
             {
@@ -223,9 +223,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-dien-tu-vien-thong',
                 name: 'Khoa Điện tử - Viễn thông',
                 majors: [
-                    { id: 'ky-thuat-dien-dien-tu', name: 'Kỹ thuật Điện - Điện tử' },
                     { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
-                    { id: 'cong-nghe-ban-dan', name: 'Công nghệ Bán dẫn' },
                     { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch' },
                 ],
             },
@@ -237,7 +235,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
         ],
     }, {
         cohortId: 'k26',
-        label: 'Khóa 2026 (Chưa cập nhật chương trình đào tạo, sử dụng dữ liệu K24)',
+        label: 'Khóa 2026',
         defaultProgramDataSource: 'k24',
         faculties: [
             {
@@ -265,12 +263,12 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-toan',
                 name: 'Khoa Toán - Tin học',
                 majors: [
-                    { id: 'toan-hoc', name: 'Toán học' },
-                    { id: 'toan-tin', name: 'Toán - Tin' },
-                    { id: 'toan-ung-dung', name: 'Toán ứng dụng' },
-                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu' },
+                    { id: 'toan-hoc', name: 'Toán học', dataSourceCohort: 'k26' },
+                    { id: 'toan-tin', name: 'Toán - Tin', dataSourceCohort: 'k26' },
+                    { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSourceCohort: 'k26' },
+                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSourceCohort: 'k26' },
                     { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
-                    { id: 'thong-ke', name: 'Thống kê' },
+                    { id: 'thong-ke', name: 'Thống kê', dataSourceCohort: 'k26' },
                 ],
             },
             {
@@ -299,7 +297,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Hóa học',
                 majors: [
                     { id: 'hoa-hoc', name: 'Hóa học' },
-                    { id: 'hoa-hoc-cntn', name: 'Cử nhân tài năng ngành hóa học' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
                 ],
             },
             {
@@ -323,9 +321,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-dien-tu-vien-thong',
                 name: 'Khoa Điện tử - Viễn thông',
                 majors: [
-                    { id: 'ky-thuat-dien-dien-tu', name: 'Kỹ thuật Điện - Điện tử' },
                     { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
-                    { id: 'cong-nghe-ban-dan', name: 'Công nghệ Bán dẫn' },
                     { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch' },
                 ],
             },
@@ -363,8 +359,9 @@ export const FACULTIES: FacultyInfo[] = (() => {
                 }
 
                 major.cohorts.push({ id: catalog.cohortId, name: catalog.label });
-                if (catalog.defaultProgramDataSource) {
-                    major.dataSource = { ...major.dataSource, [catalog.cohortId]: catalog.defaultProgramDataSource };
+                const sourceCohort = catalogMajor.dataSourceCohort ?? catalog.defaultProgramDataSource;
+                if (sourceCohort && sourceCohort !== catalog.cohortId) {
+                    major.dataSource = { ...major.dataSource, [catalog.cohortId]: sourceCohort };
                 }
             });
         });
@@ -377,7 +374,8 @@ export function getAcademicYearMajorCatalog(cohortId: string) {
     return ACADEMIC_YEAR_MAJOR_CATALOGS.find((catalog) => catalog.cohortId === cohortId);
 }
 
-export function getProgramDataSourceCohort(cohortId: string) {
+export function getProgramDataSourceCohort(cohortId: string, facultyId?: string, majorId?: string) {
+    if (facultyId && majorId) return resolveDataCohort(facultyId, majorId, cohortId);
     return getAcademicYearMajorCatalog(cohortId)?.defaultProgramDataSource;
 }
 
@@ -401,11 +399,12 @@ export function resolveDataCohort(facultyId: string, majorId: string, cohortId: 
 
 /** Tuition duoc load rieng theo nam hoc trong assets/data/tuition. */
 export async function loadCohortData(facultyId: string, majorId: string, cohortId: string) {
-    const sourceCohort = getProgramDataSourceCohort(cohortId) ?? resolveDataCohort(facultyId, majorId, cohortId);
+    const sourceCohort = resolveDataCohort(facultyId, majorId, cohortId);
 
     const [coursesModule, prerequisitesModule, categoriesModule] = await Promise.all([
         import(`./data/${facultyId}/${majorId}/${sourceCohort}/courses.ts`),
-        import(`./data/${facultyId}/${majorId}/${sourceCohort}/prerequisites.ts`),
+        import(`./data/${facultyId}/${majorId}/${sourceCohort}/prerequisites.ts`)
+            .catch(() => ({ prerequisites: [] })),
         import(`./data/${facultyId}/${majorId}/${sourceCohort}/categories.ts`),
     ]);
 
