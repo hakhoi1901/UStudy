@@ -346,14 +346,14 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       <div className={compact ? 'grid w-full grid-cols-1 gap-2' : 'mt-auto flex flex-wrap items-center justify-start gap-3'}>
         {transferMode === 'file' ? (
           <>
-            {!compact && <button type="button" onClick={() => openExportPreview('file')} className="flex items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>}
-            <button type="button" onClick={() => fileInputRef.current?.click()} className={compact ? 'flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#004A98] bg-white px-3 py-2.5 text-xs font-semibold text-[#004A98] transition-colors hover:bg-blue-50' : 'flex items-center gap-1.5 rounded-lg border-2 border-transparent bg-[#004A98] px-3 py-1.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none'}><Download className="h-4 w-4" strokeWidth={2.5} />{importButtonLabel}</button>
+            {!compact && <button type="button" onClick={() => openExportPreview('file')} className="ustudy-button-lift ustudy-button-lift-outline"><Upload className="h-4 w-4" strokeWidth={2.5} />Xuất dữ liệu</button>}
+            <button type="button" onClick={() => fileInputRef.current?.click()} className={`ustudy-button-lift ${compact ? 'ustudy-button-lift-compact gap-2' : 'ustudy-button-lift-primary'}`}><Download className="h-4 w-4" strokeWidth={2.5} />{importButtonLabel}</button>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
           </>
         ) : (
           <>
-            <button type="button" onClick={() => openExportPreview('optical')} className="hidden items-center gap-1.5 rounded-lg border-2 border-[#004A98] bg-white px-3 py-1.5 text-sm font-semibold text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none md:inline-flex"><QrCode className="h-4 w-4" strokeWidth={2.5} />Gửi sang điện thoại</button>
-            <button type="button" onClick={() => setIsOpticalReceiverOpen(true)} className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none md:hidden"><ScanLine className="h-4 w-4" strokeWidth={2.5} />Nhận từ laptop</button>
+            <button type="button" onClick={() => openExportPreview('optical')} className="ustudy-button-lift ustudy-button-lift-outline hidden md:inline-flex"><QrCode className="h-4 w-4" strokeWidth={2.5} />Gửi sang điện thoại</button>
+            <button type="button" onClick={() => setIsOpticalReceiverOpen(true)} className="ustudy-button-lift ustudy-button-lift-primary min-h-11 gap-2 px-4 py-2.5 md:hidden"><ScanLine className="h-4 w-4" strokeWidth={2.5} />Nhận từ laptop</button>
           </>
         )}
       </div>
@@ -368,8 +368,8 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
         mobileFullScreen={transferMode === 'optical'}
         footer={(
           <>
-            <button type="button" onClick={() => setPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
-            <button type="button" disabled={!preview?.selectedKeys.length} onClick={confirmPreview} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">Nhập {preview?.selectedKeys.length ?? 0} mục</button>
+            <button type="button" onClick={() => setPreview(null)} className="ustudy-button-dialog ustudy-button-dialog-cancel">Hủy</button>
+            <button type="button" disabled={!preview?.selectedKeys.length} onClick={confirmPreview} className="ustudy-button-dialog ustudy-button-dialog-confirm">Nhập {preview?.selectedKeys.length ?? 0} mục</button>
           </>
         )}
       >
@@ -384,8 +384,8 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{group}</h3>
                 <div className="flex items-center gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => toggleImportGroup(items, true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
-                  <button type="button" onClick={() => toggleImportGroup(items, false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
+                  <button type="button" onClick={() => toggleImportGroup(items, true)} className="ustudy-button-text">Chọn tất cả</button>
+                  <button type="button" onClick={() => toggleImportGroup(items, false)} className="ustudy-button-text ustudy-button-text-muted">Bỏ chọn</button>
                 </div>
               </div>
               {items.map((item) => (
@@ -409,16 +409,16 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
         size="lg"
         footer={(
           <>
-            <button type="button" onClick={() => setExportPreview(null)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy</button>
-            <button type="button" disabled={!exportPreview?.selectedKeys.length} onClick={confirmExport} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78] disabled:cursor-not-allowed disabled:opacity-45">{exportDestination === 'optical' ? 'Tạo QR' : 'Xuất'} {exportPreview?.selectedKeys.length ?? 0} mục</button>
+            <button type="button" onClick={() => setExportPreview(null)} className="ustudy-button-dialog ustudy-button-dialog-cancel">Hủy</button>
+            <button type="button" disabled={!exportPreview?.selectedKeys.length} onClick={confirmExport} className="ustudy-button-dialog ustudy-button-dialog-confirm">{exportDestination === 'optical' ? 'Tạo QR' : 'Xuất'} {exportPreview?.selectedKeys.length ?? 0} mục</button>
           </>
         )}
       >
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <p className="text-sm text-slate-600">Đã chọn {exportPreview?.selectedKeys.length ?? 0} mục</p>
           <div className="flex items-center gap-3 text-sm font-semibold">
-            <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: current.groups.flatMap((group) => group.items.map((item) => item.key)) } : current)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
-            <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: [] } : current)} className="text-slate-600 hover:text-slate-900">Bỏ chọn tất cả</button>
+            <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: current.groups.flatMap((group) => group.items.map((item) => item.key)) } : current)} className="ustudy-button-text">Chọn tất cả</button>
+            <button type="button" onClick={() => setExportPreview((current) => current ? { ...current, selectedKeys: [] } : current)} className="ustudy-button-text ustudy-button-text-muted">Bỏ chọn tất cả</button>
           </div>
         </div>
         <div className="max-h-[min(52vh,520px)] divide-y divide-slate-200 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -427,8 +427,8 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
               <div className="flex items-center justify-between gap-3 pb-1">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{group.name}</h3>
                 <div className="flex items-center gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => toggleExportGroup(group.items, true)} className="text-[#004A98] hover:text-[#003A78]">Chọn tất cả</button>
-                  <button type="button" onClick={() => toggleExportGroup(group.items, false)} className="text-slate-600 hover:text-slate-900">Bỏ chọn</button>
+                  <button type="button" onClick={() => toggleExportGroup(group.items, true)} className="ustudy-button-text">Chọn tất cả</button>
+                  <button type="button" onClick={() => toggleExportGroup(group.items, false)} className="ustudy-button-text ustudy-button-text-muted">Bỏ chọn</button>
                 </div>
               </div>
               {group.items.map((item) => (

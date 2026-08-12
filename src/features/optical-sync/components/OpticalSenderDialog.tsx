@@ -2,6 +2,7 @@ import { Pause, Play, Smartphone } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useRef, useState } from 'react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { AppSelect } from '../../../components/ui/form';
 import { encodeOpticalText } from '../services/optical-payload';
 import { blockLength } from '../vendor/decimen/frame-capacity';
 import { LTEncoder } from '../vendor/decimen/fountain';
@@ -172,20 +173,36 @@ export function OpticalSenderDialog({ open, onOpenChange, payloadText }: Optical
             </section>
 
             <section className="space-y-3 p-4">
-              <label className="block text-xs font-medium text-slate-600">Tốc độ phát
-                <select value={fps} onChange={(event) => setFps(Number(event.target.value))} className="mt-1.5 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800">
-                  <option value={12}>12 FPS · ổn định</option>
-                  <option value={20}>20 FPS · mặc định</option>
-                  <option value={24}>24 FPS · nhanh</option>
-                </select>
-              </label>
-              <label className="block text-xs font-medium text-slate-600">Mật độ QR
-                <select value={frameBytes} onChange={(event) => setFrameBytes(Number(event.target.value))} className="mt-1.5 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800">
-                  <option value={965}>Thưa · dễ quét</option>
-                  <option value={1465}>Cân bằng · mặc định</option>
-                  <option value={1953}>Dày · nhanh hơn</option>
-                </select>
-              </label>
+              <div>
+                <p className="text-xs font-medium text-slate-600">Tốc độ phát</p>
+                <AppSelect
+                  value={String(fps)}
+                  onChange={(value) => setFps(Number(value))}
+                  options={[
+                    { id: '12', name: '12 FPS · ổn định' },
+                    { id: '20', name: '20 FPS · mặc định' },
+                    { id: '24', name: '24 FPS · nhanh' },
+                  ]}
+                  ariaLabel="Tốc độ phát"
+                  className="mt-1.5"
+                  triggerClassName="h-9 px-3 py-0 text-sm text-slate-800"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-600">Mật độ QR</p>
+                <AppSelect
+                  value={String(frameBytes)}
+                  onChange={(value) => setFrameBytes(Number(value))}
+                  options={[
+                    { id: '965', name: 'Thưa · dễ quét' },
+                    { id: '1465', name: 'Cân bằng · mặc định' },
+                    { id: '1953', name: 'Dày · nhanh hơn' },
+                  ]}
+                  ariaLabel="Mật độ QR"
+                  className="mt-1.5"
+                  triggerClassName="h-9 px-3 py-0 text-sm text-slate-800"
+                />
+              </div>
               <p className="text-xs leading-5 text-slate-500">Nếu điện thoại chưa nhận được frame, giảm mật độ trước rồi giảm FPS.</p>
             </section>
           </aside>

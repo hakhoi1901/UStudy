@@ -8,6 +8,7 @@ import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
+import { AppSelect } from '../../../components/ui/form';
 import { ScheduleOptionSelector } from '../../schedule';
 
 interface GroupScheduleCalendarPreviewProps {
@@ -151,21 +152,20 @@ export function GroupScheduleCalendarPreview({
           onChange={setActiveOptionIndex}
         />
 
-        <label className="flex shrink-0 items-center gap-2 lg:pl-3 lg:border-l lg:border-gray-200">
+        <div className="flex shrink-0 items-center gap-2 lg:border-l lg:border-gray-200 lg:pl-3">
           <span className="text-xs font-medium text-gray-500">Thành viên</span>
-          <select
-            value={effectiveMemberIndex}
-            onChange={(event) => setActiveMemberIndex(Number(event.target.value))}
-            className="h-9 min-w-40 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 outline-none transition-colors focus:border-[#004A98] focus:ring-2 focus:ring-blue-100"
-            aria-label="Chọn thành viên để xem lịch"
-          >
-            {option.schedules.map((schedule) => (
-              <option key={schedule.memberIndex} value={schedule.memberIndex}>
-                {schedule.nickname}
-              </option>
-            ))}
-          </select>
-        </label>
+          <AppSelect
+            value={String(effectiveMemberIndex)}
+            options={option.schedules.map((schedule) => ({
+              id: String(schedule.memberIndex),
+              name: schedule.nickname,
+            }))}
+            onChange={(value) => setActiveMemberIndex(Number(value))}
+            ariaLabel="Chọn thành viên để xem lịch"
+            className="min-w-40"
+            triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+          />
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">

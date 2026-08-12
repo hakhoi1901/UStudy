@@ -18,6 +18,7 @@ import { FACULTIES, loadCohortData } from '../../../assets/registry';
 import { ACADEMIC_YEAR_MAJOR_CATALOGS, getAcademicYearMajorCatalog } from '../../../assets/data/academic-year-majors';
 import { ACADEMIC_YEARS, getTuitionRateDetails } from '../../../assets/data/tuition';
 import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
+import { AppSelect } from '../../../components/ui/form';
 import {
     getAllMajorDataCoverage,
     getCollectionSize,
@@ -305,24 +306,18 @@ export function WorkspaceDataFeature() {
             {view === 'catalog' && faculty && major && selectedCoverage && (
                 <>
                     <section className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3 md:p-5">
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Khoa
-                            <select value={faculty.id} onChange={(event) => setFacultyId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {availableFaculties.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                            </select>
-                        </label>
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Ngành
-                            <select value={major.id} onChange={(event) => setMajorId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {availableMajors.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                            </select>
-                        </label>
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Khóa tuyển
-                            <select value={cohortId} onChange={(event) => setCohortId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => <option key={item.cohortId} value={item.cohortId}>{item.label}</option>)}
-                            </select>
-                        </label>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Khoa</p>
+                            <AppSelect value={faculty.id} onChange={setFacultyId} options={availableFaculties} ariaLabel="Chọn khoa" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Ngành</p>
+                            <AppSelect value={major.id} onChange={setMajorId} options={availableMajors} ariaLabel="Chọn ngành" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Khóa tuyển</p>
+                            <AppSelect value={cohortId} onChange={setCohortId} options={ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => ({ id: item.cohortId, name: item.label }))} ariaLabel="Chọn khóa tuyển" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
                     </section>
 
                     {loadedData && (
@@ -427,11 +422,17 @@ export function WorkspaceDataFeature() {
                             <h2 className="text-base font-bold text-gray-900">Khóa tuyển cần kiểm tra</h2>
                             <p className="mt-1 text-sm text-gray-500">Danh sách ngành lấy từ manifest theo từng khóa.</p>
                         </div>
-                        <label className="block text-xs font-semibold text-gray-600">Khóa tuyển
-                            <select value={coverageCohortId} onChange={(event) => setCoverageCohortId(event.target.value)} className="ml-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => <option key={item.cohortId} value={item.cohortId}>{item.label}</option>)}
-                            </select>
-                        </label>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
+                            <span>Khóa tuyển</span>
+                            <AppSelect
+                                value={coverageCohortId}
+                                onChange={setCoverageCohortId}
+                                options={ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => ({ id: item.cohortId, name: item.label }))}
+                                ariaLabel="Chọn khóa tuyển cần kiểm tra"
+                                className="min-w-36"
+                                triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+                            />
+                        </div>
                     </section>
 
                     <div className="grid gap-3 sm:grid-cols-3">

@@ -9,6 +9,7 @@ import {
 import { Button } from '../../../components/ui/form/button';
 import { Input } from '../../../components/ui/form/input';
 import { Label } from '../../../components/ui/form/label';
+import { AppSelect } from '../../../components/ui/form';
 import { type ScheduleSession, type ScheduleOverrides, DAYS } from '../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
 import { calculateRowSpan, getDisplayEnd } from '../services/schedule-helpers';
@@ -140,18 +141,19 @@ function EditSessionDialog({
                     {/* Day and Room */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="day" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                            <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                                 <CalendarIcon className="w-4 h-4 text-gray-500" /> Thứ
                             </Label>
-                            <select
-                                id="day"
+                            <AppSelect
                                 value={dayOfWeek}
-                                onChange={(e) => setDayOfWeek(e.target.value)}
-                                className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
-                            >
-                                {DAYS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                                <option value="8">Chủ Nhật</option>
-                            </select>
+                                onChange={setDayOfWeek}
+                                options={[
+                                    ...DAYS.map((day) => ({ id: day.value, name: day.label })),
+                                    { id: '8', name: 'Chủ Nhật' },
+                                ]}
+                                ariaLabel="Chọn thứ học"
+                                triggerClassName="h-10 rounded-md border-gray-300 px-3 py-0 text-sm"
+                            />
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="room" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">

@@ -990,15 +990,14 @@ export function GroupSchedulePage({
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                     {selectedOption && (
-                        <Button
+                        <button
                             type="button"
-                            variant="default"
                             onClick={() => setShowSaveGroupScheduleModal(true)}
-                            className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 shrink-0"
+                            className="ustudy-button-normal"
                         >
                             <Save className="h-4 w-4" />
                             <span className="hidden sm:inline">Lưu lịch</span>
-                        </Button>
+                        </button>
                     )}
 
                     <button
@@ -1006,7 +1005,7 @@ export function GroupSchedulePage({
                             setSavedSchedules(readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []));
                             setShowListModal(true);
                         }}
-                        className="ustudy-button-outline h-9 shrink-0 px-3 text-xs md:px-4 md:text-sm"
+                        className="ustudy-button-normal"
                     >
                         <List className="w-3.5 h-3.5" />
                         <span className="hidden md:inline">Lịch đã lưu</span>
@@ -1017,7 +1016,7 @@ export function GroupSchedulePage({
                         )}
                     </button>
 
-                    <DropdownMenu>
+                    {/* <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button type="button" className="ustudy-action-icon h-9 w-9 shrink-0 border border-gray-200 bg-white shadow-sm">
                                 <MoreHorizontal className="h-5 w-5 text-gray-600" />
@@ -1029,7 +1028,7 @@ export function GroupSchedulePage({
                                 <span>Chỉnh ưu tiên</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
                 </div>
             </div>
 

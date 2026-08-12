@@ -78,7 +78,7 @@ export function BookmarkletButton({ className = '', variant = 'primary', withLab
                     ref={linkRef}
                     href="#"
                     onClick={handleDragWarning}
-                    className={`relative flex max-w-full cursor-grab select-none items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 font-semibold transition-all focus:outline-none active:translate-y-1 active:cursor-grabbing active:shadow-none hover:-translate-y-0.5 ${variant === 'primary' ? 'border border-transparent bg-[#004A98] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:bg-[#003A78]' : ''} ${variant === 'outline' ? 'border-2 border-[#004A98] bg-white text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:bg-blue-50' : ''} ${variant === 'ghost' ? 'border border-transparent bg-blue-50 text-[#004A98] shadow-none hover:bg-blue-100' : ''}`}
+                    className={`ustudy-button-outline`}
                     title="Kéo lên thanh dấu trang"
                 >
                     <Bookmark className="h-4 w-4 shrink-0" strokeWidth={2.5} />

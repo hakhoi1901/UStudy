@@ -1,4 +1,4 @@
-import { Select } from "./LegacySelect"
+import { AppSelect } from "../../../components/ui/form";
 import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
@@ -246,28 +246,28 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
             <p className="ustudy-settings-description">Chọn Khoa, Ngành, Khóa tuyển và Năm học để hiển thị dữ liệu phù hợp.</p>
 
             <div className="w grid grid-cols-1 md:grid-cols-1 gap-6">
-                <Select
+                <AppSelect
                     label="Khoa"
                     value={facultyId}
                     options={faculties.sort((a, b) => a.name.localeCompare(b.name))}
                     onChange={setFaculty}
                 />
 
-                <Select
+                <AppSelect
                     label="Ngành"
                     value={majorId}
                     options={currentFaculty?.majors.sort((a, b) => a.name.localeCompare(b.name)) || []}
                     onChange={setMajor}
                 />
 
-                <Select
+                <AppSelect
                     label="Khóa tuyển"
                     value={cohortId}
                     options={currentMajor?.cohorts || []}
                     onChange={setCohort}
                 />
 
-                <Select
+                <AppSelect
                     label="Năm học"
                     subLabel="(Học phí)"
                     value={academicYear}
