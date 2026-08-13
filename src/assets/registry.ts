@@ -53,7 +53,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-cntt',
                 name: 'Khoa Công nghệ Thông tin',
                 majors: [
-                    { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)' },
+                    { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin' },
                     { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
                     { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
                     { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },
@@ -138,39 +138,38 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
     }, {
         cohortId: 'k25',
         label: 'Khóa 2025',
-        defaultProgramDataSource: 'k24',
+        defaultProgramDataSource: 'k25',
         faculties: [
             {
                 id: 'khoa-cntt',
                 name: 'Khoa Công nghệ Thông tin',
                 majors: [
-                    { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)' },
-                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSourceCohort: 'k25' },
-                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSourceCohort: 'k25' },
-                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSourceCohort: 'k25' },
-                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSourceCohort: 'k25' },
-                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSourceCohort: 'k25' },
-                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSourceCohort: 'k25' },
+                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
+                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
+                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },
+                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính' },
+                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
                 ],
             },
             {
                 id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
                 name: 'Khoa Khoa học và Công nghệ Vật liệu',
                 majors: [
-                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSourceCohort: 'k25' },
-                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSourceCohort: 'k25' },
+                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu' },
+                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu' },
                 ],
             },
             {
                 id: 'khoa-toan',
                 name: 'Khoa Toán - Tin học',
                 majors: [
-                    { id: 'toan-hoc', name: 'Toán học', dataSourceCohort: 'k25' },
-                    { id: 'toan-tin', name: 'Toán - Tin', dataSourceCohort: 'k25' },
-                    { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSourceCohort: 'k25' },
-                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSourceCohort: 'k25' },
+                    { id: 'toan-hoc', name: 'Toán học' },
+                    { id: 'toan-tin', name: 'Toán - Tin' },
+                    { id: 'toan-ung-dung', name: 'Toán ứng dụng' },
+                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu' },
                     { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
-                    { id: 'thong-ke', name: 'Thống kê', dataSourceCohort: 'k25' },
+                    { id: 'thong-ke', name: 'Thống kê' },
                 ],
             },
             {
@@ -206,8 +205,8 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-sinh',
                 name: 'Khoa Sinh học - Công nghệ sinh học',
                 majors: [
-                    { id: 'sinh-hoc', name: 'Sinh học', dataSourceCohort: 'k25' },
-                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSourceCohort: 'k25' },
+                    { id: 'sinh-hoc', name: 'Sinh học' },
+                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học' },
                 ],
             },
             {
@@ -236,13 +235,12 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
     }, {
         cohortId: 'k26',
         label: 'Khóa 2026',
-        defaultProgramDataSource: 'k24',
+        defaultProgramDataSource: 'k25',
         faculties: [
             {
                 id: 'khoa-cntt',
                 name: 'Khoa Công nghệ Thông tin',
                 majors: [
-                    { id: 'nhom-nganh', name: 'Nhóm ngành máy tính và công nghệ thông tin (Chưa chọn chuyên ngành)' },
                     { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
                     { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
                     { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },

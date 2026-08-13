@@ -1,5 +1,5 @@
 import { AppSelect } from "../../../components/ui/form";
-import { COHORTS } from "../../../assets/registry";
+import { COHORTS, getProgramDataSourceCohort } from "../../../assets/registry";
 import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";
@@ -31,6 +31,9 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
     const { cryptoKey, unlock, refreshHasData, hasData } = useCrypto();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<any>(null);
+    const programDataSourceCohort = getProgramDataSourceCohort(cohortId, facultyId, majorId);
+    const programDataSourceLabel = COHORTS.find((cohort) => cohort.id === programDataSourceCohort)?.name ?? programDataSourceCohort;
+    const isUsingSharedProgramData = Boolean(programDataSourceCohort && programDataSourceCohort !== cohortId);
 
     /** Lưu dữ liệu nhạy cảm đã mã hóa + populate RAM cache */
     const saveImportedSecure = async (rawData: any, metaData: any, key: CryptoKey) => {
@@ -245,6 +248,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
             }
             <h2 className="ustudy-settings-title"><GraduationCap className="ustudy-settings-title-icon" />Chương trình đào tạo</h2>
             <p className="ustudy-settings-description">Chọn Khóa tuyển, Khoa, Ngành và Năm học để hiển thị đúng dữ liệu của bạn.</p>
+            
 
             <div className="w grid grid-cols-1 md:grid-cols-1 gap-6">
                 <AppSelect
@@ -277,6 +281,12 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                     disabled={true}
                 />
             </div>
+
+            {isUsingSharedProgramData && (
+                <p className="mt-2 text-xs text-blue-700 pt-3">
+                    Lưu ý: Dữ liệu chương trình hiện đang dùng theo {programDataSourceLabel}.
+                </p>
+            )}
 
             {/* Current selection badges */}
             <div className="mt-6 p-5 flex items-center justify-between flex-wrap gap-4">
