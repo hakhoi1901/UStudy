@@ -212,7 +212,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
                 key={period.period}
                 period={period.period}
                 time={period.start}
-                schedule={{ ...schedule, sessions: displaySessions }}
+                schedule={{ ...schedule, weekNumber: currentWeek, sessions: displaySessions }}
                 isToday={isToday}
                 currentPeriod={currentPeriod}
                 overrides={schedule.overrides}
@@ -233,7 +233,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
                 key={period.period}
                 period={period.period}
                 time={period.start}
-                schedule={{ ...schedule, sessions: displaySessions }}
+                schedule={{ ...schedule, weekNumber: currentWeek, sessions: displaySessions }}
                 isToday={isToday}
                 currentPeriod={currentPeriod}
                 overrides={schedule.overrides}

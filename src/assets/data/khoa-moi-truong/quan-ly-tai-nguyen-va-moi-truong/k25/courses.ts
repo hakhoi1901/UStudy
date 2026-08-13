@@ -66,6 +66,17 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "BAA00110",
+    "course_name_vi": "Khoa học quản lý đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00005",
     "course_name_vi": "Kinh tế đại cương",
     "credits": 2,
@@ -74,7 +85,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "chọn 1 trong 4 học phần"
+    "description": ""
   },
   {
     "course_id": "BAA00006",
@@ -85,7 +96,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "chọn 1 trong 4 học phần"
+    "description": ""
   },
   {
     "course_id": "BAA00007",
@@ -96,66 +107,55 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "chọn 1 trong 4 học phần"
+    "description": ""
   },
   {
-    "course_id": "BAA00016",
-    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+    "course_id": "ENM00001",
+    "course_name_vi": "Giới thiệu ngành Quản lý tài nguyên và môi trường",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "MTH00001",
+    "course_name_vi": "Vi tích phân 1C",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BIO00001",
+    "course_name_vi": "Sinh học đại cương 1",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "chọn 1 trong 4 học phần"
+    "description": ""
   },
   {
-    "course_id": "MTH00003",
-    "course_name_vi": "Vi tích phân 1B",
+    "course_id": "ENM00002",
+    "course_name_vi": "Sinh thái học đại cương",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "MTH00004",
-    "course_name_vi": "Vi tích phân 2B",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MTH00081",
-    "course_name_vi": "Thực hành Vi tích phân 1B",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MTH00030",
-    "course_name_vi": "Đại số tuyến tính",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MTH00040",
-    "course_name_vi": "Xác suất thống kê",
+    "course_id": "PHY00001",
+    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -176,13 +176,35 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY00001",
-    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
+    "course_id": "ENV00002",
+    "course_name_vi": "Khoa học môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "MTH00002",
+    "course_name_vi": "Toán cao cấp C",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00003",
+    "course_name_vi": "Toán ứng dụng trong môi trường",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
@@ -198,81 +220,70 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY00003",
-    "course_name_vi": "Vật lý đại cương 3 (Cơ-Nhiệt nâng cao)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00004",
-    "course_name_vi": "Vật lý hiện đại (Lượng tử-Nguyên tử-Hạt nhân)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00012",
-    "course_name_vi": "Giới thiệu ngành Kỹ thuật hạt nhân",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00081",
-    "course_name_vi": "Thực hành Vật lý đại cương",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "GEO00002",
     "course_name_vi": "Khoa học Trái đất",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
+    "course_id": "CHE00003",
+    "course_name_vi": "Hóa đại cương 3",
+    "credits": 3,
     "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00007",
+    "course_name_vi": "Hóa phân tích",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00083",
+    "course_name_vi": "Thực tập Hóa phân tích",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "MTH00040",
+    "course_name_vi": "Xác suất thống kê",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
+    "course_id": "ENV00004",
+    "course_name_vi": "Thống kê trong môi trường",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
     "course_id": "CSC00003",
@@ -294,7 +305,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
+    "description": ""
   },
   {
     "course_id": "ADD00032",
@@ -305,7 +316,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
+    "description": ""
   },
   {
     "course_id": "ADD00033",
@@ -316,7 +327,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
+    "description": ""
   },
   {
     "course_id": "ADD00034",
@@ -327,7 +338,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
+    "description": ""
   },
   {
     "course_id": "BAA00021",
@@ -363,8 +374,8 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY10001",
-    "course_name_vi": "Hàm phức",
+    "course_id": "ENM00005",
+    "course_name_vi": "Nguyên lý sinh thái trong Quản lý tài nguyên và môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -374,8 +385,173 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY10002",
-    "course_name_vi": "Thực hành vật lý cơ sở",
+    "course_id": "ENM00006",
+    "course_name_vi": "Cơ sở môi trường đất",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00007",
+    "course_name_vi": "Thủy văn môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00008",
+    "course_name_vi": "Hóa học môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00009",
+    "course_name_vi": "Hệ thống thông tin địa lý (GIS)",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00011",
+    "course_name_vi": "Cơ sở quản lý tài nguyên và môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM00012",
+    "course_name_vi": "Cơ sở lý luận phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10001",
+    "course_name_vi": "Viễn thám cơ sở",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10002",
+    "course_name_vi": "Các phương pháp phân tích môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10003",
+    "course_name_vi": "Phương pháp phân tích dữ liệu môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10004",
+    "course_name_vi": "Kinh tế tài nguyên và môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10005",
+    "course_name_vi": "Quan trắc môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10006",
+    "course_name_vi": "Mô hình hóa các quá trình lan truyền ô nhiễm",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10007",
+    "course_name_vi": "Công nghệ xử lý môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10008",
+    "course_name_vi": "Đánh giá tác động và rủi ro môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10009",
+    "course_name_vi": "Luật và chính sách môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10010",
+    "course_name_vi": "Thực tập tài nguyên và môi trường vùng",
     "credits": 2,
     "theory_hours": 0,
     "lab_hours": 60,
@@ -385,96 +561,8 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY10003",
-    "course_name_vi": "Phương pháp tính",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10004",
-    "course_name_vi": "Các phương pháp toán lý",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10005",
-    "course_name_vi": "Điện tử cơ bản",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10007",
-    "course_name_vi": "Cơ lượng tử 1",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10008",
-    "course_name_vi": "Vật lý hạt nhân",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10009",
-    "course_name_vi": "Điện động lực",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10010",
-    "course_name_vi": "Vật lý chất rắn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10011",
-    "course_name_vi": "Vật lý thống kê",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10001",
-    "course_name_vi": "Cơ sở ngành kỹ thuật hạt nhân",
+    "course_id": "ENM10011",
+    "course_name_vi": "Phân tích hệ thống môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -484,43 +572,109 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10101",
-    "course_name_vi": "Cơ sở vật lý phóng xạ",
+    "course_id": "ENM10012",
+    "course_name_vi": "Quản lý tổng hợp tài nguyên và môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
-    "course_id": "NTE10102",
-    "course_name_vi": "Kỹ thuật ghi nhận bức xạ",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10103",
-    "course_name_vi": "Phân tích thống kê số liệu thực nghiệm trong kỹ thuật hạt nhân",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10104",
-    "course_name_vi": "Thực tập cơ sở kỹ thuật hạt nhân",
+    "course_id": "ENM10013",
+    "course_name_vi": "Biến đổi khí hậu",
     "credits": 2,
-    "theory_hours": 0,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10014",
+    "course_name_vi": "Dân số, sức khỏe và môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10015",
+    "course_name_vi": "Giáo dục và truyền thông môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10016",
+    "course_name_vi": "Sức khỏe, an toàn và môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10017",
+    "course_name_vi": "Lập trình Python cơ bản",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10018",
+    "course_name_vi": "Tài nguyên năng lượng và môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10019",
+    "course_name_vi": "Quản lý dự án tài nguyên và môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10020",
+    "course_name_vi": "Phương pháp nghiên cứu khoa học trong lĩnh vực tài nguyên và môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10114",
+    "course_name_vi": "Định hướng nghiên cứu và thực tập chuyên ngành Quản lý tổng hợp tài nguyên và môi trường",
+    "credits": 3,
+    "theory_hours": 15,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -528,19 +682,19 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10105",
-    "course_name_vi": "An toàn bức xạ",
+    "course_id": "ENM10102",
+    "course_name_vi": "Các phương pháp trong quản lý tài nguyên và môi trường",
     "credits": 3,
-    "theory_hours": 45,
+    "theory_hours": 30,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
+    "exercise_hours": 15,
+    "course_type": "TC",
     "category": "MAJOR",
     "description": ""
   },
   {
-    "course_id": "NTE10108",
-    "course_name_vi": "Ứng dụng kỹ thuật hạt nhân trong công nghiệp",
+    "course_id": "ENM10103",
+    "course_name_vi": "Quy hoạch môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -550,30 +704,19 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10111",
-    "course_name_vi": "Cấu trúc và phản ứng hạt nhân",
+    "course_id": "ENM10104",
+    "course_name_vi": "ISO14000 và kiểm toán môi trường",
     "credits": 3,
-    "theory_hours": 45,
+    "theory_hours": 30,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
+    "exercise_hours": 15,
+    "course_type": "TC",
     "category": "MAJOR",
     "description": ""
   },
   {
-    "course_id": "NTE10112",
-    "course_name_vi": "Vật lý lò phản ứng",
-    "credits": 4,
-    "theory_hours": 60,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10113",
-    "course_name_vi": "Công nghệ bức xạ",
+    "course_id": "ENM10105",
+    "course_name_vi": "Hệ thống quản lý môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -583,30 +726,8 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10114",
-    "course_name_vi": "Kỹ thuật phân tích hạt nhân",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10115",
-    "course_name_vi": "Thực tập chuyên đề kỹ thuật hạt nhân",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10116",
-    "course_name_vi": "Ứng dụng KTHN trong Nông-Y-Sinh",
+    "course_id": "ENM10106",
+    "course_name_vi": "Quản lý tài nguyên đất",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -616,19 +737,96 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10117",
-    "course_name_vi": "Thực tập thực tế kỹ thuật hạt nhân",
+    "course_id": "ENM10107",
+    "course_name_vi": "Quản lý môi trường nông nghiệp nông thôn",
     "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
+    "theory_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "MAJOR",
     "description": ""
   },
   {
-    "course_id": "PHY10426",
-    "course_name_vi": "Các phương pháp NDT",
+    "course_id": "ENM10108",
+    "course_name_vi": "Quản lý và sử dụng hiệu quả tài nguyên năng lượng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10109",
+    "course_name_vi": "Quản lý tài nguyên sinh vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10110",
+    "course_name_vi": "Quản lý tổng hợp tài nguyên nước",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10202",
+    "course_name_vi": "Quản lý chất thải rắn đô thị và công nghiệp",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10203",
+    "course_name_vi": "Quản lý môi trường đô thị và khu công nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10111",
+    "course_name_vi": "Kinh tế tuần hoàn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10112",
+    "course_name_vi": "Phân tích không gian trong quản lý tài nguyên và môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10113",
+    "course_name_vi": "Tối ưu hóa trong quản lý tài nguyên và môi trường",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
@@ -638,274 +836,10 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "MPH10109",
-    "course_name_vi": "Cơ sở vật lý trong y học hạt nhân",
+    "course_id": "ENM10210",
+    "course_name_vi": "Định hướng nghiên cứu và thực tập chuyên ngành Quản lý môi trường đô thị và công nghiệp",
     "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10107",
-    "course_name_vi": "Nguyên lý và ứng dụng máy gia tốc",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10109",
-    "course_name_vi": "Ứng dụng kỹ thuật hạt nhân trong môi trường và thủy văn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10110",
-    "course_name_vi": "Công nghệ lò phản ứng và nhà máy điện hạt nhân",
-    "credits": 2,
     "theory_hours": 15,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10118",
-    "course_name_vi": "Vật lý hạt cơ bản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10119",
-    "course_name_vi": "Kỹ thuật phân tích y sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10120",
-    "course_name_vi": "Ứng dụng máy học trong kỹ thuật hạt nhân",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10121",
-    "course_name_vi": "Ứng dụng SPSS trong phân tích số liệu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10122",
-    "course_name_vi": "An toàn lò phản ứng hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10123",
-    "course_name_vi": "Ứng dụng phương pháp số trong lĩnh vực hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10124",
-    "course_name_vi": "Quản lý chất thải hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10322",
-    "course_name_vi": "Những vấn đề mới trong vật lý hiện đại",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10801",
-    "course_name_vi": "Phương pháp nghiên cứu khoa học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MPH10106",
-    "course_name_vi": "Sinh học bức xạ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MPH10108",
-    "course_name_vi": "Cơ sở vật lý trong xạ trị",
-    "credits": 4,
-    "theory_hours": 45,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MPH10120",
-    "course_name_vi": "Thiết bị và quy trình kỹ thuật trong chẩn đoán hình ảnh",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10106",
-    "course_name_vi": "Ứng dụng tin học trong kỹ thuật hạt nhân",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10125",
-    "course_name_vi": "Vật liệu kỹ thuật hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10127",
-    "course_name_vi": "Điện tử hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10129",
-    "course_name_vi": "Chính sách và pháp quy hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10130",
-    "course_name_vi": "Hóa phóng xạ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10531",
-    "course_name_vi": "Tư duy phản biện",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10201",
-    "course_name_vi": "Thủy nhiệt học trong lò phản ứng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10202",
-    "course_name_vi": "An toàn hạt nhân",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10203",
-    "course_name_vi": "Mô phỏng vận hành nhà máy điện hạt nhân",
-    "credits": 2,
-    "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -913,10 +847,76 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10204",
-    "course_name_vi": "Thực tập chuyên đề Năng lượng hạt nhân",
+    "course_id": "ENM10204",
+    "course_name_vi": "Đô thị và khu công nghiệp sinh thái",
     "credits": 2,
-    "theory_hours": 0,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10205",
+    "course_name_vi": "Kiểm soát ô nhiễm môi trường đô thị và khu công nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10206",
+    "course_name_vi": "Công nghệ xanh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10207",
+    "course_name_vi": "Sinh thái công nghiệp",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10208",
+    "course_name_vi": "Đánh giá môi trường chiến lược cho phát triển đô thị",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10209",
+    "course_name_vi": "Quản lý cơ sở hạ tầng môi trường đô thị",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10308",
+    "course_name_vi": "Định hướng nghiên cứu và thực tập chuyên ngành Khoa học dữ liệu và tin học ứng dụng trong môi trường",
+    "credits": 3,
+    "theory_hours": 15,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -924,19 +924,63 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10206",
-    "course_name_vi": "Chu trình nhiên liệu hạt nhân và quản lý nhiên liệu vùng hoạt",
-    "credits": 2,
+    "course_id": "ENM10302",
+    "course_name_vi": "Lập trình ứng dụng trong môi trường",
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "MAJOR",
     "description": ""
   },
   {
-    "course_id": "NTE10126",
-    "course_name_vi": "Điều khiển và đo lường trong lò phản ứng",
+    "course_id": "ENM10303",
+    "course_name_vi": "Mô hình hóa môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10304",
+    "course_name_vi": "Phân tích dữ liệu và ứng dụng trí tuệ nhân tạo trong môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10305",
+    "course_name_vi": "GIS và viễn thám ứng dụng trong tài nguyên môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10306",
+    "course_name_vi": "Các hệ cơ sở dữ liệu môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10307",
+    "course_name_vi": "Công nghệ quan trắc và giám sát tài nguyên và môi trường",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -946,34 +990,23 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "NTE10128",
-    "course_name_vi": "Kinh tế năng lượng hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10131",
-    "course_name_vi": "Quản lý và truyền thông dự án điện hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "NTE10995",
+    "course_id": "ENM10195",
     "course_name_vi": "Khóa luận tốt nghiệp",
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 300,
+    "course_type": "BB",
+    "category": "GRADUATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10190",
+    "course_name_vi": "Seminar tốt nghiệp",
+    "credits": 6,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 180,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""

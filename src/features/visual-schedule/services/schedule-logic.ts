@@ -352,6 +352,9 @@ export const ScheduleLogic = {
                 let rawStart = parseFloat(match[2]);
                 let rawEnd = parseFloat(match[3]);
                 let room = (match[5] || match[4] || '').trim();
+                const baseDayOfWeek = dayOfWeek;
+                const baseRoom = room;
+                const basePeriods = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
 
                 // --- Apply Global Overrides ---
                 const sessionId = `${course.id}_${index}_${partIdx}`;
@@ -394,14 +397,22 @@ export const ScheduleLogic = {
                     endPeriod: adjusted.endPeriod,
                     startTime: startTimeStr,
                     endTime: endTimeStr,
-                    color,
+                    color: override?.color ?? color,
+                    note: override?.note,
                     session: sessionParams,
                     duration: adjusted.duration,
                     totalWeeks,
                     startDate: dateInfo.startDateStr,
                     endDate: dateInfo.endDateStr,
                     startDateParsed: dateInfo.startDateParsed,
-                    endDateParsed: dateInfo.endDateParsed
+                    endDateParsed: dateInfo.endDateParsed,
+                    baseValues: {
+                        room: baseRoom,
+                        dayOfWeek: baseDayOfWeek,
+                        startPeriod: basePeriods.startPeriod,
+                        endPeriod: basePeriods.endPeriod,
+                        color,
+                    }
                 });
             });
         });

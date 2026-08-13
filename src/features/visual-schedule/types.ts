@@ -21,7 +21,15 @@ export interface ScheduleSession {
     endDate: string;
     startDateParsed?: Date;
     endDateParsed?: Date;
-    isOverridden?: boolean;
+    /** Giá trị lịch gốc trước khi áp dụng các tùy chỉnh của người dùng. */
+    baseValues?: {
+        room: string;
+        dayOfWeek: 2 | 3 | 4 | 5 | 6 | 7 | 8;
+        startPeriod: number;
+        endPeriod: number;
+        note?: string;
+        color: string;
+    };
 }
 
 export interface WeeklySchedule {

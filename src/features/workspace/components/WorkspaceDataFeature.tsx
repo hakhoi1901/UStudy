@@ -188,7 +188,7 @@ function CoverageRow({ item }: { item: MajorDataCoverage }) {
 
     return (
         <div className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isComplete ? 'bg-emerald-50 text-emerald-700' : (missing.length === 3 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700' )}`}>
                 {isComplete ? <CheckCircle2 className="h-4 w-4" /> : <CircleAlert className="h-4 w-4" />}
             </span>
             <div className="min-w-0 flex-1">
@@ -198,7 +198,7 @@ function CoverageRow({ item }: { item: MajorDataCoverage }) {
                 </p>
                 {item.sourceCohort !== item.cohort.id && <p className="mt-1 text-xs font-medium text-[#004A98]">Dùng dữ liệu nguồn {item.sourceCohort.toUpperCase()}</p>}
             </div>
-            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${isComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${isComplete ? 'bg-emerald-50 text-emerald-700' : (missing.length === 3 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700' )}`}>
                 {item.availableCount}/3
             </span>
         </div>

@@ -60,7 +60,6 @@ export function useVisualSchedule({ selectedSemester }: UseVisualScheduleProps =
                     startTime: ScheduleLogic.periodToTimeString(adjusted.startPeriod, true),
                     endTime: ScheduleLogic.periodToTimeString(adjusted.endPeriod, false),
                     duration: adjusted.duration,
-                    isOverridden: true
                 };
             }
             return session;

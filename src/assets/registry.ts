@@ -223,7 +223,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Điện tử - Viễn thông',
                 majors: [
                     { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
-                    { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch' },
+                    { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch', dataSourceCohort: 'k24' },
                 ],
             },
             {
