@@ -137,6 +137,51 @@ export function isSessionActiveInWeek(
     return consumedOccurrences < plannedOccurrences;
 }
 
+export function getScheduleCalendarWeekCount(
+    sessions: ScheduleSession[],
+    semesterStartDate: Date | undefined,
+    holidays: Holiday[],
+): number {
+    const baseWeeks = Math.max(1, ...sessions.map((session) => session.totalWeeks || 0));
+    if (!semesterStartDate) return baseWeeks;
+
+    const datedWeeks = Math.max(0, ...sessions.map((session) => {
+        if (!session.endDateParsed) return 0;
+        return Math.floor((atStartOfDay(session.endDateParsed).getTime() - atStartOfDay(semesterStartDate).getTime()) / (7 * DAY_MS)) + 1;
+    }));
+
+    const lastActiveWeek = sessions.reduce((latestWeek, session) => {
+        const firstOccurrence = getFirstSessionOccurrence(session, semesterStartDate);
+        const firstWeek = Math.max(1, Math.floor((firstOccurrence.getTime() - atStartOfDay(semesterStartDate).getTime()) / (7 * DAY_MS)) + 1);
+        const plannedOccurrences = getPlannedOccurrenceCount(session, firstOccurrence);
+        let consumedOccurrences = 0;
+        let calendarWeek = firstWeek;
+        let lastActive = 0;
+
+        // A bounded guard also protects old or malformed imported holiday ranges.
+        const maximumWeek = firstWeek + plannedOccurrences + 104;
+        while (consumedOccurrences < plannedOccurrences && calendarWeek <= maximumWeek) {
+            const occurrenceDate = getSessionDateForWeek(semesterStartDate, calendarWeek, session.dayOfWeek);
+            const matchingHolidays = holidays.filter((holiday) => (
+                holidayAffectsSessionOnDate(holiday, session, occurrenceDate, semesterStartDate)
+            ));
+            const requiresMakeUp = matchingHolidays.some((holiday) => holiday.makeUp !== false);
+
+            if (matchingHolidays.length === 0) {
+                consumedOccurrences += 1;
+                lastActive = calendarWeek;
+            } else if (!requiresMakeUp) {
+                consumedOccurrences += 1;
+            }
+            calendarWeek += 1;
+        }
+
+        return Math.max(latestWeek, lastActive);
+    }, 0);
+
+    return Math.max(baseWeeks, datedWeeks, lastActiveWeek);
+}
+
 export function sortHolidays(holidays: Holiday[], semesterStartDate?: Date): Holiday[] {
     return [...holidays].sort((first, second) => {
         const firstRange = getHolidayDateRange(first, semesterStartDate);

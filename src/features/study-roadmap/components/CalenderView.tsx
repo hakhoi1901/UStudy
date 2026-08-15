@@ -421,7 +421,7 @@ export function CalendarView({
                             <div className="hidden min-w-0">
                                 <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
                                     {currentSections.length > 0
-                                        ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
+                                        ? `Phương án ${activeOption + 1}/${options.length} - ${selectedCourses.size} môn`
                                         : `${selectedCourses.size} môn đã chọn`}
                                 </p>
 
@@ -588,7 +588,7 @@ export function CalendarView({
                         <StatCard
                             icon={Layers}
                             label="Số tín chỉ"
-                            value={stats.totalCredits || '—'}
+                            value={stats.totalCredits || '-'}
                             sub={stats.totalCredits ? 'tín chỉ đăng ký' : 'Chưa có dữ liệu'}
                         />
                         <StatCard
@@ -757,7 +757,7 @@ export function CalendarView({
                             ))}
                         </div>
 
-                        {/* Grid body — layer 1: lưới, layer 2: thẻ môn */}
+                        {/* Grid body - layer 1: lưới, layer 2: thẻ môn */}
                         <div style={{ position: 'relative', isolation: 'isolate' }}>
                           {/* Lưới nền không tạo stacking context để cột Tiết sticky nằm trên thẻ môn. */}
                           <div style={{ position: 'relative' }}>
@@ -886,7 +886,7 @@ export function CalendarView({
                                             pointerEvents: 'auto',
                                         }}
                                     >
-                                        {/* Conflict badge — only when tall enough */}
+                                        {/* Conflict badge - only when tall enough */}
                                         {hasConflict && !isCompact && (
                                             <div style={{
                                                 display: 'flex', alignItems: 'center', gap: 3,
@@ -898,7 +898,7 @@ export function CalendarView({
                                             </div>
                                         )}
 
-                                        {/* Course code — always shown */}
+                                        {/* Course code - always shown */}
                                         <p style={{
                                             fontFamily: 'ui-monospace, monospace',
                                             fontSize: isCompact ? 9 : 11,
@@ -920,7 +920,7 @@ export function CalendarView({
                                             )}
                                         </p>
 
-                                        {/* Course name — medium + tall */}
+                                        {/* Course name - medium + tall */}
                                         {!isCompact && (
                                             <p style={{
                                                 fontSize: 9,
@@ -942,7 +942,7 @@ export function CalendarView({
                                         {/* Spacer for tall cards */}
                                         {isTall && <div style={{ flex: 1 }} />}
 
-                                        {/* Footer: group + room + time — medium + tall */}
+                                        {/* Footer: group + room + time - medium + tall */}
                                         {!isCompact && (
                                             <div style={{
                                                 display: 'flex',
@@ -982,7 +982,7 @@ export function CalendarView({
                                                     )}
                                                 </div>
 
-                                                {/* Time row — only when tall enough or time is short */}
+                                                {/* Time row - only when tall enough or time is short */}
                                                 {startTime && (isTall || isMedium) && (
                                                     <span style={{
                                                         fontSize: 8,

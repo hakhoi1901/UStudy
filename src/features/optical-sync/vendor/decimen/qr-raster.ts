@@ -2,21 +2,21 @@
 //
 // Pure so it can be golden-tested in Node, where ImageData does not exist:
 // the pixels are RGBA bytes viewed as one little-endian u32 per pixel, which
-// is exactly an ImageData buffer — the sender wraps the result with
+// is exactly an ImageData buffer - the sender wraps the result with
 // `new ImageData(new Uint8ClampedArray(pixels.buffer), size, size)` at no copy.
 
 const WHITE = 0xffffffff;
 const BLACK = 0xff000000; // opaque black: alpha in the high byte, little-endian
 
 export interface QrRaster {
-  /** Pixels per side: moduleCount + 2 × margin. One module = one pixel — the
+  /** Pixels per side: moduleCount + 2 × margin. One module = one pixel - the
    *  sender scales up with imageSmoothingEnabled off. */
   size: number;
   /** `<ArrayBuffer>` because ImageData refuses an ArrayBufferLike-backed view. */
   pixels: Uint32Array<ArrayBuffer>;
 }
 
-/** `modules` is row-major, truthy = dark — the qrcode lib's `qr.modules.data`. */
+/** `modules` is row-major, truthy = dark - the qrcode lib's `qr.modules.data`. */
 export function rasterizeQr(
   moduleCount: number,
   modules: ArrayLike<number>,

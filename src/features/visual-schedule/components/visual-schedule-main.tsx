@@ -26,6 +26,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
     hasData,
     schedule,
     currentWeek,
+    totalWeeks,
     weekRangeStr,
     currentWeekHolidays,
     displaySessions,
@@ -132,7 +133,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
         <QuickStatsCard
           icon={Calendar}
           title="Tuần"
-          value={`${currentWeek}/17`}
+          value={`${currentWeek}/${totalWeeks}`}
           subtitle={weekRangeStr}
           bgColor="bg-orange-600"
         />
@@ -161,7 +162,7 @@ export function VisualScheduleMain({ selectedSemester }: VisualScheduleMainProps
 
         <button
           onClick={handleNextWeek}
-          disabled={currentWeek === 25}
+          disabled={currentWeek === totalWeeks}
           className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="text-xs md:text-sm font-medium hidden sm:inline">Tuần sau</span>

@@ -400,10 +400,10 @@ export async function loadCohortData(facultyId: string, majorId: string, cohortI
     const sourceCohort = resolveDataCohort(facultyId, majorId, cohortId);
 
     const [coursesModule, prerequisitesModule, categoriesModule] = await Promise.all([
-        import(`./data/${facultyId}/${majorId}/${sourceCohort}/courses.ts`),
-        import(`./data/${facultyId}/${majorId}/${sourceCohort}/prerequisites.ts`)
+        import(`./${facultyId}/${majorId}/${sourceCohort}/courses.ts`),
+        import(`./${facultyId}/${majorId}/${sourceCohort}/prerequisites.ts`)
             .catch(() => ({ prerequisites: [] })),
-        import(`./data/${facultyId}/${majorId}/${sourceCohort}/categories.ts`),
+        import(`./${facultyId}/${majorId}/${sourceCohort}/categories.ts`),
     ]);
 
     return {

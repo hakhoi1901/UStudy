@@ -4,9 +4,9 @@ Dựa trên phân tích kỹ toàn bộ codebase, dưới đây là các gợi �
 
 ---
 
-## 🔴 Ưu tiên cao — Quick Wins (1-3 ngày/feature)
+## 🔴 Ưu tiên cao - Quick Wins (1-3 ngày/feature)
 
-### 1. Dashboard đang quá "trống" — Cần thêm biểu đồ & insight
+### 1. Dashboard đang quá "trống" - Cần thêm biểu đồ & insight
 
 **Hiện tại**: Dashboard chỉ có 3 cards tĩnh (GPA, tín chỉ, học phí). Dự án đã cài `recharts` nhưng Dashboard **không hề dùng**.
 
@@ -27,7 +27,7 @@ Impact: ★★★★★ (Dashboard là trang đầu tiên user thấy)
 
 ---
 
-### 2. Dark Mode — Dependency đã cài nhưng chưa dùng
+### 2. Dark Mode - Dependency đã cài nhưng chưa dùng
 
 **Hiện tại**: `next-themes` có trong `package.json` nhưng không có logic toggle nào trong app. Toàn bộ UI hardcode light theme.
 
@@ -43,7 +43,7 @@ Impact: ★★★★☆ (sinh viên hay code đêm → dark mode rất được 
 
 ---
 
-### 3. PWA — Offline-first đúng nghĩa
+### 3. PWA - Offline-first đúng nghĩa
 
 **Hiện tại**: App đã là client-side pure, data lưu localStorage → thiếu một bước nhỏ để thành PWA.
 
@@ -78,7 +78,7 @@ Impact: ★★★☆☆
 
 ---
 
-## 🟡 Ưu tiên trung bình — Feature nâng tầm (3-7 ngày)
+## 🟡 Ưu tiên trung bình - Feature nâng tầm (3-7 ngày)
 
 ### 5. So sánh TKB trực quan hơn
 
@@ -162,15 +162,15 @@ Impact: ★★★★★ (mở rộng user base ra toàn trường)
 
 ---
 
-## 🟢 Ưu tiên dài hạn — Game Changers (1-2 tuần+)
+## 🟢 Ưu tiên dài hạn - Game Changers (1-2 tuần+)
 
-### 10. 🤖 AI Chatbot — "Trợ lý học tập"
+### 10. 🤖 AI Chatbot - "Trợ lý học tập"
 
 **Gợi ý**:
 - Tích hợp **Gemini API** (client-side hoặc qua Cloudflare Worker)
 - Chatbot trả lời: "Kỳ sau nên học gì?", "GPA cần bao nhiêu để lên Giỏi?", "Tôi thiếu mấy tín chỉ tự chọn?"
 - Feed context = student data (grades, credits, prerequisites) → Gemini phân tích
-- **Personality**: "Anh/chị mentor đại học" — nghiêm túc nhưng gần gũi
+- **Personality**: "Anh/chị mentor đại học" - nghiêm túc nhưng gần gũi
 
 ```
 Effort: ★★★★★
@@ -212,7 +212,7 @@ Impact: ★★★★☆ (giảm tỷ lệ bounce)
 
 ---
 
-## 🔧 Technical Debt — Cải thiện Code Quality
+## 🔧 Technical Debt - Cải thiện Code Quality
 
 ### 13. Chuyển sang React Router
 
@@ -256,7 +256,7 @@ Impact: ★★★☆☆
 
 | File cần test | Lý do |
 |---------------|-------|
-| `GPACalculator.ts` | Logic tính GPA critical — sai là ảnh hưởng toàn bộ |
+| `GPACalculator.ts` | Logic tính GPA critical - sai là ảnh hưởng toàn bộ |
 | `FinancialLogic.ts` | Tính tiền phải chính xác |
 | `AcademicRulesEngine.ts` | Quy chế phức tạp, nhiều edge case |
 | `Recommender.ts` | Logic đệ quy tìm prerequisite chains |
@@ -311,4 +311,4 @@ Impact: ★★★★☆ (confidence khi refactor)
 
 ---
 
-*Tài liệu được tạo tự động bởi AI Assistant — 05/05/2026*
+*Tài liệu được tạo tự động bởi AI Assistant - 05/05/2026*

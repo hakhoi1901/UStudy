@@ -1,5 +1,5 @@
 // Frame protocol: every QR frame is fully self-describing, so there is NO
-// handshake — the receiver locks onto a stream mid-flight, and a new session
+// handshake - the receiver locks onto a stream mid-flight, and a new session
 // id on any frame simply starts a fresh transfer.
 //
 // Layout (little-endian), 20 bytes, followed by `blockLen` payload bytes:
@@ -10,7 +10,7 @@
 //   8  u16  k           source block count
 //  10  u16  blockLen    payload bytes per frame
 //  12  u32  totalLen    protected file-container length in bytes
-//  16  u32  payloadFnv  FNV-1a of the whole container — verified on completion
+//  16  u32  payloadFnv  FNV-1a of the whole container - verified on completion
 
 export const HEADER_LEN = 20;
 export const MAX_FILE_BYTES = 64 * 1024 * 1024;
@@ -19,7 +19,7 @@ export const MAX_FILE_BYTES = 64 * 1024 * 1024;
  * packFile()'s own error can't drift apart. The HTML pulls it in as the
  * `%MAX_FILE_LABEL%` token (see htmlTokens() in vite.config.ts).
  *
- * README.md still spells it out in prose — nothing templates a markdown file,
+ * README.md still spells it out in prose - nothing templates a markdown file,
  * so that one is on you if this ever changes.
  */
 export const MAX_FILE_LABEL = `${MAX_FILE_BYTES / 1024 / 1024} MB`;
@@ -63,8 +63,8 @@ async function gzipAsync(bytes: Uint8Array): Promise<Uint8Array> {
 /**
  * Inflate with a hard output ceiling.
  *
- * The gzip trailer's declared size is attacker-controlled — it arrives over the
- * optical channel like everything else — so it is a hint, never a bound. This
+ * The gzip trailer's declared size is attacker-controlled - it arrives over the
+ * optical channel like everything else - so it is a hint, never a bound. This
  * counts bytes as they come off the stream and aborts the moment they exceed
  * `maxBytes`, which the caller has already clamped to MAX_FILE_BYTES. Without
  * this an 80 KB stream could claim to be small and inflate to gigabytes.
@@ -131,7 +131,7 @@ const PRECOMPRESSED_TYPES = new Set([
   "application/zstd",
 ]);
 
-/** Image and audio subtypes that are NOT already compressed — the exceptions
+/** Image and audio subtypes that are NOT already compressed - the exceptions
  *  to the otherwise-safe "all image/*, all audio/*" rule. */
 const COMPRESSIBLE_IMAGES = /^image\/(bmp|x-ms-bmp|svg\+xml|tiff|x-icon|vnd\.microsoft\.icon)$/;
 const COMPRESSIBLE_AUDIO = /^audio\/(wav|x-wav|wave|vnd\.wave|aiff|x-aiff|basic|l16)$/;
@@ -141,13 +141,13 @@ const COMPRESSIBLE_AUDIO = /^audio\/(wav|x-wav|wave|vnd\.wave|aiff|x-aiff|basic|
  *
  * Trying costs a full-size allocation and a pass over every byte to discover
  * the answer. On a 64 MB pick that is one of the five simultaneous copies the
- * sender holds, and JPEGs, MP4s and zips — the files people actually send —
+ * sender holds, and JPEGs, MP4s and zips - the files people actually send -
  * never win the trade.
  *
  * Deliberately a list rather than a heuristic, and deliberately conservative:
  * a wrong "skip" costs a few percent of transfer size, a wrong "try" costs a
  * whole buffer. Formats that genuinely do compress (bmp, svg, tiff, wav) are
- * excluded on purpose, and PDF is left off the list entirely — its streams are
+ * excluded on purpose, and PDF is left off the list entirely - its streams are
  * usually deflated already, but text-heavy ones still gain enough to matter.
  */
 export function isPrecompressedType(type: string): boolean {
@@ -315,13 +315,13 @@ export function parseFrame(
 
 /**
  * Everything about a frame that has to hold constant for a decoder to keep
- * accepting frames into it. `seq` is deliberately absent — it is the one field
+ * accepting frames into it. `seq` is deliberately absent - it is the one field
  * that varies within a stream.
  *
  * The receiver resets on ANY disagreement, not just a new session id: session
  * ids are 16 bits drawn at random on every sender restart, so a collision
  * across a restart is rare but real, and a mismatched frame fed into the old
- * decoder corrupts it silently — surfacing only as a checksum failure after the
+ * decoder corrupts it silently - surfacing only as a checksum failure after the
  * whole transfer has run. Including `payloadFnv` also means a sender restarted
  * on the SAME file resumes into the same decoder, which is correct: identical
  * k, sessionId and seq produce an identical frame.
@@ -339,7 +339,7 @@ export function fnv1a(bytes: Uint8Array): number {
   return h >>> 0;
 }
 
-/** splitmix32 — deterministic across JS engines (integer ops only). */
+/** splitmix32 - deterministic across JS engines (integer ops only). */
 export function splitmix32(seed: number): () => number {
   let s = seed | 0;
   return () => {

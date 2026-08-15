@@ -1,5 +1,5 @@
 # test web (repomix)
-src/assets/data/ctdt-pdf
+src/assets/data/academic-programs/ctdt-pdf
 # Logs
 logs
 *.log
@@ -33,6 +33,7 @@ architecture.md
 
 data.json
 temp/*
+localstorage.json
 
 *.txt
 !public/robots.txt

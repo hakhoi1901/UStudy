@@ -9,18 +9,18 @@ import {
     COHORTS,
     getFacultiesForCohort,
     loadCohortData,
-} from '../assets/registry';
+} from '../assets/data/academic-programs/registry';
 import {
     ACADEMIC_YEARS,
     DEFAULT_ACADEMIC_YEAR,
     getTuitionRates,
 } from '../assets/data/tuition';
-import type { FacultyInfo, MajorInfo, CohortInfo } from '../assets/registry';
+import type { FacultyInfo, MajorInfo, CohortInfo } from '../assets/data/academic-programs/registry';
 
 // Fallback: import trực tiếp data mặc định để tránh loading flash lần đầu
-import { courses as defaultCourses } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/courses';
-import { prerequisites as defaultPrerequisites } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/prerequisites';
-import { categories as defaultCategories } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/categories';
+import { courses as defaultCourses } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/courses';
+import { prerequisites as defaultPrerequisites } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/prerequisites';
+import { categories as defaultCategories } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/categories';
 
 /**
  * Interface cho DepartmentData

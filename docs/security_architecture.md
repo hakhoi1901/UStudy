@@ -1,6 +1,6 @@
 # Kiến trúc Bảo mật Dữ liệu UStudy
 
-Tài liệu này mô tả chi tiết chuyên sâu luồng xử lý và bảo mật dữ liệu của ứng dụng UStudy. Hệ thống được thiết kế theo nguyên tắc **Zero-Knowledge Architecture** — nghĩa là toàn bộ dữ liệu chỉ tồn tại ở dạng có thể đọc được (plaintext) bên trong RAM thiết bị của bạn, và ứng dụng hoàn toàn không lưu trữ mật khẩu của bạn ở bất kỳ đâu.
+Tài liệu này mô tả chi tiết chuyên sâu luồng xử lý và bảo mật dữ liệu của ứng dụng UStudy. Hệ thống được thiết kế theo nguyên tắc **Zero-Knowledge Architecture** - nghĩa là toàn bộ dữ liệu chỉ tồn tại ở dạng có thể đọc được (plaintext) bên trong RAM thiết bị của bạn, và ứng dụng hoàn toàn không lưu trữ mật khẩu của bạn ở bất kỳ đâu.
 
 ## 1. Tổng quan Luồng Dữ liệu (End-to-End)
 

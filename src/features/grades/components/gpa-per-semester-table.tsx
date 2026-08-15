@@ -88,7 +88,7 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                                 </td>
                                                                                                 <td className="px-3 py-3 text-center text-sm">
                                                     {diff === null ? (
-                                                        <span className="text-gray-400">—</span>
+                                                        <span className="text-gray-400">-</span>
                                                     ) : (
                                                         <div
                                                             className={`inline-flex items-center justify-center gap-1 font-semibold tabular-nums ${

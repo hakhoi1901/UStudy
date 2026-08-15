@@ -1,5 +1,5 @@
 import { AppSelect } from "../../../components/ui/form";
-import { COHORTS, getProgramDataSourceCohort } from "../../../assets/registry";
+import { COHORTS, getProgramDataSourceCohort } from "../../../assets/data/academic-programs/registry";
 import { useDepartmentData } from "../../../context/DepartmentContext";
 import { CheckCircle, GraduationCap, Upload, Shield } from "lucide-react";
 import { useRef, useState } from "react";

@@ -6,7 +6,7 @@ import {
     type CohortInfo,
     type FacultyInfo,
     type MajorInfo,
-} from '../../../assets/registry';
+} from '../../../assets/data/academic-programs/registry';
 import { ACADEMIC_YEARS, getTuitionRates } from '../../../assets/data/tuition';
 
 export type ProgramDataKind = 'courses' | 'prerequisites' | 'categories';

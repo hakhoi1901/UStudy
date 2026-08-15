@@ -25,6 +25,8 @@ export function useSchedule(): WeeklySchedule & {
     const metadata = readFromStorage<any>(STORAGE_KEYS.IMPORT_META, null);
     const activeGroupSchedule = readFromStorage<any>(STORAGE_KEYS.ACTIVE_GROUP_SCHEDULE, null);
     const legacySavedSchedules = readFromStorage<any>(STORAGE_KEYS.SAVED_SCHEDULES, null);
+    const registrationMeta = metadata?.params?.registration;
+    const overridesStorageKey = `${STORAGE_KEYS.SCHEDULE_OVERRIDES}:${registrationMeta?.year || 'unknown'}:${registrationMeta?.sem || 'unknown'}`;
     const groupRegistrations = activeGroupSchedule?.registrations ?? legacySavedSchedules?.activeGroupSchedule?.registrations;
     const courses_registered = Array.isArray(groupRegistrations) && groupRegistrations.length > 0
         ? groupRegistrations
@@ -32,11 +34,20 @@ export function useSchedule(): WeeklySchedule & {
 
     const [systemHolidays, setSystemHolidays] = useState<Holiday[]>([]);
 
+    const readOverridesForSemester = () => {
+        const semesterOverrides = readFromStorage<ScheduleOverrides | null>(overridesStorageKey, null);
+        if (semesterOverrides) return normalizeOverrides(semesterOverrides);
+
+        // Dữ liệu trước đây dùng một key chung; giữ làm fallback để không mất thiết lập cũ.
+        return normalizeOverrides(readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, EMPTY_OVERRIDES));
+    };
+
     // Dùng useState để tránh reload trang khi cập nhật overrides
-    const [overrides, setOverrides] = useState<ScheduleOverrides>(() => {
-        const stored = readFromStorage<ScheduleOverrides>(STORAGE_KEYS.SCHEDULE_OVERRIDES, EMPTY_OVERRIDES);
-        return normalizeOverrides(stored);
-    });
+    const [overrides, setOverrides] = useState<ScheduleOverrides>(readOverridesForSemester);
+
+    useEffect(() => {
+        setOverrides(readOverridesForSemester());
+    }, [overridesStorageKey]);
 
     useEffect(() => {
         fetch('/holidays.json')
@@ -57,7 +68,7 @@ export function useSchedule(): WeeklySchedule & {
 
     const updateOverrides = (newOverrides: ScheduleOverrides) => {
         const normalized = normalizeOverrides(newOverrides);
-        saveToStorage(STORAGE_KEYS.SCHEDULE_OVERRIDES, normalized);
+        saveToStorage(overridesStorageKey, normalized);
         setOverrides(normalized);
     };
 
