@@ -355,7 +355,22 @@ export const ScheduleLogic = {
                 }
 
                 const adjusted = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
-                return [{ partIdx, sessionId, dayOfWeek, room, adjusted }];
+                return [{
+                    partIdx,
+                    sessionId,
+                    dayOfWeek,
+                    room,
+                    adjusted,
+                    color: override?.color ?? color,
+                    note: override?.note,
+                    baseValues: {
+                        room: baseRoom,
+                        dayOfWeek: baseDayOfWeek,
+                        startPeriod: basePeriods.startPeriod,
+                        endPeriod: basePeriods.endPeriod,
+                        color,
+                    },
+                }];
             });
 
             const periodsPerWeek = parsedSessions.reduce((sum, session) => sum + session.adjusted.duration, 0);
@@ -363,7 +378,7 @@ export const ScheduleLogic = {
                 ? Math.ceil(requiredHours / periodsPerWeek)
                 : 0;
 
-            parsedSessions.forEach(({ partIdx, sessionId, dayOfWeek, room, adjusted }) => {
+            parsedSessions.forEach(({ partIdx, sessionId, dayOfWeek, room, adjusted, color: sessionColor, note, baseValues }) => {
                 const startTimeStr = ScheduleLogic.periodToTimeString(adjusted.startPeriod, true);
                 const endTimeStr = ScheduleLogic.periodToTimeString(adjusted.endPeriod, false);
                 const sessionParams = Math.floor(adjusted.startPeriod) <= 5 ? 'morning' as const : 'afternoon' as const;
@@ -394,8 +409,8 @@ export const ScheduleLogic = {
                     endPeriod: adjusted.endPeriod,
                     startTime: startTimeStr,
                     endTime: endTimeStr,
-                    color: override?.color ?? color,
-                    note: override?.note,
+                    color: sessionColor,
+                    note,
                     session: sessionParams,
                     duration: adjusted.duration,
                     totalWeeks,
@@ -403,13 +418,7 @@ export const ScheduleLogic = {
                     endDate: dateInfo.endDateStr,
                     startDateParsed: dateInfo.startDateParsed,
                     endDateParsed: dateInfo.endDateParsed,
-                    baseValues: {
-                        room: baseRoom,
-                        dayOfWeek: baseDayOfWeek,
-                        startPeriod: basePeriods.startPeriod,
-                        endPeriod: basePeriods.endPeriod,
-                        color,
-                    }
+                    baseValues,
                 });
             });
         });

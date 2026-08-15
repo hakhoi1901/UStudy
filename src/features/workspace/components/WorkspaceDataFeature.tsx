@@ -14,7 +14,7 @@ import {
     LoaderCircle,
     School,
 } from 'lucide-react';
-import { ACADEMIC_YEAR_MAJOR_CATALOGS, FACULTIES, getAcademicYearMajorCatalog, loadCohortData } from '../../../assets/registry';
+import { ACADEMIC_YEAR_MAJOR_CATALOGS, FACULTIES, getAcademicYearMajorCatalog, loadCohortData } from '../../../assets/data/academic-programs/registry';
 import { ACADEMIC_YEARS, getTuitionRateDetails } from '../../../assets/data/tuition';
 import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
 import { AppSelect } from '../../../components/ui/form';
@@ -471,7 +471,7 @@ export function WorkspaceDataFeature() {
                         </div>
                     </section>
 
-                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách khoa, ngành và khóa nằm tại src/assets/registry.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
+                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách khoa, ngành và khóa nằm tại src/assets/data/academic-programs/registry.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
                 </>
             )}
         </section>
