@@ -150,7 +150,7 @@ export function Header({
                 {showSemesterDropdown && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowSemesterDropdown(false)}></div>
-                    <div className="absolute top-full left-0 mt-2 w-56 md:w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20 max-h-72 overflow-y-auto">
+                    <div className="ustudy-dropdown-menu border border-gray-300 w-56 md:w-64 max-h-72">
                       {semesters.map((semester) => (
                         <button
                           key={semester}
@@ -159,9 +159,9 @@ export function Header({
                             if (onSemesterChange) onSemesterChange(semester);
                             else setLocalSemester(semester);
                           }}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
-                            ? 'text-[#004A98] bg-blue-50'
-                            : 'text-gray-700 hover:bg-gray-50'
+                          className={`${selectedSemester === semester
+                            ? 'ustudy-dropdown-option ustudy-dropdown-option-active'
+                            : 'ustudy-dropdown-option'
                             }`}
                           style={{ fontWeight: selectedSemester === semester ? 500 : 400 }}
                         >

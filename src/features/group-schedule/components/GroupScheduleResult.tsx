@@ -4,11 +4,13 @@ import { Badge } from '../../../components/ui/display/badge';
 import type { GroupScheduleItem, GroupScheduleOption } from '../types';
 import { Save } from 'lucide-react';
 import { Button } from '../../../components/ui/form/button';
+import type { OpenClassDetailTarget } from '../../../components/course';
 export type GroupScheduleResultViewMode = 'course' | 'member';
 
 interface GroupScheduleResultProps {
   option: GroupScheduleOption;
-  viewMode: GroupScheduleResultViewMode
+  viewMode: GroupScheduleResultViewMode;
+  onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }
 
 interface CourseComparisonRow {
@@ -51,7 +53,7 @@ function buildCourseComparison(option: GroupScheduleOption): CourseComparisonRow
   });
 }
 
-export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProps) {
+export function GroupScheduleResult({ option, viewMode, onOpenClassDetails }: GroupScheduleResultProps) {
   const courseRows = buildCourseComparison(option);
 
   return (
@@ -60,7 +62,7 @@ export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProp
         <div>
           <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
             <CalendarCheck className="h-5 w-5 text-emerald-600" />
-            Kịch bản {option.option}
+            Phương án {option.option}
           </h3>
           <p className="text-sm text-gray-500">Điểm nhóm: {Math.round(option.fitness)}</p>
         </div>
@@ -84,11 +86,17 @@ export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProp
               </div>
               <div className="divide-y divide-gray-100">
                 {course.entries.map(({ memberIndex, nickname, item }) => (
-                  <div key={`${course.courseId}-${memberIndex}-${item.classId}`} className="grid gap-2 px-3 py-2 text-sm md:grid-cols-[160px_180px_minmax(0,1fr)]">
+                  <button
+                    key={`${course.courseId}-${memberIndex}-${item.classId}`}
+                    type="button"
+                    onClick={() => onOpenClassDetails({ courseCode: item.courseId, courseName: item.courseName, classId: item.classId, schedule: item.schedule })}
+                    className="grid w-full gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-blue-50 md:grid-cols-[160px_180px_minmax(0,1fr)]"
+                    title="Xem chi tiết lớp mở"
+                  >
                     <div className="font-medium text-gray-900">{nickname}</div>
                     <div className="font-mono text-xs text-gray-700">{item.classId}</div>
                     <div className="text-gray-600">{formatSchedule(item.schedule)}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -103,7 +111,13 @@ export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProp
               </div>
               <div className="divide-y divide-gray-100">
                 {member.items.map((item) => (
-                  <div key={`${member.memberIndex}-${item.courseId}-${item.classId}`} className={`grid gap-2 px-3 py-2 text-sm md:grid-cols-[160px_180px_120px_minmax(0,1fr)] ${item.isShared ? 'bg-emerald-50' : 'bg-white'}`}>
+                  <button
+                    key={`${member.memberIndex}-${item.courseId}-${item.classId}`}
+                    type="button"
+                    onClick={() => onOpenClassDetails({ courseCode: item.courseId, courseName: item.courseName, classId: item.classId, schedule: item.schedule })}
+                    className={`grid w-full gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-blue-50 md:grid-cols-[160px_180px_120px_minmax(0,1fr)] ${item.isShared ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-white'}`}
+                    title="Xem chi tiết lớp mở"
+                  >
                     <div className="min-w-0">
                       <div className="font-mono text-sm font-semibold text-gray-900">{item.courseId}</div>
                       <div className="truncate text-xs text-gray-500">{item.courseName}</div>
@@ -117,7 +131,7 @@ export function GroupScheduleResult({ option, viewMode}: GroupScheduleResultProp
                       )}
                     </div>
                     <div className="text-gray-600">{formatSchedule(item.schedule)}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>

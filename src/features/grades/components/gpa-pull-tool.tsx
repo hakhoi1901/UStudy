@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Calculator, Info, PencilLine, Target } from 'lucide-react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { AppSelect } from '../../../components/ui/form';
 import { STORAGE_KEYS } from '../../../config';
 import { readPlain, savePlain } from '../../../helpers/localStorage/save';
 import { useGPAPull } from '../hooks/use-gpa-pull';
@@ -226,7 +227,7 @@ export function GPAPullTool({
                 </div>
             </div>
 
-            {projectionSemesters.length > 0 && (
+            {projectionSemesters.length > 1 && (
                 <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-3 md:px-5">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
@@ -237,21 +238,20 @@ export function GPAPullTool({
                                     : 'Chọn học kỳ cần dự đoán'}
                             </p>
                         </div>
-                        <select
+                        <AppSelect
                             value={selectedProjectionSemesterId}
-                            onChange={(event) => {
-                                setSelectedProjectionSemesterId(event.target.value);
+                            onChange={(value) => {
+                                setSelectedProjectionSemesterId(value);
                                 setHasCalculated(false);
                             }}
-                            className="h-9 min-w-0 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 outline-none transition-colors focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/20 sm:w-64"
-                            aria-label="Chọn học kỳ cần tính GPA"
-                        >
-                            {projectionSemesters.map((semester) => (
-                                <option key={semester.id} value={semester.id}>
-                                    {semester.label} · {semester.knownCredits}/{semester.totalCredits} TC đã biết
-                                </option>
-                            ))}
-                        </select>
+                            options={projectionSemesters.map((semester) => ({
+                                id: semester.id,
+                                name: `${semester.label} · ${semester.knownCredits}/${semester.totalCredits} TC đã biết`,
+                            }))}
+                            ariaLabel="Chọn học kỳ cần tính GPA"
+                            className="min-w-0 w-full sm:w-64"
+                            triggerClassName="h-9 px-3 py-0 text-sm font-semibold text-gray-800"
+                        />
                     </div>
                 </div>
             )}

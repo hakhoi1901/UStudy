@@ -14,10 +14,10 @@ import {
     LoaderCircle,
     School,
 } from 'lucide-react';
-import { FACULTIES, loadCohortData } from '../../../assets/registry';
-import { ACADEMIC_YEAR_MAJOR_CATALOGS, getAcademicYearMajorCatalog } from '../../../assets/data/academic-year-majors';
+import { ACADEMIC_YEAR_MAJOR_CATALOGS, FACULTIES, getAcademicYearMajorCatalog, loadCohortData } from '../../../assets/registry';
 import { ACADEMIC_YEARS, getTuitionRateDetails } from '../../../assets/data/tuition';
 import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
+import { AppSelect } from '../../../components/ui/form';
 import {
     getAllMajorDataCoverage,
     getCollectionSize,
@@ -188,7 +188,7 @@ function CoverageRow({ item }: { item: MajorDataCoverage }) {
 
     return (
         <div className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isComplete ? 'bg-emerald-50 text-emerald-700' : (missing.length === 3 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700' )}`}>
                 {isComplete ? <CheckCircle2 className="h-4 w-4" /> : <CircleAlert className="h-4 w-4" />}
             </span>
             <div className="min-w-0 flex-1">
@@ -198,7 +198,7 @@ function CoverageRow({ item }: { item: MajorDataCoverage }) {
                 </p>
                 {item.sourceCohort !== item.cohort.id && <p className="mt-1 text-xs font-medium text-[#004A98]">Dùng dữ liệu nguồn {item.sourceCohort.toUpperCase()}</p>}
             </div>
-            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${isComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${isComplete ? 'bg-emerald-50 text-emerald-700' : (missing.length === 3 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700' )}`}>
                 {item.availableCount}/3
             </span>
         </div>
@@ -218,9 +218,13 @@ export function WorkspaceDataFeature() {
     const [isLoading, setIsLoading] = useState(false);
 
     const activeCatalog = getAcademicYearMajorCatalog(cohortId);
-    const availableFaculties = FACULTIES.filter((item) => (activeCatalog?.facultyMajors[item.id] ?? []).length > 0);
+    const availableFaculties = FACULTIES.filter((item) => activeCatalog?.faculties.some((faculty) => faculty.id === item.id));
     const faculty = availableFaculties.find((item) => item.id === facultyId) ?? availableFaculties[0];
-    const availableMajors = faculty ? faculty.majors.filter((item) => activeCatalog?.facultyMajors[faculty.id]?.includes(item.id)) : [];
+    const availableMajors = faculty
+        ? faculty.majors.filter((item) => activeCatalog?.faculties
+            .find((catalogFaculty) => catalogFaculty.id === faculty.id)
+            ?.majors.some((major) => major.id === item.id))
+        : [];
     const major = availableMajors.find((item) => item.id === majorId) ?? availableMajors[0];
 
     useEffect(() => {
@@ -305,24 +309,18 @@ export function WorkspaceDataFeature() {
             {view === 'catalog' && faculty && major && selectedCoverage && (
                 <>
                     <section className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3 md:p-5">
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Khoa
-                            <select value={faculty.id} onChange={(event) => setFacultyId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {availableFaculties.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                            </select>
-                        </label>
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Ngành
-                            <select value={major.id} onChange={(event) => setMajorId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {availableMajors.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                            </select>
-                        </label>
-                        <label className="block text-xs font-semibold text-gray-600">
-                            Khóa tuyển
-                            <select value={cohortId} onChange={(event) => setCohortId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => <option key={item.cohortId} value={item.cohortId}>{item.label}</option>)}
-                            </select>
-                        </label>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Khoa</p>
+                            <AppSelect value={faculty.id} onChange={setFacultyId} options={availableFaculties} ariaLabel="Chọn khoa" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Ngành</p>
+                            <AppSelect value={major.id} onChange={setMajorId} options={availableMajors} ariaLabel="Chọn ngành" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-600">Khóa tuyển</p>
+                            <AppSelect value={cohortId} onChange={setCohortId} options={ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => ({ id: item.cohortId, name: item.label }))} ariaLabel="Chọn khóa tuyển" className="mt-1.5" triggerClassName="px-3 py-2.5 text-sm font-medium" />
+                        </div>
                     </section>
 
                     {loadedData && (
@@ -427,11 +425,17 @@ export function WorkspaceDataFeature() {
                             <h2 className="text-base font-bold text-gray-900">Khóa tuyển cần kiểm tra</h2>
                             <p className="mt-1 text-sm text-gray-500">Danh sách ngành lấy từ manifest theo từng khóa.</p>
                         </div>
-                        <label className="block text-xs font-semibold text-gray-600">Khóa tuyển
-                            <select value={coverageCohortId} onChange={(event) => setCoverageCohortId(event.target.value)} className="ml-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none transition focus:border-[#004A98] focus:ring-2 focus:ring-blue-100">
-                                {ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => <option key={item.cohortId} value={item.cohortId}>{item.label}</option>)}
-                            </select>
-                        </label>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
+                            <span>Khóa tuyển</span>
+                            <AppSelect
+                                value={coverageCohortId}
+                                onChange={setCoverageCohortId}
+                                options={ACADEMIC_YEAR_MAJOR_CATALOGS.map((item) => ({ id: item.cohortId, name: item.label }))}
+                                ariaLabel="Chọn khóa tuyển cần kiểm tra"
+                                className="min-w-36"
+                                triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+                            />
+                        </div>
                     </section>
 
                     <div className="grid gap-3 sm:grid-cols-3">
@@ -467,7 +471,7 @@ export function WorkspaceDataFeature() {
                         </div>
                     </section>
 
-                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách ngành theo khóa nằm tại src/assets/data/academic-year-majors.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
+                    <p className="flex items-center gap-2 px-1 text-xs text-gray-500"><FileCode2 className="h-3.5 w-3.5" /> Danh sách khoa, ngành và khóa nằm tại src/assets/registry.ts; học phí có {ACADEMIC_YEARS.length} bảng tại src/assets/data/tuition/.</p>
                 </>
             )}
         </section>

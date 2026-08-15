@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Filter, RotateCcw, X } from 'lucide-react';
 import { MobileBottomSheet } from '../../../components/ui/overlays/mobile-bottom-sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/overlays/popover';
+import { AppSelect } from '../../../components/ui/form';
 import {
     applyGradeHistoryFilters,
     countActiveGradeHistoryFilterGroups,
@@ -160,17 +161,17 @@ export function GradeHistoryFilterControls({
     return (
         <div className="w-full">
             <div className="flex w-full items-center gap-2 md:w-auto">
-                <select
+                <AppSelect
                     value={selectedSemester}
-                    onChange={(event) => setSelectedSemester(event.target.value)}
-                    aria-label="Phạm vi học kỳ"
-                    className="h-9 min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-[#004A98] focus:ring-2 focus:ring-blue-100 md:w-44 md:flex-none md:text-sm"
-                >
-                    <option value="all">Tất cả học kỳ</option>
-                    {uniqueSemesters.map((semester) => (
-                        <option key={semester} value={semester}>{semester}</option>
-                    ))}
-                </select>
+                    onChange={setSelectedSemester}
+                    options={[
+                        { id: 'all', name: 'Tất cả học kỳ' },
+                        ...uniqueSemesters.map((semester) => ({ id: semester, name: semester })),
+                    ]}
+                    ariaLabel="Phạm vi học kỳ"
+                    className="min-w-0 flex-1 md:w-44 md:flex-none"
+                    triggerClassName="h-9 px-3 py-0 text-xs md:text-sm"
+                />
 
                 <div className="hidden md:block">
                     <Popover

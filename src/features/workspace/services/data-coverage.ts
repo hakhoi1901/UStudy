@@ -1,12 +1,13 @@
 import {
     FACULTIES,
+    getAcademicYearMajorCatalog,
+    getProgramDataSourceCohort,
     resolveDataCohort,
     type CohortInfo,
     type FacultyInfo,
     type MajorInfo,
 } from '../../../assets/registry';
 import { ACADEMIC_YEARS, getTuitionRates } from '../../../assets/data/tuition';
-import { getAcademicYearMajorCatalog, getProgramDataSourceCohort } from '../../../assets/data/academic-year-majors';
 
 export type ProgramDataKind = 'courses' | 'prerequisites' | 'categories';
 
@@ -48,7 +49,7 @@ function getCohortInfo(major: MajorInfo, cohortId: string) {
 }
 
 export function getProgramAssets(facultyId: string, majorId: string, cohortId: string): ProgramDataAsset[] {
-    const sourceCohort = getProgramDataSourceCohort(cohortId) ?? resolveDataCohort(facultyId, majorId, cohortId);
+    const sourceCohort = getProgramDataSourceCohort(cohortId, facultyId, majorId) ?? resolveDataCohort(facultyId, majorId, cohortId);
 
     return PROGRAM_FILES.map((file) => {
         const path = `${facultyId}/${majorId}/${sourceCohort}/${file.fileName}`;
@@ -69,7 +70,7 @@ export function getMajorDataCoverage(faculty: FacultyInfo, major: MajorInfo, coh
         faculty,
         major,
         cohort,
-        sourceCohort: getProgramDataSourceCohort(cohort.id) ?? resolveDataCohort(faculty.id, major.id, cohort.id),
+        sourceCohort: getProgramDataSourceCohort(cohort.id, faculty.id, major.id) ?? resolveDataCohort(faculty.id, major.id, cohort.id),
         assets,
         availableCount: assets.filter((asset) => asset.present).length,
         tuitionYears: tuition.length,
@@ -81,10 +82,15 @@ export function getAllMajorDataCoverage(cohortId: string) {
     const catalog = getAcademicYearMajorCatalog(cohortId);
     if (!catalog) return [];
 
-    return FACULTIES.flatMap((faculty) => (catalog.facultyMajors[faculty.id] ?? []).flatMap((majorId) => {
-        const major = faculty.majors.find((item) => item.id === majorId);
-        return major ? [getMajorDataCoverage(faculty, major, cohortId)] : [];
-    }));
+    return catalog.faculties.flatMap((catalogFaculty) => {
+        const faculty = FACULTIES.find((item) => item.id === catalogFaculty.id);
+        if (!faculty) return [];
+
+        return catalogFaculty.majors.flatMap((catalogMajor) => {
+            const major = faculty.majors.find((item) => item.id === catalogMajor.id);
+            return major ? [getMajorDataCoverage(faculty, major, cohortId)] : [];
+        });
+    });
 }
 
 export function getCollectionSize(value: unknown) {

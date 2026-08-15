@@ -1,13 +1,15 @@
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Clock, ExternalLink, Save, X } from 'lucide-react';
+import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { STORAGE_KEYS, UI_COLORS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { weekDays, timePeriods } from '../../../constants';
 import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
-import { Button } from '../../../components/ui/form/button';
+import type { OpenClassDetailTarget } from '../../../components/course';
+import { AppSelect } from '../../../components/ui/form';
+import { ScheduleOptionSelector } from '../../schedule';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -15,7 +17,7 @@ interface GroupScheduleCalendarPreviewProps {
   activeMemberIndex: number;
   setActiveOptionIndex: (index: number) => void;
   setActiveMemberIndex: (index: number) => void;
-  onUseSchedule: (option: GroupScheduleOption, memberIndex: number) => void;
+  onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }
 
 const PALETTE = UI_COLORS.SCHEDULE_PALETTE;
@@ -125,6 +127,7 @@ export function GroupScheduleCalendarPreview({
   activeMemberIndex,
   setActiveOptionIndex,
   setActiveMemberIndex,
+  onOpenClassDetails,
 }: GroupScheduleCalendarPreviewProps) {
   const option = options[activeOptionIndex] ?? options[0];
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
@@ -142,57 +145,26 @@ export function GroupScheduleCalendarPreview({
 
   return (
     <div className="space-y-4 rounded-lg">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 text-xs font-medium text-gray-500">Phương án:</span>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.max(0, activeOptionIndex - 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {options.map((item, index) => (
-              <button
-                key={item.option}
-                type="button"
-                onClick={() => setActiveOptionIndex(index)}
-                className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                  activeOptionIndex === index
-                    ? 'bg-[#004A98] text-white shadow-md'
-                    : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                PA {item.option}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.min(options.length - 1, activeOptionIndex + 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+      <div className="flex flex-col gap-3 border-b border-gray-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
+        <ScheduleOptionSelector
+          options={options.map((item) => ({ id: item.option, label: `PA ${item.option}` }))}
+          activeIndex={activeOptionIndex}
+          onChange={setActiveOptionIndex}
+        />
 
-        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 py-1 text-xs font-medium text-gray-500">Thành viên:</span>
-          {option.schedules.map((schedule) => (
-            <button
-              key={schedule.memberIndex}
-              type="button"
-              onClick={() => setActiveMemberIndex(schedule.memberIndex)}
-              className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                effectiveMemberIndex === schedule.memberIndex
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              {schedule.nickname}
-            </button>
-          ))}
+        <div className="flex shrink-0 items-center gap-2 lg:border-l lg:border-gray-200 lg:pl-3">
+          <span className="text-xs font-medium text-gray-500">Thành viên</span>
+          <AppSelect
+            value={String(effectiveMemberIndex)}
+            options={option.schedules.map((schedule) => ({
+              id: String(schedule.memberIndex),
+              name: schedule.nickname,
+            }))}
+            onChange={(value) => setActiveMemberIndex(Number(value))}
+            ariaLabel="Chọn thành viên để xem lịch"
+            className="min-w-40"
+            triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+          />
         </div>
       </div>
 
@@ -300,6 +272,24 @@ export function GroupScheduleCalendarPreview({
                   return (
                     <div
                       key={section.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Xem lớp mở ${section.sectionNumber} của môn ${section.courseCode}`}
+                      onClick={() => onOpenClassDetails({
+                        courseCode: section.courseCode,
+                        courseName: section.courseNameVi || section.courseName,
+                        classId: section.selectedClassId || section.sectionNumber,
+                      })}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onOpenClassDetails({
+                            courseCode: section.courseCode,
+                            courseName: section.courseNameVi || section.courseName,
+                            classId: section.selectedClassId || section.sectionNumber,
+                          });
+                        }
+                      }}
                       style={{
                         position: 'absolute',
                         top: top + 2,
@@ -318,7 +308,7 @@ export function GroupScheduleCalendarPreview({
                         gap: 0,
                         boxSizing: 'border-box',
                         boxShadow: hasConflict ? '0 2px 8px rgba(239,68,68,0.15)' : '0 1px 4px rgba(15,23,42,0.08)',
-                        cursor: 'default',
+                        cursor: 'pointer',
                         zIndex: 2,
                         pointerEvents: 'auto',
                       }}

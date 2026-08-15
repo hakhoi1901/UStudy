@@ -6,6 +6,7 @@ import { useDepartmentData } from '../../../context/DepartmentContext';
 import { NoDataCard } from '../../../components/feedback';
 import { PageHeader } from '../../../components/layout/page-header';
 import { PageShell } from '../../../components/layout/page-shell';
+import { AppSelect } from '../../../components/ui/form';
 
 interface ExamData {
     id: string;
@@ -413,16 +414,17 @@ export function ExamScheduleVi() {
                     <div className="flex flex-wrap gap-2 md:gap-4 flex-1">
 
                         {/* Semester Filter */}
-                        <select
+                        <AppSelect
                             value={selectedSemester}
-                            onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
-                        >
-                            <option value="all">Tất cả kỳ</option>
-                            {availableSemesters.map(sem => (
-                                <option key={sem} value={sem}>{sem}</option>
-                            ))}
-                        </select>
+                            onChange={setSelectedSemester}
+                            options={[
+                                { id: 'all', name: 'Tất cả kỳ' },
+                                ...availableSemesters.map((semester) => ({ id: semester, name: semester })),
+                            ]}
+                            ariaLabel="Lọc theo học kỳ"
+                            className="min-w-32"
+                            triggerClassName="px-2 py-1.5 text-xs font-medium md:px-4 md:py-2 md:text-sm"
+                        />
 
                         {/* Exam Type Tabs */}
                         <div className="flex bg-gray-100 rounded-lg p-0.5 md:p-1">

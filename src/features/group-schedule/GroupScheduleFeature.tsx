@@ -1,9 +1,10 @@
 ﻿import { useEffect, useMemo, useState, Fragment } from 'react';
-import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, LayoutList, UsersRound, List, Info } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, List, Info } from 'lucide-react';
 
 import { GroupMemberCard } from './components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from './components/GroupScheduleResult';
+import { GroupScheduleResultViewTabs } from './components/GroupScheduleResultViewTabs';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
@@ -20,6 +21,8 @@ import type { Course, SavedSchedule } from '../../types';
 import type { SolverPreferences } from '../study-roadmap';
 import courseDbJson from '../../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../../utils/dayOffPreferences';
+import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../components/course';
+import { ScheduleOptionSelector } from '../schedule';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -174,6 +177,7 @@ export function GroupSchedulePage({
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
+    const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.GROUP_SCHEDULE_UI_STATE, {
@@ -633,7 +637,7 @@ export function GroupSchedulePage({
                         <Textarea
                             value={manualCourseInput}
                             onChange={(event) => setManualCourseInput(event.target.value)}
-                            placeholder="CSC10001, MTH00003, PHY00001"
+                            placeholder='CSC10001, MTH00003, PHY00001, hoặc chọn môn tại "Chọn môn & học phí"'
                             className="min-h-28 border-slate-200 focus-visible:ring-[#004A98]/25"
                         />
                     )}
@@ -986,15 +990,14 @@ export function GroupSchedulePage({
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                     {selectedOption && (
-                        <Button
+                        <button
                             type="button"
-                            variant="default"
                             onClick={() => setShowSaveGroupScheduleModal(true)}
-                            className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 shrink-0"
+                            className="ustudy-button-normal"
                         >
                             <Save className="h-4 w-4" />
                             <span className="hidden sm:inline">Lưu lịch</span>
-                        </Button>
+                        </button>
                     )}
 
                     <button
@@ -1002,7 +1005,7 @@ export function GroupSchedulePage({
                             setSavedSchedules(readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []));
                             setShowListModal(true);
                         }}
-                        className="ustudy-button-outline h-9 shrink-0 px-3 text-xs md:px-4 md:text-sm"
+                        className="ustudy-button-normal"
                     >
                         <List className="w-3.5 h-3.5" />
                         <span className="hidden md:inline">Lịch đã lưu</span>
@@ -1013,7 +1016,7 @@ export function GroupSchedulePage({
                         )}
                     </button>
 
-                    <DropdownMenu>
+                    {/* <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button type="button" className="ustudy-action-icon h-9 w-9 shrink-0 border border-gray-200 bg-white shadow-sm">
                                 <MoreHorizontal className="h-5 w-5 text-gray-600" />
@@ -1025,21 +1028,22 @@ export function GroupSchedulePage({
                                 <span>Chỉnh ưu tiên</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
                 </div>
             </div>
 
-            <div className="mb-4 flex overflow-x-auto rounded-xl bg-gray-100 p-1" aria-label="Chế độ xem kết quả">
-                {[
-                    { id: 'calendar', label: 'Tổng quát', icon: Calendar },
-                    { id: 'course', label: 'Theo môn', icon: LayoutList },
-                    { id: 'member', label: 'Theo thành viên', icon: UsersRound },
-                ].map((item) => {
-                    const isActive = item.id === 'calendar' ? showGroupCalendarPreview : !showGroupCalendarPreview && resultViewMode === item.id;
-                    const Icon = item.icon;
-                    return <button key={item.id} type="button" onClick={() => item.id === 'calendar' ? setShowGroupCalendarPreview(true) : (setShowGroupCalendarPreview(false), setResultViewMode(item.id as GroupScheduleResultViewMode))} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:text-sm ${isActive ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Icon className="h-4 w-4" />{item.label}</button>;
-                })}
-            </div>
+            <GroupScheduleResultViewTabs
+                value={showGroupCalendarPreview ? 'calendar' : resultViewMode}
+                onChange={(view) => {
+                    if (view === 'calendar') {
+                        setShowGroupCalendarPreview(true);
+                        return;
+                    }
+
+                    setShowGroupCalendarPreview(false);
+                    setResultViewMode(view);
+                }}
+            />
 
             {result?.warnings.length ? (
                 <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -1061,42 +1065,26 @@ export function GroupSchedulePage({
                             setActiveResultIndex(index);
                         }}
                         setActiveMemberIndex={setActivePreviewMemberIndex}
-                        onUseSchedule={handleUseSchedule}
+                        onOpenClassDetails={setOpenClassDetails}
                     />
                 ) : (
                     <>
-                        <div className="relative mb-4 border-b border-gray-200 pb-2">
-                            {result.solutions.length > 5 ? (
-                                <select value={activeResultIndex} onChange={(event) => setActiveResultIndex(Number(event.target.value))} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-[#004A98]">
-                                    {result.solutions.map((option, index) => <option key={option.option} value={index}>Phương án {option.option}</option>)}
-                                </select>
-                            ) : (
-                                <div className="flex gap-2 overflow-x-auto pr-8" style={{ scrollbarWidth: 'thin' }}>
-                                    {result.solutions.map((option, index) => (
-                                        <button
-                                            key={option.option}
-                                            type="button"
-                                            onClick={() => setActiveResultIndex(index)}
-                                            className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${activeResultIndex === index
-                                                ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
-                                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            Phương án {option.option}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            {result.solutions.length > 1 && result.solutions.length <= 5 && <div className="pointer-events-none absolute bottom-2 right-0 h-10 w-10 bg-gradient-to-l from-white to-transparent" />}
-                        </div>
+                        <ScheduleOptionSelector
+                            className="mb-4 border-b border-gray-200 pb-3"
+                            options={result.solutions.map((option) => ({ id: option.option, label: `PA ${option.option}` }))}
+                            activeIndex={activeResultIndex}
+                            onChange={setActiveResultIndex}
+                        />
 
 
-                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} />}
+                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} onOpenClassDetails={setOpenClassDetails} />}
                     </>
                 )
             ) : (
                 <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-500">Chưa có kết quả. Hãy chạy xếp lịch trước.</div>
             )}
+
+            <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
             {showSaveGroupScheduleModal && selectedOption && (
                 <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
@@ -1153,7 +1141,7 @@ export function GroupSchedulePage({
     );
 
     return (
-        <div className={embedded ? 'space-y-6 pb-20 md:pb-4' : 'mx-auto max-w-6xl space-y-6 pb-20 md:pb-4'}>
+        <div className={embedded ? 'space-y-4 pb-20 md:pb-4' : 'mx-auto max-w-6xl space-y-4 pb-20 md:pb-4'}>
             {!embedded && (
                 <PageHeader
                     title="Xếp lịch nhóm"

@@ -75,6 +75,7 @@ export function maskToSections(
                         courseName,
                         courseNameVi: viName,
                         sectionNumber: pureClassId,
+                        selectedClassId: classId,
                         lecturer: 'Chưa cập nhật',
                         room: '---',
                         day: d + 2,
@@ -101,6 +102,7 @@ export function maskToSections(
                         courseName,
                         courseNameVi: viName,
                         sectionNumber: pureClassId,
+                        selectedClassId: classId,
                         lecturer: 'Chưa cập nhật',
                         room: '---',
                         day: d + 2,         // d+2: 0→T2, 1→T3, ...5→T7, 6→CN
@@ -125,6 +127,7 @@ export function maskToSections(
                 courseName,
                 courseNameVi: courseName + thGroupText + (runPhase === 1 ? ' (Gđ 1)' : (runPhase === 2 ? ' (Gđ 2)' : '')),
                 sectionNumber: pureClassId,
+                selectedClassId: classId,
                 lecturer: 'Chưa cập nhật',
                 room: '---',
                 day: d + 2,

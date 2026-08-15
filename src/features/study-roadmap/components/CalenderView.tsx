@@ -10,6 +10,8 @@ import type { Course } from '../../../types';
 import { Note } from './note.tsx'
 import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../../../utils/dayOffPreferences';
 import type { Tab } from './../types.ts';
+import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
+import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -111,9 +113,9 @@ export function CalendarView({
     setOptions,
     groupScheduleContent,
 }: CalendarViewProps) {
-    const [scheduleMode, setScheduleMode] = useState<'personal' | 'group'>(() => {
+    const [scheduleMode, setScheduleMode] = useState<ScheduleMode>(() => {
         if (window.location.hash.startsWith('#v1_')) return 'group';
-        return readFromStorage<'personal' | 'group'>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
+        return readFromStorage<ScheduleMode>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
     });
 
     useEffect(() => {
@@ -142,6 +144,7 @@ export function CalendarView({
     const [newScheduleName, setNewScheduleName] = useState('');
     const [loadedGroupSchedule, setLoadedGroupSchedule] = useState<SavedSchedule['groupSchedule'] | null>(null);
     const [activeLoadedGroupMemberIndex, setActiveLoadedGroupMemberIndex] = useState<number | null>(null);
+    const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -235,38 +238,19 @@ export function CalendarView({
         .filter((c): c is NonNullable<typeof c> => !!c);
 
     // ── Empty state ────────────────────────────────────────────────────────────
-    const renderModeSwitch = () => (
-        <div className="flex w-full shrink-0 items-center rounded-lg border border-gray-200 bg-slate-50 p-1 md:inline-flex md:w-auto">
-            <button
-                type="button"
-                onClick={() => setScheduleMode('personal')}
-                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
-                    scheduleMode === 'personal'
-                        ? 'bg-white text-[#004A98] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
-                }`}
-            >
-                Cá nhân
-            </button>
-            <button
-                type="button"
-                onClick={() => setScheduleMode('group')}
-                className={`flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-colors md:flex-none ${
-                    scheduleMode === 'group'
-                        ? 'bg-white text-[#004A98] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
-                }`}
-            >
-                Nhóm
-            </button>
+    const renderModeSwitch = () => <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />;
+
+    const renderModeToolbar = () => (
+        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
+            {renderModeSwitch()}
         </div>
     );
 
     if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
         return (
-            <div>
+            <div className="space-y-4">
+                {renderModeToolbar()}
                 <div className="space-y-3 md:hidden">
-                    {renderModeSwitch()}
                     <div className="rounded-xl border border-gray-200 bg-white px-5 py-8 text-center shadow-sm">
                         <Calendar className="mx-auto mb-3 h-10 w-10 text-blue-400" />
                         <h3 className="text-base font-semibold text-gray-900">Chưa có môn để xếp lịch</h3>
@@ -281,9 +265,6 @@ export function CalendarView({
                 </div>
 
                 <div className="ustudy-card hidden p-12 text-center md:block">
-                    <div className="mb-6 flex justify-center">
-                        {renderModeSwitch()}
-                    </div>
                     <Calendar className="mx-auto mb-4 h-16 w-16 text-blue-400" />
                     <h3 className="mb-2 text-lg text-gray-900">Chưa chọn môn học nào</h3>
                     <p className="mb-4 text-sm text-gray-600">
@@ -307,7 +288,7 @@ export function CalendarView({
         return (
             <div className="space-y-4">
                 {groupScheduleContent && isValidElement(groupScheduleContent) && cloneElement(groupScheduleContent as ReactElement, {
-                    modeSwitch: renderModeSwitch()
+                    modeSwitch: renderModeSwitch(),
                 })}
             </div>
         );
@@ -315,8 +296,15 @@ export function CalendarView({
 
     return (
         <div className="space-y-4">
+            {renderModeToolbar()}
+            {solverError && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{solverError}</span>
+                </div>
+            )}
             <div className="space-y-3 md:hidden">
-                <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                <div className="hidden">
                     <div className="flex items-center gap-2">
                         <div className="min-w-0 flex-1">
                             {renderModeSwitch()}
@@ -421,16 +409,16 @@ export function CalendarView({
                 )}
             </div>
 
-            <div className="hidden space-y-4 md:block">
+            <div className="hidden">
             {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
-            <div className="ustudy-card p-2 md:p-3">
-                <div className="flex flex-col gap-2 md:gap-3">
+            <div className="flex">
+                <div className="flex">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                             {renderModeSwitch()}
-                            <div className="h-6 w-px bg-blue-200 hidden md:block"></div>
+                            <div className="hidden h-6 w-px bg-blue-200" />
 
-                            <div className="min-w-0">
+                            <div className="hidden min-w-0">
                                 <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
                                     {currentSections.length > 0
                                         ? `Phương án ${activeOption + 1}/${options.length} — ${selectedCourses.size} môn`
@@ -443,7 +431,7 @@ export function CalendarView({
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="hidden items-center gap-2 shrink-0">
                             <button
                                 onClick={() => setIsConfigOpen(true)}
                                 className="
@@ -636,7 +624,7 @@ export function CalendarView({
 
             {/* ═══ Option navigator ══════════════════════════════════════════ */}
             {options.length > 1 && (
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="hidden items-center gap-2 flex-wrap">
                     <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
                         <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Phương án:</span>
                         <button
@@ -719,17 +707,31 @@ export function CalendarView({
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
-                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                            <Clock className="h-3 w-3 text-[#004A98]" />
-                            Sáng 1–5
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                            <Clock className="h-3 w-3 text-orange-500" />
-                            Chiều 6–10
-                        </span>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <button type="button" onClick={() => setIsConfigOpen(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]" title="Cấu hình ưu tiên">
+                            <Settings className="h-4 w-4" /> Cấu hình
+                        </button>
+                        <button type="button" onClick={() => setShowListModal(true)} className="relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]">
+                            <List className="h-4 w-4" /> Lịch đã lưu
+                            {savedSchedules.length > 0 && <span className="ustudy-badge-count text-[10px] font-bold">{savedSchedules.length > 99 ? '99+' : savedSchedules.length}</span>}
+                        </button>
+                        {currentSections.length > 0 && (
+                            <button type="button" onClick={() => setShowSaveModal(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
+                                <Save className="h-4 w-4" /> Lưu phương án
+                            </button>
+                        )}
+                        <button type="button" onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)} disabled={solving} className="ustudy-button-primary h-9 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60">
+                            <Cpu className="h-4 w-4" /> {solving ? 'Đang xếp...' : currentSections.length ? 'Xếp lại' : 'Xếp lịch'}
+                        </button>
                     </div>
                 </div>
+
+                <ScheduleOptionSelector
+                    className="border-b border-gray-200 bg-white px-3 py-2.5 md:px-4"
+                    options={options.map((option) => ({ id: option.option, label: `PA ${option.option}` }))}
+                    activeIndex={activeOption}
+                    onChange={setActiveOption}
+                />
 
                 <div className="overflow-auto">
                     <div className="min-w-[620px] md:min-w-[1000px]">
@@ -840,6 +842,24 @@ export function CalendarView({
                                 return (
                                     <div
                                         key={classSection.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`Xem chi tiết lớp mở ${classSection.sectionNumber} của môn ${classSection.courseCode}`}
+                                        onClick={() => setOpenClassDetails({
+                                            courseCode: classSection.courseCode,
+                                            courseName: classSection.courseNameVi || classSection.courseName,
+                                            classId: classSection.selectedClassId || classSection.sectionNumber,
+                                        })}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                setOpenClassDetails({
+                                                    courseCode: classSection.courseCode,
+                                                    courseName: classSection.courseNameVi || classSection.courseName,
+                                                    classId: classSection.selectedClassId || classSection.sectionNumber,
+                                                });
+                                            }
+                                        }}
                                         style={{
                                             position: 'absolute',
                                             top: topPx + 2,
@@ -861,7 +881,7 @@ export function CalendarView({
                                             boxShadow: hasConflict
                                                 ? '0 2px 8px rgba(239,68,68,0.15)'
                                                 : '0 1px 4px rgba(15,23,42,0.08)',
-                                            cursor: 'default',
+                                            cursor: 'pointer',
                                             zIndex: 2,
                                             pointerEvents: 'auto',
                                         }}
@@ -989,6 +1009,8 @@ export function CalendarView({
             {/* Chú thích */}
             <Note />
             </div>
+
+            <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
             {/* ═══ Modal: Lưu phương án ══════════════════════════════════════ */}
             {showSaveModal && (
