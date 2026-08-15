@@ -193,7 +193,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
         ],
         summary: 'Quản lý đào tạo đại học và tiếp nhận các thủ tục học vụ của sinh viên.',
         description:
-            'Đầu mối về kế hoạch đào tạo, đăng ký học phần, kết quả học tập, tạm dừng học, xét hoàn tất chương trình và tốt nghiệp hệ đại học.',
+            'Phụ trách kế hoạch đào tạo, đăng ký học phần, kết quả học tập, tạm dừng học, xét hoàn tất chương trình và tốt nghiệp hệ đại học.',
         services: [
             {
                 id: 'academic-transcript',
@@ -472,7 +472,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
         ],
         summary: 'Hỗ trợ thủ tục hành chính, quyền lợi, chính sách và hoạt động dành cho sinh viên.',
         description:
-            'Đầu mối về giấy xác nhận, điểm rèn luyện, học bổng, bảo hiểm y tế, miễn giảm học phí, trợ cấp xã hội và các nội dung công tác sinh viên.',
+            'Phụ trách giấy xác nhận, điểm rèn luyện, học bổng, bảo hiểm y tế, miễn giảm học phí, trợ cấp xã hội và các nội dung công tác sinh viên.',
         services: [
             {
                 id: 'student-certificate-registration',
@@ -820,7 +820,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
         aliases: ['phong dao tao sau dai hoc', 'sau đại học', 'sdh', 'thạc sĩ', 'thac si', 'tiến sĩ', 'tien si'],
         summary: 'Quản lý tuyển sinh và đào tạo các chương trình thạc sĩ, tiến sĩ.',
         description:
-            'Đầu mối về tuyển sinh sau đại học, học vụ cao học và nghiên cứu sinh, đề cương, luận văn, luận án và các biểu mẫu liên quan.',
+            'Phụ trách tuyển sinh sau đại học, học vụ cao học và nghiên cứu sinh, đề cương, luận văn, luận án và các biểu mẫu liên quan.',
         services: [
             {
                 id: 'postgraduate-admissions',
