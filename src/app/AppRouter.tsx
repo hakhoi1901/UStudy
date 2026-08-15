@@ -13,7 +13,7 @@ import { ChatbotPage } from '../pages/chatbot/ChatbotPage';
 import { MainLayout } from '../layouts/MainLayout';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { useDepartmentData } from '../context/DepartmentContext';
-import CampusMap from '../features/campus-map/campusmap.tsx';
+import { CampusInformationPage } from '../pages/campus-information/CampusInformationPage';
 import { APP_ROUTES, getPageIdFromPath, getPathForPage } from './routes';
 import { APP_CONFIG } from '../config/appConfig';
 
@@ -104,7 +104,8 @@ function RoutedApp() {
                     <Route path={APP_ROUTES.legacyGroupSchedule} element={<StudyRoadmapPage />} />
                     <Route path={APP_ROUTES.grades} element={<GradesPage />} />
                     <Route path={APP_ROUTES.tuition} element={<TuitionPage selectedSemester={selectedSemester} />} />
-                    <Route path={APP_ROUTES.campusMap} element={<CampusMap />} />
+                    <Route path={`${APP_ROUTES.campus}/*`} element={<CampusInformationPage />} />
+                    <Route path={APP_ROUTES.legacyCampusMap} element={<Navigate to={APP_ROUTES.campusMap} replace />} />
                     <Route path={APP_ROUTES.schedule} element={<SchedulePage selectedSemester={selectedSemester} />} />
                     <Route path={APP_ROUTES.examSchedule} element={<ExamSchedulePage />} />
                     <Route

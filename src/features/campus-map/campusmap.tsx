@@ -1080,29 +1080,6 @@ export default function CampusMap() {
               </text>
             </g>
 
-            {/* ATM */}
-            <g transform="translate(594 544)">
-              <rect
-                width="52"
-                height="34"
-                rx="10"
-                fill="#ffffff"
-                stroke="#bdd0e1"
-                strokeWidth="2"
-              />
-
-              <text
-                x="26"
-                y="22"
-                textAnchor="middle"
-                fill="#004A98"
-                fontSize="12"
-                fontWeight="800"
-              >
-                ATM
-              </text>
-            </g>
-
             {/* Trees */}
             {[
               [174, 340],
