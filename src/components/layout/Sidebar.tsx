@@ -1,4 +1,4 @@
-import { Home, Map, BarChart3, Bot, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
+import { Home, Map, Bot, MapPinned, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getPathForPage } from '../../app/routes';
@@ -28,6 +28,7 @@ const navGroups = [
         ? [{ icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' }]
         : []),
       { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
+      { icon: MapPinned, label: 'Bản đồ khuôn viên', subtitle: 'Tìm tòa nhà và tiện ích', page: 'campusMap' },
       { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
       { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
     ],

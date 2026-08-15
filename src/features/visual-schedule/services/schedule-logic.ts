@@ -289,6 +289,7 @@ export const ScheduleLogic = {
         const combinedHolidays = [...systemHolidays, ...(overrides?.holidays || [])];
         const activeOverrides = overrides ? { ...overrides, holidays: combinedHolidays } : { sessionOverrides: {}, weekOverrides: {}, holidays: combinedHolidays };
 
+        const countedCourseCodes = new Set<string>();
         let totalCourses = 0;
         let totalCredits = 0;
         let totalPeriodsPerWeek = 0;
@@ -307,18 +308,19 @@ export const ScheduleLogic = {
             }
         });
 
-        coursesRegistered.forEach((course: any, index: number) => {
+        coursesRegistered.forEach((course: any) => {
             const meta = allCoursesMeta.find((m: any) => m.course_id === course.id);
             const credits = parseInt(meta?.credits as any) || 0;
             const theoryHours = parseInt(meta?.theory_hours as any) || 0;
             const labHours = parseInt(meta?.lab_hours as any) || 0;
             const exerciseHours = parseInt(meta?.exercise_hours as any) || 0;
 
-            const scheduleStr = course.schedule || '';
-            const scheduleParts = scheduleStr.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
+            const scheduleStr: string = course.schedule || '';
+            const scheduleParts: string[] = scheduleStr.split(/[;,]/).map((s) => s.trim()).filter(Boolean);
 
-            if (scheduleParts.length > 0 && course.courseType === 'LT') {
-                totalCourses++;
+            if (scheduleParts.length > 0 && !countedCourseCodes.has(course.id)) {
+                countedCourseCodes.add(course.id);
+                totalCourses += 1;
                 totalCredits += credits;
             }
 
@@ -328,23 +330,9 @@ export const ScheduleLogic = {
             if (cType === 'TH') requiredHours = labHours;
             else if (cType === 'BT') requiredHours = exerciseHours;
 
-            const weeklyDuration = scheduleParts.reduce((total: number, part: string) => {
-                const parsedPart = part.match(SCHEDULE_PART_REGEX);
-                if (!parsedPart) return total;
-                const adjustedPart = ScheduleLogic.adjustPeriodsForPractical(
-                    cType,
-                    parseFloat(parsedPart[2]),
-                    parseFloat(parsedPart[3]),
-                );
-                return total + adjustedPart.duration;
-            }, 0);
-            const totalWeeks = requiredHours > 0 && weeklyDuration > 0
-                ? Math.ceil(requiredHours / weeklyDuration)
-                : 0;
-
-            scheduleParts.forEach((part: string, partIdx: number) => {
+            const parsedSessions = scheduleParts.flatMap((part: string, partIdx: number) => {
                 const match = part.match(SCHEDULE_PART_REGEX);
-                if (!match) return;
+                if (!match) return [];
 
                 const dayStr = match[1];
                 let dayOfWeek = (dayStr === 'CN' ? 8 : parseInt(dayStr, 10)) as ScheduleSession['dayOfWeek'];
@@ -357,7 +345,7 @@ export const ScheduleLogic = {
                 const basePeriods = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
 
                 // --- Apply Global Overrides ---
-                const sessionId = `${course.id}_${index}_${partIdx}`;
+                const sessionId = `${course.id}|${course.classGroup || ''}|${cType}|${part}`;
                 const override = activeOverrides.sessionOverrides?.[sessionId];
                 if (override) {
                     if (override.room !== undefined) room = override.room;
@@ -367,6 +355,15 @@ export const ScheduleLogic = {
                 }
 
                 const adjusted = ScheduleLogic.adjustPeriodsForPractical(cType, rawStart, rawEnd);
+                return [{ partIdx, sessionId, dayOfWeek, room, adjusted }];
+            });
+
+            const periodsPerWeek = parsedSessions.reduce((sum, session) => sum + session.adjusted.duration, 0);
+            const totalWeeks = requiredHours > 0 && periodsPerWeek > 0
+                ? Math.ceil(requiredHours / periodsPerWeek)
+                : 0;
+
+            parsedSessions.forEach(({ partIdx, sessionId, dayOfWeek, room, adjusted }) => {
                 const startTimeStr = ScheduleLogic.periodToTimeString(adjusted.startPeriod, true);
                 const endTimeStr = ScheduleLogic.periodToTimeString(adjusted.endPeriod, false);
                 const sessionParams = Math.floor(adjusted.startPeriod) <= 5 ? 'morning' as const : 'afternoon' as const;
@@ -384,7 +381,7 @@ export const ScheduleLogic = {
                 }
 
                 sessions.push({
-                    id: `${course.id}_${index}_${partIdx}`,
+                    id: sessionId,
                     courseCode: course.id,
                     courseName: course.name,
                     classCode: course.classGroup,
