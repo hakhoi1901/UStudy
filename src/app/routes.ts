@@ -29,6 +29,7 @@ export const APP_ROUTES = {
     campus: '/campus',
     campusMap: '/campus/map',
     academicCalendar: '/campus/academic-calendar',
+    campusDirectory: '/campus/directory',
     legacyCampusMap: '/campus-map',
     examSchedule: '/exam-schedule',
     chatbot: '/chatbot',

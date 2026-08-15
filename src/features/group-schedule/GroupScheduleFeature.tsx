@@ -724,7 +724,7 @@ export function GroupSchedulePage({
                     </Button>
                 </div>
                 
-                {/* Mobile: 1 cột — Laptop: 2 cột */}
+                {/* Mobile: 1 cột - Laptop: 2 cột */}
                 <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
                     {/* Buổi ưu tiên */}
                     <div>

@@ -40,22 +40,22 @@ export function AcademicCalendarTable({
     currentWeekRef,
 }: AcademicCalendarTableProps) {
     return (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white scrollbar-hide">
-            <table className="min-w-[1200px] w-full table-fixed border-collapse text-left text-sm">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white scrollbar-hide ustudy-card">
+            <table className="min-w-[1200px] w-full table-fixed border-collapse text-left text-sm ">
                 <colgroup>
                     <col className="w-16" />
                     <col className="w-28" />
                     <col className="w-28" />
                     {calendar.cohorts.map((cohort) => <col key={cohort.id} className="w-56" />)}
-                    <col className="w-72" />
+                    <col className="w-60" />
                 </colgroup>
                 <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-600">
                     <tr className="border-b border-gray-200">
-                        <th rowSpan={2} className="w-16 border-r border-gray-200 px-3 py-3 text-center">Tuần</th>
-                        <th rowSpan={2} className="w-28 border-r border-gray-200 px-3 py-3">Từ ngày</th>
-                        <th rowSpan={2} className="w-28 border-r border-gray-200 px-3 py-3">Đến ngày</th>
+                        <th rowSpan={2} className="w-16 border-r border-gray-200 px-3 py-3 text-center text-center">Tuần</th>
+                        <th rowSpan={2} className="w-28 border-r border-gray-200 px-3 py-3 text-center">Từ ngày</th>
+                        <th rowSpan={2} className="w-28 border-r border-gray-200 px-3 py-3 text-center">Đến ngày</th>
                         <th colSpan={calendar.cohorts.length} className="border-r border-gray-200 px-3 py-3 text-center">Chương trình đại trà, tài năng</th>
-                        <th rowSpan={2} className="w-72 px-4 py-3">Kế hoạch chung</th>
+                        <th rowSpan={2} className="w-60 px-4 py-3 text-center">Bảo vệ KL, Xét TN, Thông tin khác</th>
                     </tr>
                     <tr className="border-b border-gray-200">
                         {calendar.cohorts.map((cohort) => (

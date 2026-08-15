@@ -11,7 +11,7 @@
  *
  * `1.1 + 2.45/sqrt(k)` tracks the p50 closely from k≈50 up and sits just above
  * it, which is the direction that matters: an ETA that quotes too little and
- * then keeps slipping reads as a stall. Clamped at both ends — below k≈25 the
+ * then keeps slipping reads as a stall. Clamped at both ends - below k≈25 the
  * spread is enormous but the whole transfer is over in a second or two anyway.
  *
  * A 300 KB file at 2953 bytes/frame is only k≈100, so most real transfers sit
@@ -62,7 +62,7 @@ export function estimateTransferProgress(
   const phase = uniqueFrames < minimumFrames ? "collecting" : "decoding";
   const rate = elapsedSeconds > 0 ? uniqueFrames / elapsedSeconds : 0;
 
-  // Past the expected frame count the stream is running long — poor light,
+  // Past the expected frame count the stream is running long - poor light,
   // motion blur, a camera that won't hold focus. That is exactly when someone
   // is staring at the bar wondering whether it has stalled, so keep quoting a
   // time instead of going silent: extend the target one redundancy block at a

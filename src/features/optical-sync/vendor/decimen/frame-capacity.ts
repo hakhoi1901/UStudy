@@ -34,7 +34,7 @@ export function minimumFrameBytes(payloadBytes: number): number {
  * The smallest offered setting that works, so the sender can name a value that
  * is actually in the dropdown instead of the bare arithmetic minimum.
  *
- * Undefined when no option is large enough — unreachable while MAX_FILE_BYTES
+ * Undefined when no option is large enough - unreachable while MAX_FILE_BYTES
  * holds, since the largest legal payload needs about 1045 bytes per frame, but
  * the caller should not have to know that.
  */

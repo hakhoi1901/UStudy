@@ -10,6 +10,7 @@ import {
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CAMPUS_BUILDINGS, findCampusRoom, getFloorRooms, searchCampusRooms } from './campus-data';
 import type { BuildingId, CampusBuilding, CampusRoomSuggestion, RoomSearchResult } from './campus-data';
 import { CampusSidePanel } from './CampusSidePanel';
@@ -26,6 +27,7 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function CampusMap() {
+  const [searchParams] = useSearchParams();
   const [selectedBuildingId, setSelectedBuildingId] =
     useState<BuildingId>('E');
   const [selectedFloor, setSelectedFloor] = useState(1);
@@ -40,6 +42,34 @@ export default function CampusMap() {
   const [isRoomListOpen, setIsRoomListOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const sidePanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const buildingId = searchParams.get('building') as BuildingId | null;
+    const floor = Number(searchParams.get('floor'));
+    const roomCode = searchParams.get('room');
+    if (!buildingId || !Number.isInteger(floor) || floor < 1) return;
+
+    const building = CAMPUS_BUILDINGS.find((item) => item.id === buildingId);
+    const floorData = building?.floors.find((item) => item.number === floor);
+    if (!building || !floorData) return;
+
+    const room = roomCode ? getFloorRooms(floorData).find((item) => item.code === roomCode) : undefined;
+    setSelectedBuildingId(buildingId);
+    setSelectedFloor(floor);
+    setSearchResult({
+      buildingId,
+      floor,
+      roomNumber: roomCode ?? '',
+      fullCode: roomCode ?? '',
+      roomName: room?.name,
+      description: room?.description,
+      phone: room?.phone,
+      email: room?.email,
+      website: room?.website,
+      openingHours: room?.openingHours,
+    });
+    setSearchValue(room?.name ?? roomCode ?? '');
+  }, [searchParams]);
 
   const selectedBuilding = useMemo(
     () =>
