@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { ArrowLeft, ChevronDown, Clock3, ExternalLink, Info, ListChecks, Mail, MapPin, Phone, Sparkles, FileText, TriangleAlert } from 'lucide-react';
-import type { CampusUnit, CampusUnitLocation, CampusUnitServiceDetail, CampusUnitType } from '../../../assets/data/campus-directory';
+import { ArrowLeft, ChevronDown, ChevronRight, Clock3, ExternalLink, Info, ListChecks, Mail, MapPin, Phone, FileText, TriangleAlert, Building2 } from 'lucide-react'; import type { CampusUnit, CampusUnitLocation, CampusUnitServiceDetail, CampusUnitType } from '../../../assets/data/campus-directory';
 
 const typeLabels: Record<CampusUnitType, string> = {
     faculty: 'Khoa',
     department: 'Bộ môn',
+    laboratory: 'Phòng thí nghiệm',
     office: 'Phòng ban',
     center: 'Trung tâm',
     'student-service': 'Dịch vụ sinh viên',
@@ -77,8 +77,10 @@ function ServiceDetails({ details }: { details: CampusUnitServiceDetail[] }) {
     );
 }
 
-export function CampusDirectoryDetail({ unit, onOpenMap, onBack, className = '', scrollContent = false }: {
+export function CampusDirectoryDetail({ unit, allUnits = [], onOpenMap, onSelectUnit, onBack, className = '', scrollContent = false }: {
     unit: CampusUnit;
+    allUnits?: CampusUnit[]; // Thêm
+    onSelectUnit?: (id: string) => void; // Thêm
     onOpenMap: (location: CampusUnitLocation) => void;
     onBack?: () => void;
     className?: string;
@@ -87,6 +89,10 @@ export function CampusDirectoryDetail({ unit, onOpenMap, onBack, className = '',
     const primaryLocation = unit.locations[0];
     const hasContacts = (unit.phones?.length ?? 0) + (unit.emails?.length ?? 0) + (unit.websites?.length ?? 0) > 0;
     const [openServiceId, setOpenServiceId] = useState<string | null>(null);
+
+    // KIẾM ĐƠN VỊ CHA VÀ CÁC ĐƠN VỊ CON Ở ĐÂY
+    const parentUnit = allUnits.find(u => u.id === unit.parentId);
+    const childUnits = allUnits.filter(u => u.parentId === unit.id);
 
     return (
         <article className={`flex min-h-0 min-w-0 flex-col bg-white ${className}`}>
@@ -111,6 +117,45 @@ export function CampusDirectoryDetail({ unit, onOpenMap, onBack, className = '',
             <div className={`px-5 py-6 sm:px-6 ${scrollContent ? 'min-h-0 flex-1 overflow-y-auto scrollbar-hide' : ''}`}>
                 <p className="text-sm leading-6 text-gray-700">{unit.summary}</p>
                 {unit.description && <p className="mt-3 text-sm leading-6 text-gray-600">{unit.description}</p>}
+
+                {/* XUẤT HIỆN Ở BỘ MÔN: Nút trỏ về Khoa quản lý */}
+                {parentUnit && (
+                    <DetailSection title="Trực thuộc">
+                        <button
+                            type="button"
+                            onClick={() => onSelectUnit?.(parentUnit.id)}
+                            className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-sm"
+                        >
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 group-hover:bg-blue-50 group-hover:text-[#004A98]">
+                                <Building2 className="h-5 w-5" />
+                            </span>
+                            <span className="font-medium text-slate-700 group-hover:text-[#004A98]">
+                                {parentUnit.name}
+                            </span>
+                        </button>
+                    </DetailSection>
+                )}
+
+                {/* XUẤT HIỆN Ở KHOA: Danh sách các Bộ môn/Phòng thí nghiệm trực thuộc */}
+                {childUnits.length > 0 && (
+                    <DetailSection title="Đơn vị trực thuộc">
+                        <div className="grid gap-1.5 sm:grid-cols-2">
+                            {childUnits.map((child) => (
+                                <button
+                                    key={child.id}
+                                    type="button"
+                                    onClick={() => onSelectUnit?.(child.id)}
+                                    className="group flex items-start gap-2 rounded-lg border border-transparent py-2 pl-2 pr-3 text-left transition-colors hover:bg-slate-50"
+                                >
+                                    <ChevronRight className="mt-[3px] h-4 w-4 shrink-0 text-slate-400 group-hover:text-[#004A98]" />
+                                    <span className="text-sm font-medium text-slate-700 group-hover:text-[#004A98]">
+                                        {child.name}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </DetailSection>
+                )}
 
                 {unit.locations.length > 0 && (
                     <DetailSection title="Địa điểm">
@@ -142,51 +187,47 @@ export function CampusDirectoryDetail({ unit, onOpenMap, onBack, className = '',
                 )}
 
                 {unit.services && unit.services.length > 0 && (
-    <DetailSection title="Hỗ trợ">
-        <div className="space-y-3">
-            {unit.services.map((service) => {
-                const isOpen = openServiceId === service.id;
-                return (
-                    <div 
-                        key={service.id} 
-                        className={`overflow-hidden rounded-xl border transition-all duration-200 ${
-                            isOpen 
-                                ? 'border-[#004A98]/20 bg-blue-50/40 shadow-md ring-1 ring-[#004A98]/10' 
-                                : 'border-slate-200 bg-white shadow-sm hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md'
-                        }`}
-                    >
-                        <button 
-                            type="button" 
-                            onClick={() => setOpenServiceId(isOpen ? null : service.id)} 
-                            className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left"
-                        >
-                            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                                isOpen 
-                                    ? 'border-transparent bg-[#004A98] text-white shadow-sm' 
-                                    : 'border-slate-200 bg-slate-50 text-slate-500 group-hover:bg-blue-50 group-hover:text-[#004A98]'
-                            }`}>
-                                <FileText className="h-5 w-5" />
-                            </span>
-                            <span className={`min-w-0 flex-1 text-[15px] font-semibold transition-colors ${
-                                isOpen ? 'text-[#004A98]' : 'text-slate-800'
-                            }`}>
-                                {service.name}
-                            </span>
-                            <ChevronDown className={`h-5 w-5 shrink-0 transition-transform duration-200 ${
-                                isOpen ? 'rotate-180 text-[#004A98]' : 'text-slate-400 group-hover:text-blue-400'
-                            }`} />
-                        </button>
-                        {isOpen && (
-                            <div className="border-t border-blue-100/50 bg-white px-5 py-4">
-                                <ServiceDetails details={service.details} />
-                            </div>
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    </DetailSection>
-)}
+                    <DetailSection title="Hỗ trợ">
+                        <div className="space-y-3">
+                            {unit.services.map((service) => {
+                                const isOpen = openServiceId === service.id;
+                                return (
+                                    <div
+                                        key={service.id}
+                                        className={`overflow-hidden rounded-xl border transition-all duration-200 ${isOpen
+                                            ? 'border-[#004A98]/20 bg-blue-50/40 shadow-md ring-1 ring-[#004A98]/10'
+                                            : 'border-slate-200 bg-white shadow-sm hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md'
+                                            }`}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => setOpenServiceId(isOpen ? null : service.id)}
+                                            className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left"
+                                        >
+                                            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${isOpen
+                                                ? 'border-transparent bg-[#004A98] text-white shadow-sm'
+                                                : 'border-slate-200 bg-slate-50 text-slate-500 group-hover:bg-blue-50 group-hover:text-[#004A98]'
+                                                }`}>
+                                                <FileText className="h-5 w-5" />
+                                            </span>
+                                            <span className={`min-w-0 flex-1 text-[15px] font-semibold transition-colors ${isOpen ? 'text-[#004A98]' : 'text-slate-800'
+                                                }`}>
+                                                {service.name}
+                                            </span>
+                                            <ChevronDown className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#004A98]' : 'text-slate-400 group-hover:text-blue-400'
+                                                }`} />
+                                        </button>
+                                        {isOpen && (
+                                            <div className="border-t border-blue-100/50 bg-white px-5 py-4">
+                                                <ServiceDetails details={service.details} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </DetailSection>
+                )}
 
                 {(unit.sourceUrl || unit.lastVerifiedAt || unit.verificationStatus === 'pending') && (
                     <p className="border-t border-gray-100 pt-4 text-xs text-gray-400">

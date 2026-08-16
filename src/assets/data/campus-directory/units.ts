@@ -505,6 +505,11 @@ export const CAMPUS_UNITS: CampusUnit[] = [
                     },
                     {
                         type: 'link',
+                        label: 'Đăng ký in Chứng nhận sinh viên (Microsoft Forms)',
+                        href: 'https://forms.office.com/r/LGZXGns8ru',
+                    },
+                    {
+                        type: 'link',
                         label: 'Mở biểu mẫu Đăng ký in chứng nhận sinh viên',
                         href: 'https://hcmus.edu.vn/phong-cong-tac-sinh-vien/',
                     },
@@ -537,6 +542,11 @@ export const CAMPUS_UNITS: CampusUnit[] = [
                             'Ghi rõ học kỳ/năm học và mục đích cần xác nhận',
                             'Theo dõi email sinh viên để nhận kết quả hoặc lịch nhận bản giấy',
                         ],
+                    },
+                    {
+                        type: 'link',
+                        label: 'Đăng ký in Điểm rèn luyện (Microsoft Forms)',
+                        href: 'https://forms.office.com/Pages/ResponsePage.aspx?id=1HwSQPNFo0mwXTFaQ6nwM35NluEoXbZIssP2uQG4klxUMjE2ME00M0I3RzlMRDJFWUlOQlNFNVpIRC4u',
                     },
                     { type: 'link', label: 'Mở biểu mẫu Đăng ký in Điểm rèn luyện', href: 'https://hcmus.edu.vn/phong-cong-tac-sinh-vien/' },
                     {
@@ -801,7 +811,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
                 ],
             },
         ],
-        phones: ['(028) 6288 4499, máy lẻ 1500', '0968 918 018, chọn phím 1'],
+        phones: ['(028) 6288 4499, máy lẻ 1500/1502', '0968 918 018, chọn phím 1'],
         emails: ['congtacsinhvien@hcmus.edu.vn'],
         websites: ['https://ctsv.hcmus.edu.vn/', 'https://hcmus.edu.vn/phong-cong-tac-sinh-vien/'],
         locations: [
@@ -1997,7 +2007,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
     },
     {
         id: 'doan-thanh-nien-truong',
-        type: 'other',
+        type: 'student-service',
         parentId: 'van-phong-doan-hoi',
         name: 'Đoàn Thanh niên Trường',
         shortName: 'Đoàn Trường',

@@ -1,9 +1,9 @@
-import { Building2, GraduationCap, Landmark, Library, UsersRound } from 'lucide-react';
-import type { CampusUnit, CampusUnitType } from '../../../assets/data/campus-directory';
-
+import { Building2, GraduationCap, Landmark, Library, UsersRound, Microscope } from 'lucide-react';import type { CampusUnit, CampusUnitType } from '../../../assets/data/campus-directory';
+import { CAMPUS_UNITS } from '../../../assets/data/campus-directory';
 const unitIcon: Record<CampusUnitType, typeof Building2> = {
     faculty: GraduationCap,
     department: Building2,
+    laboratory: Microscope,
     office: Landmark,
     center: Building2,
     'student-service': UsersRound,
@@ -13,7 +13,16 @@ const unitIcon: Record<CampusUnitType, typeof Building2> = {
 
 function getLocationLabel(unit: CampusUnit) {
     const location = unit.locations[0];
-    if (!location) return 'Đang cập nhật vị trí';
+    
+    if (!location) {
+        if (unit.type === 'laboratory' || unit.type === 'department') {
+            // Dò tìm Đơn vị cha trong toàn bộ dữ liệu
+            const parent = CAMPUS_UNITS.find(u => u.id === unit.parentId);
+            return parent ? `Trực thuộc ${parent.name}` : 'Đang cập nhật vị trí';
+        }
+        return 'Đang cập nhật vị trí';
+    }
+    
     return [
         location.buildingId === 'NDH' ? 'Nhà Điều hành' : `Tòa ${location.buildingId}`,
         location.floor && `Tầng ${location.floor}`,

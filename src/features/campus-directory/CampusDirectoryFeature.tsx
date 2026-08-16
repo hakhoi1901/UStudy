@@ -8,21 +8,33 @@ import { searchCampusUnits } from './campus-directory-search';
 import { CampusDirectoryDetail } from './components/CampusDirectoryDetail';
 import { CampusDirectoryListItem } from './components/CampusDirectoryListItem';
 
+// Thêm 'laboratory' vào danh sách hiển thị option (nếu có dùng)
 const TYPE_OPTIONS: Array<{ id: 'all' | CampusUnitType; name: string }> = [
     { id: 'all', name: 'Tất cả đơn vị' },
     { id: 'faculty', name: 'Khoa' },
     { id: 'department', name: 'Bộ môn' },
+    { id: 'laboratory', name: 'Phòng thí nghiệm' },
     { id: 'office', name: 'Phòng ban' },
     { id: 'center', name: 'Trung tâm' },
     { id: 'student-service', name: 'Dịch vụ sinh viên' },
     { id: 'library', name: 'Thư viện' },
 ];
 
-const UNIT_TYPE_ORDER: CampusUnitType[] = ['faculty', 'department', 'office', 'center', 'student-service', 'library', 'other'];
+const UNIT_TYPE_ORDER: CampusUnitType[] = [
+    'faculty', 
+    'department', 
+    'laboratory',
+    'office', 
+    'center', 
+    'student-service', 
+    'library', 
+    'other'
+];
 
 const UNIT_TYPE_LABELS: Record<CampusUnitType, string> = {
     faculty: 'Khoa',
     department: 'Bộ môn',
+    laboratory: 'Phòng thí nghiệm', // Thêm mới
     office: 'Phòng ban',
     center: 'Trung tâm',
     'student-service': 'Dịch vụ sinh viên',
@@ -33,6 +45,7 @@ const UNIT_TYPE_LABELS: Record<CampusUnitType, string> = {
 const INITIAL_EXPANDED_TYPES: Record<CampusUnitType, boolean> = {
     faculty: false,
     department: false,
+    laboratory: false, // Thêm mới
     office: false,
     center: false,
     'student-service': false,
@@ -43,6 +56,7 @@ const INITIAL_EXPANDED_TYPES: Record<CampusUnitType, boolean> = {
 const SEARCH_EXPANDED_TYPES: Record<CampusUnitType, boolean> = {
     faculty: true,
     department: true,
+    laboratory: true, // Thêm mới
     office: true,
     center: true,
     'student-service': true,
@@ -87,9 +101,19 @@ export function CampusDirectoryFeature() {
         if (window.matchMedia('(max-width: 1023px)').matches) setIsMobileDetailOpen(true);
     };
 
+    const handleSelectUnitId = (id: string) => {
+        setSelectedId(id);
+        const unit = CAMPUS_UNITS.find(u => u.id === id);
+        // Tự động mở rộng nhóm tương ứng trên Sidebar khi chọn qua liên kết chéo
+        if (unit) {
+            setExpandedTypes(prev => ({ ...prev, [unit.type]: true }));
+        }
+        if (window.matchMedia('(max-width: 1023px)').matches) setIsMobileDetailOpen(true);
+    };
+
     return (
         <section className="mt-5">
-            <div className="grid min-h-[420px] overflow-hidden rounded-xl border border-gray-200 bg-white lg:h-[min(700px,calc(100dvh-11rem))] lg:min-h-0 lg:grid-cols-[380px_minmax(0,1fr)] ustudy-card">
+            <div className="grid min-h-[420px] overflow-hidden rounded-xl border border-gray-200 bg-white lg:h-[min(900px,calc(100dvh-6rem))] lg:min-h-0 lg:grid-cols-[380px_minmax(0,1fr)] ustudy-card">
                 <aside className="flex min-h-0 min-w-0 flex-col border-b border-gray-200 bg-slate-50/50 lg:border-b-0 lg:border-r">
                     <div className="shrink-0 border-b border-gray-200 bg-slate-50/50 p-4">                        <label className="relative block">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -98,6 +122,8 @@ export function CampusDirectoryFeature() {
                     </label>
                         {/* <AppSelect value={type} options={TYPE_OPTIONS} onChange={(value) => setType(value as 'all' | CampusUnitType)} ariaLabel="Lọc loại đơn vị" className="mt-3" triggerClassName="h-10" /> */}
                     </div>
+
+
 
                     <div className="min-h-0 flex-1 overflow-y-auto pb-2 scrollbar-hide">
                         {unitGroups.map((group) => (
@@ -111,6 +137,7 @@ export function CampusDirectoryFeature() {
                                 onSelect={selectUnit}
                             />
                         ))}
+
                         {filteredUnits.length === 0 && (
                             <div className="px-5 py-12 text-center">
                                 <Building2 className="mx-auto h-6 w-6 text-gray-300" />
@@ -122,14 +149,29 @@ export function CampusDirectoryFeature() {
                 </aside>
 
                 <div className="hidden min-h-0 min-w-0 overflow-hidden lg:block">
-                    {selectedUnit ? <CampusDirectoryDetail unit={selectedUnit} onOpenMap={openMap} scrollContent className="h-full" /> : <DirectoryEmptyState />}
+                    {selectedUnit ? (
+                        <CampusDirectoryDetail
+                            unit={selectedUnit}
+                            allUnits={CAMPUS_UNITS} // TRUYỀN THÊM allUnits
+                            onSelectUnit={handleSelectUnitId} // TRUYỀN THÊM onSelectUnit
+                            onOpenMap={openMap}
+                            scrollContent
+                            className="h-full"
+                        />
+                    ) : <DirectoryEmptyState />}
                 </div>
             </div>
 
             {isMobileDetailOpen && selectedUnit && (
                 <div className="fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[9000] bg-white lg:hidden">
                     <div className="h-full overflow-y-auto scrollbar-hide">
-                        <CampusDirectoryDetail unit={selectedUnit} onOpenMap={openMap} onBack={() => setIsMobileDetailOpen(false)} />
+                        <CampusDirectoryDetail
+                            unit={selectedUnit}
+                            allUnits={CAMPUS_UNITS} // TRUYỀN THÊM allUnits
+                            onSelectUnit={handleSelectUnitId} // TRUYỀN THÊM onSelectUnit
+                            onOpenMap={openMap}
+                            onBack={() => setIsMobileDetailOpen(false)}
+                        />
                     </div>
                 </div>
             )}

@@ -1,6 +1,7 @@
 export type CampusUnitType =
     | 'faculty'
     | 'department'
+    | 'laboratory'
     | 'office'
     | 'center'
     | 'student-service'
