@@ -7,6 +7,7 @@ export interface Preferences {
     session?: string;
     strategy?: string;
     noGaps?: boolean;
+    preferredClassesMap?: Record<string, string>;
 }
 
 export interface ClassSession {
@@ -84,7 +85,23 @@ export class FitnessEvaluator {
             return chromosome.fitness;
         }
 
-        // 2. SOFT CONSTRAINTS
+        // 2. LEXICOGRAPHIC SOFT CONSTRAINT (Manual Selections)
+        let preferredMisses = 0;
+        for (let i = 0; i < genes.length; i++) {
+            const classIdx = genes[i];
+            if (classIdx === -1) continue;
+            
+            const cls = subjects[i].classes[classIdx];
+            const preferredClassId = this.prefs.preferredClassesMap?.[subjects[i].id];
+            
+            if (preferredClassId && cls.id !== preferredClassId) {
+                preferredMisses++;
+            }
+        }
+        
+        score -= preferredMisses * WEIGHTS.PENALTY_MANUAL_SELECTION_CHANGED;
+
+        // 3. NORMAL SOFT CONSTRAINTS
 
         // A. Ngày nghỉ (Dùng Mask quét Bit)
         if (this.dayOffRules.length > 0) {
