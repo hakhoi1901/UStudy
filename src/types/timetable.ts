@@ -14,7 +14,10 @@ export interface ClassSection {
     color: string; // màu sắc
     isConfirmed: boolean; // đã xác nhận
     credits: number; // số tín chỉ
+    /** true = môn trường đã đăng ký từ Portal, immutable baseline. */
+    isRegistered?: boolean;
 }
+
 
 export interface TimetableRegisteredCourse {
     courseCode: string; // mã môn học

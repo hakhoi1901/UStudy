@@ -35,7 +35,7 @@ export function useScheduleSolver() {
     const [activeOption, setActiveOption] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const solve = useCallback((selectedCourses: Course[], selectedClassMap: Record<string, string[]> = {}, prefs: SolverPreferences = {}) => {
+    const solve = useCallback((selectedCourses: Course[], selectedClassMap: Record<string, string[]> = {}, prefs: SolverPreferences = {}, registeredMask?: number[]) => {
         setSolving(true);
         setError(null);
 
@@ -53,7 +53,7 @@ export function useScheduleSolver() {
                     session: prefs.session || '0',
                     strategy: prefs.strategy || 'compress',
                     noGaps: prefs.noGaps ?? false,
-                });
+                }, registeredMask);
 
                 if (!results || results.length === 0) {
                     setError('Không tìm được phương án xếp lịch phù hợp. Thử chọn ít môn hơn hoặc kiểm tra lại dữ liệu lớp học.');

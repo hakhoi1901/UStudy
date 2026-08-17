@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { useCourseData } from '../../hooks/useCourseData';
+import { useRegisteredCourses } from '../../hooks/useRegisteredCourses';
 import { type ClassSection } from '../../types';
 import { NoDataCard } from '../../components/feedback';
 import { PageHeader } from '../../components/layout/page-header';
@@ -80,7 +81,13 @@ export function StudyRoadmapFeature() {
     }, [tabFromPath, activeTab, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
-    const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+    const { registeredSections, registeredMask, registeredCourseCodes } = useRegisteredCourses();
+    const { solve: solveRaw, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+
+    // Wrap solve() to automatically include registeredMask
+    const solve = (courses: import('../../types').Course[], allowedClassesMap: Record<string, string[]>, prefs?: import('./hooks/use-schedule-solver').SolverPreferences) => {
+        solveRaw(courses, allowedClassesMap, prefs, registeredMask);
+    };
 
     const currentSource = viewMode === 'recommend' ? recommended : all;
     const globalAllCourses = [...all.core, ...all.major, ...all.electives];
@@ -118,7 +125,7 @@ export function StudyRoadmapFeature() {
     };
 
     const confirmedSections: ClassSection[] = currentSections;
-    const handleGetConflicts = (section: ClassSection) => getConflicts(section, confirmedSections);
+    const handleGetConflicts = (section: ClassSection) => getConflicts(section, [...registeredSections, ...confirmedSections]);
     
     // ---- Mobile Basket Drawer (portal vào body) ----
     const MobileBasketDrawer = createPortal(
@@ -306,6 +313,7 @@ export function StudyRoadmapFeature() {
                                             selectedCourses={selectedCourses}
                                             handleCourseToggle={handleCourseToggle}
                                             handleShowFlowchart={handleShowFlowchart}
+                                            registeredCourseCodes={registeredCourseCodes}
                                         />
                                     </div>
                                     {/* Mobile: không fixed height */}
@@ -321,6 +329,7 @@ export function StudyRoadmapFeature() {
                                             selectedCourses={selectedCourses}
                                             handleCourseToggle={handleCourseToggle}
                                             handleShowFlowchart={handleShowFlowchart}
+                                            registeredCourseCodes={registeredCourseCodes}
                                         />
                                     </div>
                                 </div>
@@ -350,6 +359,7 @@ export function StudyRoadmapFeature() {
                                 selectedCourses={selectedCourses}
                                 setActiveTab={setActiveTab}
                                 currentSections={currentSections}
+                                registeredSections={registeredSections}
                                 activeOption={activeOption}
                                 options={options}
                                 allCurrentCourses={globalAllCourses as Course[]}

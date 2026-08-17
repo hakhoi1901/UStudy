@@ -29,6 +29,8 @@ interface CalendarViewProps {
     selectedCourses: Set<string>;
     setActiveTab: (tab: Tab) => void;
     currentSections: ClassSection[];
+    /** Baseline sections from Portal registrations — rendered separately, immutable. */
+    registeredSections?: ClassSection[];
     activeOption: number;
     options: any[];
     allCurrentCourses: Course[];
@@ -99,6 +101,7 @@ export function CalendarView({
     selectedCourses,
     setActiveTab,
     currentSections,
+    registeredSections = [],
     activeOption,
     options,
     allCurrentCourses,
@@ -246,7 +249,10 @@ export function CalendarView({
         </div>
     );
 
-    if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0) {
+    // Combine baseline (registered) + draft sections for display
+    const displaySections = [...registeredSections, ...currentSections];
+
+    if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0 && registeredSections.length === 0) {
         return (
             <div className="space-y-4">
                 {renderModeToolbar()}
@@ -811,8 +817,9 @@ export function CalendarView({
 
                           {/* ── Layer 2: thẻ môn học, phủ lên lưới (z=2) ── */}
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: 'none' }}>
-                            {currentSections.map((classSection: ClassSection) => {
-                                const conflicts = getConflicts(classSection);
+                            {displaySections.map((classSection: ClassSection) => {
+                                const isRegisteredSection = classSection.isRegistered === true;
+                                const conflicts = isRegisteredSection ? [] : getConflicts(classSection);
                                 const hasConflict = conflicts.length > 0;
 
                                 const rowH = 56;
@@ -823,13 +830,13 @@ export function CalendarView({
                                 const heightPx = heightPeriods * rowH + (spansLunch ? 34 : 0);
                                 const dayColIndex = classSection.day - 2;
 
-                                // Color tokens
-                                const baseColor = hasConflict ? '#EF4444' : classSection.color;
-                                const bgColor   = hasConflict ? '#FFF1F2' : getSolidTint(classSection.color);
-                                const textColor    = hasConflict ? '#991B1B' : '#111827';
-                                const subTextColor = hasConflict ? '#B91C1C' : '#6B7280';
-                                const pillBg    = hasConflict ? '#FEE2E2' : getSolidTint(classSection.color, 0.82);
-                                const pillText  = hasConflict ? '#991B1B' : '#374151';
+                                // Color tokens — registered sections get distinct emerald style
+                                const baseColor = isRegisteredSection ? '#10B981' : (hasConflict ? '#EF4444' : classSection.color);
+                                const bgColor   = isRegisteredSection ? '#F0FDF4' : (hasConflict ? '#FFF1F2' : getSolidTint(classSection.color));
+                                const textColor    = isRegisteredSection ? '#065F46' : (hasConflict ? '#991B1B' : '#111827');
+                                const subTextColor = isRegisteredSection ? '#047857' : (hasConflict ? '#B91C1C' : '#6B7280');
+                                const pillBg    = isRegisteredSection ? '#D1FAE5' : (hasConflict ? '#FEE2E2' : getSolidTint(classSection.color, 0.82));
+                                const pillText  = isRegisteredSection ? '#065F46' : (hasConflict ? '#991B1B' : '#374151');
 
                                 const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
                                 const endTime   = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
@@ -845,11 +852,14 @@ export function CalendarView({
                                         role="button"
                                         tabIndex={0}
                                         aria-label={`Xem chi tiết lớp mở ${classSection.sectionNumber} của môn ${classSection.courseCode}`}
-                                        onClick={() => setOpenClassDetails({
-                                            courseCode: classSection.courseCode,
-                                            courseName: classSection.courseNameVi || classSection.courseName,
-                                            classId: classSection.selectedClassId || classSection.sectionNumber,
-                                        })}
+                                        onClick={() => {
+                                            if (isRegisteredSection) return; // Registered baseline — no interaction
+                                            setOpenClassDetails({
+                                                courseCode: classSection.courseCode,
+                                                courseName: classSection.courseNameVi || classSection.courseName,
+                                                classId: classSection.selectedClassId || classSection.sectionNumber,
+                                            });
+                                        }}
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();
@@ -966,7 +976,7 @@ export function CalendarView({
                                                         lineHeight: 1.5,
                                                         whiteSpace: 'nowrap',
                                                     }}>
-                                                        Lớp {classSection.sectionNumber}
+                                                        {isRegisteredSection ? '🔒 Đã ĐK' : `Lớp ${classSection.sectionNumber}`}
                                                     </span>
                                                     {classSection.room && classSection.room !== '---' && (
                                                         <span style={{
