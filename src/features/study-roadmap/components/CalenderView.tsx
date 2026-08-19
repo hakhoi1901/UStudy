@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, cloneElement, isValidElement, type ReactNode, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, cloneElement, isValidElement, type ReactNode, type ReactElement, useRef } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { SavedSchedulesModal } from '../../group-schedule';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
-import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers, Users } from 'lucide-react';
+import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers, Users, Camera } from 'lucide-react';
 import { type ClassSection, type SavedSchedule } from '../../../types';
 import { type SolverPreferences, type ScheduleOption } from '../hooks/use-schedule-solver';
 import { weekDays, timePeriods } from '../../../constants';
@@ -12,6 +12,7 @@ import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../..
 import type { Tab } from './../types.ts';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
+import { captureElementAsDataURL, downloadImage } from '../../../utils/export';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -117,6 +118,22 @@ export function CalendarView({
         if (window.location.hash.startsWith('#v1_')) return 'group';
         return readFromStorage<ScheduleMode>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
     });
+    
+    const calendarRef = useRef<HTMLDivElement>(null);
+    const [exporting, setExporting] = useState(false);
+
+    const handleExportImage = async () => {
+        if (!calendarRef.current) return;
+        setExporting(true);
+        try {
+            const dataUrl = await captureElementAsDataURL(calendarRef.current);
+            downloadImage(dataUrl, `pa-${activeOption + 1}.png`);
+        } catch (e) {
+            console.error('Export failed', e);
+        } finally {
+            setExporting(false);
+        }
+    };
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.SCHEDULE_MODE, scheduleMode);
@@ -716,9 +733,14 @@ export function CalendarView({
                             {savedSchedules.length > 0 && <span className="ustudy-badge-count text-[10px] font-bold">{savedSchedules.length > 99 ? '99+' : savedSchedules.length}</span>}
                         </button>
                         {currentSections.length > 0 && (
-                            <button type="button" onClick={() => setShowSaveModal(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
-                                <Save className="h-4 w-4" /> Lưu phương án
-                            </button>
+                            <>
+                                <button type="button" onClick={handleExportImage} disabled={exporting} className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <Camera className="h-4 w-4" /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
+                                </button>
+                                <button type="button" onClick={() => setShowSaveModal(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
+                                    <Save className="h-4 w-4" /> Lưu phương án
+                                </button>
+                            </>
                         )}
                         <button type="button" onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)} disabled={solving} className="ustudy-button-primary h-9 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60">
                             <Cpu className="h-4 w-4" /> {solving ? 'Đang xếp...' : currentSections.length ? 'Xếp lại' : 'Xếp lịch'}
@@ -734,7 +756,7 @@ export function CalendarView({
                 />
 
                 <div className="overflow-auto">
-                    <div className="min-w-[620px] md:min-w-[1000px]">
+                    <div ref={calendarRef} className="min-w-[620px] md:min-w-[1000px] bg-white">
                         {/* Column headers */}
                         <div className="grid sticky top-0 z-20 bg-[#004A98]" style={{ gridTemplateColumns: '64px repeat(6, 1fr)' }}>
                             <div className="sticky left-0 z-30 bg-[#004A98] h-11 md:h-12 flex items-center justify-center border-r border-white/20">
