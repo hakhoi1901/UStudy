@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Info, GitBranch, ChevronUp, Clock, FileText, CalendarRange, Users } from 'lucide-react';
 import type { Course } from '../../../types';
 import { useDepartmentData } from '../../../context/DepartmentContext';
-import { buildLegacyEnrollment } from '../../../utils/classEnrollmentUtils';
 import courseDbJson from '../../../logic/scheduler/Course_db.json';
 import { useEffect } from 'react';
 import { STORAGE_KEYS } from '../../../config';
