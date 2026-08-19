@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { saveAs } from 'file-saver';
 
 export const slugify = (text: string): string => {
@@ -19,13 +19,14 @@ export const captureElementAsDataURL = async (element: HTMLElement): Promise<str
     element.style.backgroundColor = '#ffffff';
 
     try {
-        const canvas = await html2canvas(element, {
-            scale: 2, // High resolution
-            useCORS: true,
+        const dataUrl = await toPng(element, {
+            pixelRatio: 2, // High resolution
             backgroundColor: '#ffffff',
-            logging: false,
+            style: {
+                backgroundColor: '#ffffff'
+            }
         });
-        return canvas.toDataURL('image/png');
+        return dataUrl;
     } finally {
         element.style.backgroundColor = originalBg;
     }
