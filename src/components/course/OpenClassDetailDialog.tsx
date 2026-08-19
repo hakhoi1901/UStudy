@@ -3,6 +3,7 @@ import { CalendarClock, MapPin, Users } from 'lucide-react';
 
 import { STORAGE_KEYS } from '../../config';
 import { readFromStorage } from '../../helpers/localStorage/save';
+import courseDbJson from '../../logic/scheduler/Course_db.json';
 import { AppDialog } from '../ui/overlays/app-dialog';
 
 export interface OpenClassDetailTarget {
@@ -97,8 +98,14 @@ function ClassComponentRow({ label, component }: { label: string; component?: Cl
 export function OpenClassDetailContent({ target }: { target: OpenClassDetailTarget }) {
   const { course, selectedClass } = useMemo(() => {
     const courses = readFromStorage<StoredCourse[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (courses && Array.isArray(courses)) {
+        courses.forEach(item => mergedMap.set(item.id, item));
+    }
+    const mergedCourses = Array.from(mergedMap.values());
     const courseCode = normalize(target.courseCode);
-    const foundCourse = courses.find((item) => normalize(item.id || item.code || item.course_id) === courseCode);
+    const foundCourse = mergedCourses.find((item) => normalize(item.id || item.code || item.course_id) === courseCode);
     const classId = normalize(target.classId);
     const foundClass = foundCourse?.classes?.find((item) => normalize(item.id) === classId)
       ?? foundCourse?.classes?.find((item) => normalize(item.id).startsWith(`${classId}_`));

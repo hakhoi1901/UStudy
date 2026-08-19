@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, Fragment } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, List, Info } from 'lucide-react';
 
 import { GroupMemberCard } from './components/GroupMemberCard';
@@ -93,7 +93,12 @@ function normalizeSchedule(value: unknown): string[] {
 
 function loadClassOptionsByCourse(): Record<string, GroupClassOption[]> {
     const stored = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
-    const rawCourses = stored.length > 0 ? stored : (courseDbJson as any[]);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (stored && Array.isArray(stored)) {
+        stored.forEach(item => mergedMap.set(item.id, item));
+    }
+    const rawCourses = Array.from(mergedMap.values());
 
     return rawCourses.reduce<Record<string, GroupClassOption[]>>((acc, course) => {
         const courseId = normalizeCourseId(course?.id || course?.code || course?.course_id);
