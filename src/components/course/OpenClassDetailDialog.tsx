@@ -101,7 +101,13 @@ export function OpenClassDetailContent({ target }: { target: OpenClassDetailTarg
     const mergedMap = new Map<string, any>();
     (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
     if (courses && Array.isArray(courses)) {
-        courses.forEach(item => mergedMap.set(item.id, item));
+        courses.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
     }
     const mergedCourses = Array.from(mergedMap.values());
     const courseCode = normalize(target.courseCode);

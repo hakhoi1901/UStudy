@@ -43,13 +43,19 @@ export function useScheduleSolver() {
         setTimeout(() => {
             try {
                 // Đọc dữ liệu từ localStorage (từ Bookmarklet), nếu không có thì dùng file tĩnh
-                const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
+                const offlineDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
                 
                 // Gom chung dữ liệu từ localStorage và file tĩnh, ưu tiên dữ liệu từ localStorage nếu trùng ID
                 const mergedMap = new Map<string, any>();
                 (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
-                if (courseDb && Array.isArray(courseDb)) {
-                    courseDb.forEach(item => mergedMap.set(item.id, item));
+                if (offlineDb && Array.isArray(offlineDb)) {
+                    offlineDb.forEach(item => {
+                        const existing = mergedMap.get(item.id);
+                        if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                            item.classes = existing.classes;
+                        }
+                        mergedMap.set(item.id, item);
+                    });
                 }
                 const dbData = Array.from(mergedMap.values());
 

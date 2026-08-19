@@ -35,7 +35,13 @@ export function CourseClassFilterModal({
     const mergedMap = new Map<string, any>();
     (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
     if (courseDb && Array.isArray(courseDb)) {
-        courseDb.forEach(item => mergedMap.set(item.id, item));
+        courseDb.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
     }
     const mergedDb = Array.from(mergedMap.values());
 

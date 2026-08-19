@@ -69,7 +69,18 @@ function getCourseName(course: any): string {
 
 function loadCourseDb(): any[] {
   const stored = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
-  return stored && stored.length > 0 ? stored : (courseDbJson as any[]);
+  const mergedMap = new Map<string, any>();
+  (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+  if (stored && Array.isArray(stored)) {
+    stored.forEach(item => {
+      const existing = mergedMap.get(item.id);
+      if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+        item.classes = existing.classes;
+      }
+      mergedMap.set(item.id, item);
+    });
+  }
+  return Array.from(mergedMap.values());
 }
 
 export function parseCourseInput(value: string): string[] {
