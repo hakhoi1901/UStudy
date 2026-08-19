@@ -37,7 +37,7 @@ export function runScheduleSolver(dbData: any, userWants: any, fixedClasses: any
     // --- CHẠY THUẬT TOÁN ---
     const valuator = new FitnessEvaluator(preferences);
     const solver = new GeneticSolver(selectedCourses, valuator);
-    const rawResults = solver.solve(5);
+    const rawResults = solver.solve(50);
 
     // --- TỔNG HỢP KẾT QUẢ ---
     // --- MAPPING VỀ FORMAT UI ---
