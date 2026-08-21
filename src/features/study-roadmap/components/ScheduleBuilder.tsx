@@ -4,6 +4,7 @@ import {
   useMemo,
   useEffect,
   useRef,
+  type MutableRefObject,
 } from 'react';
 import { Calendar, PanelLeftOpen } from 'lucide-react';
 import type { Course, ClassSection } from '../../../types';
@@ -39,6 +40,9 @@ interface ScheduleBuilderProps {
   onOpenSaveModal: () => void;
   onClearSolver: () => void;
   onDraftSectionsChange: (sections: ClassSection[]) => void;
+  showToolbar?: boolean;
+  onDraftStateChange?: (hasSelections: boolean) => void;
+  clearDraftRef?: MutableRefObject<(() => void) | null>;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -64,6 +68,9 @@ export function ScheduleBuilder({
   onOpenSaveModal,
   onClearSolver,
   onDraftSectionsChange,
+  showToolbar = true,
+  onDraftStateChange,
+  clearDraftRef,
 }: ScheduleBuilderProps) {
   const draft = useScheduleDraft();
   const displaySections = useMemo(
@@ -199,6 +206,18 @@ export function ScheduleBuilder({
     onClearSolver();
   }, [draft, onClearSolver]);
 
+  useEffect(() => {
+    onDraftStateChange?.(draft.hasAnySelection);
+  }, [draft.hasAnySelection, onDraftStateChange]);
+
+  useEffect(() => {
+    if (!clearDraftRef) return;
+    clearDraftRef.current = handleClear;
+    return () => {
+      clearDraftRef.current = null;
+    };
+  }, [clearDraftRef, handleClear]);
+
   // ── Empty state ───────────────────────────────────────────────────────────
   if (selectedCourses.size === 0 && registeredSections.length === 0) {
     return (
@@ -232,16 +251,18 @@ export function ScheduleBuilder({
       )}
 
       {/* Toolbar */}
-      <BuilderToolbar
-        hasSelections={draft.hasAnySelection}
-        solving={solving}
-        savedSchedulesCount={savedSchedulesCount}
-        onFullSolve={handleFullSolve}
-        onOpenConfig={onOpenConfig}
-        onOpenSavedList={onOpenSavedList}
-        onSave={onOpenSaveModal}
-        onClear={handleClear}
-      />
+      {showToolbar && (
+        <BuilderToolbar
+          hasSelections={draft.hasAnySelection}
+          solving={solving}
+          savedSchedulesCount={savedSchedulesCount}
+          onFullSolve={handleFullSolve}
+          onOpenConfig={onOpenConfig}
+          onOpenSavedList={onOpenSavedList}
+          onSave={onOpenSaveModal}
+          onClear={handleClear}
+        />
+      )}
 
       {/* ── 2-panel layout: Left sidebar | Right calendar ── */}
       <div className="flex gap-3">

@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react';
 import { readFromStorage } from '../../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../../config';
 import type { ClassPreferenceLevel, ClassPreferenceSelection } from '../../group-schedule/types';
+import courseDbJson from '../../../logic/scheduler/Course_db.json';
 
 interface CourseClassFilterModalProps {
   courseCode: string;
@@ -31,7 +32,20 @@ export function CourseClassFilterModal({
     if (!isOpen) return;
 
     const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
-    const courseData = courseDb.find((course: any) => course.id === courseCode);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (courseDb && Array.isArray(courseDb)) {
+        courseDb.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
+    }
+    const mergedDb = Array.from(mergedMap.values());
+
+    const courseData = mergedDb.find((course: any) => course.id === courseCode);
     setAvailableClasses(courseData?.classes ?? []);
   }, [isOpen, courseCode]);
 

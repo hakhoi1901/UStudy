@@ -6,7 +6,7 @@ import { Bitset } from './Bitset.js';
 /**
  * @param registeredMask Serialized baseline mask (number[]).
  *   Classes conflicting with this mask are filtered OUT before the GA runs.
- *   Invariant: solver filtering does NOT mutate the original course DB — courses are cloned.
+ *   Invariant: solver filtering does NOT mutate the original course DB â€” courses are cloned.
  */
 export function runScheduleSolver(
     dbData: any,
@@ -21,7 +21,7 @@ export function runScheduleSolver(
 
     const selectedCourses: any[] = [];
 
-    // --- LỌC DỮ LIỆU ---
+    // --- Lá»ŒC Dá»® LIá»†U ---
     userWants.forEach((subjID: any) => {
         const cleanID = String(subjID).trim();
         const course = db.getCourse(cleanID);
@@ -47,9 +47,9 @@ export function runScheduleSolver(
 
     if (selectedCourses.length === 0) return [];
 
-    // --- LỌC BASELINE REGISTERED (HARD CONSTRAINT) ---
-    // Clone courses — KHÔNG mutate course DB gốc.
-    // Invariant: filteredCourses chỉ dùng trong lần solve này.
+    // --- Lá»ŒC BASELINE REGISTERED (HARD CONSTRAINT) ---
+    // Clone courses â€” KHÃ”NG mutate course DB gá»‘c.
+    // Invariant: filteredCourses chá»‰ dÃ¹ng trong láº§n solve nÃ y.
     let filteredCourses = selectedCourses;
 
     if (registeredMask && Array.isArray(registeredMask) && registeredMask.some(v => v !== 0)) {
@@ -58,30 +58,30 @@ export function runScheduleSolver(
 
         filteredCourses = selectedCourses.map((course: any) => ({
             ...course,
-            // Shallow-clone classes array, giữ nguyên class objects (chúng là read-only trong solver)
+            // Shallow-clone classes array, giá»¯ nguyÃªn class objects (chÃºng lÃ  read-only trong solver)
             classes: course.classes.filter((cls: any) => {
                 const clsMask: Bitset | undefined = cls.scheduleMask;
-                if (!clsMask) return true; // Không có mask → không thể kiểm tra → giữ lại
+                if (!clsMask) return true; // KhÃ´ng cÃ³ mask â†’ khÃ´ng thá»ƒ kiá»ƒm tra â†’ giá»¯ láº¡i
                 return !baselineMask.anyCommon(clsMask);
             }),
         }));
 
-        // Fail-fast: Nếu có môn không còn lớp nào hợp lệ → báo lỗi rõ ràng
+        // Fail-fast: Náº¿u cÃ³ mÃ´n khÃ´ng cÃ²n lá»›p nÃ o há»£p lá»‡ â†’ bÃ¡o lá»—i rÃµ rÃ ng
         const impossibleCourse = filteredCourses.find((c: any) => c.classes.length === 0);
         if (impossibleCourse) {
             throw new Error(
-                `Không thể xếp môn "${impossibleCourse.name || impossibleCourse.id}" vì tất cả các lớp mở đều trùng lịch với môn đã đăng ký. Hãy kiểm tra lại lịch hoặc bỏ môn này ra khỏi giỏ.`
+                `KhÃ´ng thá»ƒ xáº¿p mÃ´n "${impossibleCourse.name || impossibleCourse.id}" vÃ¬ táº¥t cáº£ cÃ¡c lá»›p má»Ÿ Ä‘á»u trÃ¹ng lá»‹ch vá»›i mÃ´n Ä‘Ã£ Ä‘Äƒng kÃ½. HÃ£y kiá»ƒm tra láº¡i lá»‹ch hoáº·c bá» mÃ´n nÃ y ra khá»i giá».`
             );
         }
     }
 
-    // --- CHẠY THUẬT TOÁN ---
+    // --- CHáº Y THUáº¬T TOÃN ---
     const valuator = new FitnessEvaluator(preferences);
     const solver = new GeneticSolver(filteredCourses, valuator);
-    const rawResults = solver.solve(5);
+    const rawResults = solver.solve(50);
 
-    // --- TỔNG HỢP KẾT QUẢ ---
-    // --- MAPPING VỀ FORMAT UI ---
+    // --- Tá»”NG Há»¢P Káº¾T QUáº¢ ---
+    // --- MAPPING Vá»€ FORMAT UI ---
     const mappedResults = rawResults.map((ind, index) => {
         const scheduleList: any[] = [];
         ind.genes.forEach((classIdx, courseIdx) => {

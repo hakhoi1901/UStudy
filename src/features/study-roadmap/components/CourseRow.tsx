@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Info, GitBranch, ChevronUp, Clock, FileText, CalendarRange, Users } from 'lucide-react';
 import type { Course } from '../../../types';
 import { useDepartmentData } from '../../../context/DepartmentContext';
+import courseDbJson from '../../../logic/scheduler/Course_db.json';
 import { useEffect } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { readFromStorage } from '../../../helpers/localStorage/save';
@@ -159,8 +160,21 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
   useEffect(() => {
     if (!showDescription) return;
     const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (courseDb && Array.isArray(courseDb)) {
+        courseDb.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
+    }
+    const mergedDb = Array.from(mergedMap.values());
+
     const normalizedCourseCode = course.code.toLocaleUpperCase('vi-VN');
-    const courseData = courseDb.find((c: any) => String(c.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
+    const courseData = mergedDb.find((c: any) => String(c.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
     const rawStudentDb = readFromStorage<{ courses?: RawOpenClass[] }>(STORAGE_KEYS.RAW_STUDENT_DB, {});
     const sourceRows: RawOpenClass[] = Array.isArray(courseData?.source?.portalRows)
       ? courseData.source.portalRows

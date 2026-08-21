@@ -595,7 +595,7 @@ export function runGroupScheduleSolver(
       fitness: scoreGroupSolution(solution, courseDatabase, density, sanitizedMembers, fitnessConfig),
     }))
     .sort((a, b) => b.fitness - a.fitness)
-    .slice(0, 3)
+    .slice(0, maxSolutions)
     .map(({ solution, fitness }, optionIndex) => toScheduleOption(solution, optionIndex, fitness, courseDatabase, density, sanitizedMembers));
 
   return {

@@ -58,6 +58,8 @@ export const STORAGE_KEYS = {
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản nháp kế hoạch học tập theo học kỳ */
     STUDY_PLAN: 'study_plan_draft',
+    /** Lớp ưu tiên và cấu hình các môn trong xếp lịch nhóm */
+    GROUP_SCHEDULER_CLASS_PREFERENCES: 'group_scheduler_class_preferences',
     /** Tỷ lệ chiều rộng danh sách môn/khung học kỳ trong bản nháp */
     STUDY_PLAN_LAYOUT: 'study_plan_draft_layout',
     STUDY_PLAN_CATEGORY_EXPANSION: 'study_plan_category_expansion',

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
-import { AlertTriangle, Calendar, Clock } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { AlertTriangle, Calendar, Clock, Camera, Download, Loader2 } from 'lucide-react';
 import { STORAGE_KEYS, UI_COLORS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { weekDays, timePeriods } from '../../../constants';
@@ -10,6 +10,10 @@ import type { ClassSection, SavedSchedule } from '../../../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
 import { AppSelect } from '../../../components/ui/form';
 import { ScheduleOptionSelector } from '../../schedule';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { captureElementAsDataURL, slugify, downloadImage } from '../../../utils/export';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../../components/ui/overlays/dropdown-menu';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -134,6 +138,80 @@ export function GroupScheduleCalendarPreview({
   const effectiveMemberIndex = member?.memberIndex ?? 0;
   const sections = getGroupMemberSections(option, effectiveMemberIndex);
   const stats = getStats(sections);
+  
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+
+  const handleExportCurrent = async () => {
+    if (!calendarRef.current || !option || !member) return;
+    setIsExporting(true);
+    try {
+      const dataUrl = await captureElementAsDataURL(calendarRef.current);
+      const nickname = slugify(member.nickname || `Thanh vien ${effectiveMemberIndex + 1}`);
+      downloadImage(dataUrl, `${nickname}-pa${option.option}.png`);
+    } catch (e) {
+      console.error('Export failed', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportAllZip = async () => {
+    if (!calendarRef.current) return;
+    setIsExporting(true);
+    
+    const totalImages = options.reduce((sum, opt) => sum + opt.schedules.length, 0);
+    setExportTotal(totalImages);
+    setExportProgress(0);
+
+    const zip = new JSZip();
+    let count = 0;
+    
+    // Lưu lại index hiện tại để khôi phục
+    const originalOptionIndex = activeOptionIndex;
+    const originalMemberIndex = activeMemberIndex;
+    
+    try {
+      for (let i = 0; i < options.length; i++) {
+        const opt = options[i];
+        const folderName = `phuong-an-${String(opt.option).padStart(2, '0')}`;
+        const folder = zip.folder(folderName);
+        
+        setActiveOptionIndex(i);
+        
+        for (let j = 0; j < opt.schedules.length; j++) {
+          const sched = opt.schedules[j];
+          setActiveMemberIndex(sched.memberIndex);
+          
+          // Chờ DOM cập nhật
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          const dataUrl = await captureElementAsDataURL(calendarRef.current);
+          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+          const nickname = slugify(sched.nickname || `Thanh vien ${sched.memberIndex + 1}`);
+          
+          folder?.file(`${nickname}-pa${opt.option}.png`, base64Data, { base64: true });
+          
+          count++;
+          setExportProgress(count);
+        }
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, 'Lich_Nhom.zip');
+      
+    } catch (e) {
+      console.error('Export zip failed', e);
+    } finally {
+      setActiveOptionIndex(originalOptionIndex);
+      setActiveMemberIndex(originalMemberIndex);
+      setIsExporting(false);
+      setExportProgress(0);
+      setExportTotal(0);
+    }
+  };
 
   if (!option || !member) {
     return (
@@ -164,18 +242,42 @@ export function GroupScheduleCalendarPreview({
             ariaLabel="Chọn thành viên để xem lịch"
             className="min-w-40"
             triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+            disabled={isExporting}
           />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                type="button" 
+                disabled={isExporting}
+                className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isExporting && exportTotal > 0 ? `Đang xuất... (${exportProgress}/${exportTotal})` : 'Xuất ảnh'}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-white z-50">
+              <DropdownMenuItem onClick={handleExportCurrent} className="cursor-pointer hover:bg-gray-100">
+                <Camera className="mr-2 h-4 w-4" /> Xuất hiện tại (1 ảnh)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportAllZip} className="cursor-pointer hover:bg-gray-100">
+                <Download className="mr-2 h-4 w-4" /> Xuất toàn bộ (ZIP)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div ref={calendarRef} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white shadow-sm">
               <Calendar className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900">Thời khóa biểu dự kiến</h3>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Lịch của {member.nickname} {isExporting && `- Phương án ${option.option}`}
+              </h3>
               <p className="truncate text-xs text-gray-500">
                 {sections.length > 0 ? `${sections.length} lớp · ${stats.totalPeriods} tiết · ${stats.scheduledDays} ngày học` : 'Thành viên này chưa có lớp được xếp'}
               </p>

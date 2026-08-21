@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, cloneElement, useCallback, isValidElement, type ReactNode, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, cloneElement, useCallback, useRef, isValidElement, type ReactNode, type ReactElement } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { SavedSchedulesModal } from '../../group-schedule';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
@@ -13,6 +13,7 @@ import type { Tab } from './../types.ts';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 import { ScheduleBuilder } from './ScheduleBuilder';
+import { BuilderToolbar } from './BuilderToolbar';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -149,6 +150,8 @@ export function CalendarView({
     const [activeLoadedGroupMemberIndex, setActiveLoadedGroupMemberIndex] = useState<number | null>(null);
     const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
     const [builderDraftSections, setBuilderDraftSections] = useState<ClassSection[]>([]);
+    const [hasBuilderSelections, setHasBuilderSelections] = useState(false);
+    const clearBuilderDraftRef = useRef<(() => void) | null>(null);
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -246,9 +249,28 @@ export function CalendarView({
     // ── Empty state ────────────────────────────────────────────────────────────
     const renderModeSwitch = () => <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />;
 
+    const hasPersonalScheduleActions = selectedCourses.size > 0 || registeredSections.length > 0 || savedSchedules.length > 0;
+
     const renderModeToolbar = () => (
         <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
             {renderModeSwitch()}
+            {scheduleMode === 'personal' && hasPersonalScheduleActions && (
+                <>
+                    <div className="hidden h-6 w-px bg-gray-200 md:block" />
+                    <div className="min-w-0 flex-1">
+                        <BuilderToolbar
+                            hasSelections={hasBuilderSelections}
+                            solving={solving}
+                            savedSchedulesCount={savedSchedules.length}
+                            onFullSolve={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
+                            onOpenConfig={() => setIsConfigOpen(true)}
+                            onOpenSavedList={() => setShowListModal(true)}
+                            onSave={() => setShowSaveModal(true)}
+                            onClear={() => clearBuilderDraftRef.current?.()}
+                        />
+                    </div>
+                </>
+            )}
         </div>
     );
 
@@ -331,6 +353,9 @@ export function CalendarView({
                 onOpenSaveModal={() => setShowSaveModal(true)}
                 onClearSolver={handleClearSolver}
                 onDraftSectionsChange={setBuilderDraftSections}
+                showToolbar={false}
+                onDraftStateChange={setHasBuilderSelections}
+                clearDraftRef={clearBuilderDraftRef}
             />
             <div className="hidden md:block">
                 {/* Chú thích */}
