@@ -1,7 +1,6 @@
 import { LogOut, ChevronDown, LogIn, ExternalLink, GraduationCap, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LogoutConfirmModal } from './LogoutConfirmModal';
-import { useStudentGradeData } from '../../features/grades';
 import { BookmarkletButton } from '../portal/BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../../context/NotificationContext';
@@ -24,6 +23,7 @@ export function Header({
   showSemesterSelector = false
 }: HeaderProps = {}) {
   const [studentName, setStudentName] = useState('');
+  const [hasStudentProfile, setHasStudentProfile] = useState(false);
   const [localSemester, setLocalSemester] = useState(`Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`);
   const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
@@ -32,7 +32,6 @@ export function Header({
   const { academicYear, semesterNumber, setAcademicYear, setSemesterNumber } = useDepartmentData();
 
   // lấy dữ liệu sinh viên
-  const { hasData } = useStudentGradeData();
   // lấy thông báo
   const { addNotification } = useAppNotification();
   // crypto context để lock khi đăng xuất
@@ -40,11 +39,25 @@ export function Header({
 
   // lấy tên sinh viên từ local storage
   useEffect(() => {
-    const student = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
-    if (student) {
-      setStudentName(student.name);
-    }
-  }, [hasData]);
+    const syncStudentProfile = () => {
+      const student = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+      const rawStudent = readFromStorage<any>(STORAGE_KEYS.RAW_STUDENT_DB, null);
+      const name = student?.name || rawStudent?.name || '';
+
+      setStudentName(typeof name === 'string' ? name.trim() : '');
+      setHasStudentProfile(Boolean(student || rawStudent));
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'IMPORT_FULL_DATA' || event.data?.type === 'CACHE_POPULATED') {
+        syncStudentProfile();
+      }
+    };
+
+    syncStudentProfile();
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // tạo danh sách các học kỳ sử dụng các năm học đã định nghĩa (3 học kỳ mỗi năm)
   const semesters = ACADEMIC_YEARS.flatMap(year => [
@@ -183,7 +196,7 @@ export function Header({
             {/* Divider - ẩn trên mobile */}
             <div className="hidden md:block h-10 w-px bg-gray-200"></div>
 
-            {hasData ? (
+            {hasStudentProfile ? (
               <>
                 {/* User Avatar + Info */}
                 <div className="flex items-center gap-2 md:gap-3 md:px-3 md:py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
@@ -192,7 +205,7 @@ export function Header({
                   </div>
                   {/* Tên sinh viên: ẩn trên mobile */}
                   <div className="hidden md:block text-left">
-                    <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName}</p>
+                    <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName || 'Sinh viên'}</p>
                     <p className="text-gray-500 text-xs" style={{ fontWeight: 400 }}>Đã đồng bộ</p>
                   </div>
                 </div>
