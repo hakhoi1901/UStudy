@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, cloneElement, isValidElement, type ReactNode, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, cloneElement, useCallback, isValidElement, type ReactNode, type ReactElement } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { SavedSchedulesModal } from '../../group-schedule';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
@@ -12,6 +12,7 @@ import { cycleDayOffSession, formatDayOffSession, getDayOffSession } from '../..
 import type { Tab } from './../types.ts';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../components/course';
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
+import { ScheduleBuilder } from './ScheduleBuilder';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -29,7 +30,6 @@ interface CalendarViewProps {
     selectedCourses: Set<string>;
     setActiveTab: (tab: Tab) => void;
     currentSections: ClassSection[];
-    /** Baseline sections from Portal registrations — rendered separately, immutable. */
     registeredSections?: ClassSection[];
     activeOption: number;
     options: any[];
@@ -81,8 +81,8 @@ function DayLoadBar({ day, count, max }: { day: string; count: number; max: numb
         pct === 100
             ? 'bg-red-400'
             : pct >= 60
-            ? 'bg-amber-400'
-            : 'bg-emerald-400';
+                ? 'bg-amber-400'
+                : 'bg-emerald-400';
     return (
         <div className="flex flex-col items-center gap-1">
             <span className="text-[10px] font-bold text-gray-700">{count}</span>
@@ -148,6 +148,7 @@ export function CalendarView({
     const [loadedGroupSchedule, setLoadedGroupSchedule] = useState<SavedSchedule['groupSchedule'] | null>(null);
     const [activeLoadedGroupMemberIndex, setActiveLoadedGroupMemberIndex] = useState<number | null>(null);
     const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
+    const [builderDraftSections, setBuilderDraftSections] = useState<ClassSection[]>([]);
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -191,11 +192,13 @@ export function CalendarView({
     // ── Save / load handlers ───────────────────────────────────────────────────
     const handleSaveSchedule = () => {
         if (!newScheduleName.trim()) return;
+        // Use builder draft sections if available, otherwise fall back to solver sections
+        const sectionsToSave = builderDraftSections.length > 0 ? builderDraftSections : currentSections;
         const newSaved: SavedSchedule = {
             id: crypto.randomUUID(),
             name: newScheduleName.trim(),
             createdAt: new Date().toISOString(),
-            sessions: currentSections,
+            sessions: sectionsToSave,
             selectedCourses: Array.from(selectedCourses),
             allowedClassesMap,
         };
@@ -249,8 +252,10 @@ export function CalendarView({
         </div>
     );
 
-    // Combine baseline (registered) + draft sections for display
-    const displaySections = [...registeredSections, ...currentSections];
+    const handleClearSolver = useCallback(() => {
+        setOptions([]);
+        setActiveOption(0);
+    }, [setOptions, setActiveOption]);
 
     if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0 && registeredSections.length === 0) {
         return (
@@ -303,721 +308,32 @@ export function CalendarView({
     return (
         <div className="space-y-4">
             {renderModeToolbar()}
-            {solverError && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{solverError}</span>
-                </div>
-            )}
-            <div className="space-y-3 md:hidden">
-                <div className="hidden">
-                    <div className="flex items-center gap-2">
-                        <div className="min-w-0 flex-1">
-                            {renderModeSwitch()}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setIsConfigOpen(true)}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[#004A98] transition-colors active:bg-blue-50"
-                            aria-label="Cấu hình xếp lịch"
-                        >
-                            <Settings className="h-4 w-4" />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setShowListModal(true)}
-                            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[#004A98] transition-colors active:bg-blue-50"
-                            aria-label="Lịch đã lưu"
-                        >
-                            <List className="h-4 w-4" />
-                            {savedSchedules.length > 0 && (
-                                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#004A98] px-1 text-[9px] font-bold text-white">
-                                    {savedSchedules.length > 9 ? '9+' : savedSchedules.length}
-                                </span>
-                            )}
-                        </button>
-                    </div>
 
-                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
-                        <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">
-                                {currentSections.length > 0
-                                    ? `Phương án ${activeOption + 1}/${Math.max(options.length, 1)}`
-                                    : `${selectedCourses.size} môn đã chọn`}
-                            </p>
-                            <p className="mt-0.5 truncate text-xs text-gray-500">
-                                {currentSections.length > 0
-                                    ? `${new Set(currentSections.map((section) => section.courseCode)).size} môn · ${stats?.totalCredits ?? 0} TC · ${stats?.scheduledDays ?? 0} ngày học`
-                                    : 'Sẵn sàng tạo thời khóa biểu'}
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)}
-                            disabled={solving}
-                            className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white shadow-sm transition-colors active:bg-[#003A78] disabled:opacity-60"
-                        >
-                            <Cpu className="h-4 w-4" />
-                            {solving ? 'Đang xếp...' : currentSections.length > 0 ? 'Xếp lại' : 'Xếp lịch'}
-                        </button>
-                    </div>
-
-                    {currentSections.length > 0 && (
-                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-3">
-                            <div className="flex items-center gap-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
-                                    disabled={activeOption === 0 || options.length <= 1}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 active:bg-gray-50 disabled:opacity-30"
-                                    aria-label="Phương án trước"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <span className="min-w-20 text-center text-xs font-semibold tabular-nums text-gray-600">
-                                    Phương án {activeOption + 1}/{Math.max(options.length, 1)}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))}
-                                    disabled={activeOption === options.length - 1 || options.length <= 1}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 active:bg-gray-50 disabled:opacity-30"
-                                    aria-label="Phương án tiếp theo"
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowSaveModal(true)}
-                                className="flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-emerald-700 active:bg-emerald-50"
-                            >
-                                <Save className="h-4 w-4" />
-                                Lưu
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {solverError && (
-                    <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span>{solverError}</span>
-                    </div>
-                )}
-
-                {currentSections.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-8 text-center">
-                        <Calendar className="mx-auto h-9 w-9 text-gray-300" />
-                        <p className="mt-3 text-sm font-semibold text-gray-700">Chưa có thời khóa biểu</p>
-                        <p className="mt-1 text-xs leading-5 text-gray-500">Nhấn Xếp lịch để tạo các phương án phù hợp.</p>
-                    </div>
-                )}
-            </div>
-
-            <div className="hidden">
-            {/* ═══ Toolbar ═══════════════════════════════════════════════════ */}
-            <div className="flex">
-                <div className="flex">
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                            {renderModeSwitch()}
-                            <div className="hidden h-6 w-px bg-blue-200" />
-
-                            <div className="hidden min-w-0">
-                                <p className="text-xs md:text-sm text-blue-900 font-semibold truncate">
-                                    {currentSections.length > 0
-                                        ? `Phương án ${activeOption + 1}/${options.length} - ${selectedCourses.size} môn`
-                                        : `${selectedCourses.size} môn đã chọn`}
-                                </p>
-
-                                <p className="hidden md:block text-xs text-blue-600 mt-0.5">
-                                    Thuật toán di truyền tự động chọn lớp tốt nhất, tránh trùng lịch.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="hidden items-center gap-2 shrink-0">
-                            <button
-                                onClick={() => setIsConfigOpen(true)}
-                                className="
-                                    flex items-center gap-1.5
-                                    h-9
-                                    px-2 md:px-4
-                                    bg-white
-                                    text-[#004A98]
-                                    rounded-lg
-                                    hover:bg-blue-50
-                                    transition-colors
-                                    border border-[#004A98]/20
-                                    shadow-sm
-                                    shrink-0
-                                "
-                                title="Cấu hình ưu tiên"
-                            >
-                                <Settings className="w-3.5 h-3.5" />
-
-                                <span className="hidden md:inline font-medium">
-                                    Cấu hình
-                                </span>
-                            </button>
-
-                            <button
-                                onClick={() => setShowListModal(true)}
-                                className="
-                                    flex items-center gap-1.5
-                                    h-9
-                                    px-2 md:px-4
-                                    bg-white
-                                    text-[#004A98]
-                                    border border-[#004A98]/30
-                                    rounded-lg
-                                    hover:bg-blue-50
-                                    transition-colors
-                                    shadow-sm
-                                    shrink-0
-                                "
-                            >
-                                <List className="w-3.5 h-3.5" />
-
-                                <span className="hidden md:inline">
-                                    Lịch đã lưu
-                                </span>
-
-                                {savedSchedules.length > 0 && (
-                                    <span className="ustudy-badge-count text-[10px] font-bold">
-                                        {savedSchedules.length > 99
-                                            ? "99+"
-                                            : savedSchedules.length}
-                                    </span>
-                                )}
-                            </button>
-
-                            <button
-                                onClick={() =>
-                                    solve(
-                                        coursesToSchedule,
-                                        allowedClassesMap,
-                                        prefs
-                                    )
-                                }
-                                disabled={solving}
-                                className="
-                                    flex items-center gap-1.5
-                                    h-9
-                                    px-3 md:px-5
-                                    bg-[#004A98]
-                                    text-white
-                                    rounded-lg
-                                    hover:bg-[#003A78]
-                                    active:scale-95
-                                    transition-all
-                                    disabled:opacity-60
-                                    disabled:cursor-not-allowed
-                                    font-semibold
-                                    shadow-md
-                                    shrink-0
-                                "
-                            >
-                                <Cpu className="w-3.5 h-3.5" />
-
-                                <span className="hidden sm:inline">
-                                    {solving ? "Đang xếp..." : "Xếp lịch"}
-                                </span>
-
-                                <span className="sm:hidden">
-                                    {solving ? "..." : "Xếp"}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* {stats && (
-                        <button
-                            onClick={() => setShowStatsPanel(prev => !prev)}
-                            className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-lg border transition-all shrink-0 text-xs md:text-sm shadow-sm ${
-                                showStatsPanel
-                                    ? 'bg-[#004A98] text-white border-[#004A98]'
-                                    : 'bg-white text-[#004A98] border-[#004A98]/30 hover:bg-blue-50'
-                            }`}
-                        >
-                            <BarChart2 className="w-3.5 h-3.5" />
-                            <span className="hidden md:inline">{showStatsPanel ? 'Ẩn thống kê' : 'Thống kê'}</span>
-                        </button>
-                    )} */}
-                </div>
-            </div>
-
-            {/* ═══ Solver error ══════════════════════════════════════════════ */}
-            {solverError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs md:text-sm text-red-700">
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                    <span>{solverError}</span>
-                </div>
-            )}
-
-            {/* ═══ Stats panel (chỉ hiện khi có lịch) ══════════════════════ */}
-            {stats && showStatsPanel && (
-                <div className="ustudy-card overflow-hidden">
-                    {/* Header */}
-                    <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-                        <BarChart2 className="w-3.5 h-3.5 text-[#004A98]" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Thống kê phương án</span>
-                        {stats.conflictCount > 0 && (
-                            <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                                <AlertTriangle className="w-3 h-3" />
-                                {stats.conflictCount} lớp trùng lịch
-                            </span>
-                        )}
-                        {stats.conflictCount === 0 && currentSections.length > 0 && (
-                            <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                <Check className="w-3 h-3" />
-                                Không trùng lịch
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Stat cards */}
-                    <div className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                        <StatCard
-                            icon={BookOpen}
-                            label="Số môn"
-                            value={selectedCourses.size}
-                            sub={`${currentSections.length} lớp học`}
-                        />
-                        <StatCard
-                            icon={Hash}
-                            label="Tổng tiết / tuần"
-                            value={stats.totalPeriods}
-                            sub={`≈ ${(stats.totalPeriods * 45 / 60).toFixed(1)} giờ`}
-                        />
-                        <StatCard
-                            icon={Layers}
-                            label="Số tín chỉ"
-                            value={stats.totalCredits || '-'}
-                            sub={stats.totalCredits ? 'tín chỉ đăng ký' : 'Chưa có dữ liệu'}
-                        />
-                        <StatCard
-                            icon={Calendar}
-                            label="Ngày học / tuần"
-                            value={`${stats.scheduledDays} ngày`}
-                            sub={stats.freeDays > 0 ? `Nghỉ ${stats.freeDays} ngày` : 'Học cả tuần'}
-                            accent={stats.freeDays >= 2 ? 'bg-emerald-500' : stats.freeDays === 1 ? 'bg-amber-400' : 'bg-red-400'}
-                        />
-                    </div>
-
-                    {/* Per-day load bars */}
-                    <div className="px-4 pb-3">
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Phân bổ tiết theo ngày</p>
-                        <div className="flex items-end gap-3">
-                            {weekDays.map(day => (
-                                <DayLoadBar
-                                    key={day.day}
-                                    day={day.short}
-                                    count={stats.periodsPerDay[day.day] ?? 0}
-                                    max={stats.maxPerDay}
-                                />
-                            ))}
-                            <div className="ml-auto flex flex-col gap-1.5 text-[10px] text-gray-400">
-                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-emerald-400" />Nhẹ</span>
-                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-amber-400" />Vừa</span>
-                                <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-400" />Nặng</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ═══ Option navigator ══════════════════════════════════════════ */}
-            {options.length > 1 && (
-                <div className="hidden items-center gap-2 flex-wrap">
-                    <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
-                        <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Phương án:</span>
-                        <button
-                            onClick={() => setActiveOption(Math.max(0, activeOption - 1))}
-                            className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors shrink-0"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                            {options.map((opt, idx) => (
-                                <button
-                                    key={opt.option}
-                                    onClick={() => setActiveOption(idx)}
-                                    className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all shrink-0 ${activeOption === idx
-                                        ? 'bg-[#004A98] text-white shadow-md'
-                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                                    }`}
-                                >
-                                    PA {opt.option}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            onClick={() => setActiveOption(Math.min(options.length - 1, activeOption + 1))}
-                            className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors shrink-0"
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <button
-                        onClick={() => setShowSaveModal(true)}
-                        disabled={currentSections.length === 0}
-                        className="ustudy-button-success shrink-0 text-xs md:text-sm"
-                    >
-                        <Save className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Lưu phương án</span>
-                        <span className="sm:hidden">Lưu</span>
-                    </button>
-                </div>
-            )}
-
-            {loadedGroupSchedule && loadedGroupSchedule.members.length > 1 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <div className="ustudy-card flex min-w-0 flex-1 items-center gap-2 overflow-x-auto p-1.5" style={{ scrollbarWidth: 'none' }}>
-                        <span className="text-xs text-gray-500 font-medium px-1 shrink-0">Thành viên:</span>
-                        <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                            {loadedGroupSchedule.members.map((member) => (
-                                <button
-                                    key={member.memberIndex}
-                                    onClick={() => handleSelectLoadedGroupMember(member.memberIndex)}
-                                    className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all shrink-0 ${activeLoadedGroupMemberIndex === member.memberIndex
-                                        ? 'bg-emerald-600 text-white shadow-md'
-                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                                    }`}
-                                >
-                                    {member.nickname}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-            </div>
-
-            {/* ═══ Timetable grid ════════════════════════════════════════════ */}
-            <div className={`ustudy-card overflow-hidden ${currentSections.length === 0 ? 'hidden md:block' : ''}`}>
-                {/* Grid header */}
-                <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white shadow-sm">
-                            <Calendar className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                            <h3 className="text-sm font-semibold text-gray-900">Thời khóa biểu dự kiến</h3>
-                            <p className="truncate text-xs text-gray-500">
-                                {currentSections.length > 0
-                                    ? `${currentSections.length} lớp · ${stats?.totalPeriods ?? 0} tiết · ${stats?.scheduledDays ?? 0} ngày học`
-                                    : 'Bấm Xếp lịch để xem phương án phù hợp'}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                        <button type="button" onClick={() => setIsConfigOpen(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]" title="Cấu hình ưu tiên">
-                            <Settings className="h-4 w-4" /> Cấu hình
-                        </button>
-                        <button type="button" onClick={() => setShowListModal(true)} className="relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]">
-                            <List className="h-4 w-4" /> Lịch đã lưu
-                            {savedSchedules.length > 0 && <span className="ustudy-badge-count text-[10px] font-bold">{savedSchedules.length > 99 ? '99+' : savedSchedules.length}</span>}
-                        </button>
-                        {currentSections.length > 0 && (
-                            <button type="button" onClick={() => setShowSaveModal(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
-                                <Save className="h-4 w-4" /> Lưu phương án
-                            </button>
-                        )}
-                        <button type="button" onClick={() => solve(coursesToSchedule, allowedClassesMap, prefs)} disabled={solving} className="ustudy-button-primary h-9 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60">
-                            <Cpu className="h-4 w-4" /> {solving ? 'Đang xếp...' : currentSections.length ? 'Xếp lại' : 'Xếp lịch'}
-                        </button>
-                    </div>
-                </div>
-
-                <ScheduleOptionSelector
-                    className="border-b border-gray-200 bg-white px-3 py-2.5 md:px-4"
-                    options={options.map((option) => ({ id: option.option, label: `PA ${option.option}` }))}
-                    activeIndex={activeOption}
-                    onChange={setActiveOption}
-                />
-
-                <div className="overflow-auto">
-                    <div className="min-w-[620px] md:min-w-[1000px]">
-                        {/* Column headers */}
-                        <div className="grid sticky top-0 z-20 bg-[#004A98]" style={{ gridTemplateColumns: '64px repeat(6, 1fr)' }}>
-                            <div className="sticky left-0 z-30 bg-[#004A98] h-11 md:h-12 flex items-center justify-center border-r border-white/20">
-                                <span className="text-[10px] md:text-xs text-white font-semibold">Tiết</span>
-                            </div>
-                            {weekDays.map((day) => (
-                                <div
-                                    key={day.day}
-                                    className="bg-[#004A98] text-white flex flex-col items-center justify-center border-l border-white/15 h-11 md:h-12 px-1"
-                                >
-                                    <span className="hidden md:block text-[10px] text-white/70 font-normal leading-none">{day.nameVi}</span>
-                                    <span className="text-[11px] md:text-[13px] font-semibold leading-tight">{day.short}</span>
-                                    {/* Tiết-per-day badge */}
-                                    {stats && (stats.periodsPerDay[day.day] ?? 0) > 0 && (
-                                        <span className="hidden md:inline-flex mt-0.5 text-[9px] font-bold bg-white/20 rounded-full px-1.5 leading-4">
-                                            {Math.round(stats.periodsPerDay[day.day])} tiết
-                                        </span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Grid body - layer 1: lưới, layer 2: thẻ môn */}
-                        <div style={{ position: 'relative', isolation: 'isolate' }}>
-                          {/* Lưới nền không tạo stacking context để cột Tiết sticky nằm trên thẻ môn. */}
-                          <div style={{ position: 'relative' }}>
-                            {timePeriods.map((period) => {
-                                const isFirstAfternoon = period.period === 6;
-                                return (
-                                    <div key={period.period}>
-                                        {isFirstAfternoon && (
-                                            <div
-                                                className="grid items-stretch border-y border-orange-200 bg-orange-50"
-                                                style={{ gridTemplateColumns: '64px 1fr', height: '34px' }}
-                                            >
-                                                <div className="sticky left-0 flex items-center justify-center border-r border-orange-200 bg-orange-50" style={{ zIndex: 4 }}>
-                                                    <span className="text-[9px] md:text-[11px] font-semibold uppercase tracking-wide text-orange-700">Trưa</span>
-                                                </div>
-                                                <div className="flex items-center justify-center bg-orange-50 px-3">
-                                                    <span className="text-[10px] md:text-xs font-semibold text-orange-700">
-                                                        Nghỉ trưa 11:50 - 12:40
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div
-                                            className={`grid ${period.period <= 5 ? 'bg-sky-50/20' : ''}`}
-                                            style={{ gridTemplateColumns: '64px repeat(6, 1fr)', height: '56px' }}
-                                        >
-                                        <div className="sticky left-0 flex flex-col items-center justify-center border-b border-r border-gray-200 bg-gray-50 px-1 text-center" style={{ zIndex: 4 }}>
-                                                <div className="text-[11px] md:text-[13px] font-semibold text-gray-700">
-                                                    {period.period}
-                                                </div>
-                                                <span className="text-[8px] md:text-[10px] text-gray-500 leading-tight">
-                                                    {period.time.split(' - ')[0]}
-                                                </span>
-                                                <span className="text-[8px] md:text-[10px] text-gray-400 leading-none">–</span>
-                                                <span className="text-[8px] md:text-[10px] text-gray-500 leading-tight">
-                                                    {period.time.split(' - ')[1]}
-                                                </span>
-                                            </div>
-                                            {weekDays.map((day) => (
-                                                <div
-                                                    key={`${day.day}-${period.period}`}
-                                                    className="border-b border-l border-gray-200 bg-white transition-colors hover:bg-slate-50/80"
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                          </div>{/* end layer 1 */}
-
-                          {/* ── Layer 2: thẻ môn học, phủ lên lưới (z=2) ── */}
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: 'none' }}>
-                            {displaySections.map((classSection: ClassSection) => {
-                                const isRegisteredSection = classSection.isRegistered === true;
-                                const conflicts = isRegisteredSection ? [] : getConflicts(classSection);
-                                const hasConflict = conflicts.length > 0;
-
-                                const rowH = 56;
-                                const lunchBreakOffset = classSection.startPeriod >= 6 ? 34 : 0;
-                                const topPx = (classSection.startPeriod - 1) * rowH + lunchBreakOffset;
-                                const heightPeriods = classSection.endPeriod - classSection.startPeriod + 1;
-                                const spansLunch = classSection.startPeriod < 6 && classSection.endPeriod >= 6;
-                                const heightPx = heightPeriods * rowH + (spansLunch ? 34 : 0);
-                                const dayColIndex = classSection.day - 2;
-
-                                // Color tokens — registered sections get distinct emerald style
-                                const baseColor = isRegisteredSection ? '#10B981' : (hasConflict ? '#EF4444' : classSection.color);
-                                const bgColor   = isRegisteredSection ? '#F0FDF4' : (hasConflict ? '#FFF1F2' : getSolidTint(classSection.color));
-                                const textColor    = isRegisteredSection ? '#065F46' : (hasConflict ? '#991B1B' : '#111827');
-                                const subTextColor = isRegisteredSection ? '#047857' : (hasConflict ? '#B91C1C' : '#6B7280');
-                                const pillBg    = isRegisteredSection ? '#D1FAE5' : (hasConflict ? '#FEE2E2' : getSolidTint(classSection.color, 0.82));
-                                const pillText  = isRegisteredSection ? '#065F46' : (hasConflict ? '#991B1B' : '#374151');
-
-                                const startTime = timePeriods.find(p => p.period === classSection.startPeriod)?.time.split(' - ')[0] ?? '';
-                                const endTime   = timePeriods.find(p => p.period === classSection.endPeriod)?.time.split(' - ')[1] ?? '';
-
-                                // Responsive thresholds
-                                const isCompact  = heightPx < 80;   // 1 tiết
-                                const isMedium   = heightPx >= 80 && heightPx < 150;  // 2 tiết
-                                const isTall     = heightPx >= 150; // 3+ tiết
-
-                                return (
-                                    <div
-                                        key={classSection.id}
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label={`Xem chi tiết lớp mở ${classSection.sectionNumber} của môn ${classSection.courseCode}`}
-                                        onClick={() => {
-                                            if (isRegisteredSection) return; // Registered baseline — no interaction
-                                            setOpenClassDetails({
-                                                courseCode: classSection.courseCode,
-                                                courseName: classSection.courseNameVi || classSection.courseName,
-                                                classId: classSection.selectedClassId || classSection.sectionNumber,
-                                            });
-                                        }}
-                                        onKeyDown={(event) => {
-                                            if (event.key === 'Enter' || event.key === ' ') {
-                                                event.preventDefault();
-                                                setOpenClassDetails({
-                                                    courseCode: classSection.courseCode,
-                                                    courseName: classSection.courseNameVi || classSection.courseName,
-                                                    classId: classSection.selectedClassId || classSection.sectionNumber,
-                                                });
-                                            }
-                                        }}
-                                        style={{
-                                            position: 'absolute',
-                                            top: topPx + 2,
-                                            left: `calc(64px + ${dayColIndex} * ((100% - 64px) / 6) + 3px)`,
-                                            width: `calc((100% - 64px) / 6 - 6px)`,
-                                            height: heightPx - 4,
-                                            backgroundColor: bgColor,
-                                            borderRadius: '8px',
-                                            borderLeft: `3.5px solid ${baseColor}`,
-                                            border: `1px solid ${hasConflict ? '#FECACA' : getSolidTint(classSection.color, 0.65)}`,
-                                            borderLeftWidth: '3.5px',
-                                            borderLeftColor: baseColor,
-                                            overflow: 'hidden',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            padding: isCompact ? '3px 6px' : '5px 7px',
-                                            gap: 0,
-                                            boxSizing: 'border-box',
-                                            boxShadow: hasConflict
-                                                ? '0 2px 8px rgba(239,68,68,0.15)'
-                                                : '0 1px 4px rgba(15,23,42,0.08)',
-                                            cursor: 'pointer',
-                                            zIndex: 2,
-                                            pointerEvents: 'auto',
-                                        }}
-                                    >
-                                        {/* Conflict badge - only when tall enough */}
-                                        {hasConflict && !isCompact && (
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', gap: 3,
-                                                background: '#FEE2E2', borderRadius: 4,
-                                                padding: '1px 5px', marginBottom: 3, width: 'fit-content',
-                                            }}>
-                                                <AlertTriangle style={{ width: 9, height: 9, color: '#DC2626', flexShrink: 0 }} />
-                                                <span style={{ fontSize: 8, fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Trùng lịch</span>
-                                            </div>
-                                        )}
-
-                                        {/* Course code - always shown */}
-                                        <p style={{
-                                            fontFamily: 'ui-monospace, monospace',
-                                            fontSize: isCompact ? 9 : 11,
-                                            fontWeight: 700,
-                                            color: textColor,
-                                            lineHeight: 1.2,
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                            flexShrink: 0,
-                                            marginBottom: isCompact ? 0 : 2,
-                                        }}>
-                                            {classSection.courseCode}
-                                            {/* On compact, also show group inline */}
-                                            {isCompact && (
-                                                <span style={{ fontFamily: 'inherit', fontWeight: 500, color: subTextColor, fontSize: 8, marginLeft: 4 }}>
-                                                    · Lớp {classSection.sectionNumber}
-                                                </span>
-                                            )}
-                                        </p>
-
-                                        {/* Course name - medium + tall */}
-                                        {!isCompact && (
-                                            <p style={{
-                                                fontSize: 9,
-                                                fontWeight: 600,
-                                                color: subTextColor,
-                                                lineHeight: 1.3,
-                                                overflow: 'hidden',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: isMedium ? 2 : 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                flexShrink: 1,
-                                                minHeight: 0,
-                                                marginBottom: 'auto',
-                                            } as React.CSSProperties}>
-                                                {classSection.courseNameVi}
-                                            </p>
-                                        )}
-
-                                        {/* Spacer for tall cards */}
-                                        {isTall && <div style={{ flex: 1 }} />}
-
-                                        {/* Footer: group + room + time - medium + tall */}
-                                        {!isCompact && (
-                                            <div style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 2,
-                                                flexShrink: 0,
-                                                marginTop: isMedium ? 'auto' : 4,
-                                                paddingTop: 3,
-                                                borderTop: `1px solid ${hasConflict ? '#FECACA' : getSolidTint(classSection.color, 0.72)}`,
-                                            }}>
-                                                {/* Group + Room row */}
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
-                                                    <span style={{
-                                                        flexShrink: 0,
-                                                        background: pillBg,
-                                                        color: pillText,
-                                                        fontSize: 8,
-                                                        fontWeight: 700,
-                                                        borderRadius: 4,
-                                                        padding: '1px 5px',
-                                                        lineHeight: 1.5,
-                                                        whiteSpace: 'nowrap',
-                                                    }}>
-                                                        {isRegisteredSection ? '🔒 Đã ĐK' : `Lớp ${classSection.sectionNumber}`}
-                                                    </span>
-                                                    {classSection.room && classSection.room !== '---' && (
-                                                        <span style={{
-                                                            fontSize: 8,
-                                                            fontWeight: 600,
-                                                            color: subTextColor,
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap',
-                                                        }}>
-                                                            {classSection.room}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {/* Time row - only when tall enough or time is short */}
-                                                {startTime && (isTall || isMedium) && (
-                                                    <span style={{
-                                                        fontSize: 8,
-                                                        fontWeight: 500,
-                                                        color: subTextColor,
-                                                        lineHeight: 1.2,
-                                                        whiteSpace: 'nowrap',
-                                                    }}>
-                                                        {startTime} – {endTime}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                          </div>{/* end layer 2 */}
-                        </div>{/* end grid body */}
-                    </div>
-                </div>
-            </div>
-
+            {/* ═══ Schedule Builder (unified manual + auto) ════════════════ */}
+            <ScheduleBuilder
+                selectedCourses={selectedCourses}
+                allCurrentCourses={allCurrentCourses}
+                registeredSections={registeredSections}
+                solve={solve}
+                solving={solving}
+                solverError={solverError}
+                options={options}
+                activeOption={activeOption}
+                setActiveOption={setActiveOption}
+                currentSections={currentSections}
+                allowedClassesMap={allowedClassesMap}
+                prefs={prefs}
+                savedSchedulesCount={savedSchedules.length}
+                setActiveTab={setActiveTab}
+                onOpenConfig={() => setIsConfigOpen(true)}
+                onOpenSavedList={() => setShowListModal(true)}
+                onOpenSaveModal={() => setShowSaveModal(true)}
+                onClearSolver={handleClearSolver}
+                onDraftSectionsChange={setBuilderDraftSections}
+            />
             <div className="hidden md:block">
-            {/* Chú thích */}
-            <Note />
+                {/* Chú thích */}
+                <Note />
             </div>
 
             <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
@@ -1046,7 +362,7 @@ export function CalendarView({
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSaveSchedule()}
                             />
-                                <p className="mt-3 hidden text-xs text-gray-400 italic md:block">
+                            <p className="mt-3 hidden text-xs text-gray-400 italic md:block">
                                 * Hệ thống lưu danh sách môn học và các lớp học cụ thể đang hiển thị.
                             </p>
                         </div>

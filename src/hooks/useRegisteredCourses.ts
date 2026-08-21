@@ -99,8 +99,15 @@ export function useRegisteredCourses(): UseRegisteredCoursesResult {
             registeredSections.push(...sections);
         }
 
-        // 6. Set mã môn
         const registeredCourseCodes = new Set(registeredCourses.map(c => c.courseCode));
+        console.log('[useRegisteredCourses] Debug:', {
+            rawCount: rawRegistrations.length,
+            regCourseCount: registeredCourses.length,
+            regSecCount: registeredSections.length,
+            currentSemester,
+            sampleRegSemester: rawRegistrations[0]?.semester,
+            sampleRegSchedule: rawRegistrations[0]?.schedule
+        });
 
         return {
             registeredCourses,

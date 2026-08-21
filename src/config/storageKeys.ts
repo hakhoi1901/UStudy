@@ -80,4 +80,6 @@ export const STORAGE_KEYS = {
     SECURITY_LAB_VAULT: 'ustudy_security_lab_vault_v1',
     /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
     SCHEDULE_MODE: 'schedule_mode',
+    /** Bản nháp lịch builder (manual + solver selections) */
+    SCHEDULE_BUILDER_DRAFT: 'schedule_builder_draft',
 };

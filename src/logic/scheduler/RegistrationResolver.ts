@@ -58,12 +58,16 @@ export interface NormalizedSemester {
 export function normalizeSemester(input: unknown): NormalizedSemester | null {
     if (!input) return null;
 
+    const standardizeYear = (yearStr: string) => {
+        return yearStr.split('-').map(y => y.trim().length === 2 ? '20' + y.trim() : y.trim()).join('-');
+    };
+
     // Object form from import_meta.params: { sem, year }
     if (typeof input === 'object' && input !== null) {
         const obj = input as Record<string, any>;
         if (obj.sem && obj.year) {
             return {
-                academicYear: String(obj.year).trim(),
+                academicYear: standardizeYear(String(obj.year)),
                 semester: Number(obj.sem),
             };
         }
@@ -81,7 +85,7 @@ export function normalizeSemester(input: unknown): NormalizedSemester | null {
     const semFirst = text.match(/(?:học\s*kỳ|hoc\s*ky|HK)\s*([1-3])\s*[(\s,/-]?\s*(\d{2,4}\s*-\s*\d{2,4})/i);
     if (semFirst) {
         return {
-            academicYear: semFirst[2].replace(/\s/g, ''),
+            academicYear: standardizeYear(semFirst[2].replace(/\s/g, '')),
             semester: parseInt(semFirst[1], 10),
         };
     }
@@ -90,7 +94,7 @@ export function normalizeSemester(input: unknown): NormalizedSemester | null {
     const yearFirst = text.match(/(\d{2,4}\s*-\s*\d{2,4})\s*[/,\s]\s*(?:HK\s*)?([1-3])\b/i);
     if (yearFirst) {
         return {
-            academicYear: yearFirst[1].replace(/\s/g, ''),
+            academicYear: standardizeYear(yearFirst[1].replace(/\s/g, '')),
             semester: parseInt(yearFirst[2], 10),
         };
     }
@@ -205,7 +209,10 @@ export function resolveRegistrations(
         const combinedMask = new Bitset();
 
         for (const comp of data.components) {
-            const encoded = encodeScheduleToMask(comp.schedule, courseCode);
+            const scheduleParts = comp.schedule.split(/[;,]/).map(s => s.trim()).filter(Boolean);
+            if (scheduleParts.length === 0) continue;
+
+            const encoded = encodeScheduleToMask(scheduleParts, courseCode);
             const compMask = new Bitset();
             compMask.loadFromData(encoded.parts);
             const merged = combinedMask.or(compMask);

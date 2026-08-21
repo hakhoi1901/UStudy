@@ -53,6 +53,7 @@ export function useScheduleSolver() {
                     session: prefs.session || '0',
                     strategy: prefs.strategy || 'compress',
                     noGaps: prefs.noGaps ?? false,
+                    preferredClassesMap: prefs.preferredClassesMap,
                 }, registeredMask);
 
                 if (!results || results.length === 0) {
