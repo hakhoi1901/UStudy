@@ -293,7 +293,6 @@ export function StudyRoadmapFeature() {
                                 // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', description: 'Học phần và học phí', icon: ShoppingCart },
-                                isK24IT ? { id: 'selection_k24', label: 'K24 CNTT', description: 'Học phần khóa K24', icon: ShoppingCart } : null,
                                 { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
                             ].filter((tab): tab is any => tab !== null)}
                             activeTab={activeTab}
