@@ -322,6 +322,7 @@ export function CalendarView({
                 setActiveOption={setActiveOption}
                 currentSections={currentSections}
                 allowedClassesMap={allowedClassesMap}
+                setAllowedClassesMap={setAllowedClassesMap}
                 prefs={prefs}
                 savedSchedulesCount={savedSchedules.length}
                 setActiveTab={setActiveTab}
