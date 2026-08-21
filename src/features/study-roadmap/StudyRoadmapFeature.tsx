@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { useCourseData } from '../../hooks/useCourseData';
+import { useCourseDataK24 } from '../../hooks/useCourseDataK24';
+import { useDepartmentData } from '../../context/DepartmentContext';
 import { type ClassSection } from '../../types';
 import { NoDataCard } from '../../components/feedback';
 import { PageHeader } from '../../components/layout/page-header';
@@ -80,10 +82,21 @@ export function StudyRoadmapFeature() {
     }, [tabFromPath, activeTab, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
+    const { recommended: recommendedK24, all: allK24, isReady: isReadyK24 } = useCourseDataK24();
     const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+    const { facultyId, cohortId } = useDepartmentData();
+
+    const isK24IT = facultyId === 'khoa-cntt' && cohortId === 'k24';
 
     const currentSource = viewMode === 'recommend' ? recommended : all;
-    const globalAllCourses = [...all.core, ...all.major, ...all.electives];
+    const currentSourceK24 = viewMode === 'recommend' ? recommendedK24 : allK24;
+
+    const globalAllCourses = Array.from(
+        new Map([
+            ...all.core, ...all.major, ...all.electives,
+            ...allK24.core, ...allK24.major, ...allK24.electives
+        ].map(c => [c.id, c])).values()
+    );
 
     const handleCourseToggle = (courseId: string) => {
         setSelectedCourses(prev => {
@@ -112,6 +125,21 @@ export function StudyRoadmapFeature() {
             c.id.toLowerCase().includes(searchTerm.toLowerCase())
         ),
         electives: currentSource.electives.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+    };
+
+    const filteredCoursesK24 = {
+        core: currentSourceK24.core.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        major: currentSourceK24.major.filter(c =>
+            c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.id.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        electives: currentSourceK24.electives.filter(c =>
             c.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.id.toLowerCase().includes(searchTerm.toLowerCase())
         ),
@@ -250,8 +278,9 @@ export function StudyRoadmapFeature() {
                                 // { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch học tập', description: 'Tiến độ và lộ trình theo học kỳ', icon: Book },
                                 { id: 'selection', label: 'Chọn môn & Học phí', description: 'Chọn học phần và xem chi phí dự kiến', icon: ShoppingCart },
+                                isK24IT ? { id: 'selection_k24', label: 'Khóa K24, CNTT', description: 'Chọn học phần cho Khóa K24 CNTT', icon: ShoppingCart } : null,
                                 { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', description: 'Tạo phương án lịch cá nhân hoặc nhóm', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
-                            ]}
+                            ].filter((tab): tab is any => tab !== null)}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                         />
@@ -264,8 +293,9 @@ export function StudyRoadmapFeature() {
                                 // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', description: 'Học phần và học phí', icon: ShoppingCart },
+                                isK24IT ? { id: 'selection_k24', label: 'K24 CNTT', description: 'Học phần khóa K24', icon: ShoppingCart } : null,
                                 { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
-                            ]}
+                            ].filter((tab): tab is any => tab !== null)}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                         />
@@ -283,7 +313,7 @@ export function StudyRoadmapFeature() {
                         )}
 
                         {/* Tab 2: Chọn môn học */}
-                        {activeTab === 'selection' && (
+                        {(activeTab === 'selection' || activeTab === 'selection_k24') && (
                             // Desktop: 2 cột. Mobile: 1 cột (giỏ hàng ẩn vào drawer)
                             <div className="flex flex-col md:flex-row md:flex-nowrap gap-6 items-start w-full">
 
@@ -295,33 +325,65 @@ export function StudyRoadmapFeature() {
                                 >
                                     {/* Desktop: fixed height để scroll độc lập */}
                                     <div className="hidden md:block overflow-y-auto" style={{ height: 'calc(100vh - 11rem)' }}>
-                                        <SelectionView
-                                            searchTerm={searchTerm}
-                                            setSearchTerm={setSearchTerm}
-                                            viewMode={viewMode}
-                                            setViewMode={setViewMode}
-                                            recommended={recommended}
-                                            all={all}
-                                            filteredCourses={filteredCourses}
-                                            selectedCourses={selectedCourses}
-                                            handleCourseToggle={handleCourseToggle}
-                                            handleShowFlowchart={handleShowFlowchart}
-                                        />
+                                        {activeTab === 'selection' && (
+                                            <SelectionView
+                                                searchTerm={searchTerm}
+                                                setSearchTerm={setSearchTerm}
+                                                viewMode={viewMode}
+                                                setViewMode={setViewMode}
+                                                recommended={recommended}
+                                                all={all}
+                                                filteredCourses={filteredCourses}
+                                                selectedCourses={selectedCourses}
+                                                handleCourseToggle={handleCourseToggle}
+                                                handleShowFlowchart={handleShowFlowchart}
+                                            />
+                                        )}
+                                        {activeTab === 'selection_k24' && (
+                                            <SelectionView
+                                                searchTerm={searchTerm}
+                                                setSearchTerm={setSearchTerm}
+                                                viewMode={viewMode}
+                                                setViewMode={setViewMode}
+                                                recommended={recommendedK24}
+                                                all={allK24}
+                                                filteredCourses={filteredCoursesK24}
+                                                selectedCourses={selectedCourses}
+                                                handleCourseToggle={handleCourseToggle}
+                                                handleShowFlowchart={handleShowFlowchart}
+                                            />
+                                        )}
                                     </div>
                                     {/* Mobile: không fixed height */}
                                     <div className="md:hidden pb-36">
-                                        <SelectionView
-                                            searchTerm={searchTerm}
-                                            setSearchTerm={setSearchTerm}
-                                            viewMode={viewMode}
-                                            setViewMode={setViewMode}
-                                            recommended={recommended}
-                                            all={all}
-                                            filteredCourses={filteredCourses}
-                                            selectedCourses={selectedCourses}
-                                            handleCourseToggle={handleCourseToggle}
-                                            handleShowFlowchart={handleShowFlowchart}
-                                        />
+                                        {activeTab === 'selection' && (
+                                            <SelectionView
+                                                searchTerm={searchTerm}
+                                                setSearchTerm={setSearchTerm}
+                                                viewMode={viewMode}
+                                                setViewMode={setViewMode}
+                                                recommended={recommended}
+                                                all={all}
+                                                filteredCourses={filteredCourses}
+                                                selectedCourses={selectedCourses}
+                                                handleCourseToggle={handleCourseToggle}
+                                                handleShowFlowchart={handleShowFlowchart}
+                                            />
+                                        )}
+                                        {activeTab === 'selection_k24' && (
+                                            <SelectionView
+                                                searchTerm={searchTerm}
+                                                setSearchTerm={setSearchTerm}
+                                                viewMode={viewMode}
+                                                setViewMode={setViewMode}
+                                                recommended={recommendedK24}
+                                                all={allK24}
+                                                filteredCourses={filteredCoursesK24}
+                                                selectedCourses={selectedCourses}
+                                                handleCourseToggle={handleCourseToggle}
+                                                handleShowFlowchart={handleShowFlowchart}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 

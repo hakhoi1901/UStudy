@@ -2,1072 +2,864 @@
   {
     "id": "CSC12005",
     "name": "Phát triển ứng dụng hệ thống thông tin hiện đại",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_1",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       }
     ]
   },
   {
     "id": "CSC12106",
     "name": "Tương tác người – máy",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_1",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       }
     ]
   },
   {
     "id": "CSC12107",
     "name": "Hệ thống thông tin phục vụ trí tuệ kinh doanh",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_1",
-        "schedule": [
-          "T3 (2-5)"
-        ]
+        "schedule": "T3(2-5)"
       }
     ]
   },
   {
     "id": "CSC14002",
     "name": "Các hệ cơ sở tri thức",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_21",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       }
     ]
   },
   {
     "id": "CSC14112",
     "name": "Sinh trắc học",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_21",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       }
     ]
   },
   {
     "id": "CSC14114",
     "name": "Ứng dụng dữ liệu lớn",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_21",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       }
     ]
   },
   {
     "id": "CSC14117",
     "name": "Nhập môn lập trình kết nối vạn vật",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_21",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       }
     ]
   },
   {
     "id": "CSC14120",
     "name": "Lập trình song song",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_21",
-        "schedule": [
-          "T2 (1-4)"
-        ]
+        "schedule": "T2(1-4)"
       }
     ]
   },
   {
     "id": "CSC15001",
     "name": "An ninh máy tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       }
     ]
   },
   {
     "id": "CSC15009",
     "name": "Xử lý tín hiệu số",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       }
     ]
   },
   {
     "id": "CSC15010",
     "name": "Blockchain và ứng dụng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       }
     ]
   },
   {
     "id": "CSC15011",
     "name": "Nhập môn ngôn ngữ học thống kê và ứng dụng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       }
     ]
   },
   {
     "id": "CSC15102",
     "name": "Phân tích mạng xã hội",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T4 (7-10)"
-        ]
+        "schedule": "T4(7-10)"
       }
     ]
   },
   {
     "id": "CSC15104",
     "name": "An toàn và phục hồi dữ liệu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T3 (2-5)"
-        ]
+        "schedule": "T3(2-5)"
       }
     ]
   },
   {
     "id": "CSC15106",
     "name": "Seminar Công nghệ tri thức",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       }
     ]
   },
   {
     "id": "CSC15107",
     "name": "Phân tích dữ liệu bảo toàn tính riêng tư",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_22",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       }
     ]
   },
   {
     "id": "CSC16002",
     "name": "Phương pháp toán trong phân tích dữ liệu thị giác",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_23",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       }
     ]
   },
   {
     "id": "CSC16102",
     "name": "Kỹ thuật lập trình xử lý ảnh số và video số",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_23",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       }
     ]
   },
   {
     "id": "CSC16106",
     "name": "Nhập môn lập trình điều khiển thiết bị thông minh",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_23",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC16107",
     "name": "Ứng dụng thị giác máy tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_23",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       }
     ]
   },
   {
     "id": "CSC16114",
     "name": "Học sâu trong thị giác máy tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_23",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       }
     ]
   },
   {
     "id": "CSC17103",
     "name": "Khai thác dữ liệu đồ thị",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_24",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       }
     ]
   },
   {
     "id": "CSC17106",
     "name": "Xử lý phân tích dữ liệu trực tuyến",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_24",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       }
     ]
   },
   {
     "id": "CSC17107",
     "name": "Ứng dụng phân tích dữ liệu thông minh",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_24",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       }
     ]
   },
   {
     "id": "CSC13003",
     "name": "Kiểm thử phần mềm",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T4 (7-10)"
-        ]
+        "schedule": "T4(7-10)"
       },
       {
         "id": "23_31",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       },
       {
         "id": "23TN",
-        "schedule": [
-          "T4 (4-6)"
-        ]
+        "schedule": "T4(4-6)"
       }
     ]
   },
   {
     "id": "CSC13006",
     "name": "Quản lý dự án phần mềm",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T3 (7-10)"
-        ]
+        "schedule": "T3(7-10)"
       }
     ]
   },
   {
     "id": "CSC13007",
     "name": "Phát triển game",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       },
       {
         "id": "23TN",
-        "schedule": [
-          "T3 (4-6)"
-        ]
+        "schedule": "T3(4-6)"
       }
     ]
   },
   {
     "id": "CSC13103",
     "name": "Nhập môn hệ thống phân tán",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       }
     ]
   },
   {
     "id": "CSC13106",
     "name": "Kiến trúc phần mềm",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T2 (2-5)"
-        ]
+        "schedule": "T2(2-5)"
       },
       {
         "id": "23_31",
-        "schedule": [
-          "T5 (7-10)"
-        ]
+        "schedule": "T5(7-10)"
       }
     ]
   },
   {
     "id": "CSC13107",
     "name": "Mẫu thiết kế hướng đối tượng và ứng dụng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       }
     ]
   },
   {
     "id": "CSC13112",
     "name": "Thiết kế giao diện",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T4 (2-5)"
-        ]
+        "schedule": "T4(2-5)"
       }
     ]
   },
   {
     "id": "CSC13114",
     "name": "Phát triển ứng dụng web nâng cao",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       }
     ]
   },
   {
     "id": "CSC13118",
     "name": "Phát triển ứng dụng cho thiết bị di động nâng cao",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_3",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       }
     ]
   },
   {
     "id": "CSC11112",
     "name": "Chuyên đề Hệ thống phân tán",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_4",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC11116",
     "name": "DevOps nâng cao",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_4",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       }
     ]
   },
   {
     "id": "CSC11118",
     "name": "Triển khai và vận hành điện toán đám mây",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_4",
-        "schedule": [
-          "T2 (2-5)"
-        ]
+        "schedule": "T2(2-5)"
       }
     ]
   },
   {
     "id": "CSC11119",
     "name": "Chuyên đề phân tích mạng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_4",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       }
     ]
   },
   {
     "id": "CSC10102",
     "name": "Kiến tập nghề nghiệp",
-    "credits": 1,
+    "credits": 2,
     "classes": [
       {
         "id": "23_5",
-        "schedule": [
-          "T7 (3-5)"
-        ]
+        "schedule": "T7(3-5)"
       }
     ]
   },
   {
     "id": "CSC10104",
     "name": "Quy hoạch tuyến tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23_5",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       }
     ]
   },
   {
     "id": "CSC10107",
     "name": "Thực tập thực tế",
-    "credits": 2,
+    "credits": 4,
     "classes": [
       {
         "id": "23TN",
-        "schedule": [
-          "T2 (4-6)"
-        ]
+        "schedule": "T2(4-6)"
       }
     ]
   },
   {
     "id": "CSC18001",
     "name": "Nhập môn học sâu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23TNT",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       }
     ]
   },
   {
     "id": "CSC18101",
     "name": "Trí tuệ nhân tạo cho an ninh thông tin",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23TNT",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       }
     ]
   },
   {
     "id": "CSC18105",
     "name": "Trí tuệ nhân tạo ứng dụng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "23TNT",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       }
     ]
   },
   {
     "id": "CSC10007",
     "name": "Hệ điều hành",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_1",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "24_21",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       },
       {
         "id": "24_22",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       },
       {
         "id": "24_23",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "24_3",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       },
       {
         "id": "24_4",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T4 (1-3)"
-        ]
+        "schedule": "T4(1-3)"
       },
       {
         "id": "24TNT",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       }
     ]
   },
   {
     "id": "CSC12002",
     "name": "Cơ sở dữ liệu nâng cao",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_1",
-        "schedule": [
-          "T2 (1-4)"
-        ]
+        "schedule": "T2(1-4)"
       },
       {
         "id": "24_11",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       }
     ]
   },
   {
     "id": "CSC12003",
     "name": "Hệ quản trị cơ sở dữ liệu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_1",
-        "schedule": [
-          "T3 (3-5)"
-        ]
+        "schedule": "T3(3-5)"
       },
       {
         "id": "24_11",
-        "schedule": [
-          "T2 (2-5)"
-        ]
+        "schedule": "T2(2-5)"
       }
     ]
   },
   {
     "id": "CSC13002",
     "name": "Nhập môn công nghệ phần mềm",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_1",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       },
       {
         "id": "24_3",
-        "schedule": [
-          "T3 (2-5)"
-        ]
+        "schedule": "T3(2-5)"
       },
       {
         "id": "24_31",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "24_4",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T6 (1-3)"
-        ]
+        "schedule": "T6(1-3)"
       }
     ]
   },
   {
     "id": "CSC14003",
     "name": "Cơ sở trí tuệ nhân tạo",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_21",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       },
       {
         "id": "24_22",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       },
       {
         "id": "24_23",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T2 (4-6)"
-        ]
+        "schedule": "T2(4-6)"
       },
       {
         "id": "24TNT",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       },
       {
         "id": "25TNT1",
-        "schedule": [
-          "T3 (4-6)"
-        ]
+        "schedule": "T3(4-6)"
       },
       {
         "id": "25TNT2",
-        "schedule": [
-          "T3 (7-9)"
-        ]
+        "schedule": "T3(7-9)"
       }
     ]
   },
   {
     "id": "CSC14111",
     "name": "Nhập môn thiết kế và phân tích giải thuật",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_21",
-        "schedule": [
-          "T4 (7-10)"
-        ]
+        "schedule": "T4(7-10)"
       }
     ]
   },
   {
     "id": "CSC17104",
     "name": "Lập trình cho khoa học dữ liệu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_21",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       },
       {
         "id": "24_24",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       }
     ]
   },
   {
     "id": "CSC14007",
     "name": "Nhập môn phân tích độ phức tạp thuật toán",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_22",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC15005",
     "name": "Nhập môn mã hóa – mật mã",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_22",
-        "schedule": [
-          "T7 (2-5)"
-        ]
+        "schedule": "T7(2-5)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T7 (1-3)"
-        ]
+        "schedule": "T7(1-3)"
       }
     ]
   },
   {
     "id": "CSC15006",
     "name": "Nhập môn xử lý ngôn ngữ tự nhiên",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_22",
-        "schedule": [
-          "T2 (1-4)"
-        ]
+        "schedule": "T2(1-4)"
       },
       {
         "id": "24_25",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC15109",
     "name": "Nhập môn tính toán lượng tử",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_22",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       }
     ]
   },
   {
     "id": "CSC16001",
     "name": "Đồ họa máy tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_23",
-        "schedule": [
-          "T2 (1-4)"
-        ]
+        "schedule": "T2(1-4)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T3 (7-9)"
-        ]
+        "schedule": "T3(7-9)"
       }
     ]
   },
   {
     "id": "CSC16005",
     "name": "Xử lý ảnh số và video số",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_23",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC14119",
     "name": "Nhập môn khoa học dữ liệu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_24",
-        "schedule": [
-          "T6 (1-4)"
-        ]
+        "schedule": "T6(1-4)"
       }
     ]
   },
   {
     "id": "CSC13001",
     "name": "Lập trình Windows",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_3",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "24_31",
-        "schedule": [
-          "T2 (1-4)"
-        ]
+        "schedule": "T2(1-4)"
       }
     ]
   },
   {
     "id": "CSC13008",
     "name": "Phát triển ứng dụng web",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_3",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       },
       {
         "id": "24_31",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       }
     ]
   },
   {
     "id": "CSC13009",
     "name": "Phát triển phần mềm cho thiết bị di động",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_3",
-        "schedule": [
-          "T6 (2-5)"
-        ]
+        "schedule": "T6(2-5)"
       },
       {
         "id": "24_31",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T4 (4-6)"
-        ]
+        "schedule": "T4(4-6)"
       }
     ]
   },
   {
     "id": "CSC11004",
     "name": "Mạng máy tính nâng cao",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_4",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       }
     ]
   },
   {
     "id": "CSC11117",
     "name": "Hệ điều hành Linux và ứng dụng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_4",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       }
     ]
   },
   {
     "id": "CSC10003",
     "name": "Phương pháp lập trình hướng đối tượng",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_5",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       },
       {
         "id": "25CTT1",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       },
       {
         "id": "25CTT1TN",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       },
       {
         "id": "25CTT2",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       },
       {
         "id": "25CTT3",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       },
       {
         "id": "25CTT4",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "25CTT5",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "25CTT6",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "25TNT1",
-        "schedule": [
-          "T5 (1-3)"
-        ]
+        "schedule": "T5(1-3)"
       },
       {
         "id": "25TNT2",
-        "schedule": [
-          "T4 (1-3)"
-        ]
+        "schedule": "T4(1-3)"
       }
     ]
   },
   {
     "id": "CSC10006",
     "name": "Cơ sở dữ liệu",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_5",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       }
     ]
   },
@@ -1078,332 +870,248 @@
     "classes": [
       {
         "id": "24_5",
-        "schedule": [
-          "T6 (6-9)"
-        ]
+        "schedule": "T6(6-9)"
       }
     ]
   },
   {
     "id": "CSC10014",
     "name": "Tư duy tính toán",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_5",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC10105",
     "name": "Nhập môn tư duy thuật toán",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24_5",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "24TN",
-        "schedule": [
-          "T3 (10-12)"
-        ]
+        "schedule": "T3(10-12)"
       }
     ]
   },
   {
     "id": "CSC14008",
     "name": "Phương pháp nghiên cứu khoa học",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24TN",
-        "schedule": [
-          "CN (3-6)"
-        ]
+        "schedule": "CN(3-6)"
       }
     ]
   },
   {
     "id": "CSC14005",
     "name": "Nhập môn học máy",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "24TNT",
-        "schedule": [
-          "T3 (1-4)"
-        ]
+        "schedule": "T3(1-4)"
       }
     ]
   },
   {
     "id": "CSC10008",
     "name": "Mạng máy tính",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "25CTT1",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       },
       {
         "id": "25CTT1TN",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "25CTT2",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "25CTT3",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       },
       {
         "id": "25CTT4",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "25CTT5",
-        "schedule": [
-          "T7 (6-9)"
-        ]
+        "schedule": "T7(6-9)"
       },
       {
         "id": "25CTT6",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "25TNT1",
-        "schedule": [
-          "T5 (4-6)"
-        ]
+        "schedule": "T5(4-6)"
       },
       {
         "id": "25TNT2",
-        "schedule": [
-          "T6 (4-6)"
-        ]
+        "schedule": "T6(4-6)"
       }
     ]
   },
   {
     "id": "MTH00050",
     "name": "Toán học tổ hợp",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "25CTT1",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       },
       {
         "id": "25CTT2",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       },
       {
         "id": "25CTT3",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "25CTT4",
-        "schedule": [
-          "T4 (2-5)"
-        ]
+        "schedule": "T4(2-5)"
       },
       {
         "id": "25CTT5",
-        "schedule": [
-          "T5 (1-4)"
-        ]
+        "schedule": "T5(1-4)"
       },
       {
         "id": "25CTT6",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       },
       {
         "id": "25TNT1",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       },
       {
         "id": "25TNT2",
-        "schedule": [
-          "T4 (4-6)"
-        ]
+        "schedule": "T4(4-6)"
       }
     ]
   },
   {
     "id": "CSC10004",
     "name": "Cấu trúc dữ liệu và giải thuật",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "25CTT7",
-        "schedule": [
-          "T6 (2-5)"
-        ]
+        "schedule": "T6(2-5)"
       }
     ]
   },
   {
     "id": "CSC00004",
     "name": "Nhập môn công nghệ thông tin",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "26CTT1",
-        "schedule": [
-          "T6 (2-5)"
-        ]
+        "schedule": "T6(2-5)"
       },
       {
         "id": "26CTT1TN",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       },
       {
         "id": "26CTT2",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       },
       {
         "id": "26CTT3",
-        "schedule": [
-          "T4 (1-4)"
-        ]
+        "schedule": "T4(1-4)"
       },
       {
         "id": "26CTT4",
-        "schedule": [
-          "T4 (3-5)"
-        ]
+        "schedule": "T4(3-5)"
       },
       {
         "id": "26CTT5",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       },
       {
         "id": "26CTT6",
-        "schedule": [
-          "T7 (1-4)"
-        ]
+        "schedule": "T7(1-4)"
       }
     ]
   },
   {
     "id": "CSC10012",
     "name": "Cơ sở lập trình",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "26CTT1",
-        "schedule": [
-          "T2 (2-5)"
-        ]
+        "schedule": "T2(2-5)"
       },
       {
         "id": "26CTT1TN",
-        "schedule": [
-          "T3 (6-9)"
-        ]
+        "schedule": "T3(6-9)"
       },
       {
         "id": "26CTT2",
-        "schedule": [
-          "T4 (6-9)"
-        ]
+        "schedule": "T4(6-9)"
       },
       {
         "id": "26CTT3",
-        "schedule": [
-          "T2 (6-9)"
-        ]
+        "schedule": "T2(6-9)"
       },
       {
         "id": "26CTT4",
-        "schedule": [
-          "T5 (2-5)"
-        ]
+        "schedule": "T5(2-5)"
       },
       {
         "id": "26CTT5",
-        "schedule": [
-          "T4 (2-5)"
-        ]
+        "schedule": "T4(2-5)"
       },
       {
         "id": "26CTT6",
-        "schedule": [
-          "T5 (6-9)"
-        ]
+        "schedule": "T5(6-9)"
       }
     ]
   },
   {
     "id": "CSC00009",
     "name": "Giới thiệu ngành Trí tuệ nhân tạo",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "26TNT1",
-        "schedule": [
-          "T3 (4-6)"
-        ]
+        "schedule": "T3(4-6)"
       },
       {
         "id": "26TNT2",
-        "schedule": [
-          "T2 (7-9)"
-        ]
+        "schedule": "T2(7-9)"
       }
     ]
   },
   {
     "id": "CSC10013",
     "name": "Cơ sở lập trình cho trí tuệ nhân tạo",
-    "credits": 3,
+    "credits": 4,
     "classes": [
       {
         "id": "26TNT1",
-        "schedule": [
-          "T6 (7-9)"
-        ]
+        "schedule": "T6(7-9)"
       },
       {
         "id": "26TNT2",
-        "schedule": [
-          "T6 (1-3)"
-        ]
+        "schedule": "T6(1-3)"
       }
     ]
   }

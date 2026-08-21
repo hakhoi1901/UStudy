@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, Fragment } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, List, Info } from 'lucide-react';
 
 import { GroupMemberCard } from './components/GroupMemberCard';
@@ -93,7 +93,18 @@ function normalizeSchedule(value: unknown): string[] {
 
 function loadClassOptionsByCourse(): Record<string, GroupClassOption[]> {
     const stored = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
-    const rawCourses = stored.length > 0 ? stored : (courseDbJson as any[]);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (stored && Array.isArray(stored)) {
+        stored.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
+    }
+    const rawCourses = Array.from(mergedMap.values());
 
     return rawCourses.reduce<Record<string, GroupClassOption[]>>((acc, course) => {
         const courseId = normalizeCourseId(course?.id || course?.code || course?.course_id);
@@ -171,8 +182,14 @@ export function GroupSchedulePage({
         return readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []);
     });
     const [personalClassPreferences, setPersonalClassPreferences] = useState<Record<string, ClassPreferenceSelection>>({});
-    const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>({});
+    const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>(() => {
+        return readFromStorage<Record<string, ClassPreferenceSelection>>(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, {});
+    });
     const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
+    
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, groupPreferredClasses);
+    }, [groupPreferredClasses]);
     const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
