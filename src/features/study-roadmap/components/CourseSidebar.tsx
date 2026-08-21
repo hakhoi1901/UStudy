@@ -245,7 +245,7 @@ export function CourseSidebar({
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-[#004A98]">{course.code}</span>
                         <span className="text-[10px] text-gray-400">{course.credits} TC</span>
-                        {selection?.locked && <Lock className="h-3 w-3 text-amber-500" />}
+                        {selection?.locked && <Lock className="h-3 w-3 text-[#004A98]" />}
                       </div>
                       <p className="mt-0.5 truncate text-xs font-medium text-gray-800">{course.nameVi}</p>
                       {selection && !selection.locked && selection.source === 'solver' && selection.preferredClassId && selection.classId !== selection.preferredClassId && (
@@ -263,25 +263,25 @@ export function CourseSidebar({
                       {selection ? (
                         selection.locked ? (
                           <>
-                            <Lock className="h-4 w-4 text-amber-500" />
+                            <Lock className="h-4 w-4 text-[#004A98]" />
                             <div className="absolute right-0 top-full mt-1 hidden w-48 rounded-md bg-gray-800 px-2 py-1.5 text-xs text-white group-hover:block z-50">
-                              <p className="font-semibold text-amber-400">Bắt buộc</p>
+                              <p className="font-semibold text-blue-300">Bắt buộc</p>
                               <p className="mt-0.5 text-gray-300">Solver không được thay đổi lớp này.</p>
                             </div>
                           </>
                         ) : selection.source === 'manual' ? (
                           <>
-                            <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                            <CheckCircle2 className="h-4 w-4 text-[#004A98]" />
                             <div className="absolute right-0 top-full mt-1 hidden w-48 rounded-md bg-gray-800 px-2 py-1.5 text-xs text-white group-hover:block z-50">
-                              <p className="font-semibold text-blue-400">Ưu tiên</p>
+                              <p className="font-semibold text-blue-300">Ưu tiên</p>
                               <p className="mt-0.5 text-gray-300">Solver sẽ cố giữ lớp này và chỉ thay nếu cần để tạo lịch hợp lệ.</p>
                             </div>
                           </>
                         ) : (
                           <>
-                            <Shuffle className="h-4 w-4 text-purple-500" />
+                            <Shuffle className="h-4 w-4 text-gray-400" />
                             <div className="absolute right-0 top-full mt-1 hidden w-48 rounded-md bg-gray-800 px-2 py-1.5 text-xs text-white group-hover:block z-50">
-                              <p className="font-semibold text-purple-400">Tự động</p>
+                              <p className="font-semibold text-gray-200">Tự động</p>
                               <p className="mt-0.5 text-gray-300">Lớp do hệ thống chọn và có thể được tối ưu lại.</p>
                             </div>
                           </>
@@ -370,23 +370,25 @@ export function CourseSidebar({
       </div>
 
       {/* ── Hybrid solve CTA (bottom) ── */}
-      {unfilledCount > 0 && (
-        <div className="flex-shrink-0 border-t border-gray-200 p-3">
-          <button
-            type="button"
-            onClick={onHybridSolve}
-            disabled={solvingHybrid}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#004A98] to-[#0066CC] px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
-          >
-            {solvingHybrid ? 'Đang xếp...' : 'Hoàn thiện lịch giúp tôi'}
-          </button>
-          <p className="mt-1.5 text-center text-[10px] text-gray-400">
-            {lockedCount > 0
+      <div className="flex-shrink-0 border-t border-gray-200 p-3">
+        <button
+          type="button"
+          onClick={onHybridSolve}
+          disabled={solvingHybrid}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#004A98] to-[#0066CC] px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
+        >
+          {solvingHybrid ? 'Đang tạo lịch mới...' : 'Hoàn thiện lịch giúp tôi'}
+        </button>
+        <p className="mt-1.5 text-center text-[10px] text-gray-400">
+          {lockedCount > 0
+            ? unfilledCount > 0
               ? `Giữ ${lockedCount} lớp đã khóa, xếp ${unfilledCount} môn còn lại`
-              : `Xếp tự động ${unfilledCount} môn chưa chọn lớp`}
-          </p>
-        </div>
-      )}
+              : `Giữ ${lockedCount} lớp đã khóa, tạo phương án mới theo lựa chọn hiện tại`
+            : unfilledCount > 0
+              ? `Xếp tự động ${unfilledCount} môn chưa chọn lớp`
+              : 'Tạo phương án mới theo các lớp đang được xét'}
+        </p>
+      </div>
     </div>
   );
 }

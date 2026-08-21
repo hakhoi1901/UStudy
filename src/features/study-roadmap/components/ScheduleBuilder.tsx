@@ -370,16 +370,14 @@ export function ScheduleBuilder({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {unfilledCount > 0 && (
-              <button
-                type="button"
-                onClick={handleHybridSolve}
-                disabled={solving}
-                className="h-8 rounded-lg bg-gradient-to-r from-[#004A98] to-[#0066CC] px-3 text-xs font-semibold text-white disabled:opacity-60"
-              >
-                Hoàn thiện
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleHybridSolve}
+              disabled={solving}
+              className="h-8 rounded-lg bg-gradient-to-r from-[#004A98] to-[#0066CC] px-3 text-xs font-semibold text-white disabled:opacity-60"
+            >
+              {solving ? 'Đang tạo...' : 'Hoàn thiện'}
+            </button>
             {draft.hasAnySelection && (
               <button
                 type="button"
