@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Lock, Search, X, Circle, CheckCircle2, Alert
 import { readFromStorage } from '../../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../../config';
 import type { Course } from '../../../types';
+import type { RegisteredCourse } from '../../../logic/scheduler/RegistrationResolver';
 import type { DraftSelection, ScheduleConflict } from '../types/schedule-builder-types';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -22,6 +23,7 @@ function formatScheduleStrings(schedule?: string[]): string {
 interface CourseSidebarProps {
   selectedCourseIds: Set<string>;
   allCourses: Course[];
+  registeredCourses: RegisteredCourse[];
   allowedClassesMap: Record<string, string[]>;
   selections: DraftSelection[];
   conflicts: ScheduleConflict[];
@@ -41,6 +43,7 @@ interface CourseSidebarProps {
 export function CourseSidebar({
   selectedCourseIds,
   allCourses,
+  registeredCourses,
   allowedClassesMap,
   selections,
   conflicts,
@@ -115,6 +118,21 @@ export function CourseSidebar({
       c => c.nameVi.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.id.toLowerCase().includes(q),
     );
   }, [selectedCourses, search]);
+
+  const registeredCourseGroups = useMemo(() => {
+    return registeredCourses
+      .map((course) => ({
+        courseCode: course.courseCode,
+        courseName: course.courseName || course.courseCode,
+        classLabels: Array.from(new Set(
+          course.components.map((component) => component.classGroup).filter(Boolean),
+        )),
+        scheduleLabels: Array.from(new Set(
+          course.components.map((component) => component.schedule).filter(Boolean),
+        )),
+      }))
+      .sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+  }, [registeredCourses]);
 
   const toggleExpand = (courseId: string) => {
     setExpandedCourses(prev => {
@@ -208,11 +226,41 @@ export function CourseSidebar({
 
       {/* ── Course list ── */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+        {registeredCourseGroups.length > 0 && (
+          <section className="border-b border-gray-200 bg-blue-50/35 px-3 py-2.5">
+            <div className="mb-1.5 flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-[#004A98]">Trường đã đăng ký</span>
+              <span className="text-[10px] font-medium text-gray-500">{registeredCourseGroups.length} môn</span>
+            </div>
+            <div className="divide-y divide-blue-100/80 rounded-lg border border-blue-100 bg-white">
+              {registeredCourseGroups.map((course) => (
+                <div key={course.courseCode} className="px-2.5 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-[#004A98]">{course.courseCode}</span>
+                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-800">{course.courseName}</span>
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-[#004A98]" aria-label="Lớp đã được trường đăng ký" />
+                  </div>
+                  <p className="mt-1 truncate text-[10px] text-gray-500">
+                    {course.classLabels.join(' / ') || 'Chưa có lớp'} · {course.scheduleLabels.join(' · ') || 'Chưa có lịch học'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {selectedCourses.length > 0 && (
+          <div className="border-b border-gray-100 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+            Môn đăng ký thêm từ lớp mở
+          </div>
+        )}
         {selectedCourses.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-4 py-8 text-center">
             <Circle className="mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-sm font-medium text-gray-500">Chưa chọn môn nào</p>
-            <p className="mt-1 text-xs text-gray-400">Chọn môn ở tab "Chọn môn" trước</p>
+            <p className="text-sm font-medium text-gray-500">
+              {registeredCourseGroups.length > 0 ? 'Chưa chọn môn đăng ký thêm' : 'Chưa chọn môn nào'}
+            </p>
+            <p className="mt-1 text-xs text-gray-400">Chọn môn từ danh sách lớp mở trước</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">

@@ -4,6 +4,7 @@ import { SavedSchedulesModal } from '../../group-schedule';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { Calendar, AlertTriangle, Cpu, ChevronLeft, ChevronRight, Settings, Sun, Moon, Zap, X, Save, List, Trash2, Clock, Check, BookOpen, Hash, BarChart2, Layers, Users } from 'lucide-react';
 import { type ClassSection, type SavedSchedule } from '../../../types';
+import type { RegisteredCourse } from '../../../logic/scheduler/RegistrationResolver';
 import { type SolverPreferences, type ScheduleOption } from '../hooks/use-schedule-solver';
 import { weekDays, timePeriods } from '../../../constants';
 import type { Course } from '../../../types';
@@ -31,6 +32,7 @@ interface CalendarViewProps {
     selectedCourses: Set<string>;
     setActiveTab: (tab: Tab) => void;
     currentSections: ClassSection[];
+    registeredCourses?: RegisteredCourse[];
     registeredSections?: ClassSection[];
     activeOption: number;
     options: any[];
@@ -102,6 +104,7 @@ export function CalendarView({
     selectedCourses,
     setActiveTab,
     currentSections,
+    registeredCourses = [],
     registeredSections = [],
     activeOption,
     options,
@@ -335,6 +338,7 @@ export function CalendarView({
             <ScheduleBuilder
                 selectedCourses={selectedCourses}
                 allCurrentCourses={allCurrentCourses}
+                registeredCourses={registeredCourses}
                 registeredSections={registeredSections}
                 solve={solve}
                 solving={solving}

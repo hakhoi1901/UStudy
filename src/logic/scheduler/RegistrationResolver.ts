@@ -116,12 +116,18 @@ function semesterMatch(a: NormalizedSemester | null, b: NormalizedSemester | nul
  * "T2(1-4)"        → { schedule: "T2(1-4)", room: undefined }
  */
 function parseScheduleAndRoom(raw: string): { schedule: string; room?: string } {
-    const parts = raw.split(/\s*-\s*/);
-    const schedule = parts[0]?.trim() || '';
-    // Phòng học thường bắt đầu bằng chữ (VD: "F201", "B.302")
-    // Cần phân biệt với phần tiếp theo của lịch (VD: "T2(1-4) - T5(6-8)")
-    const rest = parts.slice(1).join(' - ').trim();
-    const room = rest && !rest.match(/^T\d/) ? rest : undefined;
+    const schedulePattern = /T(?:\d|CN)\s*\([\d.]+\s*-\s*[\d.]+\)/gi;
+    const scheduleParts = raw.match(schedulePattern) || [];
+    const schedule = scheduleParts.join('; ');
+
+    // Chỉ lấy phần sau dấu '-' nằm SAU dấu ')' của lịch. Không split toàn chuỗi,
+    // vì dấu '-' trong T2(1-3) là khoảng tiết chứ không phải dấu ngăn phòng.
+    const roomMatch = raw.match(/\)\s*-\s*([^;,]+)/);
+    const candidateRoom = roomMatch?.[1]?.trim();
+    const room = candidateRoom && !/^T(?:\d|CN)\s*\(/i.test(candidateRoom)
+        ? candidateRoom
+        : undefined;
+
     return { schedule, room };
 }
 
@@ -182,7 +188,6 @@ export function resolveRegistrations(
         if (!code) continue;
 
         const { schedule, room } = parseScheduleAndRoom(reg.schedule || '');
-        if (!schedule) continue;
 
         const courseType = normalizeCourseType(reg.courseType);
 

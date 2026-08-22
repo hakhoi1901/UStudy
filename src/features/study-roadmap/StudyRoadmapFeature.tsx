@@ -81,7 +81,7 @@ export function StudyRoadmapFeature() {
     }, [tabFromPath, activeTab, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
-    const { registeredSections, registeredMask, registeredCourseCodes } = useRegisteredCourses();
+    const { registeredCourses, registeredSections, registeredMask, registeredCourseCodes } = useRegisteredCourses();
     const { solve: solveRaw, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
 
     // Wrap solve() to automatically include registeredMask
@@ -359,6 +359,7 @@ export function StudyRoadmapFeature() {
                                 selectedCourses={selectedCourses}
                                 setActiveTab={setActiveTab}
                                 currentSections={currentSections}
+                                registeredCourses={registeredCourses}
                                 registeredSections={registeredSections}
                                 activeOption={activeOption}
                                 options={options}

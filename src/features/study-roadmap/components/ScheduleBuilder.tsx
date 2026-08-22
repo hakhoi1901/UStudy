@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { Calendar, PanelLeftOpen } from 'lucide-react';
 import type { Course, ClassSection } from '../../../types';
+import type { RegisteredCourse } from '../../../logic/scheduler/RegistrationResolver';
 import type { SolverPreferences, ScheduleOption } from '../hooks/use-schedule-solver';
 import { useScheduleDraft } from '../hooks/use-schedule-draft';
 import { useConflictValidator } from '../hooks/use-conflict-validator';
@@ -22,6 +23,7 @@ import type { Tab } from '../types';
 interface ScheduleBuilderProps {
   selectedCourses: Set<string>;
   allCurrentCourses: Course[];
+  registeredCourses?: RegisteredCourse[];
   registeredSections?: ClassSection[];
   solve: (courses: Course[], allowedClassesMap: Record<string, string[]>, prefs?: SolverPreferences) => void;
   solving: boolean;
@@ -50,6 +52,7 @@ interface ScheduleBuilderProps {
 export function ScheduleBuilder({
   selectedCourses,
   allCurrentCourses,
+  registeredCourses = [],
   registeredSections = [],
   solve,
   solving,
@@ -272,6 +275,7 @@ export function ScheduleBuilder({
             <CourseSidebar
               selectedCourseIds={selectedCourses}
               allCourses={allCurrentCourses}
+              registeredCourses={registeredCourses}
               allowedClassesMap={allowedClassesMap}
               selections={draft.selections}
               conflicts={conflicts}
@@ -341,6 +345,7 @@ export function ScheduleBuilder({
               <CourseSidebar
                 selectedCourseIds={selectedCourses}
                 allCourses={allCurrentCourses}
+                registeredCourses={registeredCourses}
                 allowedClassesMap={allowedClassesMap}
                 selections={draft.selections}
                 conflicts={conflicts}

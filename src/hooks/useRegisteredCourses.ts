@@ -8,9 +8,10 @@
  * Registered baseline KHÔNG bao giờ đi vào ScheduleDraft.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { readFromStorage } from '../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../config';
+import { CACHE_POPULATED_EVENT } from '../context/CryptoContext';
 import {
     resolveRegistrations,
     computeCombinedMask,
@@ -42,6 +43,28 @@ export interface UseRegisteredCoursesResult {
 }
 
 export function useRegisteredCourses(): UseRegisteredCoursesResult {
+    const [cacheRevision, setCacheRevision] = useState(0);
+
+    useEffect(() => {
+        const refresh = (event: MessageEvent) => {
+            if (event.data?.type === 'IMPORT_FULL_DATA' || event.data?.type === CACHE_POPULATED_EVENT) {
+                setCacheRevision((revision) => revision + 1);
+            }
+        };
+        const refreshFromAnotherTab = (event: StorageEvent) => {
+            if (event.key === STORAGE_KEYS.STUDENT_DB || event.key === STORAGE_KEYS.IMPORT_META) {
+                setCacheRevision((revision) => revision + 1);
+            }
+        };
+
+        window.addEventListener('message', refresh);
+        window.addEventListener('storage', refreshFromAnotherTab);
+        return () => {
+            window.removeEventListener('message', refresh);
+            window.removeEventListener('storage', refreshFromAnotherTab);
+        };
+    }, []);
+
     return useMemo(() => {
         // 1. Đọc dữ liệu
         // Registrations sống trong student_db_full (đã xử lý từ bookmarklet)
@@ -67,10 +90,16 @@ export function useRegisteredCourses(): UseRegisteredCoursesResult {
         );
 
         // 3. Resolve
-        const registeredCourses = resolveRegistrations(rawRegistrations, {
+        const matchedCourses = resolveRegistrations(rawRegistrations, {
             currentSemester,
             acceptMissingSemester: true, // Nếu thiếu semester, coi như kỳ hiện tại
         });
+
+        // Kết quả ĐKHP là snapshot của một kỳ. Metadata có thể chưa đổi khi
+        // người dùng cập nhật trực tiếp, nên không được để toàn bộ môn biến mất.
+        const registeredCourses = matchedCourses.length > 0 || !currentSemester
+            ? matchedCourses
+            : resolveRegistrations(rawRegistrations, { currentSemester: null });
 
         // 4. Combined mask (serialized)
         const registeredMask = computeCombinedMask(registeredCourses);
@@ -100,14 +129,6 @@ export function useRegisteredCourses(): UseRegisteredCoursesResult {
         }
 
         const registeredCourseCodes = new Set(registeredCourses.map(c => c.courseCode));
-        console.log('[useRegisteredCourses] Debug:', {
-            rawCount: rawRegistrations.length,
-            regCourseCount: registeredCourses.length,
-            regSecCount: registeredSections.length,
-            currentSemester,
-            sampleRegSemester: rawRegistrations[0]?.semester,
-            sampleRegSchedule: rawRegistrations[0]?.schedule
-        });
 
         return {
             registeredCourses,
@@ -116,5 +137,5 @@ export function useRegisteredCourses(): UseRegisteredCoursesResult {
             registeredCourseCodes,
             isReady: true,
         };
-    }, []); // Chỉ tính 1 lần — student_db không thay đổi trong session
+    }, [cacheRevision]);
 }
