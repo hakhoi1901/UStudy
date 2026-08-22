@@ -3309,7 +3309,7 @@ export const CAMPUS_UNITS: CampusUnit[] = [
     }),
     laboratory({
         id: 'ptn-cong-nghe-ky-thuat-y-sinh',
-        parentId: 'khoa-vat-ly-vat-ly-ky-thuat',
+        // parentId: 'khoa-vat-ly-vat-ly-ky-thuat',
         name: 'Phòng thí nghiệm Công nghệ Kỹ thuật Y sinh',
         shortName: 'TEBM',
         aliases: ['tebm', 'ptn cong nghe ky thuat y sinh', 'biomedical engineering lab'],

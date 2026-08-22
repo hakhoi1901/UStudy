@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { useCourseData } from '../../hooks/useCourseData';
+import { useRegisteredCourses } from '../../hooks/useRegisteredCourses';
 import { type ClassSection } from '../../types';
 import { NoDataCard } from '../../components/feedback';
 import { PageHeader } from '../../components/layout/page-header';
@@ -80,13 +81,16 @@ export function StudyRoadmapFeature() {
     }, [tabFromPath, activeTab, navigate]);
 
     const { recommended, all, isReady, hasData } = useCourseData();
-    const { solve, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+    const { registeredCourses, registeredSections, registeredMask, registeredCourseCodes } = useRegisteredCourses();
+    const { solve: solveRaw, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
+
+    // Wrap solve() to automatically include registeredMask
+    const solve = (courses: import('../../types').Course[], allowedClassesMap: Record<string, string[]>, prefs?: import('./hooks/use-schedule-solver').SolverPreferences) => {
+        solveRaw(courses, allowedClassesMap, prefs, registeredMask);
+    };
 
     const currentSource = viewMode === 'recommend' ? recommended : all;
-
-    const globalAllCourses = Array.from(
-        new Map([...all.core, ...all.major, ...all.electives].map(c => [c.id, c])).values()
-    );
+    const globalAllCourses = [...all.core, ...all.major, ...all.electives];
 
     const handleCourseToggle = (courseId: string) => {
         setSelectedCourses(prev => {
@@ -121,7 +125,7 @@ export function StudyRoadmapFeature() {
     };
 
     const confirmedSections: ClassSection[] = currentSections;
-    const handleGetConflicts = (section: ClassSection) => getConflicts(section, confirmedSections);
+    const handleGetConflicts = (section: ClassSection) => getConflicts(section, [...registeredSections, ...confirmedSections]);
     
     // ---- Mobile Basket Drawer (portal vào body) ----
     const MobileBasketDrawer = createPortal(
@@ -268,7 +272,7 @@ export function StudyRoadmapFeature() {
                                 { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', description: 'Học phần và học phí', icon: ShoppingCart },
                                 { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
-                            ].filter((tab): tab is any => tab !== null)}
+                            ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                         />
@@ -298,37 +302,35 @@ export function StudyRoadmapFeature() {
                                 >
                                     {/* Desktop: fixed height để scroll độc lập */}
                                     <div className="hidden md:block overflow-y-auto" style={{ height: 'calc(100vh - 11rem)' }}>
-                                        {activeTab === 'selection' && (
-                                            <SelectionView
-                                                searchTerm={searchTerm}
-                                                setSearchTerm={setSearchTerm}
-                                                viewMode={viewMode}
-                                                setViewMode={setViewMode}
-                                                recommended={recommended}
-                                                all={all}
-                                                filteredCourses={filteredCourses}
-                                                selectedCourses={selectedCourses}
-                                                handleCourseToggle={handleCourseToggle}
-                                                handleShowFlowchart={handleShowFlowchart}
-                                            />
-                                        )}
+                                        <SelectionView
+                                            searchTerm={searchTerm}
+                                            setSearchTerm={setSearchTerm}
+                                            viewMode={viewMode}
+                                            setViewMode={setViewMode}
+                                            recommended={recommended}
+                                            all={all}
+                                            filteredCourses={filteredCourses}
+                                            selectedCourses={selectedCourses}
+                                            handleCourseToggle={handleCourseToggle}
+                                            handleShowFlowchart={handleShowFlowchart}
+                                            registeredCourseCodes={registeredCourseCodes}
+                                        />
                                     </div>
                                     {/* Mobile: không fixed height */}
                                     <div className="md:hidden pb-36">
-                                        {activeTab === 'selection' && (
-                                            <SelectionView
-                                                searchTerm={searchTerm}
-                                                setSearchTerm={setSearchTerm}
-                                                viewMode={viewMode}
-                                                setViewMode={setViewMode}
-                                                recommended={recommended}
-                                                all={all}
-                                                filteredCourses={filteredCourses}
-                                                selectedCourses={selectedCourses}
-                                                handleCourseToggle={handleCourseToggle}
-                                                handleShowFlowchart={handleShowFlowchart}
-                                            />
-                                        )}
+                                        <SelectionView
+                                            searchTerm={searchTerm}
+                                            setSearchTerm={setSearchTerm}
+                                            viewMode={viewMode}
+                                            setViewMode={setViewMode}
+                                            recommended={recommended}
+                                            all={all}
+                                            filteredCourses={filteredCourses}
+                                            selectedCourses={selectedCourses}
+                                            handleCourseToggle={handleCourseToggle}
+                                            handleShowFlowchart={handleShowFlowchart}
+                                            registeredCourseCodes={registeredCourseCodes}
+                                        />
                                     </div>
                                 </div>
 
@@ -357,6 +359,8 @@ export function StudyRoadmapFeature() {
                                 selectedCourses={selectedCourses}
                                 setActiveTab={setActiveTab}
                                 currentSections={currentSections}
+                                registeredCourses={registeredCourses}
+                                registeredSections={registeredSections}
                                 activeOption={activeOption}
                                 options={options}
                                 allCurrentCourses={globalAllCourses as Course[]}

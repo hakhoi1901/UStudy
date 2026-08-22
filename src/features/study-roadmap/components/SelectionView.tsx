@@ -16,6 +16,8 @@ interface SelectionViewProps {
     selectedCourses: Set<string>;
     handleCourseToggle: (courseId: string) => void;
     handleShowFlowchart: (course: Course) => void;
+    /** Mã môn đã đăng ký từ Portal — sẽ bị disable trong UI. */
+    registeredCourseCodes?: Set<string>;
 }
 
 export function SelectionView({
@@ -29,6 +31,7 @@ export function SelectionView({
     selectedCourses,
     handleCourseToggle,
     handleShowFlowchart,
+    registeredCourseCodes,
 }: SelectionViewProps) {
     const [mobileDetailCourse, setMobileDetailCourse] = useState<Course | null>(null);
     const { data: { courses: courseMetadata } } = useDepartmentData();
@@ -140,16 +143,20 @@ export function SelectionView({
                             </span>
                         </div>
                         <div className="space-y-1.5 md:space-y-2">
-                            {courses.map((course) => (
-                                <CourseRow
-                                    key={course.id}
-                                    course={course}
-                                    isSelected={selectedCourses.has(course.id)}
-                                    onToggle={handleCourseToggle}
-                                    onShowFlowchart={handleShowFlowchart}
-                                    onOpenMobileDetails={setMobileDetailCourse}
-                                />
-                            ))}
+                            {courses.map((course) => {
+                                const isRegistered = registeredCourseCodes?.has(course.id) ?? false;
+                                return (
+                                    <CourseRow
+                                        key={course.id}
+                                        course={course}
+                                        isSelected={selectedCourses.has(course.id)}
+                                        onToggle={isRegistered ? () => {} : handleCourseToggle}
+                                        onShowFlowchart={handleShowFlowchart}
+                                        onOpenMobileDetails={setMobileDetailCourse}
+                                        isRegistered={isRegistered}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 );
@@ -163,14 +170,17 @@ export function SelectionView({
                     footer={(
                         <button
                             type="button"
-                            disabled={!mobileDetailCourse.isAvailable && !mobileDetailCourse.needsRetake}
+                            disabled={(!mobileDetailCourse.isAvailable && !mobileDetailCourse.needsRetake) || registeredCourseCodes?.has(mobileDetailCourse.id)}
                             onClick={() => handleCourseToggle(mobileDetailCourse.id)}
-                            className={`w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 ${selectedCourses.has(mobileDetailCourse.id)
-                                ? 'border border-red-200 bg-white text-red-600 hover:bg-red-50'
-                                : 'bg-[#004A98] text-white shadow-sm hover:bg-[#003A78]'
+                            className={`w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 ${
+                                registeredCourseCodes?.has(mobileDetailCourse.id)
+                                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                    : selectedCourses.has(mobileDetailCourse.id)
+                                        ? 'border border-red-200 bg-white text-red-600 hover:bg-red-50'
+                                        : 'bg-[#004A98] text-white shadow-sm hover:bg-[#003A78]'
                             }`}
                         >
-                            {selectedCourses.has(mobileDetailCourse.id) ? 'Bỏ chọn môn' : 'Chọn môn này'}
+                            {registeredCourseCodes?.has(mobileDetailCourse.id) ? '✓ Đã đăng ký' : selectedCourses.has(mobileDetailCourse.id) ? 'Bỏ chọn môn' : 'Chọn môn này'}
                         </button>
                     )}
                 >
