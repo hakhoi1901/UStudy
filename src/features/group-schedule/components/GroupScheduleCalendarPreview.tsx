@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { AlertTriangle, Calendar, Clock, Camera, Download, Loader2 } from 'lucide-react';
 import { STORAGE_KEYS, UI_COLORS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
@@ -137,6 +137,7 @@ export function GroupScheduleCalendarPreview({
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
   const effectiveMemberIndex = member?.memberIndex ?? 0;
   const sections = getGroupMemberSections(option, effectiveMemberIndex);
+  const groupLabelByClass = useMemo(() => new Map((member?.items ?? []).map((item) => [`${item.courseId}:${item.classId}`, item.sharingGroupLabel])), [member]);
   const stats = getStats(sections);
   
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -450,6 +451,12 @@ export function GroupScheduleCalendarPreview({
                           </span>
                         )}
                       </p>
+
+                      {!isCompact && groupLabelByClass.get(`${section.courseCode}:${section.selectedClassId || section.sectionNumber}`) ? (
+                        <span style={{ alignSelf: 'flex-start', marginBottom: 2, borderRadius: 4, background: pillBg, padding: '1px 5px', fontSize: 8, fontWeight: 700, color: pillText }}>
+                          {groupLabelByClass.get(`${section.courseCode}:${section.selectedClassId || section.sectionNumber}`)}
+                        </span>
+                      ) : null}
 
                       {!isCompact && (
                         <p style={{

@@ -9,9 +9,13 @@ import type {
   ClassPreferenceSelection,
   CourseSharingMap,
   CourseSharingMode,
+  CourseSharingRule,
   CourseWeight,
+  GroupConfigurationIssue,
   GroupFitnessConfig,
   GroupMemberToken,
+  GroupShareConfig,
+  GroupSharePayload,
   GroupScheduleItem,
   GroupScheduleOption,
   GroupScheduleRunResult,
@@ -24,7 +28,8 @@ import type {
 } from '../types';
 import { formatDaysOff, type DayOffPreference } from '../../../utils/dayOffPreferences';
 
-const GROUP_URL_PREFIX = 'v1_';
+const GROUP_URL_PREFIX = 'v2_';
+const LEGACY_GROUP_URL_PREFIX = 'v1_';
 const MASK_PARTS = 10;
 const MAX_GROUP_URL_COMPRESSED_BYTES = 12 * 1024;
 const MAX_GROUP_URL_JSON_LENGTH = 64 * 1024;
@@ -200,6 +205,38 @@ function normalizePreferenceMap(map?: ClassPreferenceMap): Record<string, Requir
   );
 }
 
+function sanitizeCourseSharingMap(value?: CourseSharingMap): CourseSharingMap {
+  if (!value || typeof value !== 'object') return {};
+  return Object.fromEntries(Object.entries(value).slice(0, MAX_GROUP_COURSES_PER_MEMBER).map(([rawCourseId, rawRule]) => {
+    const courseId = normalizeCourseId(rawCourseId);
+    const mode: CourseSharingMode = rawRule?.mode === 'preferred' || rawRule?.mode === 'independent' ? rawRule.mode : 'required';
+    const groups = Array.isArray(rawRule?.groups)
+      ? rawRule.groups.slice(0, MAX_GROUP_MEMBERS).map((group) => Array.from(new Set(
+          (Array.isArray(group) ? group : []).filter((index) => Number.isInteger(index) && index >= 0 && index < MAX_GROUP_MEMBERS),
+        )))
+      : undefined;
+    const groupClassPreferences = Object.fromEntries(Object.entries(rawRule?.groupClassPreferences ?? {})
+      .slice(0, MAX_GROUP_MEMBERS + 1)
+      .map(([groupId, selection]) => [groupId.slice(0, 40), normalizePreferenceSelection(selection)]));
+    return [courseId, {
+      mode,
+      ...(groups ? { groups } : {}),
+      ...(Object.keys(groupClassPreferences).length ? { groupClassPreferences } : {}),
+    } satisfies CourseSharingRule];
+  }).filter(([courseId]) => Boolean(courseId)));
+}
+
+function sanitizeShareConfig(value: unknown): GroupShareConfig | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const candidate = value as GroupShareConfig;
+  const config: GroupShareConfig = {
+    groupPreferredClasses: normalizePreferenceMap(candidate.groupPreferredClasses),
+    courseSharing: sanitizeCourseSharingMap(candidate.courseSharing),
+    groupPreferences: sanitizePersonalConfig(candidate.groupPreferences),
+  };
+  return config;
+}
+
 function sanitizePersonalConfig(config?: SchedulePreferenceConfig): SchedulePreferenceConfig | undefined {
   if (!config) return undefined;
 
@@ -224,15 +261,25 @@ function classPreferenceLevel(selection: Required<ClassPreferenceSelection> | un
   return null;
 }
 
-function getPreferenceHits(courseId: string, classId: string, subscribers: number[], members: GroupMemberToken[], config?: Pick<GroupFitnessConfig, 'groupPreferredClasses'>): number {
+function getPreferenceHits(courseId: string, classId: string, subscribers: number[], members: GroupMemberToken[], config?: Pick<GroupFitnessConfig, 'groupPreferredClasses'>, sharingGroupSelection?: ClassPreferenceSelection): number {
   const groupSelection = normalizePreferenceSelection(config?.groupPreferredClasses?.[courseId]);
+  const localSelection = normalizePreferenceSelection(sharingGroupSelection);
   const groupLevel = classPreferenceLevel(groupSelection, classId);
+  const localLevel = classPreferenceLevel(localSelection, classId);
   const groupHits =
     groupLevel === 'excluded'
       ? -GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_EXCLUDED * Math.max(subscribers.length, 1)
       : groupLevel === 'required'
       ? GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_REQUIRED * Math.max(subscribers.length, 1)
       : groupLevel === 'preferred'
+        ? GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_PREFERRED * Math.max(subscribers.length, 1)
+        : 0;
+
+  const localHits = localLevel === 'excluded'
+    ? -GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_EXCLUDED * Math.max(subscribers.length, 1)
+    : localLevel === 'required'
+      ? GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_REQUIRED * Math.max(subscribers.length, 1)
+      : localLevel === 'preferred'
         ? GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_GROUP_PREFERRED * Math.max(subscribers.length, 1)
         : 0;
 
@@ -243,7 +290,7 @@ function getPreferenceHits(courseId: string, classId: string, subscribers: numbe
     if (memberLevel === 'required') return hits + GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_PERSONAL_REQUIRED;
     if (memberLevel === 'preferred') return hits + GROUP_SCHEDULER_WEIGHTS.CLASS_ORDER_PERSONAL_PREFERRED;
     return hits;
-  }, groupHits);
+  }, groupHits + localHits);
 }
 
 function classMatchesPreferenceConstraints(
@@ -254,6 +301,7 @@ function classMatchesPreferenceConstraints(
   config: Pick<GroupFitnessConfig, 'groupPreferredClasses'>,
   preferenceMode: PreferenceConstraintMode,
   hardConstraints?: HardClassConstraints,
+  sharingGroupSelection?: ClassPreferenceSelection,
 ): boolean {
   if (hardConstraints?.groupExcluded?.[courseId]?.includes(classId)) return false;
   if (subscribers.some((memberIndex) => hardConstraints?.memberExcluded?.[courseId]?.[memberIndex]?.includes(classId))) return false;
@@ -263,6 +311,9 @@ function classMatchesPreferenceConstraints(
   const groupSelection = normalizePreferenceSelection(config.groupPreferredClasses?.[courseId]);
   if (groupSelection.excluded.includes(classId)) return false;
   if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) return false;
+  const localSelection = normalizePreferenceSelection(sharingGroupSelection);
+  if (localSelection.excluded.includes(classId)) return false;
+  if (localSelection.required.length > 0 && !localSelection.required.includes(classId)) return false;
 
   for (const memberIndex of subscribers) {
     const memberSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[courseId]);
@@ -376,23 +427,27 @@ export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken 
   };
 }
 
-export function encodeGroupURL(members: GroupMemberToken[]): string {
-  const sanitized = members.map(sanitizeGroupMember);
-  const json = JSON.stringify(sanitized);
+export function encodeGroupURL(members: GroupMemberToken[], config?: GroupShareConfig): string {
+  const payload: GroupSharePayload = {
+    members: members.map(sanitizeGroupMember),
+    ...(config ? { config: sanitizeShareConfig(config) } : {}),
+  };
+  const json = JSON.stringify(payload);
   const compressed = pako.deflate(json);
   const b64 = toBase64Url(compressed);
   return `${window.location.origin}/group#${GROUP_URL_PREFIX}${b64}`;
 }
 
-export function decodeGroupURL(hash: string): GroupMemberToken[] {
+export function decodeGroupPayload(hash: string): GroupSharePayload {
   const fragment = hash.startsWith('#') ? hash.slice(1) : hash;
-  if (!fragment) return [];
-  if (!fragment.startsWith(GROUP_URL_PREFIX)) {
+  if (!fragment) return { members: [] };
+  const isLegacy = fragment.startsWith(LEGACY_GROUP_URL_PREFIX);
+  if (!isLegacy && !fragment.startsWith(GROUP_URL_PREFIX)) {
     throw new GroupURLDecodeError('Link nhóm không đúng định dạng hoặc khác phiên bản.');
   }
 
   try {
-    const encoded = fragment.slice(GROUP_URL_PREFIX.length);
+    const encoded = fragment.slice((isLegacy ? LEGACY_GROUP_URL_PREFIX : GROUP_URL_PREFIX).length);
     if (!encoded || encoded.length > MAX_GROUP_URL_COMPRESSED_BYTES * 2 || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
       throw new Error('Payload nén không hợp lệ hoặc vượt quá giới hạn.');
     }
@@ -401,10 +456,21 @@ export function decodeGroupURL(hash: string): GroupMemberToken[] {
       throw new Error('Payload nén vượt quá giới hạn cho phép.');
     }
     const json = inflateGroupPayload(bytes);
-    return parseGroupMembers(JSON.parse(json));
+    const parsed = JSON.parse(json);
+    if (isLegacy || Array.isArray(parsed)) return { members: parseGroupMembers(parsed) };
+    if (!parsed || typeof parsed !== 'object') throw new Error('Payload nhom khong hop le.');
+    const payload = parsed as Record<string, unknown>;
+    return {
+      members: parseGroupMembers(payload.members),
+      config: sanitizeShareConfig(payload.config),
+    };
   } catch (error) {
     throw new GroupURLDecodeError(error instanceof Error ? `Link nhóm bị lỗi hoặc bị cắt ngắn: ${error.message}` : 'Link nhóm bị lỗi hoặc bị cắt ngắn.');
   }
+}
+
+export function decodeGroupURL(hash: string): GroupMemberToken[] {
+  return decodeGroupPayload(hash).members;
 }
 
 export function buildDensityMap(members: GroupMemberToken[], courseSharing: CourseSharingMap = {}): CourseWeight[] {
@@ -430,30 +496,36 @@ export function buildDensityMap(members: GroupMemberToken[], courseSharing: Cour
           subscribers: [memberIndex],
           isShared: false,
           sharingMode: mode,
+          sharingGroupId: `member-${memberIndex}`,
+          sharingGroupLabel: `Thành viên ${memberIndex + 1}`,
+          classPreferences: rawRule?.groupClassPreferences?.[`member-${memberIndex}`],
         }));
       }
 
       const availableMembers = new Set(subscriberList);
       const assignedMembers = new Set<number>();
-      const configuredGroups = (rawRule?.groups ?? []).reduce<number[][]>((groups, rawGroup) => {
+      const configuredGroups = (rawRule?.groups ?? []).reduce<Array<{ id: string; members: number[] }>>((groups, rawGroup, groupIndex) => {
         const group = Array.from(new Set(
           rawGroup.filter((memberIndex) => availableMembers.has(memberIndex) && !assignedMembers.has(memberIndex)),
         )).sort((a, b) => a - b);
         if (group.length === 0) return groups;
         group.forEach((memberIndex) => assignedMembers.add(memberIndex));
-        groups.push(group);
+        groups.push({ id: `group-${groupIndex}`, members: group });
         return groups;
       }, []);
       const groups = configuredGroups.length > 0
-        ? [...configuredGroups, ...subscriberList.filter((memberIndex) => !assignedMembers.has(memberIndex)).map((memberIndex) => [memberIndex])]
-        : [subscriberList];
+        ? [...configuredGroups, ...subscriberList.filter((memberIndex) => !assignedMembers.has(memberIndex)).map((memberIndex) => ({ id: `member-${memberIndex}`, members: [memberIndex] }))]
+        : [{ id: 'all', members: subscriberList }];
 
-      return groups.map((group) => ({
+      return groups.map((group, groupIndex) => ({
         courseId,
-        assignmentKey: group.length === subscriberList.length ? courseId : sharingGroupAssignmentKey(courseId, group),
-        subscribers: group,
-        isShared: group.length >= 2,
+        assignmentKey: group.members.length === subscriberList.length ? courseId : sharingGroupAssignmentKey(courseId, group.members),
+        subscribers: group.members,
+        isShared: group.members.length >= 2,
         sharingMode: mode,
+        sharingGroupId: group.id,
+        sharingGroupLabel: group.id === 'all' ? 'Tất cả' : group.id.startsWith('group-') ? `Nhóm ${groupIndex + 1}` : 'Học riêng',
+        classPreferences: rawRule?.groupClassPreferences?.[group.id],
       }));
     })
     .sort((a, b) => {
@@ -482,6 +554,15 @@ function solveGroupWithTrace(
   limitRelaxedCandidates = true,
 ): SolveGroupAttempt {
   const solutions: GroupSolution[] = [];
+  const orderedCourses = [...courses].sort((left, right) => {
+    if (right.subscribers.length !== left.subscribers.length) return right.subscribers.length - left.subscribers.length;
+    const leftMember = left.subscribers[0] ?? Number.MAX_SAFE_INTEGER;
+    const rightMember = right.subscribers[0] ?? Number.MAX_SAFE_INTEGER;
+    if (left.subscribers.length === 1 && right.subscribers.length === 1 && leftMember !== rightMember) return leftMember - rightMember;
+    const classDifference = getClasses(courseDatabase, left.courseId).length - getClasses(courseDatabase, right.courseId).length;
+    if (classDifference !== 0) return classDifference;
+    return left.courseId.localeCompare(right.courseId);
+  });
   const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
   let visitedNodes = 0;
   let reachedSearchBudget = false;
@@ -496,7 +577,7 @@ function solveGroupWithTrace(
       reachedSearchBudget = true;
       return;
     }
-    if (courseIndex === courses.length) {
+    if (courseIndex === orderedCourses.length) {
       solutions.push({
         assignments: new Map(assignments),
         stateMatrix: state.map((memberMask) => [...memberMask]),
@@ -504,12 +585,12 @@ function solveGroupWithTrace(
       return;
     }
 
-    const course = courses[courseIndex];
+    const course = orderedCourses[courseIndex];
     const availableClasses = getClasses(courseDatabase, course.courseId)
       .sort((a, b) => {
         const dayOffDifference = getDayOffPriorityPenalty(a, course.subscribers, members, config) - getDayOffPriorityPenalty(b, course.subscribers, members, config);
         if (dayOffDifference !== 0) return dayOffDifference;
-        return getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config);
+        return getPreferenceHits(course.courseId, b.id, course.subscribers, members, config, course.classPreferences) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config, course.classPreferences);
       })
       .slice(0, preferenceMode === 'relaxed' && limitRelaxedCandidates ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
     if (availableClasses.length === 0) return;
@@ -533,12 +614,12 @@ function solveGroupWithTrace(
         const sortedForMember = [...availableClasses].sort((a, b) => {
           const dayOffDifference = getDayOffPriorityPenalty(a, [memberIndex], members, config) - getDayOffPriorityPenalty(b, [memberIndex], members, config);
           if (dayOffDifference !== 0) return dayOffDifference;
-          return getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config);
+          return getPreferenceHits(course.courseId, b.id, [memberIndex], members, config, course.classPreferences) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config, course.classPreferences);
         }).slice(0, preferenceMode === 'relaxed' && limitRelaxedCandidates ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
 
         for (const cls of sortedForMember) {
           const classMask = getClassMask(cls);
-          if (!classMatchesPreferenceConstraints(course.courseId, cls.id, [memberIndex], members, config, preferenceMode, hardConstraints)) continue;
+          if (!classMatchesPreferenceConstraints(course.courseId, cls.id, [memberIndex], members, config, preferenceMode, hardConstraints, course.classPreferences)) continue;
           if (!isClassValid(classMask, [memberIndex], workingState)) continue;
 
           const nextState = workingState.map((memberMask, idx) => {
@@ -558,7 +639,7 @@ function solveGroupWithTrace(
 
     for (const cls of availableClasses) {
       const classMask = getClassMask(cls);
-      if (!classMatchesPreferenceConstraints(course.courseId, cls.id, course.subscribers, members, config, preferenceMode, hardConstraints)) continue;
+      if (!classMatchesPreferenceConstraints(course.courseId, cls.id, course.subscribers, members, config, preferenceMode, hardConstraints, course.classPreferences)) continue;
       if (!isClassValid(classMask, course.subscribers, state)) continue;
 
       const nextState = state.map((memberMask, memberIndex) => {
@@ -574,6 +655,62 @@ function solveGroupWithTrace(
 
   dfs(0, initialState, new Map());
   return { solutions, visitedNodes, reachedSearchBudget, reachedSolutionLimit };
+}
+
+function masksOverlap(left: number[], right: number[]): boolean {
+  const a = normalizeMask(left);
+  const b = normalizeMask(right);
+  return a.some((part, index) => (part & b[index]) !== 0);
+}
+
+export function validateGroupScheduleConfiguration(
+  dbData: unknown,
+  members: GroupMemberToken[],
+  config: Partial<GroupFitnessConfig> = {},
+): GroupConfigurationIssue[] {
+  const sanitizedMembers = members.map(sanitizeGroupMember);
+  const courseDatabase = new CourseDatabase();
+  courseDatabase.loadData(typeof dbData === 'string' ? JSON.parse(dbData) : dbData);
+  const courses = buildDensityMap(sanitizedMembers, config.courseSharing);
+
+  return courses.flatMap((course) => {
+    const classes = getClasses(courseDatabase, course.courseId);
+    if (classes.length === 0) return [];
+    const globalSelection = normalizePreferenceSelection(config.groupPreferredClasses?.[course.courseId]);
+    const localSelection = normalizePreferenceSelection(course.classPreferences);
+    const rejectedClasses = classes.map((cls) => {
+      const reasons: string[] = [];
+      if (globalSelection.excluded.includes(cls.id)) reasons.push('bị loại ở ưu tiên chung của môn');
+      if (globalSelection.required.length && !globalSelection.required.includes(cls.id)) reasons.push(`không nằm trong lớp bắt buộc chung (${globalSelection.required.join(', ')})`);
+      if (localSelection.excluded.includes(cls.id)) reasons.push(`bị ${course.sharingGroupLabel.toLowerCase()} loại`);
+      if (localSelection.required.length && !localSelection.required.includes(cls.id)) reasons.push(`không nằm trong lớp bắt buộc của ${course.sharingGroupLabel.toLowerCase()} (${localSelection.required.join(', ')})`);
+      course.subscribers.forEach((memberIndex) => {
+        const member = sanitizedMembers[memberIndex];
+        const memberName = member?.nickname || `Thành viên ${memberIndex + 1}`;
+        const memberSelection = normalizePreferenceSelection(member?.preferredClasses?.[course.courseId]);
+        if (memberSelection.excluded.includes(cls.id)) reasons.push(`${memberName} đã loại lớp này`);
+        if (memberSelection.required.length && !memberSelection.required.includes(cls.id)) reasons.push(`${memberName} bắt buộc lớp ${memberSelection.required.join(', ')}`);
+        if (masksOverlap(getClassMask(cls), member?.busyMask ?? [])) reasons.push(`trùng lịch bận của ${memberName}`);
+      });
+      return { classId: cls.id, reasons: Array.from(new Set(reasons)) };
+    });
+    if (rejectedClasses.some((entry) => entry.reasons.length === 0)) return [];
+
+    const names = course.subscribers.map((memberIndex) => sanitizedMembers[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`);
+    const severity = course.sharingMode === 'preferred' && course.subscribers.length > 1 ? 'warning' : 'error';
+    return [{
+      id: `${course.courseId}:${course.sharingGroupId}`,
+      severity,
+      courseId: course.courseId,
+      groupId: course.sharingGroupId,
+      title: `${course.courseId} - ${course.sharingGroupLabel} không còn lớp hợp lệ`,
+      description: severity === 'warning'
+        ? `${names.join(', ')} không thể học chung với các ràng buộc hiện tại; solver chỉ có thể thử tách lớp.`
+        : `${names.join(', ')} không có lớp nào vừa khớp bộ lọc vừa tránh lịch bận.`,
+      memberIndexes: course.subscribers,
+      rejectedClasses,
+    } satisfies GroupConfigurationIssue];
+  });
 }
 
 export function solveGroup(
@@ -608,11 +745,13 @@ export function scoreGroupSolution(
   const sharedBonus = courses.filter((course) => course.isShared && solution.assignments.has(course.assignmentKey)).length * config.sharedSlotBonus;
   const preferenceScore = courses.reduce((score, course) => {
     const groupSelection = normalizePreferenceSelection(config.groupPreferredClasses?.[course.courseId]);
+    const sharingGroupSelection = normalizePreferenceSelection(course.classPreferences);
     const globalClassId = solution.assignments.get(course.assignmentKey);
 
     const scoreClass = (classId: string, memberIndex: number) => {
       let nextScore = 0;
       const groupLevel = classPreferenceLevel(groupSelection, classId);
+      const sharingGroupLevel = classPreferenceLevel(sharingGroupSelection, classId);
       const personalSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[course.courseId]);
       const personalLevel = classPreferenceLevel(personalSelection, classId);
       if (groupLevel === 'excluded') nextScore -= config.groupExcludedPreferenceMissPenalty;
@@ -620,6 +759,11 @@ export function scoreGroupSolution(
       if (groupLevel === 'preferred') nextScore += config.groupPreferenceWeight;
       if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) nextScore -= config.groupRequiredPreferenceMissPenalty;
       if (groupSelection.preferred.length > 0 && !groupSelection.preferred.includes(classId)) nextScore -= config.groupPreferenceMissPenalty;
+      if (sharingGroupLevel === 'excluded') nextScore -= config.groupExcludedPreferenceMissPenalty;
+      if (sharingGroupLevel === 'required') nextScore += config.groupRequiredPreferenceWeight;
+      if (sharingGroupLevel === 'preferred') nextScore += config.groupPreferenceWeight;
+      if (sharingGroupSelection.required.length > 0 && !sharingGroupSelection.required.includes(classId)) nextScore -= config.groupRequiredPreferenceMissPenalty;
+      if (sharingGroupSelection.preferred.length > 0 && !sharingGroupSelection.preferred.includes(classId)) nextScore -= config.groupPreferenceMissPenalty;
       if (personalLevel === 'excluded') nextScore -= config.personalExcludedPreferenceMissPenalty;
       if (personalLevel === 'required') nextScore += config.personalRequiredPreferenceWeight;
       if (personalLevel === 'preferred') nextScore += config.personalPreferenceWeight;
@@ -672,6 +816,8 @@ function toScheduleOption(
         isShared: course.isShared,
         mask: getClassMask(classObj),
         schedule: classObj.schedule,
+        sharingGroupId: course.sharingGroupId,
+        sharingGroupLabel: course.sharingGroupLabel,
       };
 
       course.subscribers.forEach((memberIndex) => {
@@ -694,6 +840,8 @@ function toScheduleOption(
         isShared: false,
         mask: getClassMask(classObj),
         schedule: classObj.schedule,
+        sharingGroupId: course.sharingGroupId,
+        sharingGroupLabel: course.sharingGroupLabel,
       });
     });
   });
@@ -730,7 +878,7 @@ function buildFitnessConfig(config: Partial<GroupFitnessConfig>): GroupFitnessCo
     personalExcludedPreferenceMissPenalty: config.personalExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_EXCLUDED_MISS_PENALTY,
     groupExcludedPreferenceMissPenalty: config.groupExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_EXCLUDED_MISS_PENALTY,
     groupPreferredClasses: normalizePreferenceMap(config.groupPreferredClasses),
-    courseSharing: config.courseSharing ?? {},
+    courseSharing: sanitizeCourseSharingMap(config.courseSharing),
   };
 }
 

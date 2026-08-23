@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import {
+  decodeGroupPayload,
   decodeGroupURL,
   encodeGroupURL,
   GroupURLDecodeError,
@@ -10,8 +11,9 @@ import {
   isDuplicateMember,
   runGroupScheduleSolver,
   sanitizeGroupMember,
+  validateGroupScheduleConfiguration,
 } from '../services/group-scheduler';
-import type { GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult, GroupScheduleTradeoff } from '../types';
+import type { GroupConfigurationIssue, GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult, GroupScheduleTradeoff, GroupShareConfig, GroupSharePayload } from '../types';
 import courseDbJson from '../../../logic/scheduler/Course_db.json';
 
 export interface CourseChoice {
@@ -28,6 +30,8 @@ export interface GroupSolverState {
   result: GroupScheduleRunResult | null;
   solveError: string | null;
   availableCourses: CourseChoice[];
+  validationIssues: GroupConfigurationIssue[];
+  importedShareConfig?: GroupShareConfig;
 }
 
 interface PersistedGroupScheduleResult {
@@ -58,6 +62,14 @@ function loadLastGroupScheduleResult(members: GroupMemberToken[]): GroupSchedule
 function getBrowserHash(): string {
   if (typeof window === 'undefined') return '';
   return window.location.hash;
+}
+
+function getInitialPayload(): GroupSharePayload {
+  try {
+    return decodeGroupPayload(getBrowserHash());
+  } catch {
+    return { members: [] };
+  }
 }
 
 function getCourseId(course: any): string {
@@ -100,19 +112,19 @@ export function useGroupScheduler(): GroupSolverState & {
   addMember: (member: GroupMemberToken) => boolean;
   replaceMembers: (members: GroupMemberToken[]) => void;
   solve: (config?: Partial<GroupFitnessConfig>) => void;
+  validateConfiguration: (config?: Partial<GroupFitnessConfig>) => GroupConfigurationIssue[];
+  setShareConfig: (config: GroupShareConfig) => void;
   analyzeTradeoff: (option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config?: Partial<GroupFitnessConfig>) => Promise<GroupScheduleTradeoff>;
   clearResult: () => void;
   getOptionRegistrations: (option: GroupScheduleOption, memberIndex?: number) => any[];
 } {
+  const initialPayload = useMemo(getInitialPayload, []);
   const [members, setMembers] = useState<GroupMemberToken[]>(() => {
-    try {
-      const decoded = decodeGroupURL(getBrowserHash());
-      if (decoded.length > 0) return decoded;
-    } catch {
-      // Ignore URL error initially if we fallback to storage
-    }
+    if (initialPayload.members.length > 0) return initialPayload.members;
     return readFromStorage<GroupMemberToken[]>(STORAGE_KEYS.GROUP_SCHEDULER_MEMBERS, []);
   });
+  const [shareConfig, setShareConfigState] = useState<GroupShareConfig>(initialPayload.config ?? {});
+  const [importedShareConfig, setImportedShareConfig] = useState<GroupShareConfig | undefined>(initialPayload.config);
   const [decodeError, setDecodeError] = useState<string | null>(() => {
     const hash = getBrowserHash();
     if (!hash || hash === '#') return null;
@@ -130,6 +142,7 @@ export function useGroupScheduler(): GroupSolverState & {
   const [solving, setSolving] = useState(false);
   const [result, setResult] = useState<GroupScheduleRunResult | null>(() => loadLastGroupScheduleResult(members));
   const [solveError, setSolveError] = useState<string | null>(null);
+  const [validationIssues, setValidationIssues] = useState<GroupConfigurationIssue[]>([]);
 
   const dbData = useMemo(() => loadCourseDb(), []);
   const availableCourses = useMemo<CourseChoice[]>(() => {
@@ -139,19 +152,26 @@ export function useGroupScheduler(): GroupSolverState & {
       .sort((a, b) => a.id.localeCompare(b.id));
   }, [dbData]);
 
-  const shareUrl = useMemo(() => (members.length > 0 ? encodeGroupURL(members) : ''), [members]);
+  const shareUrl = useMemo(() => (members.length > 0 ? encodeGroupURL(members, shareConfig) : ''), [members, shareConfig]);
   const urlWarning = shareUrl.length > 2000 ? 'Link nhóm đang dài hơn 2000 ký tự. Một số app chat có thể cắt link; hãy giảm số môn hoặc gửi link bằng cách copy trực tiếp.' : null;
 
-  const updateBrowserUrl = useCallback((nextMembers: GroupMemberToken[]) => {
+  const updateBrowserUrl = useCallback((nextMembers: GroupMemberToken[], nextConfig: GroupShareConfig) => {
     if (typeof window === 'undefined' || nextMembers.length === 0) return;
-    const nextUrl = encodeGroupURL(nextMembers);
+    const nextUrl = encodeGroupURL(nextMembers, nextConfig);
     window.history.replaceState(null, '', nextUrl);
   }, []);
 
+  const setShareConfig = useCallback((nextConfig: GroupShareConfig) => {
+    setShareConfigState(nextConfig);
+    updateBrowserUrl(members, nextConfig);
+  }, [members, updateBrowserUrl]);
+
   const setMembersFromURL = useCallback((hash = getBrowserHash()) => {
     try {
-      const decoded = decodeGroupURL(hash);
-      setMembers(decoded);
+      const decoded = decodeGroupPayload(hash);
+      setMembers(decoded.members);
+      setShareConfigState(decoded.config ?? {});
+      setImportedShareConfig(decoded.config);
       setDecodeError(null);
       setResult(null);
     } catch (error) {
@@ -164,8 +184,8 @@ export function useGroupScheduler(): GroupSolverState & {
     const sanitized = nextMembers.map(sanitizeGroupMember).filter((member) => member.sharedCourses.length + member.personalCourses.length > 0);
     setMembers(sanitized);
     setResult(null);
-    updateBrowserUrl(sanitized);
-  }, [updateBrowserUrl]);
+    updateBrowserUrl(sanitized, shareConfig);
+  }, [shareConfig, updateBrowserUrl]);
 
   const addMember = useCallback((member: GroupMemberToken) => {
     const sanitized = sanitizeGroupMember(member);
@@ -182,9 +202,15 @@ export function useGroupScheduler(): GroupSolverState & {
     setMembers(nextMembers);
     setResult(null);
     setSolveError(null);
-    updateBrowserUrl(nextMembers);
+    updateBrowserUrl(nextMembers, shareConfig);
     return true;
-  }, [members, updateBrowserUrl]);
+  }, [members, shareConfig, updateBrowserUrl]);
+
+  const validateConfiguration = useCallback((config: Partial<GroupFitnessConfig> = {}) => {
+    const issues = validateGroupScheduleConfiguration(dbData, members, config);
+    setValidationIssues(issues);
+    return issues;
+  }, [dbData, members]);
 
   const solve = useCallback((config: Partial<GroupFitnessConfig> = {}) => {
     setSolving(true);
@@ -199,6 +225,14 @@ export function useGroupScheduler(): GroupSolverState & {
         }
         if (dbData.length === 0) {
           setSolveError('Chưa có dữ liệu lớp học offline. Hãy import dữ liệu Portal trước khi xếp lịch nhóm.');
+          return;
+        }
+
+        const issues = validateGroupScheduleConfiguration(dbData, members, config);
+        setValidationIssues(issues);
+        const blockingIssue = issues.find((issue) => issue.severity === 'error');
+        if (blockingIssue) {
+          setSolveError(blockingIssue.description);
           return;
         }
 
@@ -272,10 +306,14 @@ export function useGroupScheduler(): GroupSolverState & {
     result,
     solveError,
     availableCourses,
+    validationIssues,
+    importedShareConfig,
     setMembersFromURL,
     addMember,
     replaceMembers,
     solve,
+    validateConfiguration,
+    setShareConfig,
     analyzeTradeoff,
     clearResult,
     setResult,

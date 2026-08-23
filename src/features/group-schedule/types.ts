@@ -15,6 +15,7 @@ export type CourseSharingMode = 'required' | 'preferred' | 'independent';
 export interface CourseSharingRule {
   mode: CourseSharingMode;
   groups?: number[][];
+  groupClassPreferences?: Record<string, ClassPreferenceSelection>;
 }
 
 export type CourseSharingMap = Record<string, CourseSharingRule>;
@@ -34,6 +35,9 @@ export interface CourseWeight {
   subscribers: number[];
   isShared: boolean;
   sharingMode: CourseSharingMode;
+  sharingGroupId: string;
+  sharingGroupLabel: string;
+  classPreferences?: ClassPreferenceSelection;
 }
 
 export type StateMatrix = number[][];
@@ -76,6 +80,32 @@ export interface GroupScheduleItem {
   isShared: boolean;
   mask: number[];
   schedule?: string | string[];
+  sharingGroupId?: string;
+  sharingGroupLabel?: string;
+}
+
+export interface GroupShareConfig {
+  groupPreferredClasses?: ClassPreferenceMap;
+  courseSharing?: CourseSharingMap;
+  groupPreferences?: SchedulePreferenceConfig;
+}
+
+export interface GroupSharePayload {
+  members: GroupMemberToken[];
+  config?: GroupShareConfig;
+}
+
+export type GroupConfigurationIssueSeverity = 'error' | 'warning';
+
+export interface GroupConfigurationIssue {
+  id: string;
+  severity: GroupConfigurationIssueSeverity;
+  courseId: string;
+  groupId: string;
+  title: string;
+  description: string;
+  memberIndexes: number[];
+  rejectedClasses?: Array<{ classId: string; reasons: string[] }>;
 }
 
 export interface GroupMemberSchedule {
