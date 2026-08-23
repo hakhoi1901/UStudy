@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    "types": ["node", "vitest/globals"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["tests", "vitest.config.ts", "playwright.config.ts"]
+}

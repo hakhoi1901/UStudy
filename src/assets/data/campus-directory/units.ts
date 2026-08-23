@@ -1,4 +1,3 @@
-import { text } from 'stream/consumers';
 import type { CampusUnit } from './types';
 
 /** Directory data owns organization, contact, and service information. */

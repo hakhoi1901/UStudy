@@ -98,6 +98,7 @@ export function getOrCreateSalt(): Uint8Array {
 
 /** Derive AES-GCM key từ PIN + salt bằng PBKDF2 */
 export async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
+    const cryptoSalt = Uint8Array.from(salt);
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
         new TextEncoder().encode(pin),
@@ -106,7 +107,7 @@ export async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKe
         ['deriveKey']
     );
     return crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+        { name: 'PBKDF2', salt: cryptoSalt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
         keyMaterial,
         { name: 'AES-GCM', length: 256 },
         false, // không exportable
@@ -128,7 +129,11 @@ async function decryptWithKey(payload: string, key: CryptoKey): Promise<unknown>
     const decoded = decodePayload(payload);
     if (!decoded) throw new Error('INVALID_PAYLOAD');
     const { iv, ciphertext } = decoded;
-    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    const plaintext = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+        key,
+        Uint8Array.from(ciphertext),
+    );
     return JSON.parse(new TextDecoder().decode(plaintext));
 }
 
@@ -234,7 +239,11 @@ export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayloa
         if (!decoded) return false;
 
         const { iv, ciphertext } = decoded;
-        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+        const plaintext = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+            key,
+            Uint8Array.from(ciphertext),
+        );
         const result = JSON.parse(new TextDecoder().decode(plaintext));
 
         return result?.ok === true;
@@ -272,7 +281,11 @@ export async function importBackupWithCurrentKey(
                 const decoded = decodePayload(v);
                 if (!decoded) continue;
                 const { iv, ciphertext } = decoded;
-                const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, backupKey, ciphertext);
+                const plaintext = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+                    backupKey,
+                    Uint8Array.from(ciphertext),
+                );
                 const parsed = JSON.parse(new TextDecoder().decode(plaintext));
 
                 // Encrypt lại bằng currentKey và lưu vào localStorage

@@ -124,7 +124,7 @@ function inflateGroupPayload(bytes: Uint8Array): string {
   let output = '';
   const inflater = new pako.Inflate({ to: 'string' });
   inflater.onData = (chunk) => {
-    const textChunk = chunk as string;
+    const textChunk = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
     if (output.length + textChunk.length > MAX_GROUP_URL_JSON_LENGTH) {
       throw new Error('Payload giải nén vượt quá giới hạn cho phép.');
     }
@@ -200,7 +200,10 @@ function normalizePreferenceSelection(value: string[] | ClassPreferenceSelection
 function normalizePreferenceMap(map?: ClassPreferenceMap): Record<string, Required<ClassPreferenceSelection>> {
   return Object.fromEntries(
     Object.entries(map ?? {})
-      .map(([courseId, selection]) => [normalizeCourseId(courseId), normalizePreferenceSelection(selection)])
+      .map(([courseId, selection]): [string, Required<ClassPreferenceSelection>] => [
+        normalizeCourseId(courseId),
+        normalizePreferenceSelection(selection),
+      ])
       .filter(([, selection]) => selection.excluded.length > 0 || selection.preferred.length > 0 || selection.required.length > 0),
   );
 }
@@ -331,7 +334,7 @@ function maskHasBit(mask: number[], index: number): boolean {
 function countDayOffViolations(mask: number[], daysOff: DayOffPreference[] | undefined): number {
   if (!daysOff?.length) return 0;
 
-  return daysOff.reduce((count, value) => {
+  return daysOff.reduce<number>((count, value) => {
     const [rawDay, rawSession] = String(value).split(':');
     const day = Number(rawDay);
     if (!Number.isInteger(day) || day < 0 || day > 6) return count;
@@ -484,7 +487,7 @@ export function buildDensityMap(members: GroupMemberToken[], courseSharing: Cour
   });
 
   return Array.from(courseSubscribers.entries())
-    .flatMap(([courseId, subscribers]) => {
+    .flatMap<CourseWeight>(([courseId, subscribers]) => {
       const subscriberList = Array.from(subscribers).sort((a, b) => a - b);
       const rawRule = courseSharing[courseId];
       const mode: CourseSharingMode = subscriberList.length < 2 ? 'independent' : rawRule?.mode ?? 'required';

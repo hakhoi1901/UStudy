@@ -1,0 +1,61 @@
+name: Web and core tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, HK/deploy]
+
+concurrency:
+  group: web-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check tests and imported core modules
+        run: npm run typecheck:test
+
+      - name: Run core tests with coverage
+        run: npm run test:coverage
+
+      - name: Build web and extension
+        run: npm run build
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-coverage
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload extension package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ustudy-extension
+          path: |
+            dist-extension/
+            public/downloads/ustudy-portal-sync.zip
+          retention-days: 14
