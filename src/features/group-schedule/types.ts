@@ -10,6 +10,15 @@ export interface ClassPreferenceSelection {
 
 export type ClassPreferenceMap = Record<string, string[] | ClassPreferenceSelection>;
 
+export type CourseSharingMode = 'required' | 'preferred' | 'independent';
+
+export interface CourseSharingRule {
+  mode: CourseSharingMode;
+  groups?: number[][];
+}
+
+export type CourseSharingMap = Record<string, CourseSharingRule>;
+
 export interface GroupMemberToken {
   nickname?: string;
   sharedCourses: string[];
@@ -21,8 +30,10 @@ export interface GroupMemberToken {
 
 export interface CourseWeight {
   courseId: string;
+  assignmentKey: string;
   subscribers: number[];
   isShared: boolean;
+  sharingMode: CourseSharingMode;
 }
 
 export type StateMatrix = number[][];
@@ -30,6 +41,7 @@ export type StateMatrix = number[][];
 export interface GroupSolution {
   assignments: Map<string, string>;
   stateMatrix: StateMatrix;
+  solveStage?: GroupSolveStage;
 }
 
 export interface SchedulePreferenceConfig {
@@ -53,6 +65,7 @@ export interface GroupFitnessConfig extends SchedulePreferenceConfig {
   personalExcludedPreferenceMissPenalty: number;
   groupExcludedPreferenceMissPenalty: number;
   groupPreferredClasses?: ClassPreferenceMap;
+  courseSharing?: CourseSharingMap;
 }
 
 export interface GroupScheduleItem {

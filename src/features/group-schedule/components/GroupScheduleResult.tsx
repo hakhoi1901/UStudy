@@ -53,6 +53,15 @@ function buildCourseComparison(option: GroupScheduleOption): CourseComparisonRow
   });
 }
 
+function groupEntriesByClass(course: CourseComparisonRow): CourseComparisonRow['entries'][] {
+  const groups = new Map<string, CourseComparisonRow['entries']>();
+  course.entries.forEach((entry) => {
+    const key = entry.item.classId;
+    groups.set(key, [...(groups.get(key) ?? []), entry]);
+  });
+  return Array.from(groups.values());
+}
+
 export function GroupScheduleResult({ option, viewMode, onOpenClassDetails, onAnalyzeTradeoff }: GroupScheduleResultProps) {
   const courseRows = buildCourseComparison(option);
   const [checkingTradeoffId, setCheckingTradeoffId] = useState<string | null>(null);
@@ -140,19 +149,23 @@ export function GroupScheduleResult({ option, viewMode, onOpenClassDetails, onAn
                 )}
               </div>
               <div className="divide-y divide-gray-100">
-                {course.entries.map(({ memberIndex, nickname, item }) => (
+                {groupEntriesByClass(course).map((entries) => {
+                  const item = entries[0].item;
+                  const nicknames = entries.map((entry) => entry.nickname);
+                  return (
                   <button
-                    key={`${course.courseId}-${memberIndex}-${item.classId}`}
+                    key={`${course.courseId}-${item.classId}-${entries.map((entry) => entry.memberIndex).join('-')}`}
                     type="button"
                     onClick={() => onOpenClassDetails({ courseCode: item.courseId, courseName: item.courseName, classId: item.classId, schedule: item.schedule })}
                     className="grid w-full gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-blue-50 md:grid-cols-[160px_180px_minmax(0,1fr)]"
                     title="Xem chi tiết lớp mở"
                   >
-                    <div className="font-medium text-gray-900">{nickname}</div>
+                    <div className="font-medium text-gray-900">{nicknames.join(', ')}</div>
                     <div className="font-mono text-xs text-gray-700">{item.classId}</div>
                     <div className="text-gray-600">{formatSchedule(item.schedule)}</div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

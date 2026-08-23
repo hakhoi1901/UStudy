@@ -5,6 +5,7 @@ import { GroupMemberCard } from './components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from './components/GroupScheduleResult';
 import { GroupScheduleResultViewTabs } from './components/GroupScheduleResultViewTabs';
+import { CourseSharingEditor } from './components/CourseSharingEditor';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
@@ -13,7 +14,7 @@ import { Textarea } from '../../components/ui/form/textarea';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../components/ui/overlays/dropdown-menu';
 import { PageHeader } from '../../components/layout/page-header';
 import { buildDensityMap, decodeGroupURL } from './services/group-scheduler';
-import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberToken, GroupScheduleOption } from './types';
+import type { ClassPreferenceLevel, ClassPreferenceSelection, CourseSharingMap, GroupMemberToken, GroupScheduleOption } from './types';
 import { parseCourseInput, useGroupScheduler } from './hooks/use-group-scheduler';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
@@ -187,11 +188,17 @@ export function GroupSchedulePage({
     const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>(() => {
         return readFromStorage<Record<string, ClassPreferenceSelection>>(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, {});
     });
+    const [courseSharing, setCourseSharing] = useState<CourseSharingMap>(() => {
+        return readFromStorage<CourseSharingMap>(STORAGE_KEYS.GROUP_SCHEDULER_COURSE_SHARING, {});
+    });
     const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
     
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, groupPreferredClasses);
     }, [groupPreferredClasses]);
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_COURSE_SHARING, courseSharing);
+    }, [courseSharing]);
     const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
@@ -335,6 +342,17 @@ export function GroupSchedulePage({
     };
 
     const removeMember = (index: number) => {
+        setCourseSharing((current) => Object.fromEntries(
+            Object.entries(current).map(([courseId, rule]) => [
+                courseId,
+                {
+                    ...rule,
+                    groups: rule.groups?.map((group) => group
+                        .filter((memberIndex) => memberIndex !== index)
+                        .map((memberIndex) => memberIndex > index ? memberIndex - 1 : memberIndex)),
+                },
+            ]),
+        ));
         replaceMembers(members.filter((_, memberIndex) => memberIndex !== index));
         clearResult();
     };
@@ -391,7 +409,7 @@ export function GroupSchedulePage({
     const runGroupSolve = () => {
         setActiveStep(3);
         setShowGroupCalendarPreview(true);
-        solve({ ...groupPrefs, groupPreferredClasses });
+        solve({ ...groupPrefs, groupPreferredClasses, courseSharing });
     };
 
     const handleUseSchedule = (option: GroupScheduleOption, memberIndex: number) => {
@@ -976,14 +994,14 @@ export function GroupSchedulePage({
 
             <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div>
-                    <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Settings className="h-4 w-4 text-[#004A98]" />Lớp ưu tiên theo môn chung</h3>
-                    <p className="mt-1 text-xs text-gray-500">Ưu tiên nhóm có trọng số cao hơn ưu tiên cá nhân. Lớp bắt buộc sẽ bị phạt rất nặng nếu solver phải chọn lệch.</p>
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Settings className="h-4 w-4 text-[#004A98]" />Ưu tiên theo môn</h3>
+                    <p className="mt-1 text-xs text-gray-500">Đặt lớp ưu tiên hoặc bắt buộc, sau đó chọn các thành viên cần học cùng nhau.</p>
                 </div>
                 {groupCourses.length === 0 ? (
                     <div className="ustudy-muted-panel text-sm text-gray-500">Chưa có môn nào trong nhóm.</div>
                 ) : (
                     groupCourses.map((course) => (
-                        <div key={course.courseId} className="grid gap-3 rounded-lg border border-gray-200 border-l-[3px] border-l-[#004A98] p-3 lg:grid-cols-[350px_minmax(0,1fr)]">
+                        <div key={course.courseId} className="grid gap-3 rounded-lg border border-gray-200 border-l-[3px] border-l-[#004A98] p-3 lg:grid-cols-[320px_minmax(0,1fr)]">
                             <div>
                                 <div className="font-mono text-sm font-semibold text-gray-900">{course.courseId}</div>
                                 <div className="mt-0.5 text-sm font-medium text-gray-800">{getGroupCourseName(course.courseId)}</div>
@@ -1063,6 +1081,14 @@ export function GroupSchedulePage({
                                         )}
                                     </div>
                                 )}
+                                {course.subscribers.length >= 2 ? (
+                                    <CourseSharingEditor
+                                        subscribers={course.subscribers}
+                                        members={members}
+                                        value={courseSharing[course.courseId]}
+                                        onChange={(nextRule) => setCourseSharing((current) => ({ ...current, [course.courseId]: nextRule }))}
+                                    />
+                                ) : null}
                             </div>
                         </div>
                     ))
@@ -1172,7 +1198,7 @@ export function GroupSchedulePage({
                                 option={selectedOption}
                                 viewMode={resultViewMode}
                                 onOpenClassDetails={setOpenClassDetails}
-                                onAnalyzeTradeoff={(tradeoff) => analyzeTradeoff(selectedOption, tradeoff, { ...groupPrefs, groupPreferredClasses })}
+                                onAnalyzeTradeoff={(tradeoff) => analyzeTradeoff(selectedOption, tradeoff, { ...groupPrefs, groupPreferredClasses, courseSharing })}
                             />
                         )}
                     </>
