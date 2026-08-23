@@ -36,6 +36,8 @@ export const STORAGE_KEYS = {
 
     /** Metadata từ Bookmarklet (thời gian cào, năm/học kỳ của từng loại dữ liệu) */
     IMPORT_META: 'import_meta',
+    /** Lần gần nhất UStudy nhận dữ liệu học tập, kể cả khi các danh sách nguồn đều rỗng */
+    LAST_DATA_IMPORT: 'ustudy_last_data_import',
     /** Điểm dự đoán do người dùng nhập cho GPA Simulator */
     PROJECTED_GRADES: 'gpa_projected_grades',
     /** Học kỳ đang được xem trong Kế hoạch GPA */
@@ -56,6 +58,10 @@ export const STORAGE_KEYS = {
     SOLVER_PREFERENCES: 'solver_preferences',
     /** Bản nháp kế hoạch học tập theo học kỳ */
     STUDY_PLAN: 'study_plan_draft',
+    /** Lớp ưu tiên và cấu hình các môn trong xếp lịch nhóm */
+    GROUP_SCHEDULER_CLASS_PREFERENCES: 'group_scheduler_class_preferences',
+    /** Mức độ và các nhóm thành viên cần học cùng theo từng môn */
+    GROUP_SCHEDULER_COURSE_SHARING: 'group_scheduler_course_sharing',
     /** Tỷ lệ chiều rộng danh sách môn/khung học kỳ trong bản nháp */
     STUDY_PLAN_LAYOUT: 'study_plan_draft_layout',
     STUDY_PLAN_CATEGORY_EXPANSION: 'study_plan_category_expansion',
@@ -66,7 +72,7 @@ export const STORAGE_KEYS = {
     ACTIVE_GROUP_SCHEDULE: 'active_group_schedule',
     /** Lịch sử chat của chatbot */
     CHAT_HISTORY: 'chatbot_chat_history',
-    /** Các tùy chỉnh ghi đè thời khóa biểu (phòng, tiết, ngày nghỉ) */
+    /** Tiền tố key cho các tùy chỉnh thời khóa biểu theo từng học kỳ */
     SCHEDULE_OVERRIDES: 'schedule_overrides',
     /** Thành viên nhóm (lưu tạm) */
     GROUP_SCHEDULER_MEMBERS: 'group_scheduler_members',
@@ -78,4 +84,6 @@ export const STORAGE_KEYS = {
     SECURITY_LAB_VAULT: 'ustudy_security_lab_vault_v1',
     /** Chế độ xếp lịch (Cá nhân hoặc Nhóm) */
     SCHEDULE_MODE: 'schedule_mode',
+    /** Bản nháp lịch builder (manual + solver selections) */
+    SCHEDULE_BUILDER_DRAFT: 'schedule_builder_draft',
 };

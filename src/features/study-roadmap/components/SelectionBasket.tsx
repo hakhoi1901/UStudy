@@ -156,6 +156,9 @@ export function SelectionBasket({
                             <p className="text-2xl font-bold text-[#004A98]">
                                 {formatCurrency(estimatedTuition)} VNĐ
                             </p>
+                            <p className="mt-1.5 text-[11px] font-medium text-red-600">
+                                Chưa áp dụng mức tăng học phí năm học 2026-2027
+                            </p>
                         </div>
                     </div>
 

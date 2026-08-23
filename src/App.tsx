@@ -8,6 +8,7 @@ import { CryptoProvider, CACHE_POPULATED_EVENT, useCrypto } from './context/Cryp
 import { DepartmentProvider } from './context/DepartmentContext';
 import { NotificationProvider, useAppNotification } from './context/NotificationContext';
 import { createImportRollbackSnapshot, readFromStorage, saveSecure, populateSecureCache } from './helpers/localStorage/save';
+import { recordDataImport } from './helpers/localStorage/data-import-status';
 import { processRawData } from './logic/dataProcessor';
 import { buildRawImportPreview, getImportCollectionLabel, mergeSelectedRawImport, type RawImportChange } from './logic/import-preview';
 import { mergeImportMetadata, type PortalDataSource } from './logic/import-metadata';
@@ -128,9 +129,9 @@ function AppContent() {
     return Array.from(summaries.values());
   }, [importPreview]);
 
-  const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey) => {
-    await saveSecure('raw_student_db', raw, key);
+  const saveImportedData = useCallback(async (raw: any, meta: any, key: CryptoKey, source: PortalImportTransport) => {
     const { student, courses } = processRawData(raw);
+    await saveSecure('raw_student_db', raw, key);
     await saveSecure('student_db_full', student, key);
     await saveSecure('course_db_offline', courses, key);
     if (meta) await saveSecure('import_meta', meta, key);
@@ -139,6 +140,7 @@ function AppContent() {
     populateSecureCache('student_db_full', student);
     populateSecureCache('course_db_offline', courses);
     if (meta) populateSecureCache('import_meta', meta);
+    recordDataImport(source);
     window.dispatchEvent(new MessageEvent('message', { data: { type: CACHE_POPULATED_EVENT } }));
     refreshHasData();
     return student;
@@ -173,7 +175,10 @@ function AppContent() {
 
   useEffect(() => {
     const handleBookmarkletMessage = (event: MessageEvent) => {
-      if (!isSupportedPortalOrigin(event.origin) || event.data?.type !== 'IMPORT_FULL_DATA') return;
+      const isBookmarkLabMessage = event.origin === window.location.origin
+        && event.source === window
+        && event.data?.labSource === 'empty-bookmarklet';
+      if ((!isSupportedPortalOrigin(event.origin) && !isBookmarkLabMessage) || event.data?.type !== 'IMPORT_FULL_DATA') return;
       if (!isPortalSyncPacket(event.data.payload)) return;
       preparePortalImport(event.data.payload, 'bookmarklet');
     };
@@ -271,7 +276,7 @@ function AppContent() {
       return;
     }
 
-    const student = await saveImportedData(payload.raw, payload.meta, cryptoKey);
+    const student = await saveImportedData(payload.raw, payload.meta, cryptoKey, importPreview.source);
     if (importPreview.extensionPendingId) {
       await requestPortalExtension('ACK_PENDING_IMPORT', { id: importPreview.extensionPendingId });
     }
@@ -302,7 +307,7 @@ function AppContent() {
           setupMode={!hasData}
           onUnlock={async (key) => {
             unlock(key);
-            const student = await saveImportedData(pendingData.raw, pendingData.meta, key);
+            const student = await saveImportedData(pendingData.raw, pendingData.meta, key, pendingData.source);
             if (pendingData.extensionPendingId) {
               await requestPortalExtension('ACK_PENDING_IMPORT', { id: pendingData.extensionPendingId });
             }

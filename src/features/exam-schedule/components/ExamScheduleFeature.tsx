@@ -1,9 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, MapPin, AlertCircle, FileDown, Bell, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStudentDb } from '../../../hooks/useStudentDb';
+import { hasImportedData } from '../../../helpers/localStorage/data-import-status';
 import { useDepartmentData } from '../../../context/DepartmentContext';
+import { NoDataCard } from '../../../components/feedback';
 import { PageHeader } from '../../../components/layout/page-header';
 import { PageShell } from '../../../components/layout/page-shell';
+import { AppSelect } from '../../../components/ui/form';
 
 interface ExamData {
     id: string;
@@ -36,7 +39,7 @@ function startOfDay(value: Date): Date {
 }
 
 export function ExamScheduleVi() {
-    const { exams } = useStudentDb();
+    const { exams, isReady, rawObject } = useStudentDb();
     const { academicYear, semesterNumber } = useDepartmentData();
 
     const [selectedType, setSelectedType] = useState<'all' | 'Giữa kỳ' | 'Cuối kỳ'>('all');
@@ -184,6 +187,29 @@ export function ExamScheduleVi() {
     };
 
     const nextExamDays = upcomingExams.length > 0 ? getDaysUntilExam(upcomingExams[0].examDate) : null;
+
+    if (!isReady) {
+        return (
+            <div className="flex h-[calc(100vh-100px)] items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#004A98]" />
+            </div>
+        );
+    }
+
+    if (!rawObject && !hasImportedData()) {
+        return (
+            <PageShell
+                header={
+                    <PageHeader
+                        title="Lịch thi"
+                        description="Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn."
+                    />
+                }
+            >
+                <NoDataCard />
+            </PageShell>
+        );
+    }
 
     return (
         <PageShell
@@ -388,16 +414,17 @@ export function ExamScheduleVi() {
                     <div className="flex flex-wrap gap-2 md:gap-4 flex-1">
 
                         {/* Semester Filter */}
-                        <select
+                        <AppSelect
                             value={selectedSemester}
-                            onChange={(e) => setSelectedSemester(e.target.value)}
-                            className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004A98] focus:border-transparent bg-white font-medium"
-                        >
-                            <option value="all">Tất cả kỳ</option>
-                            {availableSemesters.map(sem => (
-                                <option key={sem} value={sem}>{sem}</option>
-                            ))}
-                        </select>
+                            onChange={setSelectedSemester}
+                            options={[
+                                { id: 'all', name: 'Tất cả kỳ' },
+                                ...availableSemesters.map((semester) => ({ id: semester, name: semester })),
+                            ]}
+                            ariaLabel="Lọc theo học kỳ"
+                            className="min-w-32"
+                            triggerClassName="px-2 py-1.5 text-xs font-medium md:px-4 md:py-2 md:text-sm"
+                        />
 
                         {/* Exam Type Tabs */}
                         <div className="flex bg-gray-100 rounded-lg p-0.5 md:p-1">
@@ -540,9 +567,9 @@ export function ExamScheduleVi() {
                                         <tr
                                             key={exam.id}
                                             className={`
-                      hover:bg-gray-50 transition-colors
-                      ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-                    `}
+                                                hover:bg-gray-50 transition-colors
+                                                ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
+                                            `}
                                         >
                                             <td className="px-2 py-3 text-sm text-gray-900 text-center">{index + 1}</td>
                                             <td className="px-3 py-3 text-sm text-gray-900">{exam.courseCode}</td>
@@ -572,14 +599,14 @@ export function ExamScheduleVi() {
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className={`h-4 w-1 rounded-full ${exam.examType === "Giữa kỳ"
-                                                            ? "bg-green-700"
+                                                            ? "bg-emerald-600"
                                                             : "bg-blue-800"
                                                             }`}
                                                     />
 
                                                     <span
                                                         className={`text-sm font-medium ${exam.examType === "Giữa kỳ"
-                                                            ? "text-green-700"
+                                                            ? "text-emerald-600"
                                                             : "text-blue-800"
                                                             }`}
                                                     >

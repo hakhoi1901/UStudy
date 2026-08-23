@@ -7,7 +7,10 @@
 
 import { FinancialLogic, type TuitionRates, type CourseMeta } from './FinancialLogic';
 import type { Course } from '../types';
-import { useStudentDb } from '../hooks/useStudentDb';
+
+function normalizeCourseId(value: unknown): string {
+    return String(value ?? '').trim().toUpperCase();
+}
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -15,6 +18,97 @@ export interface CourseGroupState {
     core: Course[];
     major: Course[];
     electives: Course[];
+}
+
+export type CourseGroupKey = keyof CourseGroupState;
+
+function normalizeCategoryText(value: unknown): string {
+    return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase();
+}
+
+function resolveCategoryGroup(
+    categoryKey: string,
+    category: any,
+    inheritedGroup: CourseGroupKey,
+): CourseGroupKey {
+    const descriptor = normalizeCategoryText(
+        `${categoryKey} ${category?.type ?? ''} ${category?.name ?? ''}`,
+    );
+
+    if (descriptor.includes('elective') || descriptor.includes('tu chon')) return 'electives';
+    if (descriptor.includes('foundation') || descriptor.includes('co so nganh')) return 'core';
+    if (
+        descriptor.includes('major')
+        || descriptor.includes('marjor')
+        || descriptor.includes('specialized')
+        || descriptor.includes('chuyen nganh')
+        || descriptor.includes('graduation')
+        || descriptor.includes('tot nghiep')
+    ) {
+        return 'major';
+    }
+
+    return inheritedGroup;
+}
+
+function getCategoryCourseId(value: unknown): string {
+    if (typeof value === 'string' || typeof value === 'number') return normalizeCourseId(value);
+    if (!value || typeof value !== 'object') return '';
+    const course = value as Record<string, unknown>;
+    return normalizeCourseId(course.course_id ?? course.id ?? course.code);
+}
+
+function traverseCategoryNode(
+    categoryKey: string,
+    category: any,
+    inheritedGroup: CourseGroupKey,
+    courseGroups: Map<string, CourseGroupKey>,
+) {
+    if (!category || typeof category !== 'object') return;
+
+    const group = resolveCategoryGroup(categoryKey, category, inheritedGroup);
+    if (Array.isArray(category.courses)) {
+        category.courses.forEach((course: unknown) => {
+            const courseId = getCategoryCourseId(course);
+            if (courseId && !courseGroups.has(courseId)) courseGroups.set(courseId, group);
+        });
+    }
+
+    if (category.breakdown && typeof category.breakdown === 'object') {
+        Object.entries(category.breakdown).forEach(([childKey, child]) => {
+            traverseCategoryNode(childKey, child, group, courseGroups);
+        });
+    }
+
+    if (Array.isArray(category.sub_groups)) {
+        category.sub_groups.forEach((child: any, index: number) => {
+            const childKey = String(child?.id ?? child?.type ?? child?.name ?? index);
+            traverseCategoryNode(childKey, child, group, courseGroups);
+        });
+    }
+
+    if (Array.isArray(category.options)) {
+        category.options.forEach((child: any, index: number) => {
+            const childKey = String(child?.id ?? child?.type ?? child?.name ?? index);
+            traverseCategoryNode(childKey, child, group, courseGroups);
+        });
+    }
+}
+
+export function buildCourseGroupIndex(categories: any): Map<string, CourseGroupKey> {
+    const courseGroups = new Map<string, CourseGroupKey>();
+    if (!categories || typeof categories !== 'object') return courseGroups;
+
+    Object.entries(categories).forEach(([categoryKey, category]) => {
+        traverseCategoryNode(categoryKey, category, 'electives', courseGroups);
+    });
+
+    return courseGroups;
 }
 
 // ─── Core Functions ──────────────────────────────────────────────────
@@ -32,17 +126,19 @@ export const CourseDataMapper = {
         prerequisites: any[],
         tuitionRates: TuitionRates | null,
         failed: Set<string>,
-        recMap: Map<string, string>,
+        recMap: ReadonlyMap<string, string>,
         isAllView: boolean
     ): Course => {
-        const cid = sourceCourse.id || sourceCourse.course_id;
-        const meta = allCoursesMeta.find(m => m.course_id === cid);
+        const cid = normalizeCourseId(sourceCourse.id || sourceCourse.course_id);
+        const meta = allCoursesMeta.find(m => normalizeCourseId(m.course_id) === cid);
         const isFailed = failed.has(cid);
         const recStatus = recMap.get(cid);
 
         const prereqIds = prerequisites
-            .filter(p => p.course_id === cid)
-            .map(p => p.prereq_id);
+            .filter(p => normalizeCourseId(p.course_id) === cid)
+            .flatMap(p => String(p.prereq_id ?? '').split(/[,;/\s]+/))
+            .map(normalizeCourseId)
+            .filter(Boolean);
 
         const needsRetake = isFailed || recStatus === 'RETAKE';
 
@@ -91,34 +187,33 @@ export const CourseDataMapper = {
         prerequisites: any[],
         tuitionRates: TuitionRates | null,
         failed: Set<string>,
-        recMap: Map<string, string>,
+        recMap: ReadonlyMap<string, string>,
         isAllView: boolean = false
     ): Course[] => {
-        return sourceList.map(sourceCourse =>
-            CourseDataMapper.mapRawCourseToModel(
+        const mappedCourses = new Map<string, Course>();
+
+        sourceList.forEach(sourceCourse => {
+            const course = CourseDataMapper.mapRawCourseToModel(
                 sourceCourse, allCoursesMeta, prerequisites,
                 tuitionRates, failed, recMap, isAllView
-            )
-        );
+            );
+            if (course.id && !mappedCourses.has(course.id)) mappedCourses.set(course.id, course);
+        });
+
+        return Array.from(mappedCourses.values());
     },
 
     /**
      * Phân nhóm courses theo category.
      * Trích xuất từ useCourseData.ts groupCourses (L115-128).
      */
-    groupCoursesByCategory: (courseList: Course[]): CourseGroupState => {
+    groupCoursesByCategory: (courseList: Course[], categories?: any): CourseGroupState => {
         const grouped: CourseGroupState = { core: [], major: [], electives: [] };
+        const courseGroups = buildCourseGroupIndex(categories);
         courseList.forEach(c => {
-            const cat = c.category || 'OTHER';
-            if (cat === 'FOUNDATION') {
-                grouped.core.push(c);
-            } else if (cat.startsWith('MAJOR_') || cat === 'GRADUATION' || cat.startsWith('SPECIALIZED_')) {
-                grouped.major.push(c);
-            } else {
-                grouped.electives.push(c);
-            }
+            const group = courseGroups.get(normalizeCourseId(c.id)) ?? 'electives';
+            grouped[group].push(c);
         });
-        // Lọc các môn học cần học lại
         return grouped;
     },
 };

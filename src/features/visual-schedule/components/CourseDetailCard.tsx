@@ -1,5 +1,6 @@
 // CourseDetailCard.tsx
 import { type ScheduleSession } from '../types';
+import type { OpenClassDetailTarget } from '../../../components/course';
 
 const colorClasses = {
     blue: 'border-l-blue-600',
@@ -10,9 +11,14 @@ const colorClasses = {
 
 const typeLabels = { LT: 'Lý thuyết', TH: 'Thực hành', BT: 'Bài tập' };
 
-export function CourseDetailCard({ session }: { session: ScheduleSession }) {
+export function CourseDetailCard({ session, onOpenClassDetails }: { session: ScheduleSession; onOpenClassDetails?: (target: OpenClassDetailTarget) => void }) {
     return (
-        <div className={`bg-white rounded-lg border-l-4 ${colorClasses[session.color as keyof typeof colorClasses]} border border-gray-200 p-4 mb-3`}>
+        <button
+            type="button"
+            onClick={() => onOpenClassDetails?.({ courseCode: session.courseCode, courseName: session.courseName, classId: session.classCode })}
+            className={`mb-3 w-full rounded-lg border border-gray-200 border-l-4 ${colorClasses[session.color as keyof typeof colorClasses]} bg-white p-4 text-left transition-colors hover:bg-blue-50 ${onOpenClassDetails ? 'cursor-pointer' : 'cursor-default'}`}
+            title={onOpenClassDetails ? 'Xem chi tiết lớp mở' : undefined}
+        >
             <div className="flex items-start gap-3">
                 <div className="flex-1">
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
@@ -27,6 +33,6 @@ export function CourseDetailCard({ session }: { session: ScheduleSession }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </button>
     );
 }

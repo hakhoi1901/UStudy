@@ -37,7 +37,7 @@ export function ReportError() {
 
             <a
                 href={`mailto:${myEmail}?subject=${encodeURIComponent(fixedSubject + errorTitle)}&body=${encodeURIComponent(errorText)}`}
-                className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="ustudy-button-primary h-9 shrink-0 px-3"
             >
                 Gửi email báo lỗi
             </a>

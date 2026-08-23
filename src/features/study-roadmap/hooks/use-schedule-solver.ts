@@ -35,7 +35,7 @@ export function useScheduleSolver() {
     const [activeOption, setActiveOption] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const solve = useCallback((selectedCourses: Course[], selectedClassMap: Record<string, string[]> = {}, prefs: SolverPreferences = {}) => {
+    const solve = useCallback((selectedCourses: Course[], selectedClassMap: Record<string, string[]> = {}, prefs: SolverPreferences = {}, registeredMask?: number[]) => {
         setSolving(true);
         setError(null);
 
@@ -43,8 +43,21 @@ export function useScheduleSolver() {
         setTimeout(() => {
             try {
                 // Đọc dữ liệu từ localStorage (từ Bookmarklet), nếu không có thì dùng file tĩnh
-                const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
-                const dbData = courseDb && courseDb.length > 0 ? courseDb : (courseDbJson as any[]);
+                const offlineDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
+                
+                // Gom chung dữ liệu từ localStorage và file tĩnh, ưu tiên dữ liệu từ localStorage nếu trùng ID
+                const mergedMap = new Map<string, any>();
+                (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+                if (offlineDb && Array.isArray(offlineDb)) {
+                    offlineDb.forEach(item => {
+                        const existing = mergedMap.get(item.id);
+                        if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                            item.classes = existing.classes;
+                        }
+                        mergedMap.set(item.id, item);
+                    });
+                }
+                const dbData = Array.from(mergedMap.values());
 
                 const userWants = selectedCourses.map(c => c.code);
 
@@ -53,7 +66,8 @@ export function useScheduleSolver() {
                     session: prefs.session || '0',
                     strategy: prefs.strategy || 'compress',
                     noGaps: prefs.noGaps ?? false,
-                });
+                    preferredClassesMap: prefs.preferredClassesMap,
+                }, registeredMask);
 
                 if (!results || results.length === 0) {
                     setError('Không tìm được phương án xếp lịch phù hợp. Thử chọn ít môn hơn hoặc kiểm tra lại dữ liệu lớp học.');

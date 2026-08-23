@@ -34,7 +34,7 @@ const DESKTOP_SYNC_GUIDES: Record<DesktopSyncMethod, { title: string; descriptio
         description: 'Cách thủ công, nhẹ và không cần cài extension.',
         steps: [
             { number: 1, title: 'Thêm HCMUS Portal Tool', description: 'Kéo nút bookmarklet bên dưới vào thanh dấu trang của trình duyệt.' },
-            { number: 2, title: 'Mở và đăng nhập Portal', description: 'Truy cập Portal trường, sau đó đăng nhập tài khoản sinh viên của bạn.' },
+            { number: 2, title: 'Mở và đăng nhập Portal', description: 'Truy cập Portal trường từ UStudy, sau đó đăng nhập tài khoản sinh viên của bạn.' },
             { number: 3, title: 'Bấm bookmarklet và xác nhận', description: 'Nhấn HCMUS Portal Tool trên thanh dấu trang, xem trước thay đổi rồi chọn dữ liệu muốn nhập.' },
         ],
     },
@@ -108,7 +108,7 @@ export function NoDataCard() {
     };
 
     return (
-        <div className="flex w-full items-start justify-center md:rounded-xl md:border md:p-4">
+        <div className="flex w-full items-start justify-center md:rounded-xl md:border border-gray-300">
             <div className="w-full bg-white px-1 py-3 md:rounded-xl md:border md:border-gray-100 md:p-8 md:shadow-xl md:shadow-gray-200/50">
                 <div className="mb-5 flex flex-col items-center md:mb-8">
                     {isMobile && (

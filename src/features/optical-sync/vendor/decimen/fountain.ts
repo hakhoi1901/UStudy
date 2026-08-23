@@ -1,4 +1,4 @@
-// LT (Luby transform) fountain code — the trick that makes a one-way optical
+// LT (Luby transform) fountain code - the trick that makes a one-way optical
 // channel practical.
 //
 // The sender emits an endless stream of frames; frame `seq` is the XOR of a
@@ -11,7 +11,7 @@
 //
 // Determinism warning that cost a debugging session: sender and receiver
 // must build bit-identical degree distributions, but JavaScript's Math.log
-// is implementation-approximated — V8 (sender) and JavaScriptCore (iPhone
+// is implementation-approximated - V8 (sender) and JavaScriptCore (iPhone
 // receiver) may differ by an ulp and silently desynchronize the streams.
 // dlog() below uses only exactly-specified IEEE-754 ops.
 
@@ -84,7 +84,7 @@ function frameSeed(sessionId: number, seq: number): number {
 }
 
 /**
- * The block indices XORed into frame `seq` — identical on both ends.
+ * The block indices XORed into frame `seq` - identical on both ends.
  *
  * Exported for the golden-vector tests. Sender and receiver derive this
  * independently and never compare notes, so any change here is a breaking
@@ -242,7 +242,7 @@ export class LTDecoder {
   }
 
   /** Peeling cascade: solve a block, reduce every frame waiting on it, repeat.
-   * Note for progress UX: this cascade back-loads — blocks solved hockey-
+   * Note for progress UX: this cascade back-loads - blocks solved hockey-
    * sticks near the end while frame ARRIVAL is linear. Show frames collected,
    * not blocks solved, or your progress bar will look stalled then teleport. */
   private resolve(b0: number, w0: Uint32Array): void {

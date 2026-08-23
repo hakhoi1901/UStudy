@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Info, GitBranch, ChevronUp, Clock, FileText, CalendarRange, Users } from 'lucide-react';
 import type { Course } from '../../../types';
 import { useDepartmentData } from '../../../context/DepartmentContext';
+import courseDbJson from '../../../logic/scheduler/Course_db.json';
 import { useEffect } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { readFromStorage } from '../../../helpers/localStorage/save';
@@ -13,6 +14,8 @@ interface CourseRowProps {
   onToggle: (courseId: string) => void;
   onShowFlowchart: (course: Course) => void;
   onOpenMobileDetails?: (course: Course) => void;
+  /** true = môn đã đăng ký từ Portal, không cho phép chọn/bỏ chọn. */
+  isRegistered?: boolean;
 }
 
 // định nghĩa interface CourseSchedule
@@ -115,12 +118,11 @@ function buildLegacyEnrollment(classId: string, rows: RawOpenClass[]): ClassEnro
  * 
  * render component CourseRow
  */
-export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpenMobileDetails }: CourseRowProps) {
+export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpenMobileDetails, isRegistered = false }: CourseRowProps) {
   const [showDescription, setShowDescription] = useState(false);
   const { data: { courses: allCoursesMeta } } = useDepartmentData();
   
   const [availableClasses, setAvailableClasses] = useState<CourseSchedule[]>([]);
-
   const handleDetailsToggle = () => {
     if (onOpenMobileDetails && window.matchMedia('(max-width: 767px)').matches) {
       onOpenMobileDetails(course);
@@ -145,13 +147,34 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
               label: "Chưa đủ điều kiện",
               barClass: "bg-gray-300",
               textClass: "text-gray-500",
-          };
+      };
+
+  const detailSurfaceClass = course.needsRetake
+    ? 'border-red-200 bg-red-50'
+    : isSelected
+      ? 'border-[#004A98] bg-blue-50'
+      : course.isAvailable
+        ? 'border-gray-200 bg-white'
+        : 'border-gray-200 bg-gray-50';
 
   useEffect(() => {
     if (!showDescription) return;
     const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, [] as any[]);
+    const mergedMap = new Map<string, any>();
+    (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+    if (courseDb && Array.isArray(courseDb)) {
+        courseDb.forEach(item => {
+            const existing = mergedMap.get(item.id);
+            if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+                item.classes = existing.classes;
+            }
+            mergedMap.set(item.id, item);
+        });
+    }
+    const mergedDb = Array.from(mergedMap.values());
+
     const normalizedCourseCode = course.code.toLocaleUpperCase('vi-VN');
-    const courseData = courseDb.find((c: any) => String(c.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
+    const courseData = mergedDb.find((c: any) => String(c.id ?? '').trim().toLocaleUpperCase('vi-VN') === normalizedCourseCode);
     const rawStudentDb = readFromStorage<{ courses?: RawOpenClass[] }>(STORAGE_KEYS.RAW_STUDENT_DB, {});
     const sourceRows: RawOpenClass[] = Array.isArray(courseData?.source?.portalRows)
       ? courseData.source.portalRows
@@ -172,24 +195,33 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
     <div className="group">
       <div
         onClick={handleDetailsToggle}
-        className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border rounded-lg transition-all ${course.needsRetake
-          ? 'border-red-200 bg-red-50 hover:bg-red-100'
-          : isSelected
-            ? 'border-[#004A98] bg-blue-50 shadow-sm'
-            : course.isAvailable
-              ? 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300'
-              : 'border-gray-200 bg-gray-50 opacity-60'
+      className={`flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 border transition-all ${showDescription ? 'rounded-t-lg' : 'rounded-lg'} ${
+          isRegistered
+            ? 'border-emerald-200 bg-emerald-50 cursor-default'
+            : course.needsRetake
+              ? 'border-red-300 bg-red-100 hover:bg-red-100'
+              : isSelected
+                ? 'border-[#004A98] bg-blue-100 shadow-sm'
+                : course.isAvailable
+                  ? 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+                  : 'border-gray-300 bg-gray-100 opacity-60'
           }`}
       >
-        {/* Checkbox */}
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggle(course.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={!course.isAvailable && !course.needsRetake}
-          className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#004A98] border-gray-300 rounded focus:ring-[#004A98] cursor-pointer disabled:cursor-not-allowed flex-shrink-0"
-        />
+        {/* Checkbox / Registered badge */}
+        {isRegistered ? (
+          <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] md:text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+            ✓ Đăng ký
+          </span>
+        ) : (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggle(course.id)}
+            onClick={(e) => e.stopPropagation()}
+            disabled={!course.isAvailable && !course.needsRetake}
+            className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#004A98] border-gray-300 rounded focus:ring-[#004A98] cursor-pointer disabled:cursor-not-allowed flex-shrink-0"
+          />
+        )}
 
         {/* Course Code & Name (Stack on mobile, row on desktop) */}
         <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
@@ -256,7 +288,7 @@ export function CourseRow({ course, isSelected, onToggle, onShowFlowchart, onOpe
 
       {/* Description Dropdown */}
       {showDescription && (
-        <div className="ml-6 mr-6 overflow-hidden rounded-b-lg border-x border-b border-gray-200 bg-white md:ml-1 md:mr-1">
+        <div className={`w-full overflow-hidden rounded-b-lg border-x border-b ${detailSurfaceClass}`}>
           <div className="space-y-4 px-4 py-4 text-sm md:px-5">
             {/* Mobile status */}
             <div className="border-b border-gray-200 pb-3 md:hidden">

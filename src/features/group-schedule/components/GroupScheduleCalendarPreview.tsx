@@ -1,13 +1,19 @@
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Clock, ExternalLink, Save, X } from 'lucide-react';
+import { useMemo, useState, useRef } from 'react';
+import { AlertTriangle, Calendar, Clock, Camera, Download, Loader2 } from 'lucide-react';
 import { STORAGE_KEYS, UI_COLORS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import { weekDays, timePeriods } from '../../../constants';
 import { maskToSections } from '../../../logic/scheduler/ScheduleDecoder';
 import type { GroupScheduleOption } from '../types';
 import type { ClassSection, SavedSchedule } from '../../../types';
-import { Button } from '../../../components/ui/form/button';
+import type { OpenClassDetailTarget } from '../../../components/course';
+import { AppSelect } from '../../../components/ui/form';
+import { ScheduleOptionSelector } from '../../schedule';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { captureElementAsDataURL, slugify, downloadImage } from '../../../utils/export';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../../components/ui/overlays/dropdown-menu';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -15,7 +21,7 @@ interface GroupScheduleCalendarPreviewProps {
   activeMemberIndex: number;
   setActiveOptionIndex: (index: number) => void;
   setActiveMemberIndex: (index: number) => void;
-  onUseSchedule: (option: GroupScheduleOption, memberIndex: number) => void;
+  onOpenClassDetails: (target: OpenClassDetailTarget) => void;
 }
 
 const PALETTE = UI_COLORS.SCHEDULE_PALETTE;
@@ -125,12 +131,88 @@ export function GroupScheduleCalendarPreview({
   activeMemberIndex,
   setActiveOptionIndex,
   setActiveMemberIndex,
+  onOpenClassDetails,
 }: GroupScheduleCalendarPreviewProps) {
   const option = options[activeOptionIndex] ?? options[0];
   const member = option?.schedules.find((schedule) => schedule.memberIndex === activeMemberIndex) ?? option?.schedules[0];
   const effectiveMemberIndex = member?.memberIndex ?? 0;
   const sections = getGroupMemberSections(option, effectiveMemberIndex);
+  const groupLabelByClass = useMemo(() => new Map((member?.items ?? []).map((item) => [`${item.courseId}:${item.classId}`, item.sharingGroupLabel])), [member]);
   const stats = getStats(sections);
+  
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+
+  const handleExportCurrent = async () => {
+    if (!calendarRef.current || !option || !member) return;
+    setIsExporting(true);
+    try {
+      const dataUrl = await captureElementAsDataURL(calendarRef.current);
+      const nickname = slugify(member.nickname || `Thanh vien ${effectiveMemberIndex + 1}`);
+      downloadImage(dataUrl, `${nickname}-pa${option.option}.png`);
+    } catch (e) {
+      console.error('Export failed', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportAllZip = async () => {
+    if (!calendarRef.current) return;
+    setIsExporting(true);
+    
+    const totalImages = options.reduce((sum, opt) => sum + opt.schedules.length, 0);
+    setExportTotal(totalImages);
+    setExportProgress(0);
+
+    const zip = new JSZip();
+    let count = 0;
+    
+    // Lưu lại index hiện tại để khôi phục
+    const originalOptionIndex = activeOptionIndex;
+    const originalMemberIndex = activeMemberIndex;
+    
+    try {
+      for (let i = 0; i < options.length; i++) {
+        const opt = options[i];
+        const folderName = `phuong-an-${String(opt.option).padStart(2, '0')}`;
+        const folder = zip.folder(folderName);
+        
+        setActiveOptionIndex(i);
+        
+        for (let j = 0; j < opt.schedules.length; j++) {
+          const sched = opt.schedules[j];
+          setActiveMemberIndex(sched.memberIndex);
+          
+          // Chờ DOM cập nhật
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          const dataUrl = await captureElementAsDataURL(calendarRef.current);
+          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+          const nickname = slugify(sched.nickname || `Thanh vien ${sched.memberIndex + 1}`);
+          
+          folder?.file(`${nickname}-pa${opt.option}.png`, base64Data, { base64: true });
+          
+          count++;
+          setExportProgress(count);
+        }
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, 'Lich_Nhom.zip');
+      
+    } catch (e) {
+      console.error('Export zip failed', e);
+    } finally {
+      setActiveOptionIndex(originalOptionIndex);
+      setActiveMemberIndex(originalMemberIndex);
+      setIsExporting(false);
+      setExportProgress(0);
+      setExportTotal(0);
+    }
+  };
 
   if (!option || !member) {
     return (
@@ -142,68 +224,61 @@ export function GroupScheduleCalendarPreview({
 
   return (
     <div className="space-y-4 rounded-lg">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 text-xs font-medium text-gray-500">Phương án:</span>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.max(0, activeOptionIndex - 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {options.map((item, index) => (
-              <button
-                key={item.option}
-                type="button"
-                onClick={() => setActiveOptionIndex(index)}
-                className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                  activeOptionIndex === index
-                    ? 'bg-[#004A98] text-white shadow-md'
-                    : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                PA {item.option}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setActiveOptionIndex(Math.min(options.length - 1, activeOptionIndex + 1))}
-            className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+      <div className="flex flex-col gap-3 border-b border-gray-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
+        <ScheduleOptionSelector
+          options={options.map((item) => ({ id: item.option, label: `PA ${item.option}` }))}
+          activeIndex={activeOptionIndex}
+          onChange={setActiveOptionIndex}
+        />
 
-        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" style={{ scrollbarWidth: 'none' }}>
-          <span className="shrink-0 px-1 py-1 text-xs font-medium text-gray-500">Thành viên:</span>
-          {option.schedules.map((schedule) => (
-            <button
-              key={schedule.memberIndex}
-              type="button"
-              onClick={() => setActiveMemberIndex(schedule.memberIndex)}
-              className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                effectiveMemberIndex === schedule.memberIndex
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              {schedule.nickname}
-            </button>
-          ))}
+        <div className="flex shrink-0 items-center gap-2 lg:border-l lg:border-gray-200 lg:pl-3">
+          <span className="text-xs font-medium text-gray-500">Thành viên</span>
+          <AppSelect
+            value={String(effectiveMemberIndex)}
+            options={option.schedules.map((schedule) => ({
+              id: String(schedule.memberIndex),
+              name: schedule.nickname,
+            }))}
+            onChange={(value) => setActiveMemberIndex(Number(value))}
+            ariaLabel="Chọn thành viên để xem lịch"
+            className="min-w-40"
+            triggerClassName="h-9 px-3 py-0 text-sm font-medium"
+            disabled={isExporting}
+          />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                type="button" 
+                disabled={isExporting}
+                className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isExporting && exportTotal > 0 ? `Đang xuất... (${exportProgress}/${exportTotal})` : 'Xuất ảnh'}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-white z-50">
+              <DropdownMenuItem onClick={handleExportCurrent} className="cursor-pointer hover:bg-gray-100">
+                <Camera className="mr-2 h-4 w-4" /> Xuất hiện tại (1 ảnh)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportAllZip} className="cursor-pointer hover:bg-gray-100">
+                <Download className="mr-2 h-4 w-4" /> Xuất toàn bộ (ZIP)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div ref={calendarRef} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="flex flex-col gap-2 border-b border-gray-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white shadow-sm">
               <Calendar className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900">Thời khóa biểu dự kiến</h3>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Lịch của {member.nickname} {isExporting && `- Phương án ${option.option}`}
+              </h3>
               <p className="truncate text-xs text-gray-500">
                 {sections.length > 0 ? `${sections.length} lớp · ${stats.totalPeriods} tiết · ${stats.scheduledDays} ngày học` : 'Thành viên này chưa có lớp được xếp'}
               </p>
@@ -300,6 +375,24 @@ export function GroupScheduleCalendarPreview({
                   return (
                     <div
                       key={section.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Xem lớp mở ${section.sectionNumber} của môn ${section.courseCode}`}
+                      onClick={() => onOpenClassDetails({
+                        courseCode: section.courseCode,
+                        courseName: section.courseNameVi || section.courseName,
+                        classId: section.selectedClassId || section.sectionNumber,
+                      })}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onOpenClassDetails({
+                            courseCode: section.courseCode,
+                            courseName: section.courseNameVi || section.courseName,
+                            classId: section.selectedClassId || section.sectionNumber,
+                          });
+                        }
+                      }}
                       style={{
                         position: 'absolute',
                         top: top + 2,
@@ -318,7 +411,7 @@ export function GroupScheduleCalendarPreview({
                         gap: 0,
                         boxSizing: 'border-box',
                         boxShadow: hasConflict ? '0 2px 8px rgba(239,68,68,0.15)' : '0 1px 4px rgba(15,23,42,0.08)',
-                        cursor: 'default',
+                        cursor: 'pointer',
                         zIndex: 2,
                         pointerEvents: 'auto',
                       }}
@@ -358,6 +451,12 @@ export function GroupScheduleCalendarPreview({
                           </span>
                         )}
                       </p>
+
+                      {!isCompact && groupLabelByClass.get(`${section.courseCode}:${section.selectedClassId || section.sectionNumber}`) ? (
+                        <span style={{ alignSelf: 'flex-start', marginBottom: 2, borderRadius: 4, background: pillBg, padding: '1px 5px', fontSize: 8, fontWeight: 700, color: pillText }}>
+                          {groupLabelByClass.get(`${section.courseCode}:${section.selectedClassId || section.sectionNumber}`)}
+                        </span>
+                      ) : null}
 
                       {!isCompact && (
                         <p style={{

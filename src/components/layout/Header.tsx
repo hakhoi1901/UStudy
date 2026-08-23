@@ -1,7 +1,6 @@
 import { LogOut, ChevronDown, LogIn, ExternalLink, GraduationCap, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LogoutConfirmModal } from './LogoutConfirmModal';
-import { useStudentGradeData } from '../../features/grades';
 import { BookmarkletButton } from '../portal/BookmarkletButton';
 import { NotificationMenu } from './NotificationMenu';
 import { useAppNotification } from '../../context/NotificationContext';
@@ -24,6 +23,7 @@ export function Header({
   showSemesterSelector = false
 }: HeaderProps = {}) {
   const [studentName, setStudentName] = useState('');
+  const [hasStudentProfile, setHasStudentProfile] = useState(false);
   const [localSemester, setLocalSemester] = useState(`Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`);
   const selectedSemester = propSelectedSemester || localSemester;
   const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
@@ -32,7 +32,6 @@ export function Header({
   const { academicYear, semesterNumber, setAcademicYear, setSemesterNumber } = useDepartmentData();
 
   // lấy dữ liệu sinh viên
-  const { hasData } = useStudentGradeData();
   // lấy thông báo
   const { addNotification } = useAppNotification();
   // crypto context để lock khi đăng xuất
@@ -40,11 +39,25 @@ export function Header({
 
   // lấy tên sinh viên từ local storage
   useEffect(() => {
-    const student = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
-    if (student) {
-      setStudentName(student.name);
-    }
-  }, [hasData]);
+    const syncStudentProfile = () => {
+      const student = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
+      const rawStudent = readFromStorage<any>(STORAGE_KEYS.RAW_STUDENT_DB, null);
+      const name = student?.name || rawStudent?.name || '';
+
+      setStudentName(typeof name === 'string' ? name.trim() : '');
+      setHasStudentProfile(Boolean(student || rawStudent));
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'IMPORT_FULL_DATA' || event.data?.type === 'CACHE_POPULATED') {
+        syncStudentProfile();
+      }
+    };
+
+    syncStudentProfile();
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // tạo danh sách các học kỳ sử dụng các năm học đã định nghĩa (3 học kỳ mỗi năm)
   const semesters = ACADEMIC_YEARS.flatMap(year => [
@@ -123,7 +136,7 @@ export function Header({
           <div className="flex items-center gap-2 md:gap-4 min-w-0">
             {/* Tiêu đề: ẩn trên mobile nếu có bộ chọn, ngược lại hiện trên cả mobile và desktop */}
             <h2 className={`desktop-only text-gray-900 whitespace-nowrap text-sm sm:text-base md:text-lg`} style={{ fontWeight: 600 }}>
-              Hệ thống quản lý học tập
+              Hệ thống hỗ trợ quản lý học tập
             </h2>
             <h2
               className="mobile-only flex items-center gap-2 whitespace-nowrap text-sm text-gray-900 sm:text-base md:text-lg"
@@ -150,7 +163,7 @@ export function Header({
                 {showSemesterDropdown && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowSemesterDropdown(false)}></div>
-                    <div className="absolute top-full left-0 mt-2 w-56 md:w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20 max-h-72 overflow-y-auto">
+                    <div className="ustudy-dropdown-menu border border-gray-300 w-56 md:w-64 max-h-72">
                       {semesters.map((semester) => (
                         <button
                           key={semester}
@@ -159,9 +172,9 @@ export function Header({
                             if (onSemesterChange) onSemesterChange(semester);
                             else setLocalSemester(semester);
                           }}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedSemester === semester
-                            ? 'text-[#004A98] bg-blue-50'
-                            : 'text-gray-700 hover:bg-gray-50'
+                          className={`${selectedSemester === semester
+                            ? 'ustudy-dropdown-option ustudy-dropdown-option-active'
+                            : 'ustudy-dropdown-option'
                             }`}
                           style={{ fontWeight: selectedSemester === semester ? 500 : 400 }}
                         >
@@ -183,7 +196,7 @@ export function Header({
             {/* Divider - ẩn trên mobile */}
             <div className="hidden md:block h-10 w-px bg-gray-200"></div>
 
-            {hasData ? (
+            {hasStudentProfile ? (
               <>
                 {/* User Avatar + Info */}
                 <div className="flex items-center gap-2 md:gap-3 md:px-3 md:py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
@@ -192,7 +205,7 @@ export function Header({
                   </div>
                   {/* Tên sinh viên: ẩn trên mobile */}
                   <div className="hidden md:block text-left">
-                    <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName}</p>
+                    <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName || 'Sinh viên'}</p>
                     <p className="text-gray-500 text-xs" style={{ fontWeight: 400 }}>Đã đồng bộ</p>
                   </div>
                 </div>

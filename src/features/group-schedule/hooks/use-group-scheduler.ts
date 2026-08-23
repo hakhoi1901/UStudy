@@ -3,14 +3,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
 import {
+  decodeGroupPayload,
   decodeGroupURL,
   encodeGroupURL,
   GroupURLDecodeError,
+  analyzeGroupScheduleTradeoff,
   isDuplicateMember,
   runGroupScheduleSolver,
   sanitizeGroupMember,
+  validateGroupScheduleConfiguration,
 } from '../services/group-scheduler';
-import type { GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult } from '../types';
+import type { GroupConfigurationIssue, GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult, GroupScheduleTradeoff, GroupShareConfig, GroupSharePayload } from '../types';
 import courseDbJson from '../../../logic/scheduler/Course_db.json';
 
 export interface CourseChoice {
@@ -27,6 +30,8 @@ export interface GroupSolverState {
   result: GroupScheduleRunResult | null;
   solveError: string | null;
   availableCourses: CourseChoice[];
+  validationIssues: GroupConfigurationIssue[];
+  importedShareConfig?: GroupShareConfig;
 }
 
 interface PersistedGroupScheduleResult {
@@ -59,6 +64,14 @@ function getBrowserHash(): string {
   return window.location.hash;
 }
 
+function getInitialPayload(): GroupSharePayload {
+  try {
+    return decodeGroupPayload(getBrowserHash());
+  } catch {
+    return { members: [] };
+  }
+}
+
 function getCourseId(course: any): string {
   return String(course?.id || course?.course_id || course?.code || '').trim().toUpperCase();
 }
@@ -69,7 +82,18 @@ function getCourseName(course: any): string {
 
 function loadCourseDb(): any[] {
   const stored = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
-  return stored && stored.length > 0 ? stored : (courseDbJson as any[]);
+  const mergedMap = new Map<string, any>();
+  (courseDbJson as any[]).forEach(item => mergedMap.set(item.id, item));
+  if (stored && Array.isArray(stored)) {
+    stored.forEach(item => {
+      const existing = mergedMap.get(item.id);
+      if (existing && (!item.classes || item.classes.length === 0) && existing.classes && existing.classes.length > 0) {
+        item.classes = existing.classes;
+      }
+      mergedMap.set(item.id, item);
+    });
+  }
+  return Array.from(mergedMap.values());
 }
 
 export function parseCourseInput(value: string): string[] {
@@ -88,18 +112,19 @@ export function useGroupScheduler(): GroupSolverState & {
   addMember: (member: GroupMemberToken) => boolean;
   replaceMembers: (members: GroupMemberToken[]) => void;
   solve: (config?: Partial<GroupFitnessConfig>) => void;
+  validateConfiguration: (config?: Partial<GroupFitnessConfig>) => GroupConfigurationIssue[];
+  setShareConfig: (config: GroupShareConfig) => void;
+  analyzeTradeoff: (option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config?: Partial<GroupFitnessConfig>) => Promise<GroupScheduleTradeoff>;
   clearResult: () => void;
   getOptionRegistrations: (option: GroupScheduleOption, memberIndex?: number) => any[];
 } {
+  const initialPayload = useMemo(getInitialPayload, []);
   const [members, setMembers] = useState<GroupMemberToken[]>(() => {
-    try {
-      const decoded = decodeGroupURL(getBrowserHash());
-      if (decoded.length > 0) return decoded;
-    } catch {
-      // Ignore URL error initially if we fallback to storage
-    }
+    if (initialPayload.members.length > 0) return initialPayload.members;
     return readFromStorage<GroupMemberToken[]>(STORAGE_KEYS.GROUP_SCHEDULER_MEMBERS, []);
   });
+  const [shareConfig, setShareConfigState] = useState<GroupShareConfig>(initialPayload.config ?? {});
+  const [importedShareConfig, setImportedShareConfig] = useState<GroupShareConfig | undefined>(initialPayload.config);
   const [decodeError, setDecodeError] = useState<string | null>(() => {
     const hash = getBrowserHash();
     if (!hash || hash === '#') return null;
@@ -117,6 +142,7 @@ export function useGroupScheduler(): GroupSolverState & {
   const [solving, setSolving] = useState(false);
   const [result, setResult] = useState<GroupScheduleRunResult | null>(() => loadLastGroupScheduleResult(members));
   const [solveError, setSolveError] = useState<string | null>(null);
+  const [validationIssues, setValidationIssues] = useState<GroupConfigurationIssue[]>([]);
 
   const dbData = useMemo(() => loadCourseDb(), []);
   const availableCourses = useMemo<CourseChoice[]>(() => {
@@ -126,19 +152,26 @@ export function useGroupScheduler(): GroupSolverState & {
       .sort((a, b) => a.id.localeCompare(b.id));
   }, [dbData]);
 
-  const shareUrl = useMemo(() => (members.length > 0 ? encodeGroupURL(members) : ''), [members]);
+  const shareUrl = useMemo(() => (members.length > 0 ? encodeGroupURL(members, shareConfig) : ''), [members, shareConfig]);
   const urlWarning = shareUrl.length > 2000 ? 'Link nhóm đang dài hơn 2000 ký tự. Một số app chat có thể cắt link; hãy giảm số môn hoặc gửi link bằng cách copy trực tiếp.' : null;
 
-  const updateBrowserUrl = useCallback((nextMembers: GroupMemberToken[]) => {
+  const updateBrowserUrl = useCallback((nextMembers: GroupMemberToken[], nextConfig: GroupShareConfig) => {
     if (typeof window === 'undefined' || nextMembers.length === 0) return;
-    const nextUrl = encodeGroupURL(nextMembers);
+    const nextUrl = encodeGroupURL(nextMembers, nextConfig);
     window.history.replaceState(null, '', nextUrl);
   }, []);
 
+  const setShareConfig = useCallback((nextConfig: GroupShareConfig) => {
+    setShareConfigState(nextConfig);
+    updateBrowserUrl(members, nextConfig);
+  }, [members, updateBrowserUrl]);
+
   const setMembersFromURL = useCallback((hash = getBrowserHash()) => {
     try {
-      const decoded = decodeGroupURL(hash);
-      setMembers(decoded);
+      const decoded = decodeGroupPayload(hash);
+      setMembers(decoded.members);
+      setShareConfigState(decoded.config ?? {});
+      setImportedShareConfig(decoded.config);
       setDecodeError(null);
       setResult(null);
     } catch (error) {
@@ -151,8 +184,8 @@ export function useGroupScheduler(): GroupSolverState & {
     const sanitized = nextMembers.map(sanitizeGroupMember).filter((member) => member.sharedCourses.length + member.personalCourses.length > 0);
     setMembers(sanitized);
     setResult(null);
-    updateBrowserUrl(sanitized);
-  }, [updateBrowserUrl]);
+    updateBrowserUrl(sanitized, shareConfig);
+  }, [shareConfig, updateBrowserUrl]);
 
   const addMember = useCallback((member: GroupMemberToken) => {
     const sanitized = sanitizeGroupMember(member);
@@ -169,9 +202,15 @@ export function useGroupScheduler(): GroupSolverState & {
     setMembers(nextMembers);
     setResult(null);
     setSolveError(null);
-    updateBrowserUrl(nextMembers);
+    updateBrowserUrl(nextMembers, shareConfig);
     return true;
-  }, [members, updateBrowserUrl]);
+  }, [members, shareConfig, updateBrowserUrl]);
+
+  const validateConfiguration = useCallback((config: Partial<GroupFitnessConfig> = {}) => {
+    const issues = validateGroupScheduleConfiguration(dbData, members, config);
+    setValidationIssues(issues);
+    return issues;
+  }, [dbData, members]);
 
   const solve = useCallback((config: Partial<GroupFitnessConfig> = {}) => {
     setSolving(true);
@@ -186,6 +225,14 @@ export function useGroupScheduler(): GroupSolverState & {
         }
         if (dbData.length === 0) {
           setSolveError('Chưa có dữ liệu lớp học offline. Hãy import dữ liệu Portal trước khi xếp lịch nhóm.');
+          return;
+        }
+
+        const issues = validateGroupScheduleConfiguration(dbData, members, config);
+        setValidationIssues(issues);
+        const blockingIssue = issues.find((issue) => issue.severity === 'error');
+        if (blockingIssue) {
+          setSolveError(blockingIssue.description);
           return;
         }
 
@@ -215,6 +262,28 @@ export function useGroupScheduler(): GroupSolverState & {
     setSolveError(null);
   }, []);
 
+  const analyzeTradeoff = useCallback((option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config: Partial<GroupFitnessConfig> = {}) => {
+    return new Promise<GroupScheduleTradeoff>((resolve) => {
+      window.setTimeout(() => {
+        const analyzed = analyzeGroupScheduleTradeoff(dbData, members, config, tradeoff);
+        setResult((current) => {
+          if (!current) return current;
+          const solutions = current.solutions.map((candidate) => {
+            if (candidate.option !== option.option) return candidate;
+            return {
+              ...candidate,
+              tradeoffs: (candidate.tradeoffs ?? []).map((candidateTradeoff) => (
+                candidateTradeoff.id === analyzed.id ? analyzed : candidateTradeoff
+              )),
+            };
+          });
+          return { ...current, solutions };
+        });
+        resolve(analyzed);
+      }, 0);
+    });
+  }, [dbData, members]);
+
   const getOptionRegistrations = useCallback((option: GroupScheduleOption, memberIndex = 0) => {
     const memberSchedule = option.schedules.find((schedule) => schedule.memberIndex === memberIndex);
     return (memberSchedule?.items ?? []).map((item) => ({
@@ -237,10 +306,15 @@ export function useGroupScheduler(): GroupSolverState & {
     result,
     solveError,
     availableCourses,
+    validationIssues,
+    importedShareConfig,
     setMembersFromURL,
     addMember,
     replaceMembers,
     solve,
+    validateConfiguration,
+    setShareConfig,
+    analyzeTradeoff,
     clearResult,
     setResult,
     getOptionRegistrations,

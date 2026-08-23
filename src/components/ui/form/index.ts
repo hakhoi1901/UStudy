@@ -1,4 +1,5 @@
 export * from './button';
+export * from './app-select';
 export * from './checkbox';
 export * from './form';
 export * from './input';

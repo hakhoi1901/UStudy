@@ -51,7 +51,7 @@ interface RawTuitionDetail {
     notes: string;
 }
 
-interface RawSubClass {
+export interface RawSubClass {
     MaLopMoTH?: string;
     MaLopMoBT?: string;
     MaLopMoID?: string;
@@ -64,7 +64,7 @@ interface RawSubClass {
     [key: string]: unknown;
 }
 
-interface RawOpenClass {
+export interface RawOpenClass {
     id: string;
     name: string;
     className: string;
@@ -285,7 +285,7 @@ function buildSubClassComponent(group: string, data: GroupedSubClass): Processed
 /**
  * Keep the complete Portal rows while deriving a scheduler-friendly class list.
  */
-function processOpenClasses(rawClasses: RawOpenClass[] = []) {
+export function processOpenClasses(rawClasses: RawOpenClass[] = []) {
     const courseMap: Record<string, {
         id: string;
         name: string;

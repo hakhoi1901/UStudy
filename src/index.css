@@ -164,6 +164,14 @@
     @apply min-w-[20px] rounded-full bg-[#004A98] px-1.5 py-0.5 text-center text-xs text-white;
   }
 
+  .ustudy-button-white {
+    @apply flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-gray-200 focus:ring-offset-2
+  }
+
+  .ustudy-button-normal {
+    @apply relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]
+  }
+
   .ustudy-button-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#003A78] hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none;
   }
@@ -174,6 +182,43 @@
 
   .ustudy-button-outline {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#004A98]/30 bg-white px-4 py-2 text-sm font-semibold text-[#004A98] shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* Button nâng nhẹ khi hover, phù hợp cho command chính/phụ trong toolbar. */
+  .ustudy-button-lift {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all;
+  }
+
+  .ustudy-button-lift-primary {
+    @apply border-2 border-transparent bg-[#004A98] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none;
+  }
+
+  .ustudy-button-lift-outline {
+    @apply border-2 border-[#004A98] bg-white text-[#004A98] shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-1 active:shadow-none;
+  }
+
+  .ustudy-button-lift-compact {
+    @apply min-h-11 border border-[#004A98] bg-white px-3 py-2.5 text-xs text-[#004A98] shadow-none hover:translate-y-0 hover:bg-blue-50 active:translate-y-0;
+  }
+
+  .ustudy-button-dialog {
+    @apply h-9 rounded-lg px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .ustudy-button-dialog-cancel {
+    @apply border border-slate-200 bg-white text-slate-600 hover:bg-slate-50;
+  }
+
+  .ustudy-button-dialog-confirm {
+    @apply bg-[#004A98] text-white hover:bg-[#003A78];
+  }
+
+  .ustudy-button-text {
+    @apply text-xs font-semibold text-[#004A98] transition-colors hover:text-[#003A78];
+  }
+
+  .ustudy-button-text-muted {
+    @apply text-slate-600 hover:text-slate-900;
   }
 
   .ustudy-action-icon {
@@ -237,6 +282,39 @@
 
   .card-pastel-rose {
     @apply bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 transition-colors duration-200;
+  }
+
+  /* Danh sách xổ xuống dùng cho các custom select/menu nhỏ. */
+  .ustudy-dropdown-menu {
+    @apply absolute z-100 mt-1 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg border border-gray-400;
+    max-height: var(--ustudy-dropdown-menu-max-height, 15rem);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .ustudy-dropdown-menu::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ustudy-dropdown-trigger {
+    @apply flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 text-left text-gray-900 transition-all hover:border-gray-300 hover:bg-white;
+    gap: var(--ustudy-dropdown-trigger-gap, 0.75rem);
+    padding: var(--ustudy-dropdown-trigger-py, 0.625rem) var(--ustudy-dropdown-trigger-px, 1rem);
+    font-size: var(--ustudy-dropdown-trigger-font-size, 0.875rem);
+  }
+
+  .ustudy-dropdown-trigger-open {
+    @apply border-[#004A98] bg-white ring-2 ring-[#004A98]/20;
+  }
+
+  .ustudy-dropdown-option {
+    @apply w-full cursor-pointer text-left text-gray-700 transition-colors hover:bg-gray-100;
+    padding: var(--ustudy-dropdown-option-py, 0.625rem) var(--ustudy-dropdown-option-px, 1rem);
+    font-size: var(--ustudy-dropdown-option-font-size, 0.875rem);
+  }
+
+  .ustudy-dropdown-option-active {
+    @apply bg-[#004A98] font-medium text-white hover:bg-[#003A78];
   }
 
   /* Custom Scrollbar for Sidebar/Content */

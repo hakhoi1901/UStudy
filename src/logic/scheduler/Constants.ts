@@ -58,6 +58,10 @@ interface WEIGHTS {
      * Trọng số trống tiết
      */
     PENALTY_GAP: number;
+    /**
+     * Trọng số vi phạm lựa chọn thủ công
+     */
+    PENALTY_MANUAL_SELECTION_CHANGED: number;
 }
 
 interface GROUP_SCHEDULER_CONFIG {
@@ -143,11 +147,17 @@ export const WEIGHTS: WEIGHTS = {
     /**
      * Trọng số trống tiết
      */
-    PENALTY_GAP: 50.0             // Phạt trống tiết
+    PENALTY_GAP: 50.0,            // Phạt trống tiết
+    /**
+     * Trọng số vi phạm lựa chọn thủ công
+     */
+    // Must dominate the maximum possible sum of all normal fitness terms.
+    // 1 violation is strictly worse than 0 violations, regardless of normal fitness.
+    PENALTY_MANUAL_SELECTION_CHANGED: 10_000_000.0
 };
 
 export const GROUP_SCHEDULER_CONFIG: GROUP_SCHEDULER_CONFIG = {
-    DEFAULT_MAX_SOLUTIONS: 12,
+    DEFAULT_MAX_SOLUTIONS: 50,
     SEARCH_NODE_BUDGET: 25000,
     RELAXED_CLASS_CANDIDATE_LIMIT: 18,
 };

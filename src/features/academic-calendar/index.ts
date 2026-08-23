@@ -1,0 +1,1 @@
+export { AcademicCalendarFeature } from './AcademicCalendarFeature';

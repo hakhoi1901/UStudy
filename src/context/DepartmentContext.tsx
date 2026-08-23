@@ -6,19 +6,21 @@ import {
     DEFAULT_FACULTY_ID,
     DEFAULT_MAJOR_ID,
     DEFAULT_COHORT_ID,
+    COHORTS,
+    getFacultiesForCohort,
     loadCohortData,
-} from '../assets/registry';
+} from '../assets/data/academic-programs/registry';
 import {
     ACADEMIC_YEARS,
     DEFAULT_ACADEMIC_YEAR,
     getTuitionRates,
 } from '../assets/data/tuition';
-import type { FacultyInfo, MajorInfo, CohortInfo } from '../assets/registry';
+import type { FacultyInfo, MajorInfo, CohortInfo } from '../assets/data/academic-programs/registry';
 
 // Fallback: import trực tiếp data mặc định để tránh loading flash lần đầu
-import { courses as defaultCourses } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/courses';
-import { prerequisites as defaultPrerequisites } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/prerequisites';
-import { categories as defaultCategories } from '../assets/data/khoa-cntt/cong-nghe-thong-tin/k24/categories';
+import { courses as defaultCourses } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/courses';
+import { prerequisites as defaultPrerequisites } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/prerequisites';
+import { categories as defaultCategories } from '../assets/data/academic-programs/khoa-cntt/cong-nghe-thong-tin/k24/categories';
 
 /**
  * Interface cho DepartmentData
@@ -217,9 +219,16 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
         setIsConfiguredState(value);
     };
 
-    const currentFaculty = FACULTIES.find(f => f.id === facultyId);
-    const currentMajor = currentFaculty?.majors.find(m => m.id === majorId);
-    const currentCohort = currentMajor?.cohorts.find(c => c.id === cohortId);
+    const availableFaculties = getFacultiesForCohort(cohortId).flatMap((catalogFaculty) => {
+        const faculty = FACULTIES.find((item) => item.id === catalogFaculty.id);
+        if (!faculty) return [];
+
+        const majorIds = new Set(catalogFaculty.majors.map((major) => major.id));
+        return [{ ...faculty, majors: faculty.majors.filter((major) => majorIds.has(major.id)) }];
+    });
+    const currentFaculty = availableFaculties.find((faculty) => faculty.id === facultyId) ?? availableFaculties[0];
+    const currentMajor = currentFaculty?.majors.find((major) => major.id === majorId) ?? currentFaculty?.majors[0];
+    const currentCohort = COHORTS.find((cohort) => cohort.id === cohortId);
 
     // Load data khi faculty/major/cohort/academicYear thay đổi
     const loadData = useCallback(async (fId: string, mId: string, cId: string, year: string) => {
@@ -258,30 +267,34 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
         savePlain(STORAGE_KEYS.FACULTY_ID, newFacultyId);
         setFacultyIdState(newFacultyId);
 
-        const newFaculty = FACULTIES.find(f => f.id === newFacultyId);
+        const newFaculty = availableFaculties.find((faculty) => faculty.id === newFacultyId);
         const firstMajor = newFaculty?.majors[0];
         const firstMajorId = firstMajor?.id || '';
         savePlain(STORAGE_KEYS.MAJOR_ID, firstMajorId);
         setMajorIdState(firstMajorId);
-
-        const firstCohortId = firstMajor?.cohorts[0]?.id || '';
-        savePlain(STORAGE_KEYS.COHORT_ID, firstCohortId);
-        setCohortIdState(firstCohortId);
     };
 
     const setMajor = (newMajorId: string) => {
         savePlain(STORAGE_KEYS.MAJOR_ID, newMajorId);
         setMajorIdState(newMajorId);
-
-        const newMajor = currentFaculty?.majors.find(m => m.id === newMajorId);
-        const firstCohortId = newMajor?.cohorts[0]?.id || '';
-        savePlain(STORAGE_KEYS.COHORT_ID, firstCohortId);
-        setCohortIdState(firstCohortId);
     };
 
     const setCohort = (newCohortId: string) => {
         savePlain(STORAGE_KEYS.COHORT_ID, newCohortId);
         setCohortIdState(newCohortId);
+
+        const nextFaculties = getFacultiesForCohort(newCohortId);
+        const nextFaculty = nextFaculties.find((faculty) => faculty.id === facultyId) ?? nextFaculties[0];
+        const nextMajor = nextFaculty?.majors.find((major) => major.id === majorId) ?? nextFaculty?.majors[0];
+
+        if (nextFaculty && nextFaculty.id !== facultyId) {
+            savePlain(STORAGE_KEYS.FACULTY_ID, nextFaculty.id);
+            setFacultyIdState(nextFaculty.id);
+        }
+        if (nextMajor && nextMajor.id !== majorId) {
+            savePlain(STORAGE_KEYS.MAJOR_ID, nextMajor.id);
+            setMajorIdState(nextMajor.id);
+        }
     };
 
     const setAcademicYear = (year: string) => {
@@ -306,7 +319,7 @@ export function DepartmentProvider({ children }: { children: React.ReactNode }) 
             currentFaculty,
             currentMajor,
             currentCohort,
-            faculties: FACULTIES,
+            faculties: availableFaculties,
             academicYears: ACADEMIC_YEARS,
             isConfigured,
             setFaculty,

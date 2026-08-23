@@ -1,268 +1,255 @@
 // EditSessionDialog.tsx
-import { useState, useRef, useEffect } from 'react';
-import { Pencil, MapPin, MessageSquare, Palette, X, Clock, Users } from 'lucide-react';
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-react';
-import {
-    Dialog, DialogContent, DialogHeader, DialogTitle,
-    DialogFooter, DialogDescription, DialogTrigger,
-} from '../../../components/ui/overlays/dialog';
-import { Button } from '../../../components/ui/form/button';
+import { useEffect, useState } from 'react';
+import { CalendarDays, CalendarOff, MessageSquare, Palette, Pencil, RotateCcw } from 'lucide-react';
 import { Input } from '../../../components/ui/form/input';
 import { Label } from '../../../components/ui/form/label';
-import { type ScheduleSession, type ScheduleOverrides, DAYS } from '../types';
+import { AppSelect } from '../../../components/ui/form';
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { type ScheduleSession, type ScheduleOverrides, type SessionOverride, DAYS } from '../types';
+import type { OpenClassDetailTarget } from '../../../components/course';
 import { calculateRowSpan, getDisplayEnd } from '../services/schedule-helpers';
 
-function EditSessionDialog({
-    session,
-    weekNumber,
-    overrides,
-    onSave
-}: {
+function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides, onSave }: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     session: ScheduleSession;
     weekNumber: number;
     overrides: ScheduleOverrides;
     onSave: (newOverrides: ScheduleOverrides) => void;
 }) {
-    const existingGlobal = overrides.sessionOverrides[session.id] || {};
-
+    const globalOverride = overrides.sessionOverrides[session.id];
+    const weekOverrideKey = `${weekNumber}_${session.id}`;
+    const weekOverride = overrides.weekOverrides[weekOverrideKey];
+    const baseValues = session.baseValues ?? {
+        room: session.room, dayOfWeek: session.dayOfWeek, startPeriod: session.startPeriod,
+        endPeriod: session.endPeriod, note: undefined, color: session.color,
+    };
+    const [scope, setScope] = useState<'semester' | 'week'>('semester');
     const [room, setRoom] = useState(session.room);
-    const [startPeriod, setStartPeriod] = useState(session.startPeriod.toString());
-    const [endPeriod, setEndPeriod] = useState(session.endPeriod.toString());
-    const [dayOfWeek, setDayOfWeek] = useState(session.dayOfWeek.toString());
+    const [startPeriod, setStartPeriod] = useState(String(session.startPeriod));
+    const [endPeriod, setEndPeriod] = useState(String(session.endPeriod));
+    const [dayOfWeek, setDayOfWeek] = useState(String(session.dayOfWeek));
     const [note, setNote] = useState(session.note || '');
     const [color, setColor] = useState(session.color);
-    const [startWeek, setStartWeek] = useState((existingGlobal.startWeek ?? '').toString());
-    const [endWeek, setEndWeek] = useState((existingGlobal.endWeek ?? '').toString());
-    const [mode, setMode] = useState<'global' | 'single'>('global');
+    const [startWeek, setStartWeek] = useState('');
+    const [endWeek, setEndWeek] = useState('');
+    const [error, setError] = useState('');
+    const basicColorOptions = [
+        { id: 'blue', name: 'Xanh UStudy', hex: '#004A98' },
+        { id: 'green', name: 'Xanh lá', hex: '#059669' },
+        { id: 'yellow', name: 'Vàng', hex: '#D97706' },
+        { id: 'purple', name: 'Tím', hex: '#7C3AED' },
+    ];
 
-    const colorBgs = {
-        blue: 'bg-blue-600',
-        green: 'bg-green-600',
-        yellow: 'bg-yellow-500',
-        purple: 'bg-purple-600',
+    const resolveValues = (override?: SessionOverride) => ({
+        room: override?.room ?? baseValues.room,
+        dayOfWeek: override?.dayOfWeek ?? baseValues.dayOfWeek,
+        startPeriod: override?.startPeriod ?? baseValues.startPeriod,
+        endPeriod: override?.endPeriod ?? baseValues.endPeriod,
+        note: override?.note ?? baseValues.note ?? '',
+        color: override?.color ?? baseValues.color,
+    });
+
+    const resetForm = (nextScope: 'semester' | 'week') => {
+        const values = nextScope === 'week'
+            ? { ...resolveValues(globalOverride), ...weekOverride }
+            : resolveValues(globalOverride);
+        setRoom(values.room);
+        setDayOfWeek(String(values.dayOfWeek));
+        setStartPeriod(String(values.startPeriod));
+        setEndPeriod(String(values.endPeriod));
+        setNote(values.note || '');
+        setColor(values.color);
+        setStartWeek(nextScope === 'semester' && globalOverride?.startWeek !== undefined ? String(globalOverride.startWeek) : '');
+        setEndWeek(nextScope === 'semester' && globalOverride?.endWeek !== undefined ? String(globalOverride.endWeek) : '');
+        setError('');
     };
 
-    const getOrCreateGlobalOverride = (newOverrides: ScheduleOverrides) => {
-        return { ...newOverrides.sessionOverrides[session.id] };
+    useEffect(() => {
+        if (open) resetForm(scope);
+    // The form must refresh whenever another schedule cell is opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, session.id, weekNumber]);
+
+    const persist = (nextOverrides: ScheduleOverrides) => {
+        onSave(nextOverrides);
+        onOpenChange(false);
     };
 
     const handleSave = () => {
-        const newOverrides = { ...overrides };
-        const update: any = {
-            room,
-            startPeriod: parseFloat(startPeriod),
-            endPeriod: parseFloat(endPeriod),
-            dayOfWeek: parseInt(dayOfWeek) as any,
-            note: note.trim() || undefined,
-            color,
-            startWeek: startWeek ? parseInt(startWeek) : undefined,
-            endWeek: endWeek ? parseInt(endWeek) : undefined,
-        };
+        const parsedStart = Number(startPeriod);
+        const parsedEnd = Number(endPeriod);
+        const parsedDay = Number(dayOfWeek);
+        const parsedStartWeek = startWeek ? Number(startWeek) : undefined;
+        const parsedEndWeek = endWeek ? Number(endWeek) : undefined;
+        const duration = Number.isInteger(parsedEnd) ? parsedEnd - parsedStart + 1 : parsedEnd - parsedStart;
 
-        if (mode === 'global') {
-            newOverrides.sessionOverrides = {
-                ...newOverrides.sessionOverrides,
-                [session.id]: { ...getOrCreateGlobalOverride(newOverrides), ...update }
-            };
-        } else {
-            newOverrides.weekOverrides = {
-                ...newOverrides.weekOverrides,
-                [`${weekNumber}_${session.id}`]: update
-            };
+        if (!Number.isFinite(parsedStart) || !Number.isFinite(parsedEnd) || parsedStart < 1 || parsedEnd > 10.5 || duration <= 0) {
+            setError('Tiết học chưa hợp lệ. Hãy nhập từ tiết 1 đến tiết 10.5 và đảm bảo tiết kết thúc sau tiết bắt đầu.');
+            return;
         }
-        onSave(newOverrides);
+        if (![...DAYS.map((day) => day.value), 8].includes(parsedDay as 2 | 3 | 4 | 5 | 6 | 7 | 8)) {
+            setError('Vui lòng chọn ngày học hợp lệ.');
+            return;
+        }
+        if (scope === 'semester' && (
+            (parsedStartWeek !== undefined && (!Number.isInteger(parsedStartWeek) || parsedStartWeek < 1))
+            || (parsedEndWeek !== undefined && (!Number.isInteger(parsedEndWeek) || parsedEndWeek < 1))
+            || (parsedStartWeek !== undefined && parsedEndWeek !== undefined && parsedEndWeek < parsedStartWeek)
+        )) {
+            setError('Khoảng tuần áp dụng chưa hợp lệ.');
+            return;
+        }
+
+        const update: SessionOverride = {
+            room: room.trim(), startPeriod: parsedStart, endPeriod: parsedEnd,
+            dayOfWeek: parsedDay as ScheduleSession['dayOfWeek'], note: note.trim() || undefined, color,
+        };
+
+        if (scope === 'semester') {
+            persist({ ...overrides, sessionOverrides: {
+                ...overrides.sessionOverrides,
+                [session.id]: { ...globalOverride, ...update, startWeek: parsedStartWeek, endWeek: parsedEndWeek },
+            } });
+            return;
+        }
+        persist({ ...overrides, weekOverrides: {
+            ...overrides.weekOverrides,
+            [weekOverrideKey]: { ...weekOverride, ...update },
+        } });
     };
 
-    const handleSkipWeek = () => {
-        const newOverrides = { ...overrides };
-        const existing = getOrCreateGlobalOverride(newOverrides);
-        const hiddenWeeks = [...(existing.hiddenWeeks || [])];
-        if (!hiddenWeeks.includes(weekNumber)) hiddenWeeks.push(weekNumber);
-        newOverrides.sessionOverrides = {
-            ...newOverrides.sessionOverrides,
-            [session.id]: { ...existing, hiddenWeeks }
-        };
-        onSave(newOverrides);
+    const handleToggleWeekVisibility = () => {
+        const hiddenWeeks = (globalOverride?.hiddenWeeks || []).includes(weekNumber)
+            ? (globalOverride?.hiddenWeeks || []).filter((week) => week !== weekNumber)
+            : Array.from(new Set([...(globalOverride?.hiddenWeeks || []), weekNumber])).sort((a, b) => a - b);
+        persist({ ...overrides, sessionOverrides: {
+            ...overrides.sessionOverrides,
+            [session.id]: { ...globalOverride, hiddenWeeks: hiddenWeeks.length ? hiddenWeeks : undefined },
+        } });
     };
 
-    const handleEndFromWeek = () => {
-        const newOverrides = { ...overrides };
-        const existing = getOrCreateGlobalOverride(newOverrides);
-        newOverrides.sessionOverrides = {
-            ...newOverrides.sessionOverrides,
-            [session.id]: { ...existing, endWeek: weekNumber - 1 }
-        };
-        onSave(newOverrides);
+    const handleEndFromWeek = () => persist({ ...overrides, sessionOverrides: {
+        ...overrides.sessionOverrides,
+        [session.id]: { ...globalOverride, endWeek: Math.max(0, weekNumber - 1) },
+    } });
+
+    const handleRestore = () => {
+        if (scope === 'week') {
+            const { [weekOverrideKey]: _, ...weekOverrides } = overrides.weekOverrides;
+            persist({ ...overrides, weekOverrides });
+            return;
+        }
+        const { [session.id]: _, ...sessionOverrides } = overrides.sessionOverrides;
+        const weekOverrides = Object.fromEntries(Object.entries(overrides.weekOverrides).filter(([key]) => !key.endsWith(`_${session.id}`)));
+        persist({ ...overrides, sessionOverrides, weekOverrides });
     };
 
-    const handleDeleteSession = () => {
-        const newOverrides = { ...overrides };
-        const existing = getOrCreateGlobalOverride(newOverrides);
-        // endWeek = 0 effectively hides the session entirely
-        newOverrides.sessionOverrides = {
-            ...newOverrides.sessionOverrides,
-            [session.id]: { ...existing, endWeek: 0 }
-        };
-        onSave(newOverrides);
-    };
+    const isWeekHidden = globalOverride?.hiddenWeeks?.includes(weekNumber) ?? false;
+    const hasChanges = scope === 'semester'
+        ? Boolean(globalOverride || Object.keys(overrides.weekOverrides).some((key) => key.endsWith(`_${session.id}`)))
+        : Boolean(weekOverride);
 
     return (
-        <DialogContent className="sm:max-w-md p-6 overflow-hidden border-none shadow-xl bg-white rounded-lg max-h-[90vh] overflow-y-auto">
-            <div className="space-y-6">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                        <Pencil className="w-5 h-5 text-[#004A98]" />
-                        Tùy chỉnh môn học
-                    </DialogTitle>
-                    <DialogDescription className="text-sm text-gray-500 mt-1">
-                        {session.courseCode} - {session.courseName}
-                    </DialogDescription>
-                </DialogHeader>
-
-                {/* Mode selector */}
-                <div className="flex p-1 bg-gray-100 rounded-lg">
-                    <button
-                        onClick={() => setMode('global')}
-                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${mode === 'global' ? 'bg-white shadow-sm text-[#004A98]' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Toàn bộ học kỳ
-                    </button>
-                    <button
-                        onClick={() => setMode('single')}
-                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${mode === 'single' ? 'bg-white shadow-sm text-[#004A98]' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Chỉ Tuần {weekNumber}
-                    </button>
-                </div>
-
-                <div className="space-y-4">
-                    {/* Day and Room */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="day" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                                <CalendarIcon className="w-4 h-4 text-gray-500" /> Thứ
-                            </Label>
-                            <select
-                                id="day"
-                                value={dayOfWeek}
-                                onChange={(e) => setDayOfWeek(e.target.value)}
-                                className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#004A98] focus:border-transparent"
+        <AppDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            title="Tùy chỉnh môn học"
+            description={`${session.courseCode} · ${session.courseName}`}
+            icon={Pencil}
+            size="md"
+            contentClassName="space-y-4"
+        >
+            <div className="divide-y divide-gray-200">
+                <div className="grid gap-3 py-1 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
+                    <span className="text-sm font-semibold text-gray-700">Áp dụng</span>
+                    <div className="grid grid-cols-2 rounded-lg bg-gray-100 p-1">
+                        {(['semester', 'week'] as const).map((value) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => { setScope(value); resetForm(value); }}
+                                className={`h-9 rounded-md text-sm font-semibold transition ${scope === value ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600'}`}
                             >
-                                {DAYS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                                <option value="8">Chủ Nhật</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="room" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                                <MapPin className="w-4 h-4 text-gray-500" /> Phòng
-                            </Label>
-                            <Input id="room" value={room} onChange={(e) => setRoom(e.target.value)} className="h-10 rounded-md border-gray-300" />
+                                {value === 'semester' ? 'Cả học kỳ' : `Tuần ${weekNumber}`}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)]">
+                    <span className="pt-2 text-sm font-semibold text-gray-700">Lịch học</span>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <AppSelect value={dayOfWeek} onChange={setDayOfWeek} options={[...DAYS.map((day) => ({ id: day.value, name: day.label })), { id: '8', name: 'Chủ Nhật' }]} ariaLabel="Chọn thứ học" triggerClassName="h-10 px-3 py-0 text-sm" />
+                        <Input aria-label="Phòng học" value={room} onChange={(event) => setRoom(event.target.value)} placeholder="Phòng học" className="h-10" />
+                        <Input aria-label="Tiết bắt đầu" type="number" min="1" max="10.5" step="0.5" value={startPeriod} onChange={(event) => setStartPeriod(event.target.value)} placeholder="Từ tiết" className="h-10" />
+                        <Input aria-label="Tiết kết thúc" type="number" min="1" max="10.5" step="0.5" value={endPeriod} onChange={(event) => setEndPeriod(event.target.value)} placeholder="Đến tiết" className="h-10" />
+                    </div>
+                </div>
+
+                {scope === 'semester' && (
+                    <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
+                        <span className="text-sm font-semibold text-gray-700">Khoảng tuần</span>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Input aria-label="Bắt đầu từ tuần" type="number" min="1" step="1" placeholder="Từ tuần" value={startWeek} onChange={(event) => setStartWeek(event.target.value)} className="h-10" />
+                            <Input aria-label="Kết thúc ở tuần" type="number" min="1" step="1" placeholder="Đến tuần" value={endWeek} onChange={(event) => setEndWeek(event.target.value)} className="h-10" />
                         </div>
                     </div>
+                )}
 
-                    {/* Periods */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="start" className="text-sm font-medium text-gray-700">Tiết bắt đầu</Label>
-                            <Input id="start" type="number" step="0.5" value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="h-10 rounded-md border-gray-300" />
+                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)]">
+                    <span className="pt-2 text-sm font-semibold text-gray-700">Màu và ghi chú</span>
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {basicColorOptions.map((option) => (
+                                <button
+                                    key={option.id}
+                                    type="button"
+                                    title={option.name}
+                                    aria-label={`Chọn ${option.name}`}
+                                    onClick={() => setColor(option.id)}
+                                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition ${color === option.id ? 'border-[#004A98] bg-blue-50 ring-2 ring-[#004A98]/15' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                >
+                                    <span className="h-5 w-5 rounded-md" style={{ backgroundColor: option.hex }} />
+                                </button>
+                            ))}
+                            <label title="Màu tùy chỉnh" className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border transition ${color.startsWith('#') ? 'border-[#004A98] bg-blue-50 ring-2 ring-[#004A98]/15' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                                <Palette className="h-4 w-4 text-gray-600" />
+                                <input
+                                    type="color"
+                                    value={color.startsWith('#') ? color : '#004A98'}
+                                    onChange={(event) => setColor(event.target.value)}
+                                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                    aria-label="Chọn màu tùy chỉnh"
+                                />
+                            </label>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="end" className="text-sm font-medium text-gray-700">Tiết kết thúc</Label>
-                            <Input id="end" type="number" step="0.5" value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="h-10 rounded-md border-gray-300" />
-                        </div>
-                    </div>
-
-                    {/* Week range - only in global mode */}
-                    {mode === 'global' && (
-                        <div className="grid grid-cols-2 gap-4 p-4 bg-[#004A98]/5 rounded-lg border border-[#004A98]/20">
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-medium text-[#004A98]">Bắt đầu từ tuần</Label>
-                                <Input type="number" placeholder="Mặc định" value={startWeek} onChange={(e) => setStartWeek(e.target.value)} className="h-10 rounded-md border-gray-300 bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-medium text-[#004A98]">Kết thúc ở tuần</Label>
-                                <Input type="number" placeholder="Mặc định" value={endWeek} onChange={(e) => setEndWeek(e.target.value)} className="h-10 rounded-md border-gray-300 bg-white" />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Notes */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="note" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                            <MessageSquare className="w-4 h-4 text-gray-500" /> Ghi chú
-                        </Label>
-                        <Input
-                            id="note"
-                            placeholder="Nhập lời nhắc (Kiểm tra, mang sách...)"
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            className="h-10 rounded-md border-gray-300"
-                        />
-                    </div>
-
-                    {/* Color */}
-                    <div className="space-y-1.5">
-                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                            <Palette className="w-4 h-4 text-gray-500" /> Màu sắc
-                        </Label>
-                        <div className="flex items-center gap-4">
-                            <Input
-                                type="color"
-                                value={color.startsWith('#') ? color : '#3b82f6'}
-                                onChange={(e) => setColor(e.target.value)}
-                                className="w-10 h-10 p-1 rounded-md cursor-pointer border-gray-300"
-                            />
-                            <div className="flex gap-2">
-                                {Object.keys(colorBgs).map(c => (
-                                    <button
-                                        key={c}
-                                        onClick={() => setColor(c)}
-                                        className={`w-6 h-6 rounded-full border-2 ${color === c ? 'border-gray-500' : 'border-transparent'} ${colorBgs[c as keyof typeof colorBgs]}`}
-                                    />
-                                ))}
-                            </div>
+                        <div className="relative">
+                            <MessageSquare className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Input aria-label="Ghi chú" placeholder="Thêm ghi chú" value={note} onChange={(event) => setNote(event.target.value)} className="h-10 pl-9" />
                         </div>
                     </div>
                 </div>
 
-                {/* Danger zone */}
-                <div className="p-4 bg-white rounded-lg border border-red-200 space-y-3">
-                    <p className="text-sm font-semibold text-red-600 flex items-center gap-2">
-                        <Trash2 className="w-4 h-4" />
-                        Xóa / Ẩn buổi học
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                        <button
-                            onClick={handleSkipWeek}
-                            className="py-2 px-2 text-xs font-medium rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            Bỏ Tuần {weekNumber}
+                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
+                    <span className="text-sm font-semibold text-gray-700">Tác vụ</span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                        <button type="button" onClick={handleToggleWeekVisibility} className="inline-flex items-center gap-1.5 font-semibold text-gray-600 transition-colors hover:text-[#004A98]">
+                            <CalendarOff className="h-4 w-4" />
+                            {isWeekHidden ? `Hiện lại tuần ${weekNumber}` : `Bỏ tuần ${weekNumber}`}
                         </button>
-                        <button
-                            onClick={handleEndFromWeek}
-                            className="py-2 px-2 text-xs font-medium rounded-md bg-white border border-orange-300 text-orange-700 hover:bg-orange-50 transition-colors"
-                        >
-                            Kết thúc từ Tuần {weekNumber}
-                        </button>
-                        <button
-                            onClick={handleDeleteSession}
-                            className="py-2 px-2 text-xs font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
-                        >
-                            Xóa toàn bộ
-                        </button>
+                        {scope === 'semester' && <button type="button" onClick={handleEndFromWeek} className="font-semibold text-amber-700 transition-colors hover:text-amber-900">Ngừng từ tuần {weekNumber}</button>}
+                        {hasChanges && <button type="button" onClick={handleRestore} className="inline-flex items-center gap-1.5 font-semibold text-gray-500 transition-colors hover:text-[#004A98]"><RotateCcw className="h-3.5 w-3.5" />Khôi phục</button>}
                     </div>
                 </div>
-
-                <DialogFooter className="flex gap-3 pt-2 border-t border-gray-100">
-                    <Button variant="outline" className="flex-1 h-10 rounded-md text-gray-700 font-medium border-gray-300 hover:bg-gray-50">
-                        Đóng
-                    </Button>
-                    <Button onClick={handleSave} className="flex-[2] h-10 rounded-md bg-[#004A98] hover:bg-[#003d7a] font-medium text-white transition-colors">
-                        Lưu thay đổi
-                    </Button>
-                </DialogFooter>
             </div>
-        </DialogContent>
+
+            {error && <p role="alert" className="border-l-2 border-red-500 bg-red-50 px-3 py-2.5 text-xs leading-5 text-red-700">{error}</p>}
+            <div className="grid gap-2 border-t border-gray-200 pt-4 sm:grid-cols-2">
+                <button type="button" onClick={() => onOpenChange(false)} className="ustudy-button-outline justify-center">Hủy</button>
+                <button type="button" onClick={handleSave} className="ustudy-button-primary justify-center">Lưu thay đổi</button>
+            </div>
+        </AppDialog>
     );
 }
 
@@ -271,16 +258,18 @@ function CourseCard({
     hasConflict = false,
     weekNumber,
     overrides,
-    onSave
+    onSave,
+    onOpenClassDetails
 }: {
     sessions: ScheduleSession | ScheduleSession[];
     hasConflict?: boolean;
     weekNumber: number;
     overrides: ScheduleOverrides;
     onSave: (newOverrides: ScheduleOverrides) => void;
+    onOpenClassDetails?: (target: OpenClassDetailTarget) => void;
 }) {
     const [showInfo, setShowInfo] = useState(false);
-    const cardRef = useRef<HTMLDivElement>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const colorClasses = {
         blue: 'bg-blue-50 border-blue-500',
@@ -323,30 +312,9 @@ function CourseCard({
         borderColor: primarySession.color,
     } : {};
 
-    // Đóng popup khi bấm ra ngoài
-    useEffect(() => {
-        if (!showInfo) return;
-        const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-            if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-                setShowInfo(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('touchstart', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('touchstart', handleClickOutside);
-        };
-    }, [showInfo]);
-
-    // Tính toán hướng hiển thị popup để không bị che khuất
-    const isRightSide = primarySession.dayOfWeek >= 6; // Thứ 6, 7, CN
-    const isBottomSide = primarySession.startPeriod >= 8; // Tiết 8, 9, 10
-
     return (
-        <Dialog>
+        <>
             <div
-                ref={cardRef}
                 className="relative w-full h-full"
                 style={{ minHeight: `calc(var(--schedule-row-height, 36px) * ${rowSpan})` }}
             >
@@ -354,7 +322,6 @@ function CourseCard({
                 <div
                     className={`absolute w-full p-1.5 rounded border-l-2 flex flex-col justify-center transition-all duration-200 cursor-pointer overflow-hidden
                         ${displayColorClasses}
-                        ${primarySession.isOverridden ? 'border-dashed border-2' : ''}
                         ${showInfo ? 'ring-2 ring-blue-400 ring-inset' : ''}
                     `}
                     style={{
@@ -398,103 +365,95 @@ function CourseCard({
                     ))}
                 </div>
 
-                {/* Popup thông tin chi tiết - hiện khi click */}
-                {showInfo && (
-                    <div
-                        className={`absolute z-[200] w-72 bg-white border border-blue-200 rounded-xl shadow-2xl p-3 text-xs animate-in fade-in zoom-in-95 duration-150
-                            ${isRightSide ? 'right-full mr-1' : 'left-full ml-1'}
-                            ${isBottomSide ? 'bottom-0' : 'top-0'}
-                        `}
-                        style={{ minWidth: '260px' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header popup */}
-                        <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1 min-w-0 pr-2">
-                                {sessionArray.map((sess, idx) => (
-                                    <div key={sess.id} className={idx > 0 ? 'border-t border-gray-100 pt-2 mt-2' : ''}>
-                                        <div className="font-bold text-sm text-blue-800 leading-tight mb-0.5">
-                                            {sess.courseCode}
-                                        </div>
-                                        <div className="text-xs text-gray-600 leading-tight">
-                                            {sess.courseName}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <button
-                                className="flex-shrink-0 p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                                onClick={() => setShowInfo(false)}
-                            >
-                                <X className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-
-                        {/* Thông tin chi tiết */}
-                        {sessionArray.map((sess, idx) => (
-                            <div key={sess.id} className={idx > 0 ? 'border-t border-gray-100 pt-2 mt-2' : ''}>
-                                <div className="space-y-1.5">
-                                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                                        <div className="text-gray-500">Loại:</div>
-                                        <div className="font-medium text-gray-800 text-right">{typeFullLabels[sess.type]}</div>
-
-                                        <div className="text-gray-500">Phòng:</div>
-                                        <div className="font-medium text-gray-800 text-right">{sess.room}</div>
-
-                                        <div className="text-gray-500">Tiết:</div>
-                                        <div className="font-medium text-gray-800 text-right">{sess.startPeriod}–{Math.floor(sess.endPeriod)}</div>
-
-                                        <div className="text-gray-500">Giờ:</div>
-                                        <div className="font-medium text-gray-800 text-right">{sess.startTime}–{sess.endTime}</div>
-
-                                        {sess.totalWeeks > 0 && (
-                                            <>
-                                                <div className="text-gray-500">Ngày:</div>
-                                                <div className="font-medium text-gray-800 text-right">{sess.startDate}–{sess.endDate}</div>
-                                                <div className="text-gray-500">Số tuần:</div>
-                                                <div className="font-medium text-gray-800 text-right">{sess.totalWeeks} tuần</div>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div className="pt-1 border-t border-gray-100 space-y-0.5">
-                                        <div className="text-gray-500">GV: <span className="font-medium text-gray-800">{sess.instructor}</span></div>
-                                        <div className="text-gray-500">Lớp: <span className="font-medium text-gray-800">{sess.classCode}</span> • <span className="font-medium text-gray-800">{sess.credits} TC</span></div>
-                                    </div>
-
-                                    {sess.note && (
-                                        <div className="mt-1 p-2 bg-orange-50 border border-orange-200 rounded-md flex gap-1.5 items-start">
-                                            <MessageSquare className="w-3 h-3 text-orange-600 mt-0.5 flex-shrink-0" />
-                                            <div className="text-[11px] text-orange-800 italic">{sess.note}</div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Nút chỉnh sửa */}
-                        <div className="mt-3 pt-2 border-t border-gray-100">
-                            <DialogTrigger asChild>
-                                <button
-                                    className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#004A98] hover:bg-[#003d7a] text-white text-xs font-medium rounded-lg transition-colors"
-                                    onClick={() => setShowInfo(false)}
-                                >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                    Chỉnh sửa môn học
-                                </button>
-                            </DialogTrigger>
-                        </div>
-                    </div>
-                )}
             </div>
 
+            <AppDialog
+                open={showInfo}
+                onOpenChange={setShowInfo}
+                title="Chi tiết lịch học"
+                description={sessionArray.length === 1 ? `${primarySession.courseCode} · ${primarySession.courseName}` : `${sessionArray.length} môn học trùng lịch`}
+                icon={CalendarDays}
+                size="md"
+                contentClassName="space-y-0"
+            >
+                {sessionArray.map((sess, idx) => (
+                    <section key={sess.id} className={idx > 0 ? 'border-t border-gray-200 pt-5 mt-5' : ''}>
+                        {sessionArray.length > 1 && (
+                            <div className="mb-4">
+                                <p className="font-mono text-sm font-bold text-[#004A98]">{sess.courseCode}</p>
+                                <p className="mt-0.5 text-sm text-gray-700">{sess.courseName}</p>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
+                            <span className="text-gray-500">Loại học phần</span>
+                            <span className="text-right font-semibold text-gray-900">{typeFullLabels[sess.type]}</span>
+                            <span className="text-gray-500">Phòng học</span>
+                            <span className="text-right font-semibold text-gray-900">{sess.room || '-'}</span>
+                            <span className="text-gray-500">Thời gian</span>
+                            <span className="text-right font-semibold text-gray-900">{sess.startTime} - {sess.endTime}</span>
+                            <span className="text-gray-500">Tiết học</span>
+                            <span className="text-right font-semibold text-gray-900">{sess.startPeriod} - {Math.floor(sess.endPeriod)}</span>
+                            {sess.totalWeeks > 0 && (
+                                <>
+                                    <span className="text-gray-500">Thời gian áp dụng</span>
+                                    <span className="text-right font-semibold text-gray-900">{sess.startDate} - {sess.endDate}</span>
+                                    <span className="text-gray-500">Số tuần học</span>
+                                    <span className="text-right font-semibold text-gray-900">{sess.totalWeeks} tuần</span>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="mt-4 border-t border-gray-200 pt-3 text-sm leading-6 text-gray-600">
+                            <p>Giảng viên: <span className="font-medium text-gray-900">{sess.instructor || 'Chưa có dữ liệu'}</span></p>
+                            <p>Lớp: <span className="font-medium text-gray-900">{sess.classCode || '-'}</span> · <span className="font-medium text-gray-900">{sess.credits} TC</span></p>
+                        </div>
+
+                        {sess.note && (
+                            <div className="mt-4 flex gap-2 border-l-2 border-amber-400 bg-amber-50 px-3 py-2.5 text-sm leading-5 text-amber-900">
+                                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                                <p>{sess.note}</p>
+                            </div>
+                        )}
+                    </section>
+                ))}
+
+                <div className="mt-5 grid gap-2 border-t border-gray-200 pt-4 sm:grid-cols-2">
+                    {onOpenClassDetails && sessionArray.length === 1 && (
+                        <button
+                            type="button"
+                            className="ustudy-button-secondary justify-center"
+                            onClick={() => {
+                                onOpenClassDetails({ courseCode: primarySession.courseCode, courseName: primarySession.courseName, classId: primarySession.classCode });
+                                setShowInfo(false);
+                            }}
+                        >
+                            Xem chi tiết lớp mở
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        className="ustudy-button-primary justify-center"
+                        onClick={() => {
+                            setShowInfo(false);
+                            setIsEditOpen(true);
+                        }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                        Chỉnh sửa môn học
+                    </button>
+                </div>
+            </AppDialog>
+
             <EditSessionDialog
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
                 session={primarySession}
                 weekNumber={weekNumber}
                 overrides={overrides}
                 onSave={onSave}
             />
-        </Dialog>
+        </>
     );
 }
 

@@ -18,6 +18,7 @@ raw_student_db           Dữ liệu gốc, giữ nguyên mọi trường đã c
         +--> course_db_offline     Môn, lớp và lịch đã chuẩn hóa cho solver
 
 import_meta              Thời gian, phiên bản và tham số lần đồng bộ
+ustudy_last_data_import  Mốc đã từng nhận dữ liệu học tập
 ```
 
 Nguyên tắc nguồn dữ liệu:
@@ -293,6 +294,19 @@ type ClassComponent = {
 }
 ```
 
+### `ustudy_last_data_import` (plain)
+
+Mốc nhỏ, không chứa dữ liệu sinh viên. Nó xác nhận UStudy đã từng nhận một gói
+dữ liệu học tập, kể cả khi các danh sách trong gói đều rỗng. Các tab dùng mốc này
+để chỉ hiển thị `NoDataCard` cho trạng thái chưa từng đồng bộ.
+
+```ts
+{
+  at: string; // ISO timestamp
+  source: 'bookmarklet' | 'extension' | 'mobile-app' | 'json' | 'optical';
+}
+```
+
 ## 5. Key ứng dụng
 
 ### Cấu hình chương trình đào tạo (plain)
@@ -320,6 +334,8 @@ type ClassComponent = {
 | `study_plan_category_expansion` | `Record<categoryId, boolean>` |
 | `active_group_schedule` | Lịch nhóm đang được chọn để hiển thị |
 | `group_scheduler_members` | `GroupMemberToken[]` |
+| `group_scheduler_class_preferences` | Lớp bị loại, ưu tiên hoặc bắt buộc theo từng môn |
+| `group_scheduler_course_sharing` | `Record<courseId, { mode: 'required' | 'preferred' | 'independent', groups?: number[][] }>`; mức học cùng và các nhóm thành viên của từng môn |
 | `group_schedule_ui_state` | Bước, chế độ xem và các panel đang mở |
 | `group_schedule_last_result` | `{ version: 1, updatedAt: string, memberSignature: string, result: GroupScheduleRunResult }`; toàn bộ phương án của lần xếp thành công gần nhất cho đúng nhóm hiện tại |
 | `schedule_mode` | `'personal' | 'group'` |

@@ -4,11 +4,11 @@ export type PageId =
     | 'grades'
     | 'tuition'
     | 'schedule'
+    | 'campusInfo'
     | 'examSchedule'
     | 'chatbot'
     | 'settings'
     | 'privacy'
-    | 'securityLab'
     | 'setup';
 
 export type StudyRoadmapTabId = 'trainingProgram' | 'studyPlan' | 'selection' | 'calendar';
@@ -26,11 +26,15 @@ export const APP_ROUTES = {
     grades: '/grades',
     tuition: '/tuition',
     schedule: '/schedule',
+    campus: '/campus',
+    campusMap: '/campus/map',
+    academicCalendar: '/campus/academic-calendar',
+    campusDirectory: '/campus/directory',
+    legacyCampusMap: '/campus-map',
     examSchedule: '/exam-schedule',
     chatbot: '/chatbot',
     settings: '/settings',
     privacy: '/privacy',
-    securityLab: '/security-lab',
     setup: '/setup',
 } as const;
 
@@ -40,11 +44,11 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     grades: APP_ROUTES.grades,
     tuition: APP_ROUTES.tuition,
     schedule: APP_ROUTES.schedule,
+    campusInfo: APP_ROUTES.campusMap,
     examSchedule: APP_ROUTES.examSchedule,
     chatbot: APP_ROUTES.chatbot,
     settings: APP_ROUTES.settings,
     privacy: APP_ROUTES.privacy,
-    securityLab: APP_ROUTES.securityLab,
     setup: APP_ROUTES.setup,
 };
 
@@ -62,11 +66,12 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/grades\/?$/, 'grades'],
     [/^\/tuition\/?$/, 'tuition'],
     [/^\/schedule\/?$/, 'schedule'],
+    [/^\/campus(?:\/.*)?$/, 'campusInfo'],
+    [/^\/campus-map\/?$/, 'campusInfo'],
     [/^\/exam-schedule\/?$/, 'examSchedule'],
     [/^\/chatbot\/?$/, 'chatbot'],
     [/^\/settings\/?$/, 'settings'],
     [/^\/privacy\/?$/, 'privacy'],
-    [/^\/security-lab\/?$/, 'securityLab'],
     [/^\/setup\/?$/, 'setup'],
 ];
 

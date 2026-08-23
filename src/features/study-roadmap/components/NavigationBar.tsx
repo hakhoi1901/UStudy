@@ -1,10 +1,9 @@
 import type { ElementType } from 'react';
 
-import type { Tab } from '../types';
 import { SectionTabs } from '../../../components/ui/navigation/section-tabs';
 
-export type NavTab = {
-    id: Tab;
+export type NavTab<T extends string> = {
+    id: T;
     label: string;
     description?: string;
     icon: ElementType;
@@ -12,18 +11,20 @@ export type NavTab = {
     badgeCount?: number;
 };
 
-export function NavigationBar({
+export function NavigationBar<T extends string>({
     tabs,
     activeTab,
     setActiveTab,
+    ariaLabel = 'Điều hướng',
 }: {
-    tabs: NavTab[];
-    activeTab: Tab;
-    setActiveTab: (tab: Tab) => void;
+    tabs: NavTab<T>[];
+    activeTab: T;
+    setActiveTab: (tab: T) => void;
+    ariaLabel?: string;
 }) {
     return (
         <SectionTabs
-            ariaLabel="Lộ trình học tập"
+            ariaLabel={ariaLabel}
             activeTab={activeTab}
             onChange={setActiveTab}
             tabs={tabs.map((tab) => ({

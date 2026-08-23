@@ -76,14 +76,14 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
             </td>
 
             <td className="px-4 py-3 text-center">
-    <span
-        className={`text-sm font-extrabold tabular-nums ${gradeClass}`}
-    >
-        {hasGrade
-            ? course.grade.toFixed(1)
-            : "Chưa có"}
-    </span>
-</td>
+                <span
+                    className={`font-semibold tabular-nums ${gradeClass}`}
+                >
+                    {hasGrade
+                        ? course.grade.toFixed(1)
+                        : "---"}
+                </span>
+            </td>
 
             <td className="px-4 py-3 text-center">
                 <div className="inline-flex items-center gap-2">

@@ -4,6 +4,8 @@ export interface ClassSection {
     courseName: string; // tên môn học
     courseNameVi: string; // tên môn học tiếng việt
     sectionNumber: string; // mã lớp học
+    /** Mã lớp đầy đủ mà thuật toán đã chọn, có thể gồm nhóm TH/BT. */
+    selectedClassId?: string;
     lecturer: string; // giảng viên
     room: string; // phòng học
     day: number; // 2-8 (Mon-Sun)
@@ -12,7 +14,10 @@ export interface ClassSection {
     color: string; // màu sắc
     isConfirmed: boolean; // đã xác nhận
     credits: number; // số tín chỉ
+    /** true = môn trường đã đăng ký từ Portal, immutable baseline. */
+    isRegistered?: boolean;
 }
+
 
 export interface TimetableRegisteredCourse {
     courseCode: string; // mã môn học

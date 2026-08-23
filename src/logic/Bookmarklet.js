@@ -996,6 +996,17 @@
             registrations = scrapeRegisteredCourses(docDKHP);
             registrationPeriod = getRegistrationPeriod(docDKHP);
             registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
+
+            // Dev-only override: set window.__USTUDY_TEST_REGISTRATIONS__ in the Portal console
+            // before running the bookmarklet to exercise the registration/scheduling flow.
+            const testRegistrations = window.__USTUDY_TEST_REGISTRATIONS__;
+            if (Array.isArray(testRegistrations)) {
+                registrations = testRegistrations.map((registration) => ({
+                    ...registration,
+                    semester: registration.semester || registrationPeriod.semester,
+                }));
+            }
+
             emitExtensionEvent('USTUDY_PORTAL_SYNC_SOURCE_RESULT', {
                 payload: {
                     source: 'registrations',

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Bell, BellOff, BookOpen, CalendarClock, Check, GraduationCap, Plus, Trash2 } from 'lucide-react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { AppSelect } from '../../../components/ui/form';
 import { supportsCalendarNotifications } from '../../../mobile/calendar-notifications';
 import type { DashboardCalendarSource } from '../services/dashboard-layout';
 
@@ -259,16 +260,18 @@ export function DashboardCalendarSettingsDialog({
                         aria-label="Thời gian nhắc trước"
                         className="h-10 min-w-0 flex-1 rounded-lg border border-gray-300 px-3 text-sm font-semibold tabular-nums outline-none focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/15"
                       />
-                      <select
+                      <AppSelect
                         value={reminder.unit}
-                        onChange={(event) => updateReminder(reminder.id, { unit: event.target.value as ReminderUnit })}
-                        aria-label="Đơn vị thời gian"
-                        className="h-10 w-24 rounded-lg border border-gray-300 bg-white px-2 text-sm font-medium text-gray-700 outline-none focus:border-[#004A98]"
-                      >
-                        <option value="minutes">phút</option>
-                        <option value="hours">giờ</option>
-                        <option value="days">ngày</option>
-                      </select>
+                        onChange={(value) => updateReminder(reminder.id, { unit: value as ReminderUnit })}
+                        options={[
+                          { id: 'minutes', name: 'phút' },
+                          { id: 'hours', name: 'giờ' },
+                          { id: 'days', name: 'ngày' },
+                        ]}
+                        ariaLabel="Đơn vị thời gian"
+                        className="w-24 shrink-0"
+                        triggerClassName="h-10 px-2 py-0 text-sm font-medium"
+                      />
                       <button
                         type="button"
                         onClick={() => setDraftReminders((current) => current.filter((item) => item.id !== reminder.id))}

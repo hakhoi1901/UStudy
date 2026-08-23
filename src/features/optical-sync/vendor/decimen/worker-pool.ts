@@ -62,7 +62,7 @@ export class DecodeWorkerPool {
     }
   }
 
-  /** Hand a frame to a free worker. False when every worker is busy — the
+  /** Hand a frame to a free worker. False when every worker is busy - the
    *  caller drops the frame rather than queueing it, because a stale frame is
    *  worth less than the next one. */
   submit(message: unknown, transfer: Transferable[]): boolean {

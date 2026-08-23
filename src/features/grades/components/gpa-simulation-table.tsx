@@ -114,7 +114,7 @@ export function GPASimulationTable({
                                                     </span>
                                                 </>
                                             ) : (
-                                                <span className="text-gray-400">—</span>
+                                                <span className="text-gray-400">-</span>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-center">

@@ -1,4 +1,4 @@
-import { Home, Map, BarChart3, Bot, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
+import { Home, Map, Bot, MapPinned, Info, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getPathForPage } from '../../app/routes';
@@ -28,6 +28,7 @@ const navGroups = [
         ? [{ icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' }]
         : []),
       { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
+      { icon: Info, label: 'Thông tin trường', subtitle: 'Bản đồ và kế hoạch năm học', page: 'campusInfo' },
       { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
       { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
     ],
@@ -76,8 +77,8 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <h3 className="text-white truncate" style={{ fontWeight: 600 }}>HCMUS</h3>
-              <p className="text-blue-200 text-sm truncate" style={{ fontWeight: 400 }}>Cổng SV</p>
+              <h3 className="text-white truncate" style={{ fontWeight: 600 }}>UStudy</h3>
+              <p className="text-blue-200 text-sm truncate" style={{ fontWeight: 400 }}>Hỗ trợ quản lý học tập</p>
             </div>
           )}
         </div>

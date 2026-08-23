@@ -28,6 +28,22 @@ const tuitionMap: Record<string, TuitionYear> = {
     '2024-2025': tuition_2024_2025,
 };
 
+export function getTuitionRateDetails(academicYear: string, majorId: string) {
+    const yearData = tuitionMap[academicYear] || tuitionMap[DEFAULT_ACADEMIC_YEAR];
+    const sharedRates = yearData.shared;
+    const majorRates = yearData.majors[majorId] || {};
+
+    return {
+        default_price: yearData.default_price,
+        sharedRates,
+        majorRates,
+        rates: {
+            ...sharedRates,
+            ...majorRates,
+        },
+    };
+}
+
 /**
  * Lấy bảng giá cho 1 ngành trong 1 năm học cụ thể.
  * Merge: shared (chung toàn trường) + majors[majorId] (riêng ngành).
@@ -36,14 +52,6 @@ const tuitionMap: Record<string, TuitionYear> = {
  * @returns { default_price, rates } - rates đã được merge
  */
 export function getTuitionRates(academicYear: string, majorId: string) {
-    const yearData = tuitionMap[academicYear] || tuitionMap[DEFAULT_ACADEMIC_YEAR];
-    const majorRates = yearData.majors[majorId] || {};
-
-    return {
-        default_price: yearData.default_price,
-        rates: {
-            ...yearData.shared,    // Chung toàn trường
-            ...majorRates,         // Riêng ngành
-        },
-    };
+    const { default_price, rates } = getTuitionRateDetails(academicYear, majorId);
+    return { default_price, rates };
 }
