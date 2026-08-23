@@ -4,6 +4,7 @@ import type { DayOffSession } from '../../utils/dayOffPreferences';
 
 export interface Preferences {
     daysOff?: (number | string)[];
+    dayOffPenalty?: number;
     session?: string;
     strategy?: string;
     noGaps?: boolean;
@@ -116,7 +117,7 @@ export class FitnessEvaluator {
                         const endBit = day * 20 + endPeriodBit;
                         for (let k = startBit; k <= endBit; k++) {
                             if (currentMask.test(k) || currentMask.test(k + 140)) {
-                                score -= WEIGHTS.PENALTY_DAY_OFF;
+                                score -= this.prefs.dayOffPenalty ?? WEIGHTS.PENALTY_DAY_OFF;
                                 break; // Dính 1 tiết là phạt, không cần check tiếp
                             }
                         }

@@ -14,8 +14,10 @@ import type {
   GroupScheduleOption,
   GroupScheduleRunResult,
   GroupSolution,
+  SchedulePreferenceConfig,
   StateMatrix,
 } from '../types';
+import type { DayOffPreference } from '../../../utils/dayOffPreferences';
 
 const GROUP_URL_PREFIX = 'v1_';
 const MASK_PARTS = 10;
@@ -25,6 +27,7 @@ const MAX_GROUP_MEMBERS = 20;
 const MAX_GROUP_COURSES_PER_MEMBER = 60;
 const MAX_GROUP_NICKNAME_LENGTH = 80;
 const MAX_GROUP_COURSE_ID_LENGTH = 32;
+const GROUP_DAY_OFF_PENALTY = 40_000;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
 type PreferenceConstraintMode = 'strict' | 'relaxed';
 
@@ -130,7 +133,9 @@ function parseGroupMembers(value: unknown): GroupMemberToken[] {
       nickname: typeof nickname === 'string' ? nickname : undefined,
       sharedCourses: readCourseIds(member.sharedCourses, 'Danh sách môn chung'),
       personalCourses: readCourseIds(member.personalCourses, 'Danh sách môn riêng'),
-      busyMask: Array(21).fill(0),
+      busyMask: Array.isArray(member.busyMask) ? member.busyMask : [],
+      preferredClasses: member.preferredClasses as ClassPreferenceMap | undefined,
+      personalConfig: member.personalConfig as SchedulePreferenceConfig | undefined,
     });
   });
 }
@@ -169,6 +174,23 @@ function normalizePreferenceMap(map?: ClassPreferenceMap): Record<string, Requir
       .map(([courseId, selection]) => [normalizeCourseId(courseId), normalizePreferenceSelection(selection)])
       .filter(([, selection]) => selection.excluded.length > 0 || selection.preferred.length > 0 || selection.required.length > 0),
   );
+}
+
+function sanitizePersonalConfig(config?: SchedulePreferenceConfig): SchedulePreferenceConfig | undefined {
+  if (!config) return undefined;
+
+  const daysOff = Array.from(new Set(
+    (config.daysOff ?? []).filter((value): value is DayOffPreference => {
+      if (typeof value === 'number') return Number.isInteger(value) && value >= 0 && value <= 6;
+      return /^([0-6]):(morning|afternoon)$/.test(value);
+    }),
+  ));
+
+  const sanitized: SchedulePreferenceConfig = { daysOff };
+  if (config.session === '0' || config.session === '1' || config.session === '2') sanitized.session = config.session;
+  if (config.strategy === 'compress' || config.strategy === 'spread') sanitized.strategy = config.strategy;
+  if (typeof config.noGaps === 'boolean') sanitized.noGaps = config.noGaps;
+  return sanitized;
 }
 
 function classPreferenceLevel(selection: Required<ClassPreferenceSelection> | undefined, classId: string): 'excluded' | 'required' | 'preferred' | null {
@@ -214,7 +236,52 @@ function classMatchesPreferenceConstraints(
   if (groupSelection.excluded.includes(classId)) return false;
   if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) return false;
 
+  for (const memberIndex of subscribers) {
+    const memberSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[courseId]);
+    if (memberSelection.excluded.includes(classId)) return false;
+    if (memberSelection.required.length > 0 && !memberSelection.required.includes(classId)) return false;
+  }
+
   return true;
+}
+
+function maskHasBit(mask: number[], index: number): boolean {
+  return ((mask[Math.floor(index / 32)] ?? 0) & (1 << (index % 32))) !== 0;
+}
+
+function countDayOffViolations(mask: number[], daysOff: DayOffPreference[] | undefined): number {
+  if (!daysOff?.length) return 0;
+
+  return daysOff.reduce((count, value) => {
+    const [rawDay, rawSession] = String(value).split(':');
+    const day = Number(rawDay);
+    if (!Number.isInteger(day) || day < 0 || day > 6) return count;
+
+    const startPeriod = rawSession === 'morning' ? 0 : rawSession === 'afternoon' ? 10 : 0;
+    const endPeriod = rawSession === 'morning' ? 9 : rawSession === 'afternoon' ? 19 : 19;
+    for (let period = startPeriod; period <= endPeriod; period++) {
+      const bit = day * 20 + period;
+      if (maskHasBit(mask, bit) || maskHasBit(mask, bit + 140)) return count + 1;
+    }
+    return count;
+  }, 0);
+}
+
+function getDayOffPriorityPenalty(
+  cls: ClassLike,
+  subscribers: number[],
+  members: GroupMemberToken[],
+  config: Pick<GroupFitnessConfig, 'daysOff'>,
+): number {
+  const classMask = getClassMask(cls);
+  const groupViolations = countDayOffViolations(classMask, config.daysOff);
+  const personalViolations = subscribers.reduce(
+    (count, memberIndex) => count + countDayOffViolations(classMask, members[memberIndex]?.personalConfig?.daysOff),
+    0,
+  );
+
+  // Ngày nhóm muốn nghỉ quan trọng hơn preference cá nhân khi thử nhánh DFS.
+  return groupViolations * 100 + personalViolations;
 }
 
 function buildMemberSubjects(solution: GroupSolution, db: CourseDatabase, courses: CourseWeight[], memberIndex: number, scope: 'all' | 'shared' | 'personal' = 'all') {
@@ -243,17 +310,25 @@ function scoreMemberSchedule(
   db: CourseDatabase,
   courses: CourseWeight[],
   memberIndex: number,
+  members: GroupMemberToken[],
   config: GroupFitnessConfig,
   scope: 'all' | 'shared' | 'personal' = 'all',
 ): number {
   const subjects = buildMemberSubjects(solution, db, courses, memberIndex, scope);
   if (subjects.length === 0) return 0;
 
+  const personalConfig = members[memberIndex]?.personalConfig;
+  const daysOff: DayOffPreference[] = [
+    ...(config.daysOff ?? []),
+    ...(personalConfig?.daysOff ?? []),
+  ];
+
   const evaluator = new FitnessEvaluator({
-    session: config.session || '0',
-    strategy: config.strategy || 'compress',
-    noGaps: config.noGaps ?? false,
-    daysOff: config.daysOff || [],
+    session: personalConfig?.session ?? config.session ?? '0',
+    strategy: personalConfig?.strategy ?? config.strategy ?? 'compress',
+    noGaps: personalConfig?.noGaps ?? config.noGaps ?? false,
+    daysOff,
+    dayOffPenalty: GROUP_DAY_OFF_PENALTY,
   });
   const chromosome = { genes: subjects.map(() => 0) };
   return evaluator.getFitness(chromosome, subjects);
@@ -267,7 +342,9 @@ export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken 
     nickname: member.nickname?.trim() || undefined,
     sharedCourses,
     personalCourses,
-    busyMask: Array(21).fill(0),
+    busyMask: normalizeMask(member.busyMask),
+    preferredClasses: normalizePreferenceMap(member.preferredClasses),
+    personalConfig: sanitizePersonalConfig(member.personalConfig),
   };
 }
 
@@ -340,13 +417,12 @@ export function solveGroup(
   members: GroupMemberToken[],
   maxSolutions = GROUP_SCHEDULER_CONFIG.DEFAULT_MAX_SOLUTIONS,
   mode: 'shared-first' | 'split' = 'shared-first',
-  config: Pick<GroupFitnessConfig, 'groupPreferredClasses'> = {},
+  config: Pick<GroupFitnessConfig, 'groupPreferredClasses' | 'daysOff'> = {},
   preferenceMode: PreferenceConstraintMode = 'relaxed',
   searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
 ): GroupSolution[] {
   const solutions: GroupSolution[] = [];
-  const combinedBusyMask = Array(21).fill(0);
-  const initialState: StateMatrix = members.map(() => [...combinedBusyMask]);
+  const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
   let visitedNodes = 0;
 
   function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
@@ -362,7 +438,11 @@ export function solveGroup(
 
     const course = courses[courseIndex];
     const availableClasses = getClasses(courseDatabase, course.courseId)
-      .sort((a, b) => getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config))
+      .sort((a, b) => {
+        const dayOffDifference = getDayOffPriorityPenalty(a, course.subscribers, members, config) - getDayOffPriorityPenalty(b, course.subscribers, members, config);
+        if (dayOffDifference !== 0) return dayOffDifference;
+        return getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config);
+      })
       .slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
     if (availableClasses.length === 0) return;
 
@@ -376,9 +456,11 @@ export function solveGroup(
         }
 
         const memberIndex = course.subscribers[subscriberOffset];
-        const sortedForMember = [...availableClasses].sort((a, b) =>
-          getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config),
-        ).slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
+        const sortedForMember = [...availableClasses].sort((a, b) => {
+          const dayOffDifference = getDayOffPriorityPenalty(a, [memberIndex], members, config) - getDayOffPriorityPenalty(b, [memberIndex], members, config);
+          if (dayOffDifference !== 0) return dayOffDifference;
+          return getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config);
+        }).slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
 
         for (const cls of sortedForMember) {
           const classMask = getClassMask(cls);
@@ -428,8 +510,8 @@ export function scoreGroupSolution(
   config: GroupFitnessConfig,
 ): number {
   const memberScores = members.map((member, memberIndex) => {
-    const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'shared');
-    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, config, 'personal');
+    const sharedScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, members, config, 'shared');
+    const personalScore = scoreMemberSchedule(solution, courseDatabase, courses, memberIndex, members, config, 'personal');
     return sharedScore + personalScore;
   });
   const total = memberScores.reduce((sum, score) => sum + score, 0);
@@ -444,11 +526,18 @@ export function scoreGroupSolution(
     const scoreClass = (classId: string, memberIndex: number) => {
       let nextScore = 0;
       const groupLevel = classPreferenceLevel(groupSelection, classId);
+      const personalSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[course.courseId]);
+      const personalLevel = classPreferenceLevel(personalSelection, classId);
       if (groupLevel === 'excluded') nextScore -= config.groupExcludedPreferenceMissPenalty;
       if (groupLevel === 'required') nextScore += config.groupRequiredPreferenceWeight;
       if (groupLevel === 'preferred') nextScore += config.groupPreferenceWeight;
       if (groupSelection.required.length > 0 && !groupSelection.required.includes(classId)) nextScore -= config.groupRequiredPreferenceMissPenalty;
       if (groupSelection.preferred.length > 0 && !groupSelection.preferred.includes(classId)) nextScore -= config.groupPreferenceMissPenalty;
+      if (personalLevel === 'excluded') nextScore -= config.personalExcludedPreferenceMissPenalty;
+      if (personalLevel === 'required') nextScore += config.personalRequiredPreferenceWeight;
+      if (personalLevel === 'preferred') nextScore += config.personalPreferenceWeight;
+      if (personalSelection.required.length > 0 && !personalSelection.required.includes(classId)) nextScore -= config.personalRequiredPreferenceMissPenalty;
+      if (personalSelection.preferred.length > 0 && !personalSelection.preferred.includes(classId)) nextScore -= config.personalPreferenceMissPenalty;
 
       return nextScore;
     };

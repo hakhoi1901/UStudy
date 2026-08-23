@@ -181,6 +181,7 @@ export function GroupSchedulePage({
     const [savedSchedules, setSavedSchedules] = useState<SavedSchedule[]>(() => {
         return readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []);
     });
+    const [personalAllowedClasses, setPersonalAllowedClasses] = useState<Record<string, string[]>>({});
     const [personalClassPreferences, setPersonalClassPreferences] = useState<Record<string, ClassPreferenceSelection>>({});
     const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>(() => {
         return readFromStorage<Record<string, ClassPreferenceSelection>>(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, {});
@@ -255,12 +256,44 @@ export function GroupSchedulePage({
         );
     }, [groupPreferredClasses]);
 
+    const buildDraftClassPreferences = (): Record<string, ClassPreferenceSelection> => {
+        const next = Object.fromEntries(
+            Object.entries(personalClassPreferences).map(([courseId, selection]) => [
+                courseId,
+                {
+                    excluded: [...(selection.excluded ?? [])],
+                    preferred: [...(selection.preferred ?? [])],
+                    required: [...(selection.required ?? [])],
+                },
+            ]),
+        ) as Record<string, ClassPreferenceSelection>;
+
+        draftCourseIds.forEach((courseId) => {
+            const allowed = personalAllowedClasses[courseId];
+            const allClassIds = (classOptionsByCourse[courseId] ?? []).map((classOption) => classOption.id);
+            if (!allowed || allClassIds.length === 0) return;
+
+            const selection = next[courseId] ?? {};
+            next[courseId] = {
+                ...selection,
+                excluded: Array.from(new Set([
+                    ...(selection.excluded ?? []),
+                    ...allClassIds.filter((classId) => !allowed.includes(classId)),
+                ])),
+            };
+        });
+
+        return next;
+    };
+
     const submitDraft = () => {
         const nextDraft: GroupMemberToken = {
             ...draft,
             sharedCourses: [],
             personalCourses: draftCourseIds,
-            busyMask: [],
+            busyMask: draft.busyMask,
+            preferredClasses: buildDraftClassPreferences(),
+            personalConfig: draft.personalConfig,
         };
 
         const unknownCourses = draftCourseIds.filter((course) => knownCourseIds.size > 0 && !knownCourseIds.has(course));
@@ -269,6 +302,7 @@ export function GroupSchedulePage({
         if (addMember(nextDraft)) {
             setDraft(makeDraft());
             setManualCourseInput('');
+            setPersonalAllowedClasses({});
             setPersonalClassPreferences({});
         }
     };
@@ -432,16 +466,14 @@ export function GroupSchedulePage({
                             <p className="mt-0.5 text-xs text-slate-500">{course.credits} tín chỉ</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
-                            {allowedClassesMap && setAllowedClassesMap && (
-                                <button
-                                    type="button"
-                                    onClick={() => setFilterModalCourse(course)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
-                                    title="Lọc lớp học"
-                                >
-                                    <Settings className="h-4 w-4" />
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => setFilterModalCourse(course)}
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
+                                title="Lọc lớp học cho thành viên này"
+                            >
+                                <Settings className="h-4 w-4" />
+                            </button>
                             {onRemoveSelectedCourse && (
                                 <button
                                     type="button"
@@ -660,6 +692,46 @@ export function GroupSchedulePage({
                     )}
                 </div>
 
+                <div className="space-y-3 border-t border-slate-100 pt-5">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <label className="text-sm font-semibold text-slate-800">Ngày không muốn học</label>
+                            <p className="mt-0.5 text-xs text-slate-500">Chỉ trừ điểm trên lịch của thành viên này.</p>
+                        </div>
+                        <span className="shrink-0 text-xs font-medium text-slate-400">
+                            {formatDaysOff(draft.personalConfig?.daysOff)}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                            const offSession = getDayOffSession(draft.personalConfig?.daysOff, day);
+                            return (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => setDraft((current) => ({
+                                        ...current,
+                                        personalConfig: {
+                                            ...current.personalConfig,
+                                            daysOff: cycleDayOffSession(current.personalConfig?.daysOff, day),
+                                        },
+                                    }))}
+                                    className={`flex h-10 min-w-10 flex-col items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-colors ${offSession === 'all'
+                                        ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
+                                        : offSession === 'morning' || offSession === 'afternoon'
+                                            ? 'border-blue-200 bg-blue-50/50 text-[#004A98]'
+                                            : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/40'
+                                        }`}
+                                    title="Bấm lần lượt: cả ngày, sáng, chiều, bỏ chọn"
+                                >
+                                    <span>{day === 6 ? 'CN' : `T${day + 2}`}</span>
+                                    {offSession && <span className="mt-0.5 text-[9px] font-medium leading-none">{formatDayOffSession(offSession)}</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 {/* Footer: notice + submit */}
                 {/* <div className="bottom-0 -mx-5 -mb-5 flex flex-col gap-3 border-t border-slate-100 bg-white/95 rounded-b-xl px-5 py-4 backdrop-blur sm:-mx-7 sm:-mb-7 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                     {members.length === 1 ? (
@@ -686,14 +758,14 @@ export function GroupSchedulePage({
                 </div> */}
             </section>
 
-            {filterModalCourse && allowedClassesMap && setAllowedClassesMap && (
+            {filterModalCourse && (
                 <CourseClassFilterModal
                     courseCode={filterModalCourse.id}
                     courseNameVi={filterModalCourse.nameVi}
                     isOpen={!!filterModalCourse}
                     onClose={() => setFilterModalCourse(null)}
-                    allowedClassesMap={allowedClassesMap}
-                    setAllowedClassesMap={setAllowedClassesMap}
+                    allowedClassesMap={personalAllowedClasses}
+                    setAllowedClassesMap={setPersonalAllowedClasses}
                     classPreferenceMap={personalClassPreferences}
                     setClassPreferenceMap={setPersonalClassPreferences}
                 />
