@@ -22,8 +22,8 @@
     "registrations": "/SinhVien.aspx?pid=212"
   },
   "defaults": {
-    "academicYear": "25-26",
-    "semester": "3",
+    "academicYear": "26-27",
+    "semester": "1",
     "cooldownMinutes": 30,
     "mode": "ask"
   }

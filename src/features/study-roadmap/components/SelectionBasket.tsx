@@ -3,6 +3,7 @@ import { BookOpen, X, ListFilter } from 'lucide-react';
 import type { Course } from '../../../types';
 import { useDepartmentData } from '../../../context/DepartmentContext';
 import { FinancialLogic } from '../../../logic/FinancialLogic';
+import { getTuitionRates } from '../../../assets/data/tuition';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
 import type { Tab } from '../types';
 import type { ClassPreferenceSelection } from '../../group-schedule/types';
@@ -38,7 +39,11 @@ export function SelectionBasket({
     description,
 }: SelectionBasketProps) {
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
-    const { data: { tuitionRates: tuition_rates, courses: allCoursesMeta } } = useDepartmentData();
+    const {
+        data: { tuitionRates: tuition_rates, courses: allCoursesMeta },
+        majorId,
+        academicYear,
+    } = useDepartmentData();
     const totalCredits = selectedCourses
         .filter(course => !ENGLISH_COURSE_IDS.includes(course.id))
         .reduce((sum, course) => sum + course.credits, 0);
@@ -53,6 +58,15 @@ export function SelectionBasket({
         course.price = courseFee;
         return sum + courseFee;
     }, 0);
+    const forecastAcademicYear = '2026-2027';
+    const comparisonAcademicYear = academicYear === forecastAcademicYear
+        ? '2025-2026'
+        : forecastAcademicYear;
+    const comparisonTuition = FinancialLogic.calculateTotalTuition(
+        selectedCourses,
+        getTuitionRates(comparisonAcademicYear, majorId),
+        allCoursesMeta,
+    );
 
     const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
@@ -137,15 +151,15 @@ export function SelectionBasket({
                                 style={{ width: `${Math.min((totalCredits / 25) * 100, 100)}%` }}
                             />
                         </div>
-                        {totalCredits > 24 && (
+                        {totalCredits > 25 && (
                             <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
                                 <span>⚠️</span>
                                 <span>Vượt quá 25 tín chỉ tối đa mỗi học kỳ</span>
                             </p>
                         )}
-                        {totalCredits > 0 && totalCredits <= 24 && (
+                        {totalCredits > 0 && totalCredits <= 25 && (
                             <p className="text-xs text-gray-500 mt-1.5">
-                                Còn lại {24 - totalCredits} tín chỉ có thể đăng ký
+                                Còn lại {25 - totalCredits} tín chỉ có thể đăng ký
                             </p>
                         )}
                     </div>
@@ -156,9 +170,23 @@ export function SelectionBasket({
                             <p className="text-2xl font-bold text-[#004A98]">
                                 {formatCurrency(estimatedTuition)} VNĐ
                             </p>
-                            <p className="mt-1.5 text-[11px] font-medium text-red-600">
-                                Chưa áp dụng mức tăng học phí năm học 2026-2027
-                            </p>
+                            <div className="mt-2 border-t border-blue-100 pt-2 text-[11px]">
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="font-medium text-gray-600">
+                                        {academicYear === forecastAcademicYear
+                                            ? `Theo đơn giá ${comparisonAcademicYear}`
+                                            : `Tham khảo ${comparisonAcademicYear}`}
+                                    </span>
+                                    <span className="shrink-0 font-semibold text-[#004A98]">
+                                        {formatCurrency(comparisonTuition)} VNĐ
+                                    </span>
+                                </div>
+                                <p className="mt-1 leading-relaxed text-gray-500">
+                                    {academicYear === forecastAcademicYear
+                                        ? 'Đơn giá 2026-2027 là dữ liệu dự báo. Mức phía trên được tính lại theo bảng đơn giá 2025-2026 để tham khảo.'
+                                        : 'Ước tính theo bảng đơn giá dự báo, chỉ mang tính tham khảo và không phải mức thu chính thức của trường.'}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
