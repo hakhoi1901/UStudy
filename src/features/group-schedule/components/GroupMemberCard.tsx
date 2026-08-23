@@ -3,6 +3,7 @@ import { ChevronDown, Trash2 } from 'lucide-react';
 import type { GroupMemberToken } from '../types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/navigation/accordion';
 import { Button } from '../../../components/ui/form/button';
+import { formatDaysOff } from '../../../utils/dayOffPreferences';
 
 interface GroupMemberCardProps {
   member: GroupMemberToken;
@@ -14,6 +15,7 @@ interface GroupMemberCardProps {
 export function GroupMemberCard({ member, index, courseNames = {}, onRemove }: GroupMemberCardProps) {
   const nickname = member.nickname || `Thành viên ${index + 1}`;
   const registeredCourses = Array.from(new Set([...member.sharedCourses, ...member.personalCourses]));
+  const daysOff = formatDaysOff(member.personalConfig?.daysOff);
 
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -24,7 +26,9 @@ export function GroupMemberCard({ member, index, courseNames = {}, onRemove }: G
               <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-slate-900">{nickname}</div>
-                  <div className="mt-0.5 text-xs font-medium text-slate-500">{registeredCourses.length} môn học</div>
+                  <div className="mt-0.5 text-xs font-medium text-slate-500">
+                    {registeredCourses.length} môn học{daysOff !== 'Không chọn' ? ` · Tránh ${daysOff}` : ''}
+                  </div>
                 </div>
                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
               </div>

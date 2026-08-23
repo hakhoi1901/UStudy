@@ -204,7 +204,12 @@ export const AcademicRulesEngine = {
         }
 
         // Empty score → currently studying
-        if (recordToCheck.score === '' || recordToCheck.score === null || recordToCheck.score === undefined) {
+        if (
+            recordToCheck.score === ''
+            || String(recordToCheck.score).trim() === '(*)'
+            || recordToCheck.score === null
+            || recordToCheck.score === undefined
+        ) {
             return 'studying';
         }
 

@@ -5,15 +5,18 @@ import { GroupMemberCard } from './components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './components/GroupScheduleCalendarPreview';
 import { GroupScheduleResult, type GroupScheduleResultViewMode } from './components/GroupScheduleResult';
 import { GroupScheduleResultViewTabs } from './components/GroupScheduleResultViewTabs';
+import { CourseSharingEditor } from './components/CourseSharingEditor';
+import { GroupScheduleComparison } from './components/GroupScheduleComparison';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
+import { AppSelect } from '../../components/ui/form';
 import { Input } from '../../components/ui/form/input';
 import { Textarea } from '../../components/ui/form/textarea';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../components/ui/overlays/dropdown-menu';
 import { PageHeader } from '../../components/layout/page-header';
 import { buildDensityMap, decodeGroupURL } from './services/group-scheduler';
-import type { ClassPreferenceLevel, ClassPreferenceSelection, GroupMemberToken, GroupScheduleOption } from './types';
+import type { ClassPreferenceLevel, ClassPreferenceSelection, CourseSharingMap, GroupMemberToken, GroupScheduleOption } from './types';
 import { parseCourseInput, useGroupScheduler } from './hooks/use-group-scheduler';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
@@ -145,11 +148,16 @@ export function GroupSchedulePage({
         solving,
         result,
         solveError,
+        validationIssues,
+        importedShareConfig,
         availableCourses,
         setMembersFromURL,
         addMember,
         replaceMembers,
         solve,
+        validateConfiguration,
+        setShareConfig,
+        analyzeTradeoff,
         clearResult,
         setResult,
         getOptionRegistrations,
@@ -181,15 +189,37 @@ export function GroupSchedulePage({
     const [savedSchedules, setSavedSchedules] = useState<SavedSchedule[]>(() => {
         return readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []);
     });
+    const [personalAllowedClasses, setPersonalAllowedClasses] = useState<Record<string, string[]>>({});
     const [personalClassPreferences, setPersonalClassPreferences] = useState<Record<string, ClassPreferenceSelection>>({});
     const [groupPreferredClasses, setGroupPreferredClasses] = useState<Record<string, ClassPreferenceSelection>>(() => {
         return readFromStorage<Record<string, ClassPreferenceSelection>>(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, {});
     });
+    const [courseSharing, setCourseSharing] = useState<CourseSharingMap>(() => {
+        return readFromStorage<CourseSharingMap>(STORAGE_KEYS.GROUP_SCHEDULER_COURSE_SHARING, {});
+    });
     const [groupPrefs, setGroupPrefs] = useState<SolverPreferences>(() => readFromStorage<SolverPreferences>(STORAGE_KEYS.SOLVER_PREFERENCES, defaultSolverPreferences));
+    const [classPreferenceTargetByCourse, setClassPreferenceTargetByCourse] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (!importedShareConfig) return;
+        if (importedShareConfig.groupPreferredClasses) setGroupPreferredClasses(importedShareConfig.groupPreferredClasses as Record<string, ClassPreferenceSelection>);
+        if (importedShareConfig.courseSharing) setCourseSharing(importedShareConfig.courseSharing);
+        if (importedShareConfig.groupPreferences) setGroupPrefs((current) => ({ ...current, ...importedShareConfig.groupPreferences }));
+    }, [importedShareConfig]);
     
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_CLASS_PREFERENCES, groupPreferredClasses);
     }, [groupPreferredClasses]);
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.GROUP_SCHEDULER_COURSE_SHARING, courseSharing);
+    }, [courseSharing]);
+    useEffect(() => {
+        setShareConfig({
+            groupPreferredClasses,
+            courseSharing,
+            groupPreferences: groupPrefs,
+        });
+    }, [courseSharing, groupPreferredClasses, groupPrefs, setShareConfig]);
     const [expandedClassCourseId, setExpandedClassCourseId] = useState<string | null>(null);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
@@ -255,12 +285,44 @@ export function GroupSchedulePage({
         );
     }, [groupPreferredClasses]);
 
+    const buildDraftClassPreferences = (): Record<string, ClassPreferenceSelection> => {
+        const next = Object.fromEntries(
+            Object.entries(personalClassPreferences).map(([courseId, selection]) => [
+                courseId,
+                {
+                    excluded: [...(selection.excluded ?? [])],
+                    preferred: [...(selection.preferred ?? [])],
+                    required: [...(selection.required ?? [])],
+                },
+            ]),
+        ) as Record<string, ClassPreferenceSelection>;
+
+        draftCourseIds.forEach((courseId) => {
+            const allowed = personalAllowedClasses[courseId];
+            const allClassIds = (classOptionsByCourse[courseId] ?? []).map((classOption) => classOption.id);
+            if (!allowed || allClassIds.length === 0) return;
+
+            const selection = next[courseId] ?? {};
+            next[courseId] = {
+                ...selection,
+                excluded: Array.from(new Set([
+                    ...(selection.excluded ?? []),
+                    ...allClassIds.filter((classId) => !allowed.includes(classId)),
+                ])),
+            };
+        });
+
+        return next;
+    };
+
     const submitDraft = () => {
         const nextDraft: GroupMemberToken = {
             ...draft,
             sharedCourses: [],
             personalCourses: draftCourseIds,
-            busyMask: [],
+            busyMask: draft.busyMask,
+            preferredClasses: buildDraftClassPreferences(),
+            personalConfig: draft.personalConfig,
         };
 
         const unknownCourses = draftCourseIds.filter((course) => knownCourseIds.size > 0 && !knownCourseIds.has(course));
@@ -269,6 +331,7 @@ export function GroupSchedulePage({
         if (addMember(nextDraft)) {
             setDraft(makeDraft());
             setManualCourseInput('');
+            setPersonalAllowedClasses({});
             setPersonalClassPreferences({});
         }
     };
@@ -300,12 +363,42 @@ export function GroupSchedulePage({
     };
 
     const removeMember = (index: number) => {
+        setCourseSharing((current) => Object.fromEntries(
+            Object.entries(current).map(([courseId, rule]) => [
+                courseId,
+                {
+                    ...rule,
+                    groups: rule.groups?.map((group) => group
+                        .filter((memberIndex) => memberIndex !== index)
+                        .map((memberIndex) => memberIndex > index ? memberIndex - 1 : memberIndex)),
+                },
+            ]),
+        ));
         replaceMembers(members.filter((_, memberIndex) => memberIndex !== index));
         clearResult();
     };
 
+    const getClassPreferenceTargets = (courseId: string, subscribers: number[]) => {
+        const rule = courseSharing[courseId];
+        const targets = [{ id: 'global', name: 'Toàn bộ môn' }];
+        if (rule?.mode === 'independent') {
+            return [...targets, ...subscribers.map((memberIndex) => ({ id: `member-${memberIndex}`, name: members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}` }))];
+        }
+        if (!rule?.groups) return [...targets, { id: 'all', name: 'Nhóm học chung' }];
+        rule.groups.forEach((group, groupIndex) => {
+            if (group.some((memberIndex) => subscribers.includes(memberIndex))) targets.push({ id: `group-${groupIndex}`, name: `Nhóm ${groupIndex + 1}` });
+        });
+        subscribers.filter((memberIndex) => !rule.groups?.some((group) => group.includes(memberIndex))).forEach((memberIndex) => targets.push({ id: `member-${memberIndex}`, name: members[memberIndex]?.nickname || `Học riêng ${memberIndex + 1}` }));
+        return targets;
+    };
+
+    const getTargetSelection = (courseId: string): ClassPreferenceSelection | undefined => {
+        const target = classPreferenceTargetByCourse[courseId] ?? 'global';
+        return target === 'global' ? groupPreferredClasses[courseId] : courseSharing[courseId]?.groupClassPreferences?.[target];
+    };
+
     const getGroupClassPreferenceLevel = (courseId: string, classId: string): ClassPreferenceLevel | null => {
-        const selection = groupPreferredClasses[courseId];
+        const selection = getTargetSelection(courseId);
         if (selection?.excluded?.includes(classId)) return 'excluded';
         if (selection?.required?.includes(classId)) return 'required';
         if (selection?.preferred?.includes(classId)) return 'preferred';
@@ -319,10 +412,11 @@ export function GroupSchedulePage({
     };
 
     const setGroupClassPreferenceLevel = (courseId: string, classId: string, level: ClassPreferenceLevel | null) => {
-        setGroupPreferredClasses((current) => {
-            const excluded = new Set(current[courseId]?.excluded ?? []);
-            const preferred = new Set(current[courseId]?.preferred ?? []);
-            const required = new Set(current[courseId]?.required ?? []);
+        const target = classPreferenceTargetByCourse[courseId] ?? 'global';
+        const updateSelection = (currentSelection?: ClassPreferenceSelection): ClassPreferenceSelection | undefined => {
+            const excluded = new Set(currentSelection?.excluded ?? []);
+            const preferred = new Set(currentSelection?.preferred ?? []);
+            const required = new Set(currentSelection?.required ?? []);
             excluded.delete(classId);
             preferred.delete(classId);
             required.delete(classId);
@@ -338,15 +432,43 @@ export function GroupSchedulePage({
             };
 
             if ((nextSelection.excluded?.length ?? 0) === 0 && (nextSelection.preferred?.length ?? 0) === 0 && (nextSelection.required?.length ?? 0) === 0) {
-                const { [courseId]: _removed, ...rest } = current;
-                return rest;
+                return undefined;
             }
-
-            return { ...current, [courseId]: nextSelection };
+            return nextSelection;
+        };
+        if (target === 'global') {
+            setGroupPreferredClasses((current) => {
+                const next = updateSelection(current[courseId]);
+                if (!next) {
+                    const { [courseId]: _removed, ...rest } = current;
+                    return rest;
+                }
+                return { ...current, [courseId]: next };
+            });
+            return;
+        }
+        setCourseSharing((current) => {
+            const rule = current[courseId] ?? { mode: 'required' as const };
+            const next = updateSelection(rule.groupClassPreferences?.[target]);
+            const groupClassPreferences = { ...(rule.groupClassPreferences ?? {}) };
+            if (next) groupClassPreferences[target] = next;
+            else delete groupClassPreferences[target];
+            return { ...current, [courseId]: { ...rule, groupClassPreferences } };
         });
     };
 
     const clearGroupClassPreference = (courseId: string) => {
+        const target = classPreferenceTargetByCourse[courseId] ?? 'global';
+        if (target !== 'global') {
+            setCourseSharing((current) => {
+                const rule = current[courseId];
+                if (!rule) return current;
+                const groupClassPreferences = { ...(rule.groupClassPreferences ?? {}) };
+                delete groupClassPreferences[target];
+                return { ...current, [courseId]: { ...rule, groupClassPreferences } };
+            });
+            return;
+        }
         setGroupPreferredClasses((current) => {
             const { [courseId]: _removed, ...rest } = current;
             return rest;
@@ -354,10 +476,17 @@ export function GroupSchedulePage({
     };
 
     const runGroupSolve = () => {
+        const config = { ...groupPrefs, groupPreferredClasses, courseSharing };
+        const issues = validateConfiguration(config);
+        if (issues.some((issue) => issue.severity === 'error')) {
+            setActiveStep(2);
+            return;
+        }
         setActiveStep(3);
         setShowGroupCalendarPreview(true);
-        solve({ ...groupPrefs, groupPreferredClasses });
+        solve(config);
     };
+
 
     const handleUseSchedule = (option: GroupScheduleOption, memberIndex: number) => {
         const registrations = getOptionRegistrations(option, memberIndex);
@@ -432,16 +561,14 @@ export function GroupSchedulePage({
                             <p className="mt-0.5 text-xs text-slate-500">{course.credits} tín chỉ</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
-                            {allowedClassesMap && setAllowedClassesMap && (
-                                <button
-                                    type="button"
-                                    onClick={() => setFilterModalCourse(course)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
-                                    title="Lọc lớp học"
-                                >
-                                    <Settings className="h-4 w-4" />
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => setFilterModalCourse(course)}
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-50 hover:text-[#004A98]"
+                                title="Lọc lớp học cho thành viên này"
+                            >
+                                <Settings className="h-4 w-4" />
+                            </button>
                             {onRemoveSelectedCourse && (
                                 <button
                                     type="button"
@@ -660,6 +787,46 @@ export function GroupSchedulePage({
                     )}
                 </div>
 
+                <div className="space-y-3 border-t border-slate-100 pt-5">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <label className="text-sm font-semibold text-slate-800">Ngày không muốn học</label>
+                            <p className="mt-0.5 text-xs text-slate-500">Chỉ trừ điểm trên lịch của thành viên này.</p>
+                        </div>
+                        <span className="shrink-0 text-xs font-medium text-slate-400">
+                            {formatDaysOff(draft.personalConfig?.daysOff)}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                            const offSession = getDayOffSession(draft.personalConfig?.daysOff, day);
+                            return (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => setDraft((current) => ({
+                                        ...current,
+                                        personalConfig: {
+                                            ...current.personalConfig,
+                                            daysOff: cycleDayOffSession(current.personalConfig?.daysOff, day),
+                                        },
+                                    }))}
+                                    className={`flex h-10 min-w-10 flex-col items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-colors ${offSession === 'all'
+                                        ? 'border-[#004A98] bg-blue-50 text-[#004A98]'
+                                        : offSession === 'morning' || offSession === 'afternoon'
+                                            ? 'border-blue-200 bg-blue-50/50 text-[#004A98]'
+                                            : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/40'
+                                        }`}
+                                    title="Bấm lần lượt: cả ngày, sáng, chiều, bỏ chọn"
+                                >
+                                    <span>{day === 6 ? 'CN' : `T${day + 2}`}</span>
+                                    {offSession && <span className="mt-0.5 text-[9px] font-medium leading-none">{formatDayOffSession(offSession)}</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 {/* Footer: notice + submit */}
                 {/* <div className="bottom-0 -mx-5 -mb-5 flex flex-col gap-3 border-t border-slate-100 bg-white/95 rounded-b-xl px-5 py-4 backdrop-blur sm:-mx-7 sm:-mb-7 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                     {members.length === 1 ? (
@@ -686,14 +853,14 @@ export function GroupSchedulePage({
                 </div> */}
             </section>
 
-            {filterModalCourse && allowedClassesMap && setAllowedClassesMap && (
+            {filterModalCourse && (
                 <CourseClassFilterModal
                     courseCode={filterModalCourse.id}
                     courseNameVi={filterModalCourse.nameVi}
                     isOpen={!!filterModalCourse}
                     onClose={() => setFilterModalCourse(null)}
-                    allowedClassesMap={allowedClassesMap}
-                    setAllowedClassesMap={setAllowedClassesMap}
+                    allowedClassesMap={personalAllowedClasses}
+                    setAllowedClassesMap={setPersonalAllowedClasses}
                     classPreferenceMap={personalClassPreferences}
                     setClassPreferenceMap={setPersonalClassPreferences}
                 />
@@ -709,9 +876,8 @@ export function GroupSchedulePage({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-900">Ưu tiên tùy chọn</h2>
-                    <p className="mt-1 text-sm text-gray-500"></p>
+                    <p className="mt-1 text-sm text-gray-500">Các thiết lập hiện tại được gửi kèm khi bạn chia sẻ link nhóm.</p>
                 </div>
-                
             </div>
 
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -737,7 +903,7 @@ export function GroupSchedulePage({
                         className="w-full shrink-0 bg-emerald-600 text-white hover:bg-emerald-700 sm:w-auto"
                     >
                         <Calendar className="h-4 w-4" />
-                        {solving ? 'Đang xếp lịch...' : 'Xếp lịch nhóm'}
+                        {solving ? 'Đang xếp lịch...' : result?.solutions.length ? 'Tạo phương án mới' : 'Xếp lịch nhóm'}
                     </Button>
                 </div>
                 
@@ -901,16 +1067,28 @@ export function GroupSchedulePage({
                 </div>
             </div>
 
+            {validationIssues.length > 0 ? (
+                <div className="overflow-hidden rounded-xl border border-amber-200 bg-amber-50">
+                    <div className="flex items-start gap-2 px-4 py-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" /><div><p className="text-sm font-semibold text-amber-950">Kiểm tra cấu hình trước khi xếp</p><p className="mt-0.5 text-xs text-amber-800">Các lý do dưới đây được đối chiếu trực tiếp với lớp mở, lịch bận và bộ lọc hiện tại.</p></div></div>
+                    <div className="divide-y divide-amber-200 border-t border-amber-200 bg-white/70">
+                        {validationIssues.map((issue) => <details key={issue.id} className="group px-4 py-2.5"><summary className="cursor-pointer list-none text-sm font-medium text-gray-900">{issue.severity === 'error' ? 'Không thể xếp' : 'Có thể phải tách nhóm'} · {issue.title}</summary><p className="mt-1 text-xs text-gray-600">{issue.description}</p>{issue.rejectedClasses?.length ? <div className="mt-2 space-y-1 text-xs text-gray-500">{issue.rejectedClasses.map((entry) => <p key={entry.classId}><span className="font-mono font-medium text-gray-700">{entry.classId}:</span> {entry.reasons.join('; ')}</p>)}</div> : null}</details>)}
+                    </div>
+                </div>
+            ) : null}
+
             <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div>
-                    <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Settings className="h-4 w-4 text-[#004A98]" />Lớp ưu tiên theo môn chung</h3>
-                    <p className="mt-1 text-xs text-gray-500">Ưu tiên nhóm có trọng số cao hơn ưu tiên cá nhân. Lớp bắt buộc sẽ bị phạt rất nặng nếu solver phải chọn lệch.</p>
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Settings className="h-4 w-4 text-[#004A98]" />Ưu tiên theo môn</h3>
+                    <p className="mt-1 text-xs text-gray-500">Đặt lớp ưu tiên hoặc bắt buộc, sau đó chọn các thành viên cần học cùng nhau.</p>
                 </div>
                 {groupCourses.length === 0 ? (
                     <div className="ustudy-muted-panel text-sm text-gray-500">Chưa có môn nào trong nhóm.</div>
                 ) : (
-                    groupCourses.map((course) => (
-                        <div key={course.courseId} className="grid gap-3 rounded-lg border border-gray-200 border-l-[3px] border-l-[#004A98] p-3 lg:grid-cols-[350px_minmax(0,1fr)]">
+                    groupCourses.map((course) => {
+                        const targetSelection = getTargetSelection(course.courseId);
+                        const preferenceTargets = getClassPreferenceTargets(course.courseId, course.subscribers);
+                        return (
+                        <div key={course.courseId} className="grid gap-3 rounded-lg border border-gray-200 border-l-[3px] border-l-[#004A98] p-3 lg:grid-cols-[320px_minmax(0,1fr)]">
                             <div>
                                 <div className="font-mono text-sm font-semibold text-gray-900">{course.courseId}</div>
                                 <div className="mt-0.5 text-sm font-medium text-gray-800">{getGroupCourseName(course.courseId)}</div>
@@ -921,10 +1099,10 @@ export function GroupSchedulePage({
                             <div className="space-y-2">
                                 <div className="flex flex-col gap-2 rounded-lg bg-gray-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div className="flex flex-wrap gap-1.5 text-xs">
-                                        {(groupPreferredClasses[course.courseId]?.excluded?.length ?? 0) > 0 && <span className="rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">{groupPreferredClasses[course.courseId]?.excluded?.length} cấm</span>}
-                                        {(groupPreferredClasses[course.courseId]?.preferred?.length ?? 0) > 0 && <span className="rounded-full bg-blue-100 px-2 py-1 font-medium text-[#004A98]">{groupPreferredClasses[course.courseId]?.preferred?.length} ưu tiên</span>}
-                                        {(groupPreferredClasses[course.courseId]?.required?.length ?? 0) > 0 && <span className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-700">{groupPreferredClasses[course.courseId]?.required?.length} bắt buộc</span>}
-                                        {((groupPreferredClasses[course.courseId]?.excluded?.length ?? 0) + (groupPreferredClasses[course.courseId]?.preferred?.length ?? 0) + (groupPreferredClasses[course.courseId]?.required?.length ?? 0)) === 0 && <span className="text-gray-500">Chưa chọn lớp ưu tiên</span>}
+                                        {(targetSelection?.excluded?.length ?? 0) > 0 && <span className="rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">{targetSelection?.excluded?.length} cấm</span>}
+                                        {(targetSelection?.preferred?.length ?? 0) > 0 && <span className="rounded-full bg-blue-100 px-2 py-1 font-medium text-[#004A98]">{targetSelection?.preferred?.length} ưu tiên</span>}
+                                        {(targetSelection?.required?.length ?? 0) > 0 && <span className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-700">{targetSelection?.required?.length} bắt buộc</span>}
+                                        {((targetSelection?.excluded?.length ?? 0) + (targetSelection?.preferred?.length ?? 0) + (targetSelection?.required?.length ?? 0)) === 0 && <span className="text-gray-500">Chưa chọn lớp ưu tiên</span>}
                                     </div>
                                     <Button
                                         type="button"
@@ -939,6 +1117,10 @@ export function GroupSchedulePage({
 
                                 {expandedClassCourseId === course.courseId && (
                                     <div className="gap-2 max-h-80 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 pr-1">
+                                        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white pb-1">
+                                            <span className="text-xs font-medium text-gray-500">Áp dụng cho</span>
+                                            <AppSelect value={classPreferenceTargetByCourse[course.courseId] ?? 'global'} onChange={(value) => setClassPreferenceTargetByCourse((current) => ({ ...current, [course.courseId]: value }))} options={preferenceTargets} ariaLabel={`Chọn nhóm áp dụng ưu tiên lớp cho ${course.courseId}`} className="w-44" triggerClassName="h-8 px-2.5 text-xs" menuClassName="right-0 left-auto w-48" />
+                                        </div>
                                         {(classOptionsByCourse[course.courseId] ?? []).length === 0 ? (
                                             <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-500">
                                                 Chưa có dữ liệu lớp cho môn này.
@@ -979,7 +1161,7 @@ export function GroupSchedulePage({
                                                 );
                                             })
                                         )}
-                                        {((groupPreferredClasses[course.courseId]?.excluded?.length ?? 0) + (groupPreferredClasses[course.courseId]?.preferred?.length ?? 0) + (groupPreferredClasses[course.courseId]?.required?.length ?? 0)) > 0 && (
+                                        {((targetSelection?.excluded?.length ?? 0) + (targetSelection?.preferred?.length ?? 0) + (targetSelection?.required?.length ?? 0)) > 0 && (
                                             <button
                                                 type="button"
                                                 onClick={() => clearGroupClassPreference(course.courseId)}
@@ -990,9 +1172,21 @@ export function GroupSchedulePage({
                                         )}
                                     </div>
                                 )}
+                                {course.subscribers.length >= 2 ? (
+                                    <CourseSharingEditor
+                                        courseId={course.courseId}
+                                        subscribers={course.subscribers}
+                                        members={members}
+                                        value={courseSharing[course.courseId]}
+                                        onChange={(nextRule) => {
+                                            setCourseSharing((current) => ({ ...current, [course.courseId]: nextRule }));
+                                            setClassPreferenceTargetByCourse((current) => ({ ...current, [course.courseId]: 'global' }));
+                                        }}
+                                    />
+                                ) : null}
                             </div>
                         </div>
-                    ))
+                    );})
                 )}
             </div>
         </section>
@@ -1006,6 +1200,7 @@ export function GroupSchedulePage({
                     <p className="mt-1 text-sm text-gray-500">{result?.solutions.length || 0} phương án khả dụng.</p>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
+                    <button type="button" onClick={() => setActiveStep(2)} className="ustudy-button-normal"><Settings className="h-4 w-4" /><span className="hidden sm:inline">Chỉnh cấu hình</span></button>
                     {selectedOption && (
                         <button
                             type="button"
@@ -1094,12 +1289,21 @@ export function GroupSchedulePage({
                         />
 
 
-                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} onOpenClassDetails={setOpenClassDetails} />}
+                        {selectedOption && (
+                            <GroupScheduleResult
+                                option={selectedOption}
+                                viewMode={resultViewMode}
+                                onOpenClassDetails={setOpenClassDetails}
+                                onAnalyzeTradeoff={(tradeoff) => analyzeTradeoff(selectedOption, tradeoff, { ...groupPrefs, groupPreferredClasses, courseSharing })}
+                            />
+                        )}
                     </>
                 )
             ) : (
                 <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-500">Chưa có kết quả. Hãy chạy xếp lịch trước.</div>
             )}
+
+            {result?.solutions.length ? <div className="mt-4"><GroupScheduleComparison options={result.solutions} activeIndex={activeResultIndex} /></div> : null}
 
             <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
