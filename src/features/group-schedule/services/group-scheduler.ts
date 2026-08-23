@@ -13,11 +13,14 @@ import type {
   GroupScheduleItem,
   GroupScheduleOption,
   GroupScheduleRunResult,
+  GroupScheduleTradeoff,
+  GroupSolveStage,
+  GroupSolveTrace,
   GroupSolution,
   SchedulePreferenceConfig,
   StateMatrix,
 } from '../types';
-import type { DayOffPreference } from '../../../utils/dayOffPreferences';
+import { formatDaysOff, type DayOffPreference } from '../../../utils/dayOffPreferences';
 
 const GROUP_URL_PREFIX = 'v1_';
 const MASK_PARTS = 10;
@@ -30,6 +33,25 @@ const MAX_GROUP_COURSE_ID_LENGTH = 32;
 const GROUP_DAY_OFF_PENALTY = 40_000;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
 type PreferenceConstraintMode = 'strict' | 'relaxed';
+type SolveMode = 'shared-first' | 'split';
+
+interface HardClassConstraints {
+  groupExcluded?: Record<string, string[]>;
+  memberExcluded?: Record<string, Record<number, string[]>>;
+}
+
+interface SolveGroupAttempt {
+  solutions: GroupSolution[];
+  visitedNodes: number;
+  reachedSearchBudget: boolean;
+  reachedSolutionLimit: boolean;
+}
+
+interface SolveStagesResult {
+  solutions: GroupSolution[];
+  stage: GroupSolveStage | null;
+  trace: GroupSolveTrace[];
+}
 
 type ClassLike = {
   id: string;
@@ -229,7 +251,11 @@ function classMatchesPreferenceConstraints(
   members: GroupMemberToken[],
   config: Pick<GroupFitnessConfig, 'groupPreferredClasses'>,
   preferenceMode: PreferenceConstraintMode,
+  hardConstraints?: HardClassConstraints,
 ): boolean {
+  if (hardConstraints?.groupExcluded?.[courseId]?.includes(classId)) return false;
+  if (subscribers.some((memberIndex) => hardConstraints?.memberExcluded?.[courseId]?.[memberIndex]?.includes(classId))) return false;
+
   if (preferenceMode === 'relaxed') return true;
 
   const groupSelection = normalizePreferenceSelection(config.groupPreferredClasses?.[courseId]);
@@ -411,23 +437,33 @@ export function isClassValid(classMask: number[], subscribers: number[], state: 
   );
 }
 
-export function solveGroup(
+function solveGroupWithTrace(
   courses: CourseWeight[],
   courseDatabase: CourseDatabase,
   members: GroupMemberToken[],
   maxSolutions = GROUP_SCHEDULER_CONFIG.DEFAULT_MAX_SOLUTIONS,
-  mode: 'shared-first' | 'split' = 'shared-first',
+  mode: SolveMode = 'shared-first',
   config: Pick<GroupFitnessConfig, 'groupPreferredClasses' | 'daysOff'> = {},
   preferenceMode: PreferenceConstraintMode = 'relaxed',
   searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
-): GroupSolution[] {
+  hardConstraints?: HardClassConstraints,
+  limitRelaxedCandidates = true,
+): SolveGroupAttempt {
   const solutions: GroupSolution[] = [];
   const initialState: StateMatrix = members.map((member) => normalizeMask(member.busyMask));
   let visitedNodes = 0;
+  let reachedSearchBudget = false;
+  let reachedSolutionLimit = false;
 
   function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
-    if (solutions.length >= maxSolutions) return;
-    if (visitedNodes++ >= searchBudget) return;
+    if (solutions.length >= maxSolutions) {
+      reachedSolutionLimit = true;
+      return;
+    }
+    if (visitedNodes++ >= searchBudget) {
+      reachedSearchBudget = true;
+      return;
+    }
     if (courseIndex === courses.length) {
       solutions.push({
         assignments: new Map(assignments),
@@ -443,13 +479,19 @@ export function solveGroup(
         if (dayOffDifference !== 0) return dayOffDifference;
         return getPreferenceHits(course.courseId, b.id, course.subscribers, members, config) - getPreferenceHits(course.courseId, a.id, course.subscribers, members, config);
       })
-      .slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
+      .slice(0, preferenceMode === 'relaxed' && limitRelaxedCandidates ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
     if (availableClasses.length === 0) return;
 
     if (mode === 'split' && course.subscribers.length > 1) {
       function assignSubscriber(subscriberOffset: number, workingState: StateMatrix) {
-        if (solutions.length >= maxSolutions) return;
-        if (visitedNodes++ >= searchBudget) return;
+        if (solutions.length >= maxSolutions) {
+          reachedSolutionLimit = true;
+          return;
+        }
+        if (visitedNodes++ >= searchBudget) {
+          reachedSearchBudget = true;
+          return;
+        }
         if (subscriberOffset === course.subscribers.length) {
           dfs(courseIndex + 1, workingState, assignments);
           return;
@@ -460,11 +502,11 @@ export function solveGroup(
           const dayOffDifference = getDayOffPriorityPenalty(a, [memberIndex], members, config) - getDayOffPriorityPenalty(b, [memberIndex], members, config);
           if (dayOffDifference !== 0) return dayOffDifference;
           return getPreferenceHits(course.courseId, b.id, [memberIndex], members, config) - getPreferenceHits(course.courseId, a.id, [memberIndex], members, config);
-        }).slice(0, preferenceMode === 'relaxed' ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
+        }).slice(0, preferenceMode === 'relaxed' && limitRelaxedCandidates ? GROUP_SCHEDULER_CONFIG.RELAXED_CLASS_CANDIDATE_LIMIT : undefined);
 
         for (const cls of sortedForMember) {
           const classMask = getClassMask(cls);
-          if (!classMatchesPreferenceConstraints(course.courseId, cls.id, [memberIndex], members, config, preferenceMode)) continue;
+          if (!classMatchesPreferenceConstraints(course.courseId, cls.id, [memberIndex], members, config, preferenceMode, hardConstraints)) continue;
           if (!isClassValid(classMask, [memberIndex], workingState)) continue;
 
           const nextState = workingState.map((memberMask, idx) => {
@@ -484,7 +526,7 @@ export function solveGroup(
 
     for (const cls of availableClasses) {
       const classMask = getClassMask(cls);
-      if (!classMatchesPreferenceConstraints(course.courseId, cls.id, course.subscribers, members, config, preferenceMode)) continue;
+      if (!classMatchesPreferenceConstraints(course.courseId, cls.id, course.subscribers, members, config, preferenceMode, hardConstraints)) continue;
       if (!isClassValid(classMask, course.subscribers, state)) continue;
 
       const nextState = state.map((memberMask, memberIndex) => {
@@ -499,7 +541,20 @@ export function solveGroup(
   }
 
   dfs(0, initialState, new Map());
-  return solutions;
+  return { solutions, visitedNodes, reachedSearchBudget, reachedSolutionLimit };
+}
+
+export function solveGroup(
+  courses: CourseWeight[],
+  courseDatabase: CourseDatabase,
+  members: GroupMemberToken[],
+  maxSolutions = GROUP_SCHEDULER_CONFIG.DEFAULT_MAX_SOLUTIONS,
+  mode: SolveMode = 'shared-first',
+  config: Pick<GroupFitnessConfig, 'groupPreferredClasses' | 'daysOff'> = {},
+  preferenceMode: PreferenceConstraintMode = 'relaxed',
+  searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
+): GroupSolution[] {
+  return solveGroupWithTrace(courses, courseDatabase, members, maxSolutions, mode, config, preferenceMode, searchBudget).solutions;
 }
 
 export function scoreGroupSolution(
@@ -562,6 +617,7 @@ function toScheduleOption(
   courseDatabase: CourseDatabase,
   courses: CourseWeight[],
   members: GroupMemberToken[],
+  solveStage?: GroupSolveStage,
 ): GroupScheduleOption {
   const itemsByMember = members.map<GroupScheduleItem[]>((() => []));
   const assignmentRecord: Record<string, string> = {};
@@ -614,12 +670,172 @@ function toScheduleOption(
     option: optionIndex + 1,
     fitness,
     assignments: assignmentRecord,
+    solveStage,
     schedules: members.map((member, memberIndex) => ({
       memberIndex,
       nickname: member.nickname || `Thành viên ${memberIndex + 1}`,
       items: itemsByMember[memberIndex],
     })),
   };
+}
+
+function buildFitnessConfig(config: Partial<GroupFitnessConfig>): GroupFitnessConfig {
+  return {
+    daysOff: config.daysOff ?? [],
+    session: config.session ?? '0',
+    strategy: config.strategy ?? 'compress',
+    noGaps: config.noGaps ?? false,
+    fairnessWeight: config.fairnessWeight ?? GROUP_SCHEDULER_WEIGHTS.FAIRNESS,
+    sharedSlotBonus: config.sharedSlotBonus ?? GROUP_SCHEDULER_WEIGHTS.SHARED_SLOT_BONUS,
+    personalPreferenceWeight: config.personalPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_PREFERRED_BONUS,
+    groupPreferenceWeight: config.groupPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.GROUP_PREFERRED_BONUS,
+    personalPreferenceMissPenalty: config.personalPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_PREFERRED_MISS_PENALTY,
+    groupPreferenceMissPenalty: config.groupPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_PREFERRED_MISS_PENALTY,
+    personalRequiredPreferenceWeight: config.personalRequiredPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_REQUIRED_BONUS,
+    groupRequiredPreferenceWeight: config.groupRequiredPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.GROUP_REQUIRED_BONUS,
+    personalRequiredPreferenceMissPenalty: config.personalRequiredPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_REQUIRED_MISS_PENALTY,
+    groupRequiredPreferenceMissPenalty: config.groupRequiredPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_REQUIRED_MISS_PENALTY,
+    personalExcludedPreferenceMissPenalty: config.personalExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_EXCLUDED_MISS_PENALTY,
+    groupExcludedPreferenceMissPenalty: config.groupExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_EXCLUDED_MISS_PENALTY,
+    groupPreferredClasses: normalizePreferenceMap(config.groupPreferredClasses),
+  };
+}
+
+function runSolveStages(
+  density: CourseWeight[],
+  courseDatabase: CourseDatabase,
+  members: GroupMemberToken[],
+  fitnessConfig: GroupFitnessConfig,
+  maxSolutions: number,
+  hardConstraints?: HardClassConstraints,
+  searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
+  limitRelaxedCandidates = true,
+): SolveStagesResult {
+  const attempts: Array<{ stage: GroupSolveStage; mode: SolveMode; preferenceMode: PreferenceConstraintMode }> = [
+    { stage: 'shared-strict', mode: 'shared-first', preferenceMode: 'strict' },
+    { stage: 'split-strict', mode: 'split', preferenceMode: 'strict' },
+    { stage: 'shared-relaxed', mode: 'shared-first', preferenceMode: 'relaxed' },
+    { stage: 'split-relaxed', mode: 'split', preferenceMode: 'relaxed' },
+  ];
+  const trace: GroupSolveTrace[] = [];
+
+  for (const attempt of attempts) {
+    const result = solveGroupWithTrace(
+      density,
+      courseDatabase,
+      members,
+      maxSolutions,
+      attempt.mode,
+      fitnessConfig,
+      attempt.preferenceMode,
+      searchBudget,
+      hardConstraints,
+      limitRelaxedCandidates,
+    );
+    trace.push({
+      stage: attempt.stage,
+      solutionCount: result.solutions.length,
+      visitedNodes: result.visitedNodes,
+      searchBudget,
+      reachedSearchBudget: result.reachedSearchBudget,
+      reachedSolutionLimit: result.reachedSolutionLimit,
+    });
+    if (result.solutions.length > 0) return { solutions: result.solutions, stage: attempt.stage, trace };
+  }
+
+  return { solutions: [], stage: null, trace };
+}
+
+function getAssignmentClassId(option: GroupScheduleOption, courseId: string, memberIndex: number): string | undefined {
+  return option.assignments[courseId] ?? option.assignments[memberAssignmentKey(courseId, memberIndex)];
+}
+
+function selectedClassViolatesPreference(
+  selection: Required<ClassPreferenceSelection>,
+  classId: string | undefined,
+): boolean {
+  if (!classId) return false;
+  return selection.excluded.includes(classId) || (selection.required.length > 0 && !selection.required.includes(classId));
+}
+
+function buildObservedTradeoffs(
+  option: GroupScheduleOption,
+  courses: CourseWeight[],
+  members: GroupMemberToken[],
+  config: GroupFitnessConfig,
+  trace: GroupSolveTrace[],
+): GroupScheduleTradeoff[] {
+  const tradeoffs: GroupScheduleTradeoff[] = [];
+  const allItems = option.schedules.flatMap((member) => member.items);
+  const groupDayCourseIds = Array.from(new Set(
+    allItems.filter((item) => countDayOffViolations(item.mask, config.daysOff) > 0).map((item) => item.courseId),
+  ));
+  if (groupDayCourseIds.length > 0) {
+    tradeoffs.push({
+      id: 'group-day-off',
+      kind: 'group-day-off',
+      confidence: 'observed',
+      title: `Nhóm vẫn học ${formatDaysOff(config.daysOff)}`,
+      description: `Các môn ${groupDayCourseIds.join(', ')} rơi vào ngày hoặc buổi cả nhóm muốn tránh. Đây là ưu tiên mềm.`,
+      courseIds: groupDayCourseIds,
+    });
+  }
+
+  members.forEach((member, memberIndex) => {
+    const courseIds = Array.from(new Set(
+      (option.schedules.find((schedule) => schedule.memberIndex === memberIndex)?.items ?? [])
+        .filter((item) => countDayOffViolations(item.mask, member.personalConfig?.daysOff) > 0)
+        .map((item) => item.courseId),
+    ));
+    if (courseIds.length === 0) return;
+    const nickname = member.nickname || `Thành viên ${memberIndex + 1}`;
+    tradeoffs.push({
+      id: `personal-day-off:${memberIndex}`,
+      kind: 'personal-day-off',
+      confidence: 'observed',
+      title: `${nickname} vẫn học ${formatDaysOff(member.personalConfig?.daysOff)}`,
+      description: `Các môn ${courseIds.join(', ')} của ${nickname} rơi vào thời gian bạn ấy muốn tránh.`,
+      courseIds,
+      memberIndexes: [memberIndex],
+    });
+  });
+
+  courses.filter((course) => course.isShared && !option.assignments[course.courseId]).forEach((course) => {
+    tradeoffs.push({
+      id: `split-shared-course:${course.courseId}`,
+      kind: 'split-shared-course',
+      confidence: 'observed',
+      title: `Môn chung ${course.courseId} được tách lớp`,
+      description: 'Phương án này để từng thành viên học lớp khác nhau cho môn chung.',
+      courseIds: [course.courseId],
+      memberIndexes: course.subscribers,
+    });
+  });
+
+  if (option.solveStage?.endsWith('relaxed')) {
+    const conflictedCourses = courses.filter((course) => course.subscribers.some((memberIndex) => {
+      const classId = getAssignmentClassId(option, course.courseId, memberIndex);
+      const groupSelection = normalizePreferenceSelection(config.groupPreferredClasses?.[course.courseId]);
+      const personalSelection = normalizePreferenceSelection(members[memberIndex]?.preferredClasses?.[course.courseId]);
+      return selectedClassViolatesPreference(groupSelection, classId) || selectedClassViolatesPreference(personalSelection, classId);
+    })).map((course) => course.courseId);
+    const strictAttempts = trace.filter((entry) => entry.stage.endsWith('strict'));
+    const strictWasExhaustive = strictAttempts.length === 2 && strictAttempts.every((entry) => entry.solutionCount === 0 && !entry.reachedSearchBudget);
+    if (conflictedCourses.length > 0) {
+      tradeoffs.push({
+        id: 'relaxed-class-preference',
+        kind: 'relaxed-class-preference',
+        confidence: strictWasExhaustive ? 'proven' : 'inconclusive',
+        title: 'Đã nới điều kiện lọc hoặc khóa lớp',
+        description: strictWasExhaustive
+          ? `Không có lịch hợp lệ khi giữ nguyên điều kiện lớp cho ${conflictedCourses.join(', ')}.`
+          : `Solver đã nới điều kiện lớp cho ${conflictedCourses.join(', ')} sau khi không tìm được lịch trong giới hạn tìm kiếm.`,
+        courseIds: conflictedCourses,
+      });
+    }
+  }
+
+  return tradeoffs;
 }
 
 export function runGroupScheduleSolver(
@@ -643,54 +859,157 @@ export function runGroupScheduleSolver(
     return { density, solutions: [], warnings };
   }
 
-  let solutions: GroupSolution[] = [];
-  const fitnessConfig: GroupFitnessConfig = {
-    daysOff: config.daysOff ?? [],
-    session: config.session ?? '0',
-    strategy: config.strategy ?? 'compress',
-    noGaps: config.noGaps ?? false,
-    fairnessWeight: config.fairnessWeight ?? GROUP_SCHEDULER_WEIGHTS.FAIRNESS,
-    sharedSlotBonus: config.sharedSlotBonus ?? GROUP_SCHEDULER_WEIGHTS.SHARED_SLOT_BONUS,
-    personalPreferenceWeight: config.personalPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_PREFERRED_BONUS,
-    groupPreferenceWeight: config.groupPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.GROUP_PREFERRED_BONUS,
-    personalPreferenceMissPenalty: config.personalPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_PREFERRED_MISS_PENALTY,
-    groupPreferenceMissPenalty: config.groupPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_PREFERRED_MISS_PENALTY,
-    personalRequiredPreferenceWeight: config.personalRequiredPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_REQUIRED_BONUS,
-    groupRequiredPreferenceWeight: config.groupRequiredPreferenceWeight ?? GROUP_SCHEDULER_WEIGHTS.GROUP_REQUIRED_BONUS,
-    personalRequiredPreferenceMissPenalty: config.personalRequiredPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_REQUIRED_MISS_PENALTY,
-    groupRequiredPreferenceMissPenalty: config.groupRequiredPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_REQUIRED_MISS_PENALTY,
-    personalExcludedPreferenceMissPenalty: config.personalExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.PERSONAL_EXCLUDED_MISS_PENALTY,
-    groupExcludedPreferenceMissPenalty: config.groupExcludedPreferenceMissPenalty ?? GROUP_SCHEDULER_WEIGHTS.GROUP_EXCLUDED_MISS_PENALTY,
-    groupPreferredClasses: normalizePreferenceMap(config.groupPreferredClasses),
-  };
-
-  solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first', fitnessConfig, 'strict');
-  if (solutions.length === 0) {
+  const fitnessConfig = buildFitnessConfig(config);
+  const staged = runSolveStages(density, courseDatabase, sanitizedMembers, fitnessConfig, maxSolutions);
+  if (staged.trace.length > 1) {
     warnings.push('Khong co nghiem khi vua giu lop uu tien vua bat buoc mon trung hoc cung lop. Dang thu tach lop nhung van giu lop uu tien.');
-    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split', fitnessConfig, 'strict');
   }
-  if (solutions.length === 0) {
+  if (staged.trace.some((entry) => entry.stage === 'shared-relaxed')) {
     warnings.push('Khong co nghiem neu giu cung toan bo lop uu tien. Dang dung phuong an bat kha khang: cho phep lech lop uu tien va tru diem rat manh.');
-    solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'shared-first', fitnessConfig, 'relaxed');
-    if (solutions.length === 0) {
-      warnings.push('Khong co nghiem khi bat buoc cac mon trung nhau hoc cung lop. Dang dung phuong an du phong: cho phep tach lop neu can.');
-      solutions = solveGroup(density, courseDatabase, sanitizedMembers, maxSolutions, 'split', fitnessConfig, 'relaxed');
-    }
+  }
+  if (staged.stage === 'split-relaxed') {
+    warnings.push('Khong co nghiem khi bat buoc cac mon trung nhau hoc cung lop. Dang dung phuong an du phong: cho phep tach lop neu can.');
   }
 
-  const ranked = solutions
+  const ranked = staged.solutions
     .map((solution) => ({
       solution,
       fitness: scoreGroupSolution(solution, courseDatabase, density, sanitizedMembers, fitnessConfig),
     }))
     .sort((a, b) => b.fitness - a.fitness)
     .slice(0, maxSolutions)
-    .map(({ solution, fitness }, optionIndex) => toScheduleOption(solution, optionIndex, fitness, courseDatabase, density, sanitizedMembers));
+    .map(({ solution, fitness }, optionIndex) => {
+      const option = toScheduleOption(solution, optionIndex, fitness, courseDatabase, density, sanitizedMembers, staged.stage ?? undefined);
+      option.tradeoffs = buildObservedTradeoffs(option, density, sanitizedMembers, fitnessConfig, staged.trace);
+      return option;
+    });
 
   return {
     density,
     solutions: ranked,
     warnings,
+    trace: staged.trace,
+  };
+}
+
+function addHardDayOffExclusions(
+  constraints: HardClassConstraints,
+  density: CourseWeight[],
+  courseDatabase: CourseDatabase,
+  daysOff: DayOffPreference[] | undefined,
+  memberIndex?: number,
+): void {
+  density.forEach((course) => {
+    if (memberIndex !== undefined && !course.subscribers.includes(memberIndex)) return;
+    const excludedClassIds = getClasses(courseDatabase, course.courseId)
+      .filter((cls) => countDayOffViolations(getClassMask(cls), daysOff) > 0)
+      .map((cls) => cls.id);
+    if (excludedClassIds.length === 0) return;
+
+    if (memberIndex === undefined) {
+      constraints.groupExcluded ??= {};
+      constraints.groupExcluded[course.courseId] = excludedClassIds;
+      return;
+    }
+
+    constraints.memberExcluded ??= {};
+    constraints.memberExcluded[course.courseId] ??= {};
+    constraints.memberExcluded[course.courseId][memberIndex] = excludedClassIds;
+  });
+}
+
+export function analyzeGroupScheduleTradeoff(
+  dbData: unknown,
+  members: GroupMemberToken[],
+  config: Partial<GroupFitnessConfig>,
+  tradeoff: GroupScheduleTradeoff,
+): GroupScheduleTradeoff {
+  if (tradeoff.kind !== 'group-day-off' && tradeoff.kind !== 'personal-day-off') return tradeoff;
+
+  const sanitizedMembers = members.map(sanitizeGroupMember).filter((member) => member.sharedCourses.length + member.personalCourses.length > 0);
+  const courseDatabase = new CourseDatabase();
+  courseDatabase.loadData(typeof dbData === 'string' ? JSON.parse(dbData) : dbData);
+  const density = buildDensityMap(sanitizedMembers).filter((course) => getClasses(courseDatabase, course.courseId).length > 0);
+  const hardConstraints: HardClassConstraints = {};
+  const fitnessConfig = buildFitnessConfig(config);
+  const memberIndex = tradeoff.memberIndexes?.[0];
+  const daysOff = tradeoff.kind === 'group-day-off'
+    ? fitnessConfig.daysOff
+    : sanitizedMembers[memberIndex ?? -1]?.personalConfig?.daysOff;
+  const subject = tradeoff.kind === 'group-day-off'
+    ? `ngày hoặc buổi nhóm muốn tránh (${formatDaysOff(daysOff)})`
+    : `ngày hoặc buổi ${sanitizedMembers[memberIndex ?? -1]?.nickname || `thành viên ${(memberIndex ?? 0) + 1}`} muốn tránh (${formatDaysOff(daysOff)})`;
+
+  addHardDayOffExclusions(hardConstraints, density, courseDatabase, daysOff, tradeoff.kind === 'personal-day-off' ? memberIndex : undefined);
+  const counterfactual = runSolveStages(
+    density,
+    courseDatabase,
+    sanitizedMembers,
+    fitnessConfig,
+    1,
+    hardConstraints,
+    GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
+    false,
+  );
+
+  if (counterfactual.solutions.length > 0) {
+    return {
+      ...tradeoff,
+      confidence: 'proven',
+      canAvoid: true,
+      description: `Đã tìm được ít nhất một lịch hợp lệ tránh ${subject}. Phương án hiện tại đang đổi ưu tiên này lấy điểm tổng thể khác.`,
+    };
+  }
+
+  const wasExhaustive = counterfactual.trace.length === 4
+    && counterfactual.trace.every((entry) => entry.solutionCount === 0 && !entry.reachedSearchBudget && !entry.reachedSolutionLimit);
+  if (wasExhaustive) {
+    const coursesWithoutAlternative = (tradeoff.courseIds ?? []).filter((courseId) => {
+      const classes = getClasses(courseDatabase, courseId);
+      return classes.length > 0 && classes.every((cls) => countDayOffViolations(getClassMask(cls), daysOff) > 0);
+    });
+    if (coursesWithoutAlternative.length > 0) {
+      return {
+        ...tradeoff,
+        confidence: 'proven',
+        canAvoid: false,
+        description: `${coursesWithoutAlternative.join(', ')} không có lớp nào ngoài ${subject}, nên không thể tạo lịch tránh thời gian này.`,
+      };
+    }
+
+    const reliefCourses: string[] = [];
+    const candidates = density
+      .filter((course) => !(tradeoff.courseIds ?? []).includes(course.courseId))
+      .sort((a, b) => Number(b.isShared) - Number(a.isShared) || b.subscribers.length - a.subscribers.length)
+      .slice(0, 6);
+    for (const candidate of candidates) {
+      const withoutCourse = runSolveStages(
+        density.filter((course) => course.courseId !== candidate.courseId),
+        courseDatabase,
+        sanitizedMembers,
+        fitnessConfig,
+        1,
+        hardConstraints,
+        GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
+        false,
+      );
+      if (withoutCourse.solutions.length > 0) reliefCourses.push(candidate.courseId);
+      if (reliefCourses.length >= 2) break;
+    }
+    return {
+      ...tradeoff,
+      confidence: 'proven',
+      canAvoid: false,
+      description: reliefCourses.length > 0
+        ? `Không có lịch hợp lệ nào tránh ${subject}. Nếu bỏ ${reliefCourses.join(' hoặc ')}, solver tìm được lịch tránh thời gian này.`
+        : `Không có lịch hợp lệ nào tránh ${subject} với toàn bộ lớp hiện có và các ràng buộc còn lại.`,
+    };
+  }
+
+  return {
+    ...tradeoff,
+    confidence: 'inconclusive',
+    description: `Chưa thể kết luận có tránh được ${subject} không vì lượt kiểm tra đã chạm giới hạn tìm kiếm.`,
   };
 }
 

@@ -6,11 +6,12 @@ import {
   decodeGroupURL,
   encodeGroupURL,
   GroupURLDecodeError,
+  analyzeGroupScheduleTradeoff,
   isDuplicateMember,
   runGroupScheduleSolver,
   sanitizeGroupMember,
 } from '../services/group-scheduler';
-import type { GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult } from '../types';
+import type { GroupFitnessConfig, GroupMemberToken, GroupScheduleOption, GroupScheduleRunResult, GroupScheduleTradeoff } from '../types';
 import courseDbJson from '../../../logic/scheduler/Course_db.json';
 
 export interface CourseChoice {
@@ -99,6 +100,7 @@ export function useGroupScheduler(): GroupSolverState & {
   addMember: (member: GroupMemberToken) => boolean;
   replaceMembers: (members: GroupMemberToken[]) => void;
   solve: (config?: Partial<GroupFitnessConfig>) => void;
+  analyzeTradeoff: (option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config?: Partial<GroupFitnessConfig>) => Promise<GroupScheduleTradeoff>;
   clearResult: () => void;
   getOptionRegistrations: (option: GroupScheduleOption, memberIndex?: number) => any[];
 } {
@@ -226,6 +228,28 @@ export function useGroupScheduler(): GroupSolverState & {
     setSolveError(null);
   }, []);
 
+  const analyzeTradeoff = useCallback((option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config: Partial<GroupFitnessConfig> = {}) => {
+    return new Promise<GroupScheduleTradeoff>((resolve) => {
+      window.setTimeout(() => {
+        const analyzed = analyzeGroupScheduleTradeoff(dbData, members, config, tradeoff);
+        setResult((current) => {
+          if (!current) return current;
+          const solutions = current.solutions.map((candidate) => {
+            if (candidate.option !== option.option) return candidate;
+            return {
+              ...candidate,
+              tradeoffs: (candidate.tradeoffs ?? []).map((candidateTradeoff) => (
+                candidateTradeoff.id === analyzed.id ? analyzed : candidateTradeoff
+              )),
+            };
+          });
+          return { ...current, solutions };
+        });
+        resolve(analyzed);
+      }, 0);
+    });
+  }, [dbData, members]);
+
   const getOptionRegistrations = useCallback((option: GroupScheduleOption, memberIndex = 0) => {
     const memberSchedule = option.schedules.find((schedule) => schedule.memberIndex === memberIndex);
     return (memberSchedule?.items ?? []).map((item) => ({
@@ -252,6 +276,7 @@ export function useGroupScheduler(): GroupSolverState & {
     addMember,
     replaceMembers,
     solve,
+    analyzeTradeoff,
     clearResult,
     setResult,
     getOptionRegistrations,

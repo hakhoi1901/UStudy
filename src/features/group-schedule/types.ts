@@ -76,10 +76,39 @@ export interface GroupScheduleOption {
   fitness: number;
   assignments: Record<string, string>;
   schedules: GroupMemberSchedule[];
+  solveStage?: GroupSolveStage;
+  tradeoffs?: GroupScheduleTradeoff[];
+}
+
+export type GroupSolveStage = 'shared-strict' | 'split-strict' | 'shared-relaxed' | 'split-relaxed';
+
+export type GroupTradeoffKind = 'group-day-off' | 'personal-day-off' | 'split-shared-course' | 'relaxed-class-preference';
+
+export type GroupTradeoffConfidence = 'observed' | 'proven' | 'inconclusive';
+
+export interface GroupScheduleTradeoff {
+  id: string;
+  kind: GroupTradeoffKind;
+  confidence: GroupTradeoffConfidence;
+  title: string;
+  description: string;
+  courseIds?: string[];
+  memberIndexes?: number[];
+  canAvoid?: boolean;
+}
+
+export interface GroupSolveTrace {
+  stage: GroupSolveStage;
+  solutionCount: number;
+  visitedNodes: number;
+  searchBudget: number;
+  reachedSearchBudget: boolean;
+  reachedSolutionLimit: boolean;
 }
 
 export interface GroupScheduleRunResult {
   density: CourseWeight[];
   solutions: GroupScheduleOption[];
   warnings: string[];
+  trace?: GroupSolveTrace[];
 }

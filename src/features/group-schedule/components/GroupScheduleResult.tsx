@@ -1,9 +1,8 @@
-import { CalendarCheck } from 'lucide-react';
+import { useState } from 'react';
+import { AlertCircle, CalendarCheck, CheckCircle2, LoaderCircle } from 'lucide-react';
 
 import { Badge } from '../../../components/ui/display/badge';
-import type { GroupScheduleItem, GroupScheduleOption } from '../types';
-import { Save } from 'lucide-react';
-import { Button } from '../../../components/ui/form/button';
+import type { GroupScheduleItem, GroupScheduleOption, GroupScheduleTradeoff } from '../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
 export type GroupScheduleResultViewMode = 'course' | 'member';
 
@@ -11,6 +10,7 @@ interface GroupScheduleResultProps {
   option: GroupScheduleOption;
   viewMode: GroupScheduleResultViewMode;
   onOpenClassDetails: (target: OpenClassDetailTarget) => void;
+  onAnalyzeTradeoff?: (tradeoff: GroupScheduleTradeoff) => Promise<GroupScheduleTradeoff>;
 }
 
 interface CourseComparisonRow {
@@ -53,8 +53,19 @@ function buildCourseComparison(option: GroupScheduleOption): CourseComparisonRow
   });
 }
 
-export function GroupScheduleResult({ option, viewMode, onOpenClassDetails }: GroupScheduleResultProps) {
+export function GroupScheduleResult({ option, viewMode, onOpenClassDetails, onAnalyzeTradeoff }: GroupScheduleResultProps) {
   const courseRows = buildCourseComparison(option);
+  const [checkingTradeoffId, setCheckingTradeoffId] = useState<string | null>(null);
+
+  const checkTradeoff = async (tradeoff: GroupScheduleTradeoff) => {
+    if (!onAnalyzeTradeoff) return;
+    setCheckingTradeoffId(tradeoff.id);
+    try {
+      await onAnalyzeTradeoff(tradeoff);
+    } finally {
+      setCheckingTradeoffId(null);
+    }
+  };
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -66,8 +77,52 @@ export function GroupScheduleResult({ option, viewMode, onOpenClassDetails }: Gr
           </h3>
           <p className="text-sm text-gray-500">Điểm nhóm: {Math.round(option.fitness)}</p>
         </div>
-        
       </div>
+
+      {option.tradeoffs?.length ? (
+        <section className="mb-4 border-y border-gray-100 py-3" aria-label="Đánh đổi của phương án">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            Đánh đổi của phương án này
+          </div>
+          <div className="divide-y divide-gray-100">
+            {option.tradeoffs.map((tradeoff) => {
+              const canCheck = (tradeoff.kind === 'group-day-off' || tradeoff.kind === 'personal-day-off') && tradeoff.confidence !== 'proven';
+              const isChecking = checkingTradeoffId === tradeoff.id;
+              const statusLabel = tradeoff.confidence === 'proven'
+                ? (tradeoff.canAvoid ? 'Có thể tránh' : 'Đã kiểm chứng')
+                : tradeoff.confidence === 'inconclusive'
+                  ? 'Chưa kết luận'
+                  : 'Ưu tiên mềm';
+              return (
+                <div key={tradeoff.id} className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <p className="text-sm font-medium text-gray-900">{tradeoff.title}</p>
+                      <span className={`text-xs font-medium ${tradeoff.confidence === 'proven' ? 'text-emerald-700' : tradeoff.confidence === 'inconclusive' ? 'text-amber-700' : 'text-gray-500'}`}>
+                        {tradeoff.confidence === 'proven' && <CheckCircle2 className="mr-1 inline h-3.5 w-3.5" />}
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs leading-5 text-gray-500">{tradeoff.description}</p>
+                  </div>
+                  {canCheck ? (
+                    <button
+                      type="button"
+                      onClick={() => void checkTradeoff(tradeoff)}
+                      disabled={isChecking}
+                      className="ustudy-button-normal h-8 shrink-0 px-2.5 text-xs disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {isChecking ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : null}
+                      {isChecking ? 'Đang kiểm tra' : 'Kiểm tra lý do'}
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {viewMode === 'course' ? (
         <div className="space-y-3">

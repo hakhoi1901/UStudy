@@ -150,6 +150,7 @@ export function GroupSchedulePage({
         addMember,
         replaceMembers,
         solve,
+        analyzeTradeoff,
         clearResult,
         setResult,
         getOptionRegistrations,
@@ -1166,7 +1167,14 @@ export function GroupSchedulePage({
                         />
 
 
-                        {selectedOption && <GroupScheduleResult option={selectedOption} viewMode={resultViewMode} onOpenClassDetails={setOpenClassDetails} />}
+                        {selectedOption && (
+                            <GroupScheduleResult
+                                option={selectedOption}
+                                viewMode={resultViewMode}
+                                onOpenClassDetails={setOpenClassDetails}
+                                onAnalyzeTradeoff={(tradeoff) => analyzeTradeoff(selectedOption, tradeoff, { ...groupPrefs, groupPreferredClasses })}
+                            />
+                        )}
                     </>
                 )
             ) : (
