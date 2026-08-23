@@ -1,24 +1,35 @@
-import { useState, useEffect, useMemo } from 'react';
-import { readFromStorage } from '../helpers/localStorage/save';
-import { hasImportedData } from '../helpers/localStorage/data-import-status';
-import { CourseRecommender } from '../logic/scheduler/Recommender';
+import { useEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
+import { hasImportedData } from '../helpers/localStorage/data-import-status';
+import { readFromStorage } from '../helpers/localStorage/save';
 import { CourseDataMapper, type CourseGroupState } from '../logic/CourseDataMapper';
+import { CourseRecommender } from '../logic/scheduler/Recommender';
+import { useRegisteredCourses } from './useRegisteredCourses';
 
 export { type CourseGroupState };
 
+function uniqueOpenCourses(courseDb: any[]): any[] {
+    const coursesById = new Map<string, any>();
+
+    courseDb.forEach((course) => {
+        const courseId = String(course?.id ?? course?.course_id ?? '').trim().toUpperCase();
+        if (courseId && !coursesById.has(courseId)) coursesById.set(courseId, course);
+    });
+
+    return Array.from(coursesById.values());
+}
+
 export function useCourseData() {
     const { data: { courses: allCoursesMeta, prerequisites, categories, tuitionRates } } = useDepartmentData();
+    const { registeredCourseCodes } = useRegisteredCourses();
     const [stamp, setStamp] = useState(Date.now());
-    const [isReady, setIsReady] = useState(false);
-    const [hasData, setHasData] = useState(false);
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
             if (event.data && (
-                event.data.type === 'IMPORT_FULL_DATA' ||
-                event.data.type === 'CACHE_POPULATED'
+                event.data.type === 'IMPORT_FULL_DATA'
+                || event.data.type === 'CACHE_POPULATED'
             )) {
                 setStamp(Date.now());
             }
@@ -29,63 +40,60 @@ export function useCourseData() {
     }, []);
 
     const courseData = useMemo(() => {
-        setIsReady(false)
-
-        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null)
+        const emptyGroup: CourseGroupState = { core: [], major: [], electives: [] };
+        const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
         const courseDb = readFromStorage<any[]>(STORAGE_KEYS.COURSE_DB_OFFLINE, []);
 
-        // NoDataCard chỉ dùng khi UStudy chưa nhận bất kỳ dữ liệu Portal nào.
-        // Từng nguồn (lớp mở, bảng điểm...) có thể rỗng và vẫn cần render tab.
         if (!studentDb) {
-            setHasData(hasImportedData());
-            setIsReady(true);
-            const emptyGroup = { core: [], major: [], electives: [] };
-            return { recommended: emptyGroup, all: emptyGroup };
+            return {
+                recommended: emptyGroup,
+                all: emptyGroup,
+                hasData: hasImportedData(),
+            };
         }
-
-        setHasData(true);
 
         const recommender = new CourseRecommender(
             studentDb,
             courseDb,
             prerequisites,
             allCoursesMeta,
-            categories
+            categories,
+            registeredCourseCodes,
         );
-
         const { failed } = recommender.getStudentStatus();
         const recommendedCourses = recommender.recommend();
-        const recMap = (recommender as any).recommendationsMap;
 
-        // Delegate mapping & grouping to CourseDataMapper
         const mappedRecommended = CourseDataMapper.mapCourseList(
-            recommendedCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, false
+            recommendedCourses,
+            allCoursesMeta,
+            prerequisites,
+            tuitionRates,
+            failed,
+            recommender.recommendationsMap,
+            false,
         );
-        const validOpenCourses = courseDb.filter(c =>
-            allCoursesMeta.push(c)
-        );
-
         const mappedAllOpen = CourseDataMapper.mapCourseList(
-            validOpenCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, true
+            uniqueOpenCourses(courseDb),
+            allCoursesMeta,
+            prerequisites,
+            tuitionRates,
+            failed,
+            recommender.recommendationsMap,
+            true,
         );
 
-        const recommendedGrouped = CourseDataMapper.groupCoursesByCategory(mappedRecommended);
-        const allOpenGrouped = CourseDataMapper.groupCoursesByCategory(mappedAllOpen);
-
-        setIsReady(true);
         return {
-            recommended: recommendedGrouped,
-            all: allOpenGrouped
+            recommended: CourseDataMapper.groupCoursesByCategory(mappedRecommended, categories),
+            all: CourseDataMapper.groupCoursesByCategory(mappedAllOpen, categories),
+            hasData: true,
         };
-
-    }, [stamp, allCoursesMeta, prerequisites, categories, tuitionRates]);
+    }, [stamp, allCoursesMeta, prerequisites, categories, tuitionRates, registeredCourseCodes]);
 
     return {
-        core: courseData.recommended?.core || [],
-        major: courseData.recommended?.major || [],
-        electives: courseData.recommended?.electives || [],
+        core: courseData.recommended.core,
+        major: courseData.recommended.major,
+        electives: courseData.recommended.electives,
         ...courseData,
-        isReady,
-        hasData
+        isReady: true,
     };
 }

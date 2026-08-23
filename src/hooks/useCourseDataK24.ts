@@ -3,10 +3,12 @@ import { readFromStorage } from '../helpers/localStorage/save';
 import { CourseRecommender } from '../logic/scheduler/Recommender';
 import { STORAGE_KEYS } from '../config';
 import { useDepartmentData } from '../context/DepartmentContext';
-import { CourseDataMapper, type CourseGroupState } from '../logic/CourseDataMapper';
+import { CourseDataMapper } from '../logic/CourseDataMapper';
+import { useRegisteredCourses } from './useRegisteredCourses';
 
 export function useCourseDataK24() {
     const { data: { courses: allCoursesMeta, prerequisites, categories, tuitionRates } } = useDepartmentData();
+    const { registeredCourseCodes } = useRegisteredCourses();
     const [stamp, setStamp] = useState(Date.now());
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
@@ -65,27 +67,30 @@ export function useCourseDataK24() {
             courseDb,
             prerequisites,
             allCoursesMeta,
-            categories
+            categories,
+            registeredCourseCodes,
         );
 
         const { failed } = recommender.getStudentStatus();
         const recommendedCourses = recommender.recommend();
-        const recMap = (recommender as any).recommendationsMap;
+        const recMap = recommender.recommendationsMap;
 
         const mappedRecommended = CourseDataMapper.mapCourseList(
             recommendedCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, false
         );
 
-        const validOpenCourses = courseDb.filter(c =>
-            allCoursesMeta.push(c)
-        );
+        const validOpenCourses = Array.from(courseDb.reduce((coursesById, course) => {
+            const courseId = String(course?.id ?? course?.course_id ?? '').trim().toUpperCase();
+            if (courseId && !coursesById.has(courseId)) coursesById.set(courseId, course);
+            return coursesById;
+        }, new Map<string, any>()).values());
 
         const mappedAllOpen = CourseDataMapper.mapCourseList(
             validOpenCourses, allCoursesMeta, prerequisites, tuitionRates, failed, recMap, true
         );
 
-        const recommendedGrouped = CourseDataMapper.groupCoursesByCategory(mappedRecommended);
-        const allOpenGrouped = CourseDataMapper.groupCoursesByCategory(mappedAllOpen);
+        const recommendedGrouped = CourseDataMapper.groupCoursesByCategory(mappedRecommended, categories);
+        const allOpenGrouped = CourseDataMapper.groupCoursesByCategory(mappedAllOpen, categories);
 
         setIsReady(true);
         return {
@@ -93,7 +98,7 @@ export function useCourseDataK24() {
             all: allOpenGrouped
         };
 
-    }, [stamp, allCoursesMeta, prerequisites, categories, tuitionRates, courseDb]);
+    }, [stamp, allCoursesMeta, prerequisites, categories, tuitionRates, courseDb, registeredCourseCodes]);
 
     return {
         core: courseData.recommended?.core || [],
