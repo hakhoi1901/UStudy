@@ -1092,8 +1092,39 @@ export function GroupSchedulePage({
                             <div>
                                 <div className="font-mono text-sm font-semibold text-gray-900">{course.courseId}</div>
                                 <div className="mt-0.5 text-sm font-medium text-gray-800">{getGroupCourseName(course.courseId)}</div>
-                                <div className="text-xs text-gray-500">
-                                    Cùng đăng ký: {course.subscribers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}
+                                <div className="mt-1 space-y-1.5 text-xs text-gray-500">
+                                    {(() => {
+                                        const rule = courseSharing[course.courseId];
+                                        const isCustomGrouping = rule?.mode !== 'independent' && rule?.groups !== undefined;
+                                        if (!isCustomGrouping) {
+                                            return <div>Cùng đăng ký: {course.subscribers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</div>;
+                                        }
+
+                                        const groups = rule.groups ?? [];
+                                        const soloMembers = course.subscribers.filter((memberIndex) => !groups.some((group) => group.includes(memberIndex)));
+
+                                        return (
+                                            <>
+                                                {groups.map((group, groupIndex) => {
+                                                    if (!group.length) return null;
+                                                    const prefs = rule.groupClassPreferences?.[`group-${groupIndex}`];
+                                                    return (
+                                                        <div key={groupIndex}>
+                                                            <div className="font-medium text-gray-700">Nhóm {groupIndex + 1}: <span className="font-normal text-gray-500">{group.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</span></div>
+                                                            {prefs?.excluded?.length ? <div className="text-[11px] text-rose-600">+ Cấm: {prefs.excluded.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                            {prefs?.required?.length ? <div className="text-[11px] text-red-600">+ Bắt buộc: {prefs.required.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                            {prefs?.preferred?.length ? <div className="text-[11px] text-[#004A98]">+ Ưu tiên: {prefs.preferred.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                        </div>
+                                                    );
+                                                })}
+                                                {soloMembers.length > 0 && (
+                                                    <div>
+                                                        <div className="font-medium text-gray-700">Học riêng: <span className="font-normal text-gray-500">{soloMembers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</span></div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                             <div className="space-y-2">
