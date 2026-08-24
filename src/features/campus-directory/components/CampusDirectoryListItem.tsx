@@ -1,4 +1,5 @@
-import { Building2, GraduationCap, Landmark, Library, UsersRound, Microscope } from 'lucide-react';import type { CampusUnit, CampusUnitType } from '../../../assets/data/campus-directory';
+import { Building2, GraduationCap, Landmark, Library, MapPin, UsersRound, Microscope } from 'lucide-react';
+import type { CampusUnit, CampusUnitLocation, CampusUnitType } from '../../../assets/data/campus-directory';
 import { CAMPUS_UNITS } from '../../../assets/data/campus-directory';
 const unitIcon: Record<CampusUnitType, typeof Building2> = {
     faculty: GraduationCap,
@@ -11,23 +12,24 @@ const unitIcon: Record<CampusUnitType, typeof Building2> = {
     other: Building2,
 };
 
-function getLocationLabel(unit: CampusUnit) {
-    const location = unit.locations[0];
-    
-    if (!location) {
-        if (unit.type === 'laboratory' || unit.type === 'department') {
-            // Dò tìm Đơn vị cha trong toàn bộ dữ liệu
-            const parent = CAMPUS_UNITS.find(u => u.id === unit.parentId);
-            return parent ? `Trực thuộc ${parent.name}` : 'Đang cập nhật vị trí';
-        }
-        return 'Đang cập nhật vị trí';
-    }
-    
+function formatLocation(location: CampusUnitLocation) {
     return [
         location.buildingId === 'NDH' ? 'Nhà Điều hành' : `Tòa ${location.buildingId}`,
         location.floor && `Tầng ${location.floor}`,
         location.note ?? location.roomCode,
     ].filter(Boolean).join(' · ');
+}
+
+function getLocationLabels(unit: CampusUnit): string[] {
+    if (unit.locations.length === 0) {
+        if (unit.type === 'laboratory' || unit.type === 'department') {
+            const parent = CAMPUS_UNITS.find(u => u.id === unit.parentId);
+            return [parent ? `Trực thuộc ${parent.name}` : 'Đang cập nhật vị trí'];
+        }
+        return ['Đang cập nhật vị trí'];
+    }
+
+    return unit.locations.map(formatLocation);
 }
 
 export function CampusDirectoryListItem({ unit, isSelected, onClick }: {
@@ -36,6 +38,8 @@ export function CampusDirectoryListItem({ unit, isSelected, onClick }: {
     onClick: () => void;
 }) {
     const Icon = unitIcon[unit.type];
+    const locationLabels = getLocationLabels(unit);
+    const hasPhysicalLocation = unit.locations.length > 0;
 
     return (
         <button
@@ -49,7 +53,17 @@ export function CampusDirectoryListItem({ unit, isSelected, onClick }: {
             </span>
             <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{unit.name}</span>
-                <span className="mt-0.5 block truncate text-xs text-gray-500">{getLocationLabel(unit)}</span>
+                <span className="mt-1 block space-y-1">
+                    {locationLabels.map((label, index) => (
+                        <span
+                            key={`${unit.id}-location-${index}`}
+                            className="flex min-w-0 items-start gap-1.5 text-xs leading-4 text-gray-500"
+                        >
+                            {hasPhysicalLocation && <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-gray-400" />}
+                            <span className="min-w-0 flex-1 truncate" title={label}>{label}</span>
+                        </span>
+                    ))}
+                </span>
             </span>
         </button>
     );
