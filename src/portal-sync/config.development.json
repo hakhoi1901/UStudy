@@ -1,10 +1,10 @@
 {
   "protocolVersion": "1.0.0",
-  "scraperVersion": "0.2.0",
-  "extensionVersion": "0.2.5",
+  "scraperVersion": "0.2.1",
+  "extensionVersion": "0.2.6",
   "portalHostnamePattern": "^new-portal\\d+\\.hcmus\\.edu\\.vn$",
   "portalLoginUrl": "https://new-portal.hcmus.edu.vn/Login.aspx",
-  "portalLoginPathPattern": "^/Login\\.aspx(?:/.*)?$",
+  "portalLoginPathPattern": "^/+Login\\.aspx(?:/.*)?$",
   "productionAppUrl": "https://ustudy.hakhoi.io.vn/",
   "appOrigins": [
     "https://ustudy.hakhoi.io.vn",

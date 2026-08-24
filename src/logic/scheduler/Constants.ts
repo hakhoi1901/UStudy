@@ -97,11 +97,11 @@ export const CONFIG: CONFIG = {
     /**
      * Kích thước quần thể
      */
-    POPULATION_SIZE: 1000,
+    POPULATION_SIZE: 10000,
     /**
      * Số thế hệ
      */
-    GENERATIONS: 1000,
+    GENERATIONS: 10000,
     /**
      * Tỷ lệ đột biến
      */
@@ -157,8 +157,8 @@ export const WEIGHTS: WEIGHTS = {
 };
 
 export const GROUP_SCHEDULER_CONFIG: GROUP_SCHEDULER_CONFIG = {
-    DEFAULT_MAX_SOLUTIONS: 50,
-    SEARCH_NODE_BUDGET: 25000,
+    DEFAULT_MAX_SOLUTIONS: 250,
+    SEARCH_NODE_BUDGET: 1000000,
     RELAXED_CLASS_CANDIDATE_LIMIT: 18,
 };
 

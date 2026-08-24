@@ -45,7 +45,7 @@ public class PortalSyncActivity extends AppCompatActivity {
     public static final int MAX_PORTAL_RESULT_BYTES = 4 * 1024 * 1024;
 
     private static final Pattern PORTAL_HOST = Pattern.compile("^new-portal\\d+\\.hcmus\\.edu\\.vn$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern LOGIN_PATH = Pattern.compile("^/Login\\.aspx(?:/.*)?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LOGIN_PATH = Pattern.compile("^/+Login\\.aspx(?:/.*)?$", Pattern.CASE_INSENSITIVE);
 
     private WebView webView;
     private View loadingOverlay;

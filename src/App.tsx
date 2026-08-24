@@ -160,7 +160,11 @@ function AppContent() {
         });
       }
       const currentRaw = readFromStorage<any>('raw_student_db', null);
-      const changes = buildRawImportPreview(payload.raw, currentRaw);
+      const currentMeta = readFromStorage<any>('import_meta', null);
+      const changes = buildRawImportPreview(payload.raw, currentRaw, {
+        incomingMeta: payload.meta,
+        currentMeta,
+      });
       if (suppressIfUnchanged && changes.every((change) => change.status === 'unchanged')) return false;
       setIsImportDetailsOpen(false);
       setImportPreview({

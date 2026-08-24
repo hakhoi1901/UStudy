@@ -95,11 +95,9 @@ export function useRegisteredCourses(): UseRegisteredCoursesResult {
             acceptMissingSemester: true, // Nếu thiếu semester, coi như kỳ hiện tại
         });
 
-        // Kết quả ĐKHP là snapshot của một kỳ. Metadata có thể chưa đổi khi
-        // người dùng cập nhật trực tiếp, nên không được để toàn bộ môn biến mất.
-        const registeredCourses = matchedCourses.length > 0 || !currentSemester
-            ? matchedCourses
-            : resolveRegistrations(rawRegistrations, { currentSemester: null });
+        // Metadata của lần cào là phạm vi snapshot hiện tại. Nếu kỳ đó rỗng,
+        // không được fallback sang môn đăng ký của kỳ cũ.
+        const registeredCourses = matchedCourses;
 
         // 4. Combined mask (serialized)
         const registeredMask = computeCombinedMask(registeredCourses);

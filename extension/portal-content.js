@@ -1,6 +1,12 @@
 (function () {
 const EXTENSION_CONFIG = globalThis.USTUDY_EXTENSION_CONFIG;
 if (!new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname)) return;
+
+const normalizedPortalPath = window.location.pathname.replace(/^\/+/, '/');
+if (normalizedPortalPath !== window.location.pathname) {
+  window.history.replaceState(null, '', `${normalizedPortalPath}${window.location.search}${window.location.hash}`);
+}
+
 const HOST_ID = 'ustudy-portal-sync-host';
 const SOURCE_LABELS = {
   grades: 'Bảng điểm',

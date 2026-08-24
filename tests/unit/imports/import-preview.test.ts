@@ -34,6 +34,55 @@ describe('raw import preview', () => {
     expect(mergeSelectedRawImport(incoming, current, [])).toMatchObject(current);
   });
 
+  it('replaces old registrations when a verified new-period snapshot is empty', () => {
+    const current = {
+      registrations: [
+        { id: 'CSC10009', classGroup: 'A', courseType: 'LT', semester: '25-26/3' },
+      ],
+    };
+    const incoming = { registrations: [] };
+    const preview = buildRawImportPreview(incoming, current, {
+      incomingMeta: { params: { registration: { year: '26-27', sem: '1', semester: '26-27/1', snapshotComplete: true } } },
+      currentMeta: { params: { registration: { year: '25-26', sem: '3', semester: '25-26/3' } } },
+    });
+    const removalIds = preview.filter((change) => change.status === 'remove').map((change) => change.id);
+
+    expect(removalIds).toHaveLength(1);
+    expect(mergeSelectedRawImport(incoming, current, removalIds).registrations).toEqual([]);
+  });
+
+  it('keeps registrations when an empty snapshot was not verified by the scraper', () => {
+    const current = {
+      registrations: [
+        { id: 'CSC10009', classGroup: 'A', courseType: 'LT', semester: '25-26/3' },
+      ],
+    };
+
+    const preview = buildRawImportPreview({ registrations: [] }, current, {
+      incomingMeta: { params: { registration: { year: '26-27', sem: '1', semester: '26-27/1' } } },
+    });
+
+    expect(preview).toEqual([]);
+  });
+
+  it('updates an empty registration period once without repeating an auto-import change', () => {
+    const incoming = { registrations: [] };
+    const newMeta = { params: { registration: { year: '26-27', sem: '1', semester: '26-27/1', snapshotComplete: true } } };
+    const oldMeta = { params: { registration: { year: '25-26', sem: '3', semester: '25-26/3' } } };
+
+    const firstPreview = buildRawImportPreview(incoming, { registrations: [] }, {
+      incomingMeta: newMeta,
+      currentMeta: oldMeta,
+    });
+    const repeatedPreview = buildRawImportPreview(incoming, { registrations: [] }, {
+      incomingMeta: newMeta,
+      currentMeta: newMeta,
+    });
+
+    expect(firstPreview).toMatchObject([{ collection: 'registrations', status: 'update' }]);
+    expect(repeatedPreview).toMatchObject([{ collection: 'registrations', status: 'unchanged' }]);
+  });
+
   it('removes only selected records that disappeared from a non-empty snapshot', () => {
     const current = {
       grades: [

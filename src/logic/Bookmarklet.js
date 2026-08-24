@@ -1,6 +1,11 @@
 (async function () {
     console.clear();
 
+    const normalizedPortalPath = window.location.pathname.replace(/^\/+/, '/');
+    if (normalizedPortalPath !== window.location.pathname) {
+        window.history.replaceState(null, '', `${normalizedPortalPath}${window.location.search}${window.location.hash}`);
+    }
+
     // === 1. CẤU HÌNH ===
     const EXTENSION_RUNTIME = window.__USTUDY_PORTAL_SYNC_RUNTIME__ || null;
     if (EXTENSION_RUNTIME) delete window.__USTUDY_PORTAL_SYNC_RUNTIME__;
@@ -993,8 +998,10 @@
                 docDKHP = parseHTML(await res.text());
             }
 
-            registrations = scrapeRegisteredCourses(docDKHP);
-            registrationPeriod = getRegistrationPeriod(docDKHP);
+            registrationPeriod = {
+                ...getRegistrationPeriod(docDKHP),
+                snapshotComplete: Boolean(docDKHP.getElementById('tbSVKQ')),
+            };
             registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
 
             // Dev-only override: set window.__USTUDY_TEST_REGISTRATIONS__ in the Portal console

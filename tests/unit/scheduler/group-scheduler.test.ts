@@ -79,4 +79,43 @@ describe('group scheduler', () => {
     expect(result.solutions.length).toBeGreaterThan(0);
     expect(result.solutions[0].schedules[0].items[0].classId).toBe('B');
   });
+
+  it('ranks across the search budget instead of stopping at the first solutions', () => {
+    const fillerClasses = Array.from({ length: 50 }, (_, index) => ({
+      id: `F${String(index + 1).padStart(2, '0')}`,
+      schedule: ['T3(1-2)'],
+    }));
+    const rankingDatabase = [
+      {
+        id: 'CSC10009',
+        name: 'Database',
+        credits: 4,
+        classes: [
+          { id: 'AFTERNOON', schedule: ['T2(7-8)'] },
+          { id: 'MORNING', schedule: ['T2(1-2)'] },
+        ],
+      },
+      {
+        id: 'CSC10010',
+        name: 'Second course',
+        credits: 4,
+        classes: fillerClasses,
+      },
+    ];
+    const members = [
+      member({ nickname: 'A', sharedCourses: ['CSC10009', 'CSC10010'] }),
+      member({ nickname: 'B', sharedCourses: ['CSC10009', 'CSC10010'] }),
+    ];
+
+    const unrestricted = runGroupScheduleSolver(rankingDatabase, members, { session: '1' }, 50);
+    const withoutAfternoon = runGroupScheduleSolver(rankingDatabase, members, {
+      session: '1',
+      groupPreferredClasses: { CSC10009: { excluded: ['AFTERNOON'] } },
+    }, 50);
+
+    const unrestrictedClass = unrestricted.solutions[0].schedules[0].items
+      .find((item) => item.courseId === 'CSC10009')?.classId;
+    expect(unrestrictedClass).toBe('MORNING');
+    expect(unrestricted.solutions[0].fitness).toBe(withoutAfternoon.solutions[0].fitness);
+  });
 });
