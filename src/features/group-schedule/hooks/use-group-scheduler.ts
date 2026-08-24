@@ -116,6 +116,7 @@ export function useGroupScheduler(): GroupSolverState & {
   setShareConfig: (config: GroupShareConfig) => void;
   analyzeTradeoff: (option: GroupScheduleOption, tradeoff: GroupScheduleTradeoff, config?: Partial<GroupFitnessConfig>) => Promise<GroupScheduleTradeoff>;
   clearResult: () => void;
+  setResult: (result: GroupScheduleRunResult | null) => void;
   getOptionRegistrations: (option: GroupScheduleOption, memberIndex?: number) => any[];
 } {
   const initialPayload = useMemo(getInitialPayload, []);

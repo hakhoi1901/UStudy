@@ -375,10 +375,7 @@ export function StudyRoadmapFeature() {
                                         embedded
                                         selectedCourseIds={selectedCourses}
                                         allCourses={globalAllCourses as Course[]}
-                                        allowedClassesMap={allowedClassesMap}
-                                        setAllowedClassesMap={setAllowedClassesMap}
                                         onRemoveSelectedCourse={handleCourseToggle}
-                                        onPageChange={() => undefined}
                                     />
                                 )}
                             />
