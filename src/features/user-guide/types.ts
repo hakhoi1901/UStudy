@@ -21,6 +21,7 @@ export type GuideActionId =
   | 'show-group-members'
   | 'show-group-preferences'
   | 'expand-group-class-preference'
+  | 'expand-course-sharing'
   | 'enable-course-sharing-split'
   | 'show-group-results'
   | 'open-data-center';
