@@ -6,6 +6,7 @@ import { PageShell } from '../../components/layout/page-shell';
 import { TranscriptExportMenu } from '../../features/grades';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
+import { GuideLauncher, useGuideAction } from '../../features/user-guide';
 
 // Import from feature module
 import {
@@ -64,6 +65,8 @@ export function GradesPage() {
     return isGradeMainTab(saved) ? saved : 'overview';
   });
 
+  useGuideAction('show-gpa-plan', () => setActiveMainTab('target'));
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.GRADE_MAIN_TAB, activeMainTab);
   }, [activeMainTab]);
@@ -108,6 +111,7 @@ export function GradesPage() {
         header={<PageHeader
           title="Quản lý điểm"
           description="Xem điểm số, mô phỏng GPA và theo dõi các môn học cần học lại."
+          actions={<GuideLauncher guideId="gpa" source="grades-empty-header" />}
         />}
       >
         <NoDataCard />
@@ -121,8 +125,10 @@ export function GradesPage() {
       header={<PageHeader
         title="Quản lý điểm"
         description="Xem điểm số, mô phỏng GPA và theo dõi các môn học cần học lại."
-        actions={hasData && (
-          <TranscriptExportMenu
+        actions={(
+          <>
+            <GuideLauncher guideId="gpa" source="grades-header" />
+            {hasData && <TranscriptExportMenu
             name={studentDb?.name || 'Sinh viên'}
             dob={studentDb?.dob || '---'}
             studentId={studentDb?.id || '---'}
@@ -132,7 +138,8 @@ export function GradesPage() {
             totalCredits={accumulatedCredits}
             gpa10={currentGPA}
             courses={gradesHistory.map((grade) => ({ code: grade.code, name: grade.nameVi, credits: grade.credits, score10: grade.grade }))}
-          />
+            />}
+          </>
         )}
       />}
     >
@@ -140,16 +147,18 @@ export function GradesPage() {
       <div className="space-y-4">
         {renderGradeMetrics('hidden md:block')}
 
-        <SectionTabs
-          ariaLabel="Quản lý điểm"
-          activeTab={activeMainTab}
-          onChange={setActiveMainTab}
-          tabs={[
-            { id: 'overview', label: 'Tổng quan', description: 'GPA và xu hướng' },
-            { id: 'target', label: 'Kế hoạch GPA', description: 'Mục tiêu và mô phỏng' },
-            { id: 'history', label: 'Lịch sử điểm', description: 'Kết quả đã có' },
-          ]}
-        />
+        <div data-guide="grade-main-tabs">
+          <SectionTabs
+            ariaLabel="Quản lý điểm"
+            activeTab={activeMainTab}
+            onChange={setActiveMainTab}
+            tabs={[
+              { id: 'overview', label: 'Tổng quan', description: 'GPA và xu hướng' },
+              { id: 'target', label: 'Kế hoạch GPA', description: 'Mục tiêu và mô phỏng' },
+              { id: 'history', label: 'Lịch sử điểm', description: 'Kết quả đã có' },
+            ]}
+          />
+        </div>
       </div>
 
       <div>

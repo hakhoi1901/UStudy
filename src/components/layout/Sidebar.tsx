@@ -1,4 +1,4 @@
-import { Home, Map, Bot, MapPinned, Info, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
+import { Home, Map, Bot, Info, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield, BookOpenCheck } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getPathForPage } from '../../app/routes';
@@ -30,6 +30,7 @@ const navGroups = [
       { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
       { icon: Info, label: 'Thông tin trường', subtitle: 'Bản đồ và kế hoạch năm học', page: 'campusInfo' },
       { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
+      { icon: BookOpenCheck, label: 'Hướng dẫn', subtitle: 'Cách sử dụng UStudy', page: 'guide' },
       { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
     ],
   },

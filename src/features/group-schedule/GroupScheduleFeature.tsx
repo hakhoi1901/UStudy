@@ -26,6 +26,7 @@ import courseDbJson from '../../logic/scheduler/Course_db.json';
 import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSession } from '../../utils/dayOffPreferences';
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../components/course';
 import { ScheduleOptionSelector } from '../schedule';
+import { useGuideAction } from '../user-guide';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -174,6 +175,9 @@ export function GroupSchedulePage({
     }, []);
 
     const [activeStep, setActiveStep] = useState<GroupScheduleStep>(savedUIState.activeStep);
+    useGuideAction('show-group-members', () => setActiveStep(1));
+    useGuideAction('show-group-preferences', () => setActiveStep(2));
+    useGuideAction('show-group-results', () => setActiveStep(3));
     const [activeResultIndex, setActiveResultIndex] = useState(0);
     const [activePreviewMemberIndex, setActivePreviewMemberIndex] = useState(0);
     const [showGroupCalendarPreview, setShowGroupCalendarPreview] = useState(savedUIState.showGroupCalendarPreview);
@@ -587,7 +591,7 @@ export function GroupSchedulePage({
     );
 
     const renderStepper = () => (
-        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
+        <div data-guide="group-stepper" className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
             {modeSwitch && (
                 <div className="w-full shrink-0 border-b border-gray-100 pb-3 md:w-auto md:border-b-0 md:border-r md:pb-0 md:pr-4">
                     {modeSwitch}
@@ -637,7 +641,7 @@ export function GroupSchedulePage({
     );
 
     const renderMembersPanel = () => (
-        <aside className="lg:sticky lg:top-4 lg:self-start">
+        <aside data-guide="group-roster" className="lg:sticky lg:top-4 lg:self-start">
             <div className="ustudy-card overflow-hidden p-0">
                 <div className="border-b border-slate-100 p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -676,7 +680,7 @@ export function GroupSchedulePage({
             className={`grid gap-4 ${showMembersPanel ? 'lg:grid-cols-[minmax(0,1fr)_360px]' : 'lg:grid-cols-1'
                 }`}
         >
-            <section className="ustudy-card space-y-6 p-5 sm:p-7">
+            <section data-guide="group-member-form" className="ustudy-card space-y-6 p-5 sm:p-7">
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-3">
@@ -871,7 +875,7 @@ export function GroupSchedulePage({
     );
 
     const renderGroupConfigStep = () => (
-        <section className="space-y-4">
+        <section data-guide="group-preferences" className="space-y-4">
             
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -1193,7 +1197,7 @@ export function GroupSchedulePage({
     );
 
     const renderResultStep = () => (
-        <section className="ustudy-card p-4 sm:p-5">
+        <section data-guide="group-results" className="ustudy-card p-4 sm:p-5">
             <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-900">Kết quả xếp lịch nhóm</h2>

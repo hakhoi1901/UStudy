@@ -377,3 +377,18 @@
     display: block;
   }
 }
+
+/* User guide tour */
+.ustudy-guide-tooltip {
+  width: min(360px, calc(100vw - 24px));
+  font-family: Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+@media (max-width: 767px) {
+  .ustudy-guide-tooltip {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 88px - env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+  }
+}

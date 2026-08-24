@@ -510,7 +510,7 @@ export function StudyPlanContainer() {
 
     return (
         <>
-            <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm lg:hidden">
+            <div data-guide="study-plan-mobile-tabs" className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm lg:hidden">
                 <button
                     type="button"
                     onClick={() => setMobileTab('courses')}

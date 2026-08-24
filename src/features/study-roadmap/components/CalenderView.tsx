@@ -15,6 +15,7 @@ import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../comp
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 import { ScheduleBuilder } from './ScheduleBuilder';
 import { BuilderToolbar } from './BuilderToolbar';
+import { GuideLauncher, useGuideAction } from '../../user-guide';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -124,6 +125,9 @@ export function CalendarView({
         if (window.location.hash.startsWith('#v1_')) return 'group';
         return readFromStorage<ScheduleMode>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
     });
+
+    useGuideAction('show-personal-schedule', () => setScheduleMode('personal'));
+    useGuideAction('show-group-schedule', () => setScheduleMode('group'));
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.SCHEDULE_MODE, scheduleMode);
@@ -250,7 +254,16 @@ export function CalendarView({
         .filter((c): c is NonNullable<typeof c> => !!c);
 
     // ── Empty state ────────────────────────────────────────────────────────────
-    const renderModeSwitch = () => <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />;
+    const renderModeSwitch = () => (
+        <div data-guide="schedule-mode" className="flex items-center gap-2">
+            <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />
+            <GuideLauncher
+                guideId={scheduleMode === 'group' ? 'group-scheduling' : 'personal-scheduling'}
+                variant="icon"
+                source="schedule-mode-toolbar"
+            />
+        </div>
+    );
 
     const hasPersonalScheduleActions = selectedCourses.size > 0 || registeredSections.length > 0 || savedSchedules.length > 0;
 
@@ -260,7 +273,7 @@ export function CalendarView({
             {scheduleMode === 'personal' && hasPersonalScheduleActions && (
                 <>
                     <div className="hidden h-6 w-px bg-gray-200 md:block" />
-                    <div className="min-w-0 flex-1">
+                    <div data-guide="schedule-builder-toolbar" className="min-w-0 flex-1">
                         <BuilderToolbar
                             hasSelections={hasBuilderSelections}
                             solving={solving}
@@ -335,7 +348,8 @@ export function CalendarView({
             {renderModeToolbar()}
 
             {/* ═══ Schedule Builder (unified manual + auto) ════════════════ */}
-            <ScheduleBuilder
+            <div data-guide="schedule-builder-workspace">
+              <ScheduleBuilder
                 selectedCourses={selectedCourses}
                 allCurrentCourses={allCurrentCourses}
                 registeredCourses={registeredCourses}
@@ -360,7 +374,8 @@ export function CalendarView({
                 showToolbar={false}
                 onDraftStateChange={setHasBuilderSelections}
                 clearDraftRef={clearBuilderDraftRef}
-            />
+              />
+            </div>
             <div className="hidden md:block">
                 {/* Chú thích */}
                 <Note />

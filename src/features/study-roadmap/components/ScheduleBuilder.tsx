@@ -293,7 +293,7 @@ export function ScheduleBuilder({
         </div>
 
         {/* RIGHT: Calendar grid */}
-        <div className="min-w-0 flex-1 flex flex-col" style={{ height: 'calc(100vh - 7rem)' }}>
+        <div data-guide="schedule-options" className="min-w-0 flex-1 flex flex-col" style={{ height: 'calc(100vh - 7rem)' }}>
           {options.length > 0 && (
             <div className="mb-3">
               <ScheduleOptionSelector

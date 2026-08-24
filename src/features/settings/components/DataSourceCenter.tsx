@@ -30,6 +30,7 @@ import {
 } from '../../../helpers/localStorage/save';
 import type { PortalDataSource } from '../../../logic/import-metadata';
 import { restoreImportSources } from '../../../logic/import-rollback';
+import { GuideLauncher, useGuideAction } from '../../user-guide';
 
 interface SourceView {
   id: PortalDataSource;
@@ -245,6 +246,8 @@ export function DataSourceCenter() {
   const { cryptoKey } = useCrypto();
   const { addNotification } = useAppNotification();
 
+  useGuideAction('open-data-center', () => setIsExpanded(true));
+
   useEffect(() => {
     const refresh = () => setStamp((value) => value + 1);
     const handleMessage = (event: MessageEvent) => {
@@ -356,7 +359,7 @@ export function DataSourceCenter() {
   };
 
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <section data-guide="data-source-center" className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <button
         type="button"
         aria-expanded={isExpanded}
@@ -416,26 +419,29 @@ export function DataSourceCenter() {
             </div>
           </section>
 
-          <section className="mt-6 min-w-0 border-t border-gray-100 pt-5">
-            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <section data-guide="import-history" className="mt-6 min-w-0 border-t border-gray-100 pt-5">
+            <div data-guide="import-undo-actions" className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98]/10 text-[#004A98]"><History className="h-4 w-4" /></div>
                   <div><h4 className="text-sm font-semibold text-gray-900">Lịch sử cập nhật chung</h4><p className="mt-0.5 text-xs text-gray-500">Mỗi dòng là một lần import hoàn chỉnh.</p></div>
                 </div>
               </div>
-              {canUndo && (
-                <div className="flex flex-wrap items-center gap-2">
-                {canPartiallyUndo && (
-                  <button type="button" onClick={() => openPartialUndo()} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#004A98] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#003A78]">
-                    <RefreshCw className="h-3.5 w-3.5" />Hoàn tác một phần
-                  </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <GuideLauncher guideId="import-rollback" variant="icon" source="data-center" />
+                {canUndo && (
+                  <>
+                    {canPartiallyUndo && (
+                      <button type="button" onClick={() => openPartialUndo()} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#004A98] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#003A78]">
+                        <RefreshCw className="h-3.5 w-3.5" />Hoàn tác một phần
+                      </button>
+                    )}
+                    <button type="button" onClick={openUndoConfirmation} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-red-600">
+                      <Undo2 className="h-3.5 w-3.5" />Hoàn tác toàn bộ
+                    </button>
+                  </>
                 )}
-                <button type="button" onClick={openUndoConfirmation} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-red-600">
-                  <Undo2 className="h-3.5 w-3.5" />Hoàn tác toàn bộ
-                </button>
-                </div>
-              )}
+              </div>
             </div>
             <InlineHistoryList entries={history.slice(0, 3)} onRename={openHistoryRename} />
             {history.length > 3 && (

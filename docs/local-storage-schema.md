@@ -352,6 +352,7 @@ dữ liệu học tập, kể cả khi các danh sách trong gói đều rỗng.
 | `grade_main_tab` | `'overview' | 'target' | 'history'` |
 | `study_roadmap_active_tab` | Tab con gần nhất của Lộ trình học tập |
 | `dashboard_layout_preferences` | `{ version, order, hidden, calendarSources, calendarDays, calendarNotificationsEnabled, calendarReminderMinutes }`; bố cục thẻ, timeline (1-30 ngày) và các mốc nhắc lịch trên app |
+| `ustudy_user_guide_progress_v1` | Tiến độ từng hướng dẫn gồm version nội dung, trạng thái, bước gần nhất và các mốc thời gian; xem `docs/user-guides.md` |
 | `app_notifications` | Mảng thông báo của ứng dụng |
 | `chatbot_chat_history` | Lịch sử hội thoại chatbot |
 

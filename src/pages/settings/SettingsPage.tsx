@@ -6,6 +6,7 @@ import { ChangePinModal } from '../../components/security';
 import { useCrypto } from '../../context/CryptoContext';
 import { PageHeader } from '../../components/layout/page-header';
 import { PageShell } from '../../components/layout/page-shell';
+import { GuideLauncher } from '../../features/user-guide';
 
 export function SettingsPage({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();
@@ -22,6 +23,7 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
             header={<PageHeader
                 title="Cài đặt"
                 description="Quản lý tài khoản và tùy chọn của bạn."
+                actions={<GuideLauncher guideId="data-sync" source="settings-header" />}
             />}
         >
 
@@ -41,21 +43,21 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
                     <SettingUserProfile onPageChange={onPageChange} />
 
                     {/* Công cụ đồng bộ dữ liệu */}
-                    <div className="ustudy-settings-card">
+                    <div className="ustudy-settings-card" data-guide="settings-sync-tools">
                         <h2 className="ustudy-settings-title">
                             <Puzzle className="ustudy-settings-title-icon" />Công cụ đồng bộ dữ liệu
                         </h2>
 
                         <div className="space-y-3">
-                          <div className="ustudy-settings-group">
+                          <div className="ustudy-settings-group" data-guide="portal-sync-tools">
                             <PortalSyncTools />
                           </div>
 
-                          <div className="ustudy-settings-group">
+                          <div className="ustudy-settings-group" data-guide="file-import">
                             <ImportData />
                           </div>
 
-                          <div className="ustudy-settings-group">
+                          <div className="ustudy-settings-group" data-guide="optical-transfer">
                             <OpticalDataTransfer />
                           </div>
                         </div>

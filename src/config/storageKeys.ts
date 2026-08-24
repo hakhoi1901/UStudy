@@ -86,4 +86,6 @@ export const STORAGE_KEYS = {
     SCHEDULE_MODE: 'schedule_mode',
     /** Bản nháp lịch builder (manual + solver selections) */
     SCHEDULE_BUILDER_DRAFT: 'schedule_builder_draft',
+    /** Tiến độ xem hướng dẫn sử dụng theo từng guide và phiên bản nội dung */
+    USER_GUIDE_PROGRESS: 'ustudy_user_guide_progress_v1',
 };

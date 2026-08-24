@@ -9,6 +9,7 @@ Bo kiem thu bao ve cac luong co rui ro cao nhat cua UStudy:
 - Hoc phi, don gia theo prefix va thu tu uu tien nguon du lieu.
 - Import tu Bookmarklet/Extension, xem truoc thay doi, chong trung va dong bo xoa.
 - Lich dang ky co san, solver ca nhan va solver nhom.
+- Registry, dieu kien va tien do cua he thong huong dan tuong tac.
 - Khoi dong giao dien tren desktop/mobile va build Android debug.
 
 ## Lenh dung tai local
@@ -45,6 +46,7 @@ tests/
     tuition/        Don gia va hoc phi
     imports/        Merge va metadata import
     scheduler/      Dang ky co san va solver
+    user-guide/     Registry, storage, availability va analytics cua guide
   contracts/
     portal-sync/    Hop dong config/manifest Extension
   e2e/              Smoke test desktop va mobile
@@ -66,6 +68,7 @@ APK, coverage va Playwright report duoc luu thanh artifact trong 14 ngay. Releas
 3. Moi loi du lieu tung xay ra can co mot regression test truoc khi sua.
 4. Test solver kiem tra invariant, khong dong cung thu tu ngau nhien cua phuong an.
 5. Thay doi storage, config extension hoac schema import phai co test tuong thich nguoc.
+6. Guide moi phai co registry test; target quan trong phai duoc kiem tra tren desktop va mobile.
 
 ## Bao ve branch
 

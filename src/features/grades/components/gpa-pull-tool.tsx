@@ -15,6 +15,7 @@ import type {
     StudentCourseGrade,
     SimulatorCourseGrade,
 } from '../types';
+import { GuideLauncher } from '../../user-guide';
 
 interface GPAPullToolProps {
     gradesHistory: StudentCourseGrade[];
@@ -190,7 +191,7 @@ export function GPAPullTool({
     };
 
     return (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div data-guide="gpa-planner" className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 md:px-5">
                 <div className="flex min-w-0 items-center gap-1.5">
                     <h3 className="truncate text-[15px] font-semibold text-gray-800">Kế hoạch GPA</h3>
@@ -205,7 +206,7 @@ export function GPAPullTool({
                     </button>
                 </div>
 
-                <div className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="tablist" aria-label="Chế độ kế hoạch GPA">
+                <div data-guide="gpa-planning-modes" className="inline-flex shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="tablist" aria-label="Chế độ kế hoạch GPA">
                     {planningModes.map((planningMode) => {
                         const isActive = planningIntent === planningMode.id;
                         return (
@@ -256,7 +257,7 @@ export function GPAPullTool({
                 </div>
             )}
 
-            <div className="px-3 py-4 md:px-5">
+            <div data-guide="gpa-target-settings" className="px-3 py-4 md:px-5">
                 <GPAPullInputSection
                     planningIntent={planningIntent}
                     targetGPAInput={targetGPAInput}
@@ -288,7 +289,7 @@ export function GPAPullTool({
                 />
             </div>
 
-            <div className="border-t border-gray-200">
+            <div data-guide="gpa-course-table" className="border-t border-gray-200">
                 <GPAPullSemesterTable
                     nextSemester={workingSemester}
                     decimals={decimals}
@@ -299,7 +300,7 @@ export function GPAPullTool({
                 />
             </div>
 
-            <div className="border-t border-gray-200 px-4 py-4 md:px-5">
+            <div data-guide="gpa-retake" className="border-t border-gray-200 px-4 py-4 md:px-5">
                 <GPAPullManualRetake
                     manualRetakeItems={manualRetakeItems}
                     removeManualRetake={removeManualRetake}
@@ -334,13 +335,16 @@ export function GPAPullTool({
                 icon={Calculator}
                 size="md"
                 footer={(
-                    <button
-                        type="button"
-                        onClick={() => setIsGuideOpen(false)}
-                        className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] sm:w-auto"
-                    >
-                        Đã hiểu
-                    </button>
+                    <>
+                        <GuideLauncher guideId="gpa" label="Thực hành từng bước" source="gpa-quick-guide" />
+                        <button
+                            type="button"
+                            onClick={() => setIsGuideOpen(false)}
+                            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] sm:w-auto"
+                        >
+                            Đã hiểu
+                        </button>
+                    </>
                 )}
             >
                 <div className="divide-y divide-gray-200">

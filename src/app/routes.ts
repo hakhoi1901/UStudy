@@ -8,6 +8,7 @@ export type PageId =
     | 'examSchedule'
     | 'chatbot'
     | 'settings'
+    | 'guide'
     | 'privacy'
     | 'setup';
 
@@ -34,6 +35,7 @@ export const APP_ROUTES = {
     examSchedule: '/exam-schedule',
     chatbot: '/chatbot',
     settings: '/settings',
+    guide: '/guide',
     privacy: '/privacy',
     setup: '/setup',
 } as const;
@@ -48,6 +50,7 @@ export const PAGE_TO_PATH: Record<PageId, string> = {
     examSchedule: APP_ROUTES.examSchedule,
     chatbot: APP_ROUTES.chatbot,
     settings: APP_ROUTES.settings,
+    guide: APP_ROUTES.guide,
     privacy: APP_ROUTES.privacy,
     setup: APP_ROUTES.setup,
 };
@@ -71,6 +74,7 @@ const PATH_TO_PAGE: Array<[RegExp, PageId]> = [
     [/^\/exam-schedule\/?$/, 'examSchedule'],
     [/^\/chatbot\/?$/, 'chatbot'],
     [/^\/settings\/?$/, 'settings'],
+    [/^\/guide(?:\/.*)?$/, 'guide'],
     [/^\/privacy\/?$/, 'privacy'],
     [/^\/setup\/?$/, 'setup'],
 ];

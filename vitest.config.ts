@@ -27,6 +27,7 @@ export default defineConfig({
         'src/logic/import-metadata.ts',
         'src/logic/scheduler/**/*.ts',
         'src/features/group-schedule/services/group-scheduler.ts',
+        'src/features/user-guide/services/**/*.ts',
       ],
       exclude: ['**/*.d.ts'],
     },

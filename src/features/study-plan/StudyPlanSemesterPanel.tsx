@@ -270,7 +270,7 @@ export function StudyPlanSemesterPanel({
     };
 
     return (
-        <aside className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:pl-3`}>
+        <aside data-guide="study-plan-semesters" className={`${mobileVisible ? 'block' : 'hidden'} lg:sticky lg:top-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:pl-3`}>
             <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 {/* Header */}
                 <div className="border-b border-white/10 bg-gradient-to-br from-[#0058B2] to-[#0066CC] p-3 shadow-sm lg:p-4">
@@ -316,7 +316,7 @@ export function StudyPlanSemesterPanel({
                             </p>
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1">
+                        <div data-guide="study-plan-actions" className="flex shrink-0 items-center gap-1">
                             <button
                                 type="button"
                                 onClick={onOpenPreview}

@@ -16,6 +16,8 @@ import { useDepartmentData } from '../context/DepartmentContext';
 import { CampusInformationPage } from '../pages/campus-information/CampusInformationPage';
 import { APP_ROUTES, getPageIdFromPath, getPathForPage } from './routes';
 import { APP_CONFIG } from '../config/appConfig';
+import { GuidePage } from '../pages/guide/GuidePage';
+import { GuideProvider } from '../features/user-guide';
 
 const isWorkspaceEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_WORKSPACE === 'true';
 const WorkspacePage = isWorkspaceEnabled
@@ -86,6 +88,8 @@ function RoutedApp() {
             <Routes>
                 <Route path={APP_ROUTES.root} element={<Navigate to={APP_ROUTES.dashboard} replace />} />
                 <Route path={APP_ROUTES.privacy} element={<PrivacySecurity />} />
+                <Route path={APP_ROUTES.guide} element={<GuidePage />} />
+                <Route path={`${APP_ROUTES.guide}/:guideId`} element={<GuidePage />} />
                 {WorkspacePage && (
                     <Route
                         path="/ad/*"
@@ -124,7 +128,9 @@ function RoutedApp() {
 export function AppRouter() {
     return (
         <BrowserRouter>
-            <RoutedApp />
+            <GuideProvider>
+                <RoutedApp />
+            </GuideProvider>
         </BrowserRouter>
     );
 }

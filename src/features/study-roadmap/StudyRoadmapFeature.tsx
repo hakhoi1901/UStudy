@@ -23,6 +23,7 @@ import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
 import { APP_ROUTES, STUDY_ROADMAP_TAB_TO_PATH, getStudyRoadmapTabFromPath } from '../../app/routes';
 import { tabs, type Tab } from './types';
+import { GuideLauncher } from '../user-guide';
 
 // Danh sách các tab
 const isStudyRoadmapTab = (value: unknown): value is Tab =>
@@ -35,6 +36,11 @@ export function StudyRoadmapFeature() {
     const savedTab = readFromStorage<unknown>(STORAGE_KEYS.STUDY_ROADMAP_ACTIVE_TAB, tabs.selection);
     const activeTab = tabFromPath ||
         (location.hash.startsWith('#v1_') ? tabs.calendar : isStudyRoadmapTab(savedTab) ? savedTab : tabs.selection);
+    const pageGuideId = activeTab === tabs.studyPlan
+        ? 'study-plan'
+        : activeTab === tabs.selection
+            ? 'personal-scheduling'
+            : null;
     const setActiveTab = (tab: Tab) => {
         navigate(STUDY_ROADMAP_TAB_TO_PATH[tab]);
     };
@@ -246,13 +252,15 @@ export function StudyRoadmapFeature() {
                 header={<PageHeader
                     title="Lộ trình học tập"
                     description="Chọn môn học và xem lịch trực quan với phát hiện xung đột thời gian."
+                    actions={pageGuideId ? <GuideLauncher guideId={pageGuideId} source="study-roadmap-header" /> : undefined}
                 />}
             >
                 {/* Nội dung chính */}
                 <div className="flex-1 w-full min-w-0">
                     {/* Navigation */}
-                    <div className="hidden md:block">
-                        <NavigationBar
+                    <div data-guide="study-roadmap-tabs">
+                        <div className="hidden md:block">
+                            <NavigationBar
                             tabs={[
                                 // { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch học tập', description: 'Tiến độ và lộ trình theo học kỳ', icon: Book },
@@ -261,12 +269,12 @@ export function StudyRoadmapFeature() {
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
-                        />
-                    </div>
+                            />
+                        </div>
 
-                    {/* Mobile Navigation */}
-                    <div className="md:hidden">
-                        <NavigationBar
+                        {/* Mobile Navigation */}
+                        <div className="md:hidden">
+                            <NavigationBar
                             tabs={[
                                 // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
@@ -275,7 +283,8 @@ export function StudyRoadmapFeature() {
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
-                        />
+                            />
+                        </div>
                     </div>
 
                     <div className="pt-5">
@@ -296,6 +305,7 @@ export function StudyRoadmapFeature() {
 
                                 {/* CỘT TRÁI: danh sách môn học */}
                                 <div
+                                    data-guide="course-selection-list"
                                     className="flex-1 min-w-0 w-full overflow-y-auto"
                                     // Desktop: scroll độc lập; Mobile: tự nhiên
                                     style={{ height: undefined }}
@@ -336,6 +346,7 @@ export function StudyRoadmapFeature() {
 
                                 {/* CỘT PHẢI: giỏ hàng - chỉ hiện trên desktop */}
                                 <div
+                                    data-guide="selection-basket"
                                     className="hidden md:block w-[26vw] xl:w-[24vw] 2xl:w-[22vw] flex-shrink-0"
                                     style={{ height: 'calc(100vh - 11rem)' }}
                                 >
