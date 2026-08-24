@@ -37,10 +37,7 @@ interface TranscriptData extends TranscriptExportMenuProps {
 
 function toFourPointScale(score: number): string {
   if (score >= 9) return '4.0';
-  if (score >= 8) return '3.5';
-  if (score >= 7) return '3.0';
-  if (score >= 6.5) return '2.5';
-  if (score >= 5) return '2.0';
+  if (score >= 3) return (1 + (score - 3)*0.5).toFixed(1).toString()
   return '0.0';
 }
 
