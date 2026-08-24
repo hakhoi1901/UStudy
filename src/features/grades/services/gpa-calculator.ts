@@ -8,6 +8,39 @@ import type { StudentCourseGrade, GPAPullResult, SimulatorCourseGrade, GPAPullSe
  */
 
 export const GPACalculator = {
+    /** Chuyển điểm hệ 10 sang điểm hệ 4 theo bảng quy đổi hiện hành của UStudy. */
+    score10ToFourPoint: (score: number): number => {
+        if (!Number.isFinite(score) || score < 3) return 0;
+        if (score >= 9) return 4;
+        return Number((1 + (score - 3) * 0.5).toFixed(1));
+    },
+
+    /**
+     * Tính GPA hệ 4 có trọng số tín chỉ.
+     * Chỉ dùng các môn mà engine cũng tính vào GPA hệ 10 hiện tại.
+     */
+    calculateFourPointGPA: (
+        courses: Array<{ code: string; credits: number; score10: number; status: StudentCourseGrade['status'] }>,
+    ): number => {
+        let totalPoints = 0;
+        let totalCredits = 0;
+
+        for (const course of courses) {
+            const accumulation = AcademicRulesEngine.calculateAccumulationParams(
+                course.code,
+                course.credits,
+                course.score10,
+                course.status,
+            );
+            if (accumulation.creditsForGPA <= 0) continue;
+
+            totalPoints += GPACalculator.score10ToFourPoint(course.score10) * accumulation.creditsForGPA;
+            totalCredits += accumulation.creditsForGPA;
+        }
+
+        return totalCredits > 0 ? totalPoints / totalCredits : 0;
+    },
+
     /**
      * Tính GPA dự kiến khi kết hợp điểm lịch sử + điểm dự kiến học kỳ tới.
      */

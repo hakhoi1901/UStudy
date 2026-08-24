@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { downloadXlsxWorkbook } from '../../../helpers/export/xlsx';
+import { GPACalculator } from '../services/gpa-calculator';
+import type { StudentCourseGrade } from '../types';
 
 interface TranscriptCourse {
   code: string;
   name: string;
   credits: number;
   score10: number;
+  status: StudentCourseGrade['status'];
 }
 
 interface TranscriptExportMenuProps {
@@ -36,15 +39,13 @@ interface TranscriptData extends TranscriptExportMenuProps {
 }
 
 function toFourPointScale(score: number): string {
-  if (score >= 9) return '4.0';
-  if (score >= 3) return (1 + (score - 3)*0.5).toFixed(1).toString()
-  return '0.0';
+  return GPACalculator.score10ToFourPoint(score).toFixed(1);
 }
 
 function buildTranscriptData(props: TranscriptExportMenuProps): TranscriptData {
   return {
     ...props,
-    gpa4: toFourPointScale(props.gpa10),
+    gpa4: GPACalculator.calculateFourPointGPA(props.courses).toFixed(2),
     rows: props.courses.map((course, index) => ({
       stt: index + 1,
       maMon: course.code,

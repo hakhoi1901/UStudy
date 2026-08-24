@@ -42,4 +42,16 @@ describe('GPACalculator', () => {
       impossible: true,
     });
   });
+
+  it('calculates four-point GPA from each eligible course weighted by credits', () => {
+    const result = GPACalculator.calculateFourPointGPA([
+      { code: 'CSC10001', credits: 4, score10: 9, status: 'passed' },
+      { code: 'CSC10002', credits: 2, score10: 8, status: 'passed' },
+      { code: 'CSC10003', credits: 3, score10: 10, status: 'ongoing' },
+      { code: 'ADD00031', credits: 3, score10: 10, status: 'passed' },
+      { code: 'CSC10004', credits: 4, score10: 4, status: 'retake' },
+    ]);
+
+    expect(result).toBeCloseTo((4 * 4 + 3.5 * 2) / 6, 8);
+  });
 });

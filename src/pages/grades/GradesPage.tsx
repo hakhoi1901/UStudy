@@ -131,7 +131,13 @@ export function GradesPage() {
             cohort={currentCohort?.name || '---'}
             totalCredits={accumulatedCredits}
             gpa10={currentGPA}
-            courses={gradesHistory.map((grade) => ({ code: grade.code, name: grade.nameVi, credits: grade.credits, score10: grade.grade }))}
+            courses={gradesHistory.map((grade) => ({
+              code: grade.code,
+              name: grade.nameVi,
+              credits: grade.credits,
+              score10: grade.grade,
+              status: grade.status,
+            }))}
           />
         )}
       />}
