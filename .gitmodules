@@ -1,0 +1,3 @@
+[submodule "decimen-optical-transfer"]
+	path = decimen-optical-transfer
+	url = https://github.com/bashalarmistalt/decimen-optical-transfer
