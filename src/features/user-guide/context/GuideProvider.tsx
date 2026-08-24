@@ -1,6 +1,8 @@
 import { CircleHelp, RefreshCw } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDepartmentData } from '../../../context/DepartmentContext';
+import { beginTransientStorageSession, endTransientStorageSession } from '../../../helpers/localStorage/save';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { USER_GUIDE_BY_ID } from '../guide-registry';
 import { checkGuidePrerequisite, getGuideAvailability as resolveGuideAvailability } from '../services/guide-availability';
@@ -16,6 +18,8 @@ import {
 import type { GuideActionId, GuideStep, UserGuide, UserGuideId } from '../types';
 import { GuideTour } from '../components/GuideTour';
 import { GuideContext, type GuideContextValue, type StartGuideOptions } from './guide-context';
+import { GUIDE_DEMO_MANAGED_KEYS, createGuideDemoData } from '../services/guide-demo';
+import { requestGroupGuideStep } from '../services/group-guide-runtime';
 
 interface GuideProviderProps {
   children: ReactNode;
@@ -52,6 +56,7 @@ function getDevice(): 'mobile' | 'desktop' {
 
 export function GuideProvider({ children }: GuideProviderProps) {
   const navigate = useNavigate();
+  const { isConfigured, setIsConfigured } = useDepartmentData();
   const actionsRef = useRef(new Map<GuideActionId, () => void | Promise<void>>());
   const [progress, setProgress] = useState(readGuideProgress);
   const [activeGuide, setActiveGuide] = useState<UserGuide | null>(null);
@@ -61,6 +66,8 @@ export function GuideProvider({ children }: GuideProviderProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [issue, setIssue] = useState<TourIssue | null>(null);
   const [blockedGuide, setBlockedGuide] = useState<BlockedGuide | null>(null);
+  const [isDemoActive, setIsDemoActive] = useState(false);
+  const demoOriginalConfiguredRef = useRef<boolean | null>(null);
 
   const registerAction = useCallback((actionId: GuideActionId, handler: () => void | Promise<void>) => {
     actionsRef.current.set(actionId, handler);
@@ -118,23 +125,66 @@ export function GuideProvider({ children }: GuideProviderProps) {
     const requestedIndex = requestedStepId ? steps.findIndex((step) => step.id === requestedStepId) : -1;
     const nextIndex = requestedIndex >= 0 ? requestedIndex : 0;
 
+    // CalendarView va GroupScheduleFeature khong mount cung luc. Dat buoc nay
+    // truoc khi dieu huong de Group panel render dung ngay tu lan dau tien.
+    if (guide.id === 'group-preferences') requestGroupGuideStep(2);
+    if (guide.id === 'group-scheduling') requestGroupGuideStep(1);
+
     setBlockedGuide(null);
     setIssue(null);
     setActiveGuide(guide);
     setActiveSteps(steps);
     setInitialStepIndex(nextIndex);
-    setRunToken((value) => value + 1);
-    setIsRunning(true);
+    setIsRunning(false);
     setProgress(markGuideStarted(guide, steps[nextIndex]?.id ?? null, canResume));
     trackGuideEvent(canResume ? 'Guide Continued' : 'Guide Started', guide, { source: options.source });
-  }, [buildSteps, progress.guides]);
+
+    // react-joyride does not provide a per-step async "before" hook. Prepare
+    // the first target before starting the tour so route changes and panel
+    // switches finish before Joyride tries to find the selector.
+    void (async () => {
+      try {
+        await prepareStep(steps[nextIndex]);
+        setRunToken((value) => value + 1);
+        setIsRunning(true);
+      } catch (error) {
+        console.error('[GuideProvider] Không thể chuẩn bị hướng dẫn:', error);
+        setBlockedGuide({ guide, reason: 'Không thể mở đúng khu vực hướng dẫn. Hãy thử lại sau.' });
+      }
+    })();
+  }, [buildSteps, prepareStep, progress.guides]);
+
+  const stopDemo = useCallback(() => {
+    if (!isDemoActive) return;
+    const originalConfigured = demoOriginalConfiguredRef.current;
+    if (originalConfigured !== null) setIsConfigured(originalConfigured);
+    endTransientStorageSession();
+    demoOriginalConfiguredRef.current = null;
+    setIsDemoActive(false);
+    window.postMessage({ type: 'CACHE_POPULATED' }, '*');
+  }, [isDemoActive, setIsConfigured]);
+
+  const startDemoGuide = useCallback(async (guideId: UserGuideId, options: StartGuideOptions = {}) => {
+    if (isDemoActive) stopDemo();
+
+    demoOriginalConfiguredRef.current = isConfigured;
+    beginTransientStorageSession(createGuideDemoData(guideId), GUIDE_DEMO_MANAGED_KEYS);
+    setIsConfigured(true);
+    setIsDemoActive(true);
+    window.postMessage({ type: 'CACHE_POPULATED' }, '*');
+
+    // Đợi route guard nhận isConfigured=true trước khi tour điều hướng sang tính năng.
+    await delay(0);
+    startGuide(guideId, { ...options, source: options.source ?? 'guide-demo' });
+  }, [isConfigured, isDemoActive, setIsConfigured, startGuide, stopDemo]);
 
   const stopGuide = useCallback(() => {
     setIsRunning(false);
     setActiveGuide(null);
     setActiveSteps([]);
     setIssue(null);
-  }, []);
+    stopDemo();
+  }, [stopDemo]);
 
   const resetGuide = useCallback((guideId: UserGuideId) => {
     setProgress(resetGuideProgress(guideId));
@@ -201,13 +251,15 @@ export function GuideProvider({ children }: GuideProviderProps) {
     activeSteps,
     progress,
     isRunning,
+    isDemoActive,
     startGuide,
+    startDemoGuide,
     stopGuide,
     resetGuide,
     getProgress,
     getAvailability,
     registerAction,
-  }), [activeGuide, activeSteps, getAvailability, getProgress, isRunning, progress, registerAction, resetGuide, startGuide, stopGuide]);
+  }), [activeGuide, activeSteps, getAvailability, getProgress, isDemoActive, isRunning, progress, registerAction, resetGuide, startDemoGuide, startGuide, stopGuide]);
 
   return (
     <GuideContext.Provider value={contextValue}>

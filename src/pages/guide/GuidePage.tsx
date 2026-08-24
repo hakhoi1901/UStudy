@@ -22,6 +22,7 @@ import { PageShell } from '../../components/layout/page-shell';
 import {
   GUIDE_CATEGORY_LABELS,
   USER_GUIDES,
+  canUseGuideDemo,
   getUserGuide,
   useUserGuide,
   type UserGuide,
@@ -79,7 +80,7 @@ function getProgressLabel(guide: UserGuide, entry: GuideProgressEntry | null) {
 }
 
 function GuideOverview() {
-  const { getAvailability, getProgress, startGuide } = useUserGuide();
+  const { getAvailability, getProgress, startDemoGuide, startGuide } = useUserGuide();
   const [searchTerm, setSearchTerm] = useState('');
   const normalizedSearch = searchTerm.trim().toLocaleLowerCase('vi-VN');
   const filteredGuides = useMemo(() => USER_GUIDES.filter((guide) => (
@@ -147,6 +148,15 @@ function GuideOverview() {
                       >
                         <Play className="h-4 w-4" />{canResume ? 'Tiếp tục' : 'Bắt đầu'}
                       </button>
+                      {!availability.available && canUseGuideDemo(guide.id) && (
+                        <button
+                          type="button"
+                          onClick={() => void startDemoGuide(guide.id, { source: 'guide-center-demo' })}
+                          className="ustudy-button-primary h-9 px-3 text-xs"
+                        >
+                          <Sparkles className="h-4 w-4" />Demo
+                        </button>
+                      )}
                       <Link to={`/guide/${guide.id}`} className="ustudy-action-icon h-9 w-9" title="Đọc hướng dẫn chi tiết"><ChevronRight className="h-4 w-4" /></Link>
                     </div>
                   </div>
@@ -169,7 +179,7 @@ function GuideOverview() {
 }
 
 function GuideDetail({ guide }: { guide: UserGuide }) {
-  const { getAvailability, getProgress, resetGuide, startGuide } = useUserGuide();
+  const { getAvailability, getProgress, resetGuide, startDemoGuide, startGuide } = useUserGuide();
   const entry = getProgress(guide.id);
   const availability = getAvailability(guide.id);
   const canResume = Boolean(entry?.guideVersion === guide.version && entry.status !== 'completed');
@@ -184,9 +194,16 @@ function GuideDetail({ guide }: { guide: UserGuide }) {
           title={guide.title}
           description={guide.description}
           actions={(
-            <button type="button" onClick={() => startGuide(guide.id, { resume: canResume, source: 'guide-detail' })} className="ustudy-button-primary h-9 px-3 text-sm">
-              <Play className="h-4 w-4" />{canResume ? 'Tiếp tục hướng dẫn' : 'Bắt đầu thực hành'}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {!availability.available && canUseGuideDemo(guide.id) && (
+                <button type="button" onClick={() => void startDemoGuide(guide.id, { source: 'guide-detail-demo' })} className="ustudy-button-outline h-9 px-3 text-sm">
+                  <Sparkles className="h-4 w-4" />Dùng dữ liệu mẫu
+                </button>
+              )}
+              <button type="button" onClick={() => startGuide(guide.id, { resume: canResume, source: 'guide-detail' })} className="ustudy-button-primary h-9 px-3 text-sm">
+                <Play className="h-4 w-4" />{canResume ? 'Tiếp tục hướng dẫn' : 'Bắt đầu thực hành'}
+              </button>
+            </div>
           )}
         />
       )}

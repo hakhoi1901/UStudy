@@ -37,6 +37,7 @@ src/features/user-guide/
   services/
     guide-analytics.ts      Event Vercel Analytics không chứa dữ liệu sinh viên
     guide-availability.ts   Kiểm tra điều kiện chạy guide/step
+    guide-demo.ts           Bộ dữ liệu mẫu tạm thời cho tour thực hành
     guide-storage.ts        Đọc, chuẩn hóa và cập nhật tiến độ
   guide-registry.ts         Registry duy nhất
   types.ts                  Schema và ID type-safe
@@ -166,7 +167,18 @@ Các điều kiện đang dùng:
 | `group-result` | Đã có kết quả xếp lịch nhóm |
 | `import-history` | Có lịch sử nhập để hoàn tác |
 
-Khi guide bị chặn, dialog phải nói rõ điều kiện còn thiếu và đưa người dùng đến hướng dẫn nền tảng phù hợp. Không tạo dữ liệu giả chỉ để chạy tour.
+Khi guide bị chặn, dialog phải nói rõ điều kiện còn thiếu và đưa người dùng đến hướng dẫn nền tảng phù hợp. Ở trung tâm hướng dẫn, guide phù hợp có thêm nút `Demo`: nó chạy tour với dữ liệu mẫu để người dùng mới vẫn thấy được giao diện thật.
+
+### Dữ liệu mẫu cho guide
+
+`guide-demo.ts` tạo một phiên demo có điểm đã chấm/chưa chấm, lớp mở, giỏ môn và thành viên nhóm. Phiên này dùng `beginTransientStorageSession()`:
+
+- Dữ liệu chỉ nằm trong RAM; không ghi đè `localStorage`, kể cả các key mã hóa như `student_db_full`.
+- Các thao tác UI trong demo chỉ cập nhật overlay của các key đã khai báo trong `GUIDE_DEMO_MANAGED_KEYS`.
+- Thoát hoặc hoàn thành tour sẽ hủy overlay và trả app về đúng dữ liệu thật. Refresh hoặc đóng tab cũng tự xóa demo vì overlay không được lưu.
+- Không mock kết quả solver. Người dùng có thể bấm xếp lịch trong demo để thấy kết quả do thuật toán thật tạo ra.
+
+Khi thêm một feature có thể ghi state trong demo, phải thêm key của nó vào `GUIDE_DEMO_MANAGED_KEYS` trước. Không dùng `localStorage.setItem()` trực tiếp cho state nghiệp vụ mới; hãy đi qua `savePlain`/`saveToStorage` để overlay chặn đúng lúc.
 
 Khi target không xuất hiện sau thời gian chờ, người dùng được chọn thử lại, bỏ qua bước hoặc kết thúc. Đây là lỗi phục hồi được, không được làm crash page nghiệp vụ.
 

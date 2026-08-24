@@ -12,7 +12,9 @@ export interface GuideContextValue {
   activeSteps: GuideStep[];
   progress: UserGuideProgress;
   isRunning: boolean;
+  isDemoActive: boolean;
   startGuide: (guideId: UserGuideId, options?: StartGuideOptions) => void;
+  startDemoGuide: (guideId: UserGuideId, options?: StartGuideOptions) => Promise<void>;
   stopGuide: () => void;
   resetGuide: (guideId: UserGuideId) => void;
   getProgress: (guideId: UserGuideId) => GuideProgressEntry | null;

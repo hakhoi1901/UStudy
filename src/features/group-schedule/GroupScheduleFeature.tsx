@@ -27,6 +27,7 @@ import { cycleDayOffSession, formatDayOffSession, formatDaysOff, getDayOffSessio
 import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../components/course';
 import { ScheduleOptionSelector } from '../schedule';
 import { useGuideAction } from '../user-guide';
+import { consumeGroupGuideStep } from '../user-guide/services/group-guide-runtime';
 
 type GroupScheduleStep = 1 | 2 | 3;
 
@@ -174,7 +175,9 @@ export function GroupSchedulePage({
         });
     }, []);
 
-    const [activeStep, setActiveStep] = useState<GroupScheduleStep>(savedUIState.activeStep);
+    const [activeStep, setActiveStep] = useState<GroupScheduleStep>(
+        () => consumeGroupGuideStep() ?? savedUIState.activeStep,
+    );
     useGuideAction('show-group-members', () => setActiveStep(1));
     useGuideAction('show-group-preferences', () => setActiveStep(2));
     useGuideAction('show-group-results', () => setActiveStep(3));
@@ -390,7 +393,7 @@ export function GroupSchedulePage({
 
     const getClassPreferenceTargets = (courseId: string, subscribers: number[]) => {
         const rule = courseSharing[courseId];
-        const targets = [{ id: 'global', name: 'Toàn bộ môn' }];
+        const targets = [{ id: 'global', name: 'Toàn bộ nhóm' }];
         if (rule?.mode === 'independent') {
             return [...targets, ...subscribers.map((memberIndex) => ({ id: `member-${memberIndex}`, name: members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}` }))];
         }

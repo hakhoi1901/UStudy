@@ -141,6 +141,11 @@ async function decryptWithKey(payload: string, key: CryptoKey): Promise<unknown>
 
 /** Lưu dữ liệu KHÔNG nhạy cảm (settings, page, ...) - không mã hóa */
 export function savePlain<T>(key: string, value: T): void {
+    if (hasTransientValue(key) && transientStorageSession) {
+        transientStorageSession.values[key] = value;
+        return;
+    }
+
     try {
         localStorage.setItem(key, JSON.stringify(value));
     } catch (err) {
@@ -150,6 +155,10 @@ export function savePlain<T>(key: string, value: T): void {
 
 /** Đọc dữ liệu KHÔNG nhạy cảm */
 export function readPlain<T>(key: string, fallback: T): T {
+    if (hasTransientValue(key) && transientStorageSession) {
+        return (transientStorageSession.values[key] ?? fallback) as T;
+    }
+
     try {
         const raw = localStorage.getItem(key);
         if (raw === null) return fallback;
@@ -163,6 +172,11 @@ export function readPlain<T>(key: string, fallback: T): T {
 
 /** Lưu dữ liệu nhạy cảm - mã hóa AES-GCM với CryptoKey */
 export async function saveSecure(key: string, value: unknown, cryptoKey: CryptoKey): Promise<void> {
+    if (hasTransientValue(key) && transientStorageSession) {
+        transientStorageSession.values[key] = value;
+        return;
+    }
+
     try {
         const encrypted = await encryptWithKey(value, cryptoKey);
         localStorage.setItem(key, encrypted);
@@ -173,6 +187,10 @@ export async function saveSecure(key: string, value: unknown, cryptoKey: CryptoK
 
 /** Đọc và giải mã dữ liệu nhạy cảm */
 export async function readSecure<T>(key: string, cryptoKey: CryptoKey, fallback: T): Promise<T> {
+    if (hasTransientValue(key) && transientStorageSession) {
+        return (transientStorageSession.values[key] ?? fallback) as T;
+    }
+
     try {
         const raw = localStorage.getItem(key);
         if (raw === null) return fallback;
@@ -563,6 +581,37 @@ export function clearAllStorage(): void {
 
 const _ramCache: Record<string, any> = {};
 
+interface TransientStorageSession {
+    values: Record<string, unknown>;
+    managedKeys: Set<string>;
+}
+
+let transientStorageSession: TransientStorageSession | null = null;
+
+/**
+ * Tạo một lớp dữ liệu chỉ sống trong RAM. Các key được quản lý sẽ không ghi vào
+ * localStorage, phù hợp cho phiên minh họa không làm đổi dữ liệu thật.
+ */
+export function beginTransientStorageSession(values: Record<string, unknown>, managedKeys: Iterable<string> = Object.keys(values)): void {
+    transientStorageSession = {
+        values: { ...values },
+        managedKeys: new Set(managedKeys),
+    };
+}
+
+/** Kết thúc phiên dữ liệu tạm; localStorage thật chưa từng bị thay đổi. */
+export function endTransientStorageSession(): void {
+    transientStorageSession = null;
+}
+
+export function isTransientStorageSessionActive(): boolean {
+    return transientStorageSession !== null;
+}
+
+function hasTransientValue(key: string): boolean {
+    return Boolean(transientStorageSession?.managedKeys.has(key));
+}
+
 /** Ghi một entry vào RAM cache */
 export function populateSecureCache(key: string, value: any): void {
     _ramCache[key] = value;
@@ -584,6 +633,9 @@ export const saveToStorage = savePlain;
  * sau đó fallback sang readPlain cho plain data.
  */
 export const readFromStorage = <T,>(key: string, fallback: T): T => {
+    if (hasTransientValue(key) && transientStorageSession) {
+        return (transientStorageSession.values[key] ?? fallback) as T;
+    }
     if (Object.prototype.hasOwnProperty.call(_ramCache, key)) {
         return _ramCache[key] as T;
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, cloneElement, useCallback, useRef, isValidElement, type ReactNode, type ReactElement } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, cloneElement, useCallback, useRef, isValidElement, type ReactNode, type ReactElement } from 'react';
 import { STORAGE_KEYS } from '../../../config';
 import { SavedSchedulesModal } from '../../group-schedule';
 import { readFromStorage, saveToStorage } from '../../../helpers/localStorage/save';
@@ -15,7 +15,8 @@ import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../comp
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 import { ScheduleBuilder } from './ScheduleBuilder';
 import { BuilderToolbar } from './BuilderToolbar';
-import { GuideLauncher, useGuideAction } from '../../user-guide';
+import { GuideLauncher, useGuideAction, useUserGuide } from '../../user-guide';
+import { hasPendingGroupGuideStep, requestGroupGuideStep } from '../../user-guide/services/group-guide-runtime';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -121,13 +122,25 @@ export function CalendarView({
     setOptions,
     groupScheduleContent,
 }: CalendarViewProps) {
+    const { activeGuide, isRunning: isGuideRunning } = useUserGuide();
     const [scheduleMode, setScheduleMode] = useState<ScheduleMode>(() => {
-        if (window.location.hash.startsWith('#v1_')) return 'group';
+        if (window.location.hash.startsWith('#v1_') || hasPendingGroupGuideStep()) return 'group';
         return readFromStorage<ScheduleMode>(STORAGE_KEYS.SCHEDULE_MODE, 'personal');
     });
 
     useGuideAction('show-personal-schedule', () => setScheduleMode('personal'));
     useGuideAction('show-group-schedule', () => setScheduleMode('group'));
+    useGuideAction('show-group-preferences', () => {
+        requestGroupGuideStep(2);
+        setScheduleMode('group');
+    });
+
+    useLayoutEffect(() => {
+        if (!isGuideRunning) return;
+        if (activeGuide?.id === 'group-scheduling' || activeGuide?.id === 'group-preferences') {
+            setScheduleMode('group');
+        }
+    }, [activeGuide?.id, isGuideRunning]);
 
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.SCHEDULE_MODE, scheduleMode);

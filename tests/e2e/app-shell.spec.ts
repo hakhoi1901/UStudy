@@ -64,3 +64,29 @@ test('starts and closes an interactive guide on a configured profile', async ({ 
   await page.keyboard.press('Escape');
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
 });
+
+test('runs the GPA guide with transient demo data on a first-run profile', async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+
+  await page.goto('/guide/gpa');
+  await page.getByRole('button', { name: 'Dùng dữ liệu mẫu' }).click();
+
+  await expect(page).toHaveURL(/\/grades$/);
+  await expect(page.locator('[data-guide="gpa-planning-modes"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('alertdialog')).toContainText('Mở Kế hoạch GPA');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('opens group preferences with demo members from the personal schedule view', async ({ page }) => {
+  await page.goto('/guide/group-preferences');
+  await page.getByRole('button', { name: 'Dùng dữ liệu mẫu' }).click();
+
+  await expect(page).toHaveURL(/\/study-roadmap\/calendar$/);
+  await expect(page.locator('[data-guide="group-general-prefs"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('alertdialog')).toContainText('Tổng quan ưu tiên chung');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+});
