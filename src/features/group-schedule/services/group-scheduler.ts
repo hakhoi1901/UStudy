@@ -36,6 +36,7 @@ const MAX_GROUP_URL_JSON_LENGTH = 64 * 1024;
 const MAX_GROUP_MEMBERS = 20;
 const MAX_GROUP_COURSES_PER_MEMBER = 60;
 const MAX_GROUP_NICKNAME_LENGTH = 80;
+const MAX_GROUP_MEMBER_ID_LENGTH = 128;
 const MAX_GROUP_COURSE_ID_LENGTH = 32;
 const GROUP_DAY_OFF_PENALTY = 40_000;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
@@ -156,11 +157,16 @@ function parseGroupMembers(value: unknown): GroupMemberToken[] {
   return value.map((candidate) => {
     if (!candidate || typeof candidate !== 'object') throw new Error('Thành viên nhóm không hợp lệ.');
     const member = candidate as Record<string, unknown>;
+    const id = member.id;
+    if (id !== undefined && (typeof id !== 'string' || id.length > MAX_GROUP_MEMBER_ID_LENGTH)) {
+      throw new Error('Mã thành viên nhóm không hợp lệ.');
+    }
     const nickname = member.nickname;
     if (nickname !== undefined && (typeof nickname !== 'string' || nickname.length > MAX_GROUP_NICKNAME_LENGTH)) {
       throw new Error('Tên thành viên vượt quá giới hạn.');
     }
     return sanitizeGroupMember({
+      id: typeof id === 'string' ? id : undefined,
       nickname: typeof nickname === 'string' ? nickname : undefined,
       sharedCourses: readCourseIds(member.sharedCourses, 'Danh sách môn chung'),
       personalCourses: readCourseIds(member.personalCourses, 'Danh sách môn riêng'),
@@ -423,6 +429,7 @@ export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken 
   const personalCourses = uniqueCourseIds(member.personalCourses).filter((courseId) => !sharedCourses.includes(courseId));
 
   return {
+    id: member.id?.trim() || undefined,
     nickname: member.nickname?.trim() || undefined,
     sharedCourses,
     personalCourses,
@@ -1290,20 +1297,6 @@ export function analyzeGroupScheduleTradeoff(
 
 export function isDuplicateMember(member: GroupMemberToken, members: GroupMemberToken[]): boolean {
   const current = sanitizeGroupMember(member);
-    const currentKey = JSON.stringify({
-    sharedCourses: [...current.sharedCourses].sort(),
-    personalCourses: [...current.personalCourses].sort(),
-    busyMask: current.busyMask,
-    preferredClasses: current.preferredClasses ?? {},
-  });
-
-  return members.some((existing) => {
-    const sanitized = sanitizeGroupMember(existing);
-    return JSON.stringify({
-      sharedCourses: [...sanitized.sharedCourses].sort(),
-      personalCourses: [...sanitized.personalCourses].sort(),
-      busyMask: sanitized.busyMask,
-      preferredClasses: sanitized.preferredClasses ?? {},
-    }) === currentKey;
-  });
+  if (!current.id) return false;
+  return members.some((existing) => sanitizeGroupMember(existing).id === current.id);
 }

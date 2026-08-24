@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildDensityMap, runGroupScheduleSolver, sanitizeGroupMember } from '../../../src/features/group-schedule/services/group-scheduler';
+import { buildDensityMap, isDuplicateMember, runGroupScheduleSolver, sanitizeGroupMember } from '../../../src/features/group-schedule/services/group-scheduler';
 import type { GroupMemberToken } from '../../../src/features/group-schedule/types';
 import { encodeScheduleToMask } from '../../../src/logic/Utils';
 
@@ -59,6 +59,14 @@ describe('group scheduler', () => {
       sharingMode: 'required',
       isShared: true,
     });
+  });
+
+  it('allows different members to register the exact same courses', () => {
+    const existing = member({ id: 'member-khoa', nickname: 'Khoa' });
+    const sameCoursesDifferentPerson = member({ id: 'member-khoi', nickname: 'Khôi' });
+
+    expect(isDuplicateMember(sameCoursesDifferentPerson, [existing])).toBe(false);
+    expect(isDuplicateMember(member({ id: 'member-khoa', nickname: 'Khoa' }), [existing])).toBe(true);
   });
 
   it('never places a member into a class that overlaps their busy mask', () => {
