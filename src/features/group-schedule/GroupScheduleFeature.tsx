@@ -275,6 +275,12 @@ export function GroupSchedulePage({
     }, [allCourses]);
 
     const groupCourses = useMemo(() => buildDensityMap(members), [members]);
+    useGuideAction('expand-group-class-preference', () => {
+        setActiveStep(2);
+        if (groupCourses.length > 0 && !expandedClassCourseId) {
+            setExpandedClassCourseId(groupCourses[0].courseId);
+        }
+    });
     const classOptionsByCourse = useMemo(() => loadClassOptionsByCourse(), []);
     const selectedOption = result?.solutions[activeResultIndex] ?? result?.solutions[0];
     const sharedCourseCount = useMemo(() => groupCourses.filter((course) => course.isShared).length, [groupCourses]);
@@ -733,7 +739,7 @@ export function GroupSchedulePage({
                 )}
 
                 {/* Nickname */}
-                <div className="space-y-2">
+                <div data-guide="group-member-nickname" className="space-y-2">
                     <label className="text-sm font-semibold text-slate-800">
                         Nickname
                     </label>
@@ -774,7 +780,7 @@ export function GroupSchedulePage({
                     </div>
 
                     {basketCourses.length > 0 ? (
-                        <div>
+                        <div data-guide="group-course-basket">
                             {renderDraftCourseList()}
                             <p className="mt-3 text-xs leading-relaxed text-slate-400">
                                 Môn trùng giữa các thành viên sẽ được ưu tiên xếp cùng lớp. Dùng nút lọc trong giỏ
@@ -791,7 +797,7 @@ export function GroupSchedulePage({
                     )}
                 </div>
 
-                <div className="space-y-3 border-t border-slate-100 pt-5">
+                <div data-guide="group-member-days-off" className="space-y-3 border-t border-slate-100 pt-5">
                     <div className="flex items-start justify-between gap-3">
                         <div>
                             <label className="text-sm font-semibold text-slate-800">Ngày không muốn học</label>
@@ -884,7 +890,7 @@ export function GroupSchedulePage({
                 </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div data-guide="group-general-prefs" className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div className="flex w-full flex-col gap-3 sm:m-2 sm:flex-row sm:items-start sm:justify-between">
                     {/* Phần tiêu đề bên trái */}
                     <div className="flex min-w-0 items-start gap-3 sm:pb-4">
@@ -952,7 +958,7 @@ export function GroupSchedulePage({
                     </div>
 
                     {/* Chiến thuật */}
-                    <div>
+                    <div data-guide="group-prefs-strategy">
                         <div className="mb-3 flex items-center gap-2">
                             <Zap className="h-4 w-4 text-[#004A98]" />
 
@@ -1017,7 +1023,7 @@ export function GroupSchedulePage({
                             </div>
 
                             {/* Ngày nghỉ */}
-                            <div>
+                            <div data-guide="group-prefs-days-off">
                                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
                                     Ngày nhóm muốn nghỉ
                                 </label>
@@ -1080,7 +1086,7 @@ export function GroupSchedulePage({
                 </div>
             ) : null}
 
-            <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div data-guide="group-class-preference" className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div>
                     <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Settings className="h-4 w-4 text-[#004A98]" />Ưu tiên theo môn</h3>
                     <p className="mt-1 text-xs text-gray-500">Đặt lớp ưu tiên hoặc bắt buộc, sau đó chọn các thành viên cần học cùng nhau.</p>
@@ -1109,6 +1115,7 @@ export function GroupSchedulePage({
                                         {((targetSelection?.excluded?.length ?? 0) + (targetSelection?.preferred?.length ?? 0) + (targetSelection?.required?.length ?? 0)) === 0 && <span className="text-gray-500">Chưa chọn lớp ưu tiên</span>}
                                     </div>
                                     <Button
+                                        data-guide="group-class-preference-toggle"
                                         type="button"
                                         variant="outline"
                                         size="sm"
@@ -1123,7 +1130,9 @@ export function GroupSchedulePage({
                                     <div className="gap-2 max-h-80 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 pr-1">
                                         <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white pb-1">
                                             <span className="text-xs font-medium text-gray-500">Áp dụng cho</span>
-                                            <AppSelect value={classPreferenceTargetByCourse[course.courseId] ?? 'global'} onChange={(value) => setClassPreferenceTargetByCourse((current) => ({ ...current, [course.courseId]: value }))} options={preferenceTargets} ariaLabel={`Chọn nhóm áp dụng ưu tiên lớp cho ${course.courseId}`} className="w-44" triggerClassName="h-8 px-2.5 text-xs" menuClassName="right-0 left-auto w-48" />
+                                            <div data-guide="group-class-preference-target">
+                                                <AppSelect value={classPreferenceTargetByCourse[course.courseId] ?? 'global'} onChange={(value) => setClassPreferenceTargetByCourse((current) => ({ ...current, [course.courseId]: value }))} options={preferenceTargets} ariaLabel={`Chọn nhóm áp dụng ưu tiên lớp cho ${course.courseId}`} className="w-44" triggerClassName="h-8 px-2.5 text-xs" menuClassName="right-0 left-auto w-48" />
+                                            </div>
                                         </div>
                                         {(classOptionsByCourse[course.courseId] ?? []).length === 0 ? (
                                             <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-500">
@@ -1144,7 +1153,7 @@ export function GroupSchedulePage({
                                                                 {classOption.schedule.length > 0 ? classOption.schedule.join(', ') : 'Chưa có lịch học'}
                                                             </span>
                                                         </span>
-                                                        <span className="grid grid-cols-2 gap-1 rounded-lg bg-white p-1 sm:w-[300px] sm:grid-cols-4">
+                                                        <span data-guide="group-class-preference-actions" className="grid grid-cols-2 gap-1 rounded-lg bg-white p-1 sm:w-[300px] sm:grid-cols-4">
                                                             {[
                                                                 { value: 'excluded' as const, label: 'Cấm' },
                                                                 { value: null, label: 'Chọn' },
@@ -1207,6 +1216,7 @@ export function GroupSchedulePage({
                     <button type="button" onClick={() => setActiveStep(2)} className="ustudy-button-normal"><Settings className="h-4 w-4" /><span className="hidden sm:inline">Chỉnh cấu hình</span></button>
                     {selectedOption && (
                         <button
+                            data-guide="group-save-schedule"
                             type="button"
                             onClick={() => setShowSaveGroupScheduleModal(true)}
                             className="ustudy-button-normal"
@@ -1217,6 +1227,7 @@ export function GroupSchedulePage({
                     )}
 
                     <button
+                        data-guide="group-saved-schedules"
                         onClick={() => {
                             setSavedSchedules(readFromStorage<SavedSchedule[]>(STORAGE_KEYS.SAVED_SCHEDULES, []));
                             setShowListModal(true);

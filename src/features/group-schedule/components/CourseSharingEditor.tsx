@@ -3,6 +3,7 @@ import { DndContext, KeyboardSensor, PointerSensor, TouchSensor, useDraggable, u
 import { GripVertical, Plus, Trash2, Users } from 'lucide-react';
 
 import { AppSelect } from '../../../components/ui/form';
+import { useGuideAction } from '../../user-guide';
 import type { CourseSharingMode, CourseSharingRule, GroupMemberToken } from '../types';
 
 interface CourseSharingEditorProps {
@@ -56,6 +57,19 @@ function GroupDropZone({ id, label, children, onRemove }: { id: string; label: s
 export function CourseSharingEditor({ courseId, subscribers, members, value, onChange }: CourseSharingEditorProps) {
   const rule: CourseSharingRule = value ?? { mode: 'required' };
   const isCustomGrouping = rule.mode !== 'independent' && rule.groups !== undefined;
+  
+  const setGroupingMode = (custom: boolean) => onChange({
+    ...rule,
+    groups: custom ? [subscribers, []] : undefined,
+    groupClassPreferences: {},
+  });
+
+  useGuideAction('enable-course-sharing-split', () => {
+    if (rule.mode !== 'independent' && !isCustomGrouping) {
+      setGroupingMode(true);
+    }
+  });
+
   const groups = rule.groups ?? [];
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }), useSensor(KeyboardSensor));
   const groupOptions = useMemo(() => [{ id: 'solo', name: 'Học riêng' }, ...groups.map((_, groupIndex) => ({ id: `group-${groupIndex}`, name: `Nhóm ${groupIndex + 1}` }))], [groups]);
@@ -66,11 +80,6 @@ export function CourseSharingEditor({ courseId, subscribers, members, value, onC
     mode,
     groups: mode === 'independent' ? undefined : rule.mode === 'independent' ? undefined : rule.groups,
     ...(mode !== rule.mode ? { groupClassPreferences: {} } : {}),
-  });
-  const setGroupingMode = (custom: boolean) => onChange({
-    ...rule,
-    groups: custom ? [subscribers, []] : undefined,
-    groupClassPreferences: {},
   });
   const setMemberGroup = (memberIndex: number, nextGroupId: string) => {
     const nextGroups = groups.map((group) => group.filter((candidate) => candidate !== memberIndex));
@@ -102,10 +111,10 @@ export function CourseSharingEditor({ courseId, subscribers, members, value, onC
   const soloMembers = subscribers.filter((memberIndex) => !groups.some((group) => group.includes(memberIndex)));
 
   return (
-    <div className="space-y-3 border-t border-gray-100 pt-3">
+    <div data-guide="group-course-sharing" className="space-y-3 border-t border-gray-100 pt-3">
       <div>
         <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-700"><Users className="h-4 w-4 text-[#004A98]" />Ai cần học cùng nhau?</div>
-        <div className="grid gap-1 rounded-lg bg-gray-100 p-1 sm:grid-cols-3">
+        <div data-guide="group-course-sharing-modes" className="grid gap-1 rounded-lg bg-gray-100 p-1 sm:grid-cols-3">
           {SHARING_MODES.map((mode) => <button key={mode.id} type="button" onClick={() => setMode(mode.id)} className={`rounded-md px-2.5 py-2 text-xs font-medium transition-colors ${rule.mode === mode.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`} title={mode.description}>{mode.label}</button>)}
         </div>
         <p className="mt-1.5 text-xs text-gray-500">{SHARING_MODES.find((mode) => mode.id === rule.mode)?.description}</p>
@@ -113,28 +122,41 @@ export function CourseSharingEditor({ courseId, subscribers, members, value, onC
 
       {rule.mode !== 'independent' ? (
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div data-guide="group-course-sharing-split" className="flex flex-wrap items-center gap-1.5">
             <button type="button" onClick={() => setGroupingMode(false)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${!isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Tất cả học chung</button>
             <button type="button" onClick={() => setGroupingMode(true)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Chia nhóm</button>
             {isCustomGrouping && groups.length < subscribers.length ? <button type="button" onClick={() => updateGroups([...groups, []])} className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-[#004A98]"><Plus className="h-3.5 w-3.5" />Thêm nhóm</button> : null}
           </div>
 
           {isCustomGrouping ? (
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {groups.map((group, groupIndex) => (
-                  <GroupDropZone key={groupIndex} id={`${courseId}:group-${groupIndex}`} label={`Nhóm ${groupIndex + 1}`} onRemove={groups.length > 1 ? () => removeGroup(groupIndex) : undefined}>
-                    {group.filter((memberIndex) => subscribers.includes(memberIndex)).map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue={`group-${groupIndex}`} groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
+            <div data-guide="group-course-sharing-dnd">
+              <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {groups.map((group, groupIndex) => (
+                    <GroupDropZone key={groupIndex} id={`${courseId}:group-${groupIndex}`} label={`Nhóm ${groupIndex + 1}`} onRemove={groups.length > 1 ? () => removeGroup(groupIndex) : undefined}>
+                      {group.filter((memberIndex) => subscribers.includes(memberIndex)).map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue={`group-${groupIndex}`} groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
+                    </GroupDropZone>
+                  ))}
+                  <GroupDropZone id={`${courseId}:solo`} label="Học riêng">
+                    {soloMembers.map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue="solo" groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
                   </GroupDropZone>
-                ))}
-                <GroupDropZone id={`${courseId}:solo`} label="Học riêng">
-                  {soloMembers.map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue="solo" groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
-                </GroupDropZone>
-              </div>
-            </DndContext>
+                </div>
+              </DndContext>
+            </div>
           ) : null}
 
-          {isCustomGrouping ? <div className="space-y-1 text-xs text-gray-500">{groups.map((group, groupIndex) => group.length ? <p key={groupIndex}><span className="font-medium text-gray-700">Nhóm {groupIndex + 1}:</span> {group.map((memberIndex) => memberName(members, memberIndex)).join(', ')}</p> : null)}</div> : null}
+          {isCustomGrouping ? <div className="space-y-2 text-xs text-gray-500">{groups.map((group, groupIndex) => {
+            if (!group.length) return null;
+            const prefs = rule.groupClassPreferences?.[`group-${groupIndex}`];
+            return (
+              <div key={groupIndex}>
+                <p><span className="font-medium text-gray-700">Nhóm {groupIndex + 1}:</span> {group.map((memberIndex) => memberName(members, memberIndex)).join(', ')}</p>
+                {prefs?.excluded?.length ? <p className="pl-4 text-rose-600">+ Cấm lớp: {prefs.excluded.map(c => c.replace(/_/g, ' ')).join(', ')}</p> : null}
+                {prefs?.required?.length ? <p className="pl-4 text-red-600">+ Bắt buộc lớp: {prefs.required.map(c => c.replace(/_/g, ' ')).join(', ')}</p> : null}
+                {prefs?.preferred?.length ? <p className="pl-4 text-[#004A98]">+ Ưu tiên lớp: {prefs.preferred.map(c => c.replace(/_/g, ' ')).join(', ')}</p> : null}
+              </div>
+            );
+          })}</div> : null}
         </div>
       ) : null}
     </div>

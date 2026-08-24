@@ -10,6 +10,7 @@ import {
   Play,
   RefreshCw,
   Search,
+  Settings,
   ShieldCheck,
   Sparkles,
   Users,
@@ -34,6 +35,7 @@ const GUIDE_ICONS: Record<UserGuideId, typeof CircleHelp> = {
   gpa: GraduationCap,
   'personal-scheduling': Sparkles,
   'group-scheduling': Users,
+  'group-preferences': Settings,
   'import-rollback': ShieldCheck,
 };
 

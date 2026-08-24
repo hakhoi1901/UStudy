@@ -4,6 +4,7 @@ export const GUIDE_IDS = [
   'gpa',
   'personal-scheduling',
   'group-scheduling',
+  'group-preferences',
   'import-rollback',
 ] as const;
 
@@ -19,6 +20,8 @@ export type GuideActionId =
   | 'show-group-schedule'
   | 'show-group-members'
   | 'show-group-preferences'
+  | 'expand-group-class-preference'
+  | 'enable-course-sharing-split'
   | 'show-group-results'
   | 'open-data-center';
 

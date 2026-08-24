@@ -34,7 +34,7 @@ export function GroupScheduleComparison({ options, activeIndex }: Props) {
 
   if (options.length < 2 || !current || !compared) return null;
   return (
-    <section className="border-t border-gray-100 pt-3">
+    <section data-guide="group-result-comparison" className="border-t border-gray-100 pt-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <button type="button" onClick={() => setIsOpen((value) => !value)} className="inline-flex items-center gap-2 text-sm font-semibold text-[#004A98]"><GitCompareArrows className="h-4 w-4" />So sánh phương án</button>
         {isOpen ? <AppSelect value={String(compareIndex)} onChange={(value) => setCompareIndex(Number(value))} options={options.map((option, index) => ({ id: String(index), name: `PA ${option.option}${index === activeIndex ? ' (đang xem)' : ''}`, disabled: index === activeIndex }))} ariaLabel="Chọn phương án để so sánh" className="w-44" triggerClassName="h-8 px-2.5 text-xs" /> : null}

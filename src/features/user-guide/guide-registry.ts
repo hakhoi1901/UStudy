@@ -1,5 +1,6 @@
 import { DATA_SYNC_GUIDE } from './data/data-sync-guide';
 import { GPA_GUIDE } from './data/gpa-guide';
+import { GROUP_PREFERENCES_GUIDE } from './data/group-preferences-guide';
 import { GROUP_SCHEDULING_GUIDE } from './data/group-scheduling-guide';
 import { IMPORT_ROLLBACK_GUIDE } from './data/import-rollback-guide';
 import { PERSONAL_SCHEDULING_GUIDE } from './data/personal-scheduling-guide';
@@ -12,6 +13,7 @@ export const USER_GUIDES: UserGuide[] = [
   GPA_GUIDE,
   PERSONAL_SCHEDULING_GUIDE,
   GROUP_SCHEDULING_GUIDE,
+  GROUP_PREFERENCES_GUIDE,
   IMPORT_ROLLBACK_GUIDE,
 ];
 
