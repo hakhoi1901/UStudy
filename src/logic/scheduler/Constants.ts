@@ -97,11 +97,11 @@ export const CONFIG: CONFIG = {
     /**
      * Kích thước quần thể
      */
-    POPULATION_SIZE: 10000,
+    POPULATION_SIZE: 1000,
     /**
      * Số thế hệ
      */
-    GENERATIONS: 10000,
+    GENERATIONS: 1000,
     /**
      * Tỷ lệ đột biến
      */
