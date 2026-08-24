@@ -180,14 +180,11 @@ export function StudyRoadmapFeature() {
                         selectedCourses={Array.from(selectedCourses)
                             .map(id => globalAllCourses.find(c => c.id === id)!)
                             .filter(Boolean)}
-                        setActiveTab={(tab) => {
-                            setActiveTab(tab);
-                            setShowMobileBasket(false);
-                        }}
+                        registeredCourseCodes={registeredCourseCodes}
+                        courseCatalog={globalAllCourses}
                         onRemoveCourse={handleCourseToggle}
                         allowedClassesMap={allowedClassesMap}
                         setAllowedClassesMap={setAllowedClassesMap}
-                        solve={solve}
                     />
                 </div>
             </div>
@@ -343,11 +340,11 @@ export function StudyRoadmapFeature() {
                                         selectedCourses={Array.from(selectedCourses)
                                             .map(id => globalAllCourses.find(c => c.id === id)!)
                                             .filter(Boolean)}
-                                        setActiveTab={setActiveTab}
+                                        registeredCourseCodes={registeredCourseCodes}
+                                        courseCatalog={globalAllCourses}
                                         onRemoveCourse={handleCourseToggle}
                                         allowedClassesMap={allowedClassesMap}
                                         setAllowedClassesMap={setAllowedClassesMap}
-                                        solve={solve}
                                     />
                                 </div>
                             </div>

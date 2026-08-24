@@ -5,14 +5,13 @@ import { useDepartmentData } from '../../../context/DepartmentContext';
 import { FinancialLogic } from '../../../logic/FinancialLogic';
 import { getTuitionRates } from '../../../assets/data/tuition';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
-import type { Tab } from '../types';
 import type { ClassPreferenceSelection } from '../../group-schedule/types';
 import type React from 'react';
 
 interface SelectionBasketProps {
     selectedCourses: Course[];
-    solve?: (courses: Course[], allowedClassesMap: Record<string, string[]>) => void;
-    setActiveTab?: (tab: Tab) => void;
+    registeredCourseCodes?: ReadonlySet<string>;
+    courseCatalog?: Course[];
     onRemoveCourse?: (courseId: string) => void;
     allowedClassesMap?: Record<string, string[]>;
     setAllowedClassesMap?: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
@@ -23,12 +22,19 @@ interface SelectionBasketProps {
     description?: string;
 }
 
-const ENGLISH_COURSE_IDS = ['ADD00031', 'ADD00032', 'ADD00033', 'ADD00034', 'BAA00100', 'BAA00021'];
+function normalizeCourseCode(value: unknown): string {
+    return String(value ?? '').trim().toUpperCase();
+}
+
+function parseCredits(value: unknown): number {
+    const credits = Number.parseFloat(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(credits) ? credits : 0;
+}
 
 export function SelectionBasket({
     selectedCourses,
-    solve,
-    setActiveTab,
+    registeredCourseCodes,
+    courseCatalog = [],
     onRemoveCourse,
     allowedClassesMap,
     setAllowedClassesMap,
@@ -44,9 +50,31 @@ export function SelectionBasket({
         majorId,
         academicYear,
     } = useDepartmentData();
-    const totalCredits = selectedCourses
-        .filter(course => !ENGLISH_COURSE_IDS.includes(course.id))
-        .reduce((sum, course) => sum + course.credits, 0);
+    const selectedCourseCodes = new Set(selectedCourses.map(course => normalizeCourseCode(course.code || course.id)));
+    const registeredOnlyCourseCodes = Array.from(new Set(
+        Array.from(registeredCourseCodes ?? []).map(normalizeCourseCode).filter(Boolean),
+    )).filter(courseCode => !selectedCourseCodes.has(courseCode));
+    const creditsByCourseCode = new Map<string, number>();
+    courseCatalog.forEach(course => {
+        creditsByCourseCode.set(normalizeCourseCode(course.code || course.id), parseCredits(course.credits));
+    });
+    allCoursesMeta.forEach(course => {
+        const courseCode = normalizeCourseCode(course.course_id);
+        const credits = parseCredits(course.credits);
+        if (credits > 0 || !creditsByCourseCode.has(courseCode)) {
+            creditsByCourseCode.set(courseCode, credits);
+        }
+    });
+    const selectedCredits = selectedCourses.reduce((sum, course) => sum + parseCredits(course.credits), 0);
+    const registeredCredits = registeredOnlyCourseCodes.reduce(
+        (sum, courseCode) => sum + (creditsByCourseCode.get(courseCode) ?? 0),
+        0,
+    );
+    const totalCredits = selectedCredits + registeredCredits;
+    const basketDescription = description ?? [
+        `${selectedCourses.length} môn chọn thêm`,
+        registeredOnlyCourseCodes.length > 0 ? `${registeredOnlyCourseCodes.length} môn trường đăng ký` : null,
+    ].filter(Boolean).join(' · ');
 
     const estimatedTuition = selectedCourses.reduce((sum, course) => {
         const { courseFee } = FinancialLogic.calculateCourseFee(
@@ -75,11 +103,11 @@ export function SelectionBasket({
             <div className="w-full flex-shrink-0 border-b border-gray-200 p-4">
                 <h3 className="ustudy-card-title">{title}</h3>
                 <p className="ustudy-card-subtitle mt-1">
-                    {description ?? `${selectedCourses.length} môn học đã chọn`}
+                    {basketDescription}
                 </p>
             </div>
 
-            <div className="ustudy-scrollbar flex-1 space-y-3 overflow-y-auto p-4">
+            <div className="ustudy-scrollbar flex-1 space-y-2 overflow-y-auto p-3">
                 {selectedCourses.length === 0 ? (
                     <div className="ustudy-empty-state flex-col">
                         <div className="ustudy-icon-badge ustudy-icon-primary-soft mx-auto mb-3 h-12 w-12 md:h-12 md:w-12">
@@ -139,15 +167,21 @@ export function SelectionBasket({
             </div>
 
             {!compact && (
-                <div className="flex-shrink-0 rounded-b-xl border-t border-gray-200 bg-white p-4">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
+                <div className="flex-shrink-0 rounded-b-xl border-t border-gray-200 bg-white p-3">
+                    <div className="mb-3">
+                        <div className="mb-1.5 flex items-center justify-between">
                             <span className="text-sm text-gray-600">Tổng tín chỉ:</span>
                             <span className="text-lg font-bold text-gray-900">{totalCredits}</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        {registeredOnlyCourseCodes.length > 0 && (
+                            <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-500">
+                                <span>Trường đăng ký <strong className="font-semibold text-gray-700">{registeredCredits} TC</strong></span>
+                                <span>Chọn thêm <strong className="font-semibold text-gray-700">{selectedCredits} TC</strong></span>
+                            </div>
+                        )}
+                        <div className="h-2 w-full rounded-full bg-gray-200">
                             <div
-                                className={`h-2.5 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'}`}
+                                className={`h-2 rounded-full transition-all ${totalCredits > 24 ? 'bg-red-500' : 'bg-[#004A98]'}`}
                                 style={{ width: `${Math.min((totalCredits / 25) * 100, 100)}%` }}
                             />
                         </div>
@@ -164,49 +198,33 @@ export function SelectionBasket({
                         )}
                     </div>
 
-                    <div className="mb-4">
+                    <div className="mb-3">
                         <div className="ustudy-muted-panel border border-blue-100 bg-blue-50">
-                            <p className="text-xs text-gray-600 mb-1">Tổng học phí dự kiến</p>
-                            <p className="text-2xl font-bold text-[#004A98]">
-                                {formatCurrency(estimatedTuition)} VNĐ
-                            </p>
-                            <div className="mt-2 border-t border-blue-100 pt-2 text-[11px]">
-                                <div className="flex items-center justify-between gap-3">
-                                    <span className="font-medium text-gray-600">
-                                        {academicYear === forecastAcademicYear
-                                            ? `Theo đơn giá ${comparisonAcademicYear}`
-                                            : `Tham khảo ${comparisonAcademicYear}`}
-                                    </span>
-                                    <span className="shrink-0 font-semibold text-[#004A98]">
-                                        {formatCurrency(comparisonTuition)} VNĐ
-                                    </span>
-                                </div>
-                                <p className="mt-1 leading-relaxed text-gray-500">
-                                    {academicYear === forecastAcademicYear
-                                        ? 'Đơn giá 2026-2027 là dữ liệu dự báo. Mức phía trên được tính lại theo bảng đơn giá 2025-2026 để tham khảo.'
-                                        : 'Ước tính theo bảng đơn giá dự báo, chỉ mang tính tham khảo và không phải mức thu chính thức của trường.'}
+                            <div className="flex items-baseline justify-between gap-3">
+                                <p className="text-xs text-gray-600">Tổng học phí dự kiến</p>
+                                <p className="shrink-0 text-lg font-bold tabular-nums text-[#004A98]">
+                                    {formatCurrency(estimatedTuition)} VNĐ
                                 </p>
                             </div>
+                            <div className="mt-1 flex items-center justify-between gap-3 border-t border-blue-100 pt-1.5 text-[11px]">
+                                <span className="font-medium text-gray-600">
+                                    {academicYear === forecastAcademicYear
+                                        ? `Theo đơn giá ${comparisonAcademicYear}`
+                                        : `Tham khảo ${comparisonAcademicYear}`}
+                                </span>
+                                <span className="shrink-0 font-semibold tabular-nums text-[#004A98]">
+                                    {formatCurrency(comparisonTuition)} VNĐ
+                                </span>
+                            </div>
+                            <p className="mt-1 text-[10px] leading-4 text-gray-500">
+                                {academicYear === forecastAcademicYear
+                                    ? 'Đơn giá 2026-2027 là dữ liệu dự báo; mức tham khảo được tính theo đơn giá 2025-2026.'
+                                    : 'Mức dự báo chỉ để tham khảo, không phải mức thu chính thức của trường.'}
+                            </p>
                         </div>
                     </div>
 
-                    {(solve && setActiveTab) && (
-                        <button
-                            className={`w-full py-3 rounded-lg font-medium transition-all ${selectedCourses.length === 0
-                                ? 'cursor-not-allowed bg-gray-200 text-gray-400'
-                                : 'ustudy-button-primary'
-                                }`}
-                            disabled={selectedCourses.length === 0}
-                            onClick={() => {
-                                setActiveTab('calendar');
-                                solve(selectedCourses, allowedClassesMap || {});
-                            }}
-                        >
-                            Xác nhận đăng ký
-                        </button>
-                    )}
-
-                    <p className="text-[10px] text-gray-500 text-center mt-3 leading-relaxed">
+                    <p className="mt-2 text-center text-[10px] leading-relaxed text-gray-500">
                         Dữ liệu được lưu tại Local Storage và sẽ xóa khi Đăng xuất
                     </p>
                 </div>
