@@ -267,7 +267,9 @@ function AppContent() {
       : importPreview.source === 'mobile-app'
         ? 'UStudy Android'
         : 'Bookmarklet Portal';
-    if (!createImportRollbackSnapshot(importSourceLabel, summary, details)) {
+    if (!await createImportRollbackSnapshot(importSourceLabel, summary, details)) {
+      setImportPreview(null);
+      setIsImportDetailsOpen(false);
       addNotification({ title: 'Không thể nhập dữ liệu', message: 'Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu hiện tại chưa bị thay đổi.', type: 'error' });
       return;
     }
