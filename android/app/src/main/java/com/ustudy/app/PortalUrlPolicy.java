@@ -14,22 +14,30 @@ final class PortalUrlPolicy {
     static boolean isSupportedPortalUrl(String value) {
         if (value == null) return false;
         try {
-            return isSupportedPortalUri(Uri.parse(value));
+            java.net.URI uri = new java.net.URI(value);
+            return isSupportedPortalLocation(uri.getScheme(), uri.getHost());
         } catch (Exception ignored) {
             return false;
         }
     }
 
     static boolean isSupportedPortalUri(Uri uri) {
-        return uri != null
-            && "https".equalsIgnoreCase(uri.getScheme())
-            && uri.getHost() != null
-            && PORTAL_HOST.matcher(uri.getHost()).matches();
+        return uri != null && isSupportedPortalLocation(uri.getScheme(), uri.getHost());
     }
 
     static boolean isLoggedInPortalUrl(String value) {
         if (!isSupportedPortalUrl(value)) return false;
-        String path = Uri.parse(value).getPath();
-        return path != null && !LOGIN_PATH.matcher(path).matches();
+        try {
+            String path = new java.net.URI(value).getPath();
+            return path != null && !LOGIN_PATH.matcher(path).matches();
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static boolean isSupportedPortalLocation(String scheme, String host) {
+        return "https".equalsIgnoreCase(scheme)
+            && host != null
+            && PORTAL_HOST.matcher(host).matches();
     }
 }
