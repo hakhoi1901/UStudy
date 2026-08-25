@@ -48,7 +48,7 @@ export interface TuitionSummary {
     totalFee: number;
     advancePayment: number;
     amountDue: number;
-    dueDate: string;
+    dueDate: string | null;
     status: 'paid' | 'partial' | 'unpaid';
     lastUpdated: string;
     hasAdvancePayment: boolean;
