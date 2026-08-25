@@ -12,13 +12,19 @@ public class PortalUrlPolicyTest {
         assertTrue(PortalUrlPolicy.isSupportedPortalUrl("https://new-portal1.hcmus.edu.vn/"));
         assertTrue(PortalUrlPolicy.isSupportedPortalUrl("https://new-portal8.hcmus.edu.vn//Login.aspx"));
         assertTrue(PortalUrlPolicy.isSupportedPortalUrl("https://new-portal27.hcmus.edu.vn/"));
+        assertTrue(PortalUrlPolicy.isSupportedPortalUrl("https://portal8.hcmus.edu.vn//Login.aspx"));
+        assertTrue(PortalUrlPolicy.isSupportedPortalUrl("https://portal10.hcmus.edu.vn/"));
     }
 
     @Test
     public void rejectsUnsupportedSchemesAndHosts() {
         assertFalse(PortalUrlPolicy.isSupportedPortalUrl("http://new-portal.hcmus.edu.vn/Login.aspx"));
+        assertFalse(PortalUrlPolicy.isSupportedPortalUrl("http://portal8.hcmus.edu.vn/Login.aspx"));
+        assertFalse(PortalUrlPolicy.isSupportedPortalUrl("https://portal.hcmus.edu.vn/Login.aspx"));
+        assertFalse(PortalUrlPolicy.isSupportedPortalUrl("https://portalabc.hcmus.edu.vn/Login.aspx"));
         assertFalse(PortalUrlPolicy.isSupportedPortalUrl("https://new-portal.evil.example/Login.aspx"));
         assertFalse(PortalUrlPolicy.isSupportedPortalUrl("https://new-portal.hcmus.edu.vn.evil.example/Login.aspx"));
+        assertFalse(PortalUrlPolicy.isSupportedPortalUrl("https://portal8.hcmus.edu.vn.evil.example/Login.aspx"));
     }
 
     @Test
@@ -26,5 +32,6 @@ public class PortalUrlPolicyTest {
         assertFalse(PortalUrlPolicy.isLoggedInPortalUrl("https://new-portal.hcmus.edu.vn/Login.aspx"));
         assertFalse(PortalUrlPolicy.isLoggedInPortalUrl("https://new-portal7.hcmus.edu.vn/Login.aspx/extra"));
         assertTrue(PortalUrlPolicy.isLoggedInPortalUrl("https://new-portal.hcmus.edu.vn/Student.aspx"));
+        assertFalse(PortalUrlPolicy.isLoggedInPortalUrl("https://portal8.hcmus.edu.vn/SinhVien.aspx"));
     }
 }

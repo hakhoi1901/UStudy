@@ -10,21 +10,39 @@ async function readJson(path: string): Promise<any> {
 }
 
 describe('Portal sync extension contract', () => {
-  it('accepts both the canonical and numbered Portal hosts', () => {
+  it('accepts only HTTPS Portal content origins', () => {
     expect(isSupportedPortalOrigin('https://new-portal.hcmus.edu.vn')).toBe(true);
     expect(isSupportedPortalOrigin('https://new-portal1.hcmus.edu.vn')).toBe(true);
     expect(isSupportedPortalOrigin('https://new-portal8.hcmus.edu.vn')).toBe(true);
     expect(isSupportedPortalOrigin('https://new-portal27.hcmus.edu.vn')).toBe(true);
+    expect(isSupportedPortalOrigin('http://new-portal8.hcmus.edu.vn')).toBe(false);
+    expect(isSupportedPortalOrigin('http://portal8.hcmus.edu.vn')).toBe(false);
+    expect(isSupportedPortalOrigin('https://portal8.hcmus.edu.vn')).toBe(false);
+    expect(isSupportedPortalOrigin('https://portal10.hcmus.edu.vn')).toBe(false);
+    expect(isSupportedPortalOrigin('https://portal.hcmus.edu.vn')).toBe(false);
+    expect(isSupportedPortalOrigin('https://portalabc.hcmus.edu.vn')).toBe(false);
     expect(isSupportedPortalOrigin('https://new-portal.evil.example')).toBe(false);
+    expect(isSupportedPortalOrigin('https://portal8.hcmus.edu.vn.evil.example')).toBe(false);
   });
 
-  it('keeps the Android WebView host policy aligned with shared config', async () => {
+  it('allows numbered redirect hosts only in the Android WebView policy', async () => {
     const policy = await readFile(
       resolve(process.cwd(), 'android/app/src/main/java/com/ustudy/app/PortalUrlPolicy.java'),
       'utf8',
     );
 
     expect(policy).toContain('^new-portal\\\\d*\\\\.hcmus\\\\.edu\\\\.vn$');
+    expect(policy).toContain('^portal\\\\d+\\\\.hcmus\\\\.edu\\\\.vn$');
+  });
+
+  it('keeps extension background portal detection restricted to HTTPS content hosts', async () => {
+    const background = await readFile(
+      resolve(process.cwd(), 'extension/background.js'),
+      'utf8',
+    );
+
+    expect(background).toContain("parsedUrl.protocol === 'https:'");
+    expect(background).toContain("new RegExp(CONFIG.portalHostnamePattern, 'i').test(parsedUrl.hostname)");
   });
 
   it('never hands Portal sync navigation to an external Android browser', async () => {

@@ -209,7 +209,9 @@ async function saveSettings(patch) {
 function isPortalUrl(url) {
   if (typeof url !== 'string') return false;
   try {
-    return new RegExp(CONFIG.portalHostnamePattern, 'i').test(new URL(url).hostname);
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'https:'
+      && new RegExp(CONFIG.portalHostnamePattern, 'i').test(parsedUrl.hostname);
   } catch {
     return false;
   }
