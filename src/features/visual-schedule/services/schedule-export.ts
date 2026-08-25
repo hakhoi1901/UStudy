@@ -40,6 +40,9 @@ function getSessionForWeek(schedule: WeeklySchedule, session: ScheduleSession, c
 }
 
 export function exportCalendar(schedule: WeeklySchedule) {
+    const semesterStart = schedule.semesterStartDate;
+    if (!semesterStart) return false;
+
     const pad = (n: number) => String(n).padStart(2, '0');
     const toIcsDateTime = (d: Date) =>
         `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
@@ -67,7 +70,7 @@ export function exportCalendar(schedule: WeeklySchedule) {
         'BEGIN:VCALENDAR', 'VERSION:2.0',
         'PRODID:-//HCMUS Portal Tool//Visual Schedule//VI',
         'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
-        `X-WR-CALNAME:${escapeIcs(`Thoi khoa bieu - ${schedule.semesterName}`)}`,
+        `X-WR-CALNAME:${esc(`Thoi khoa bieu - ${schedule.semesterName}`)}`,
         'X-WR-TIMEZONE:Asia/Ho_Chi_Minh',
     ];
 
@@ -97,13 +100,13 @@ export function exportCalendar(schedule: WeeklySchedule) {
 
             lines.push(
                 'BEGIN:VEVENT',
-                `UID:${escapeIcs(`${session.id}-${calendarWeek}@hcmus-portal-tool`)}`,
+                `UID:${esc(`${session.id}-${calendarWeek}@hcmus-portal-tool`)}`,
                 `DTSTAMP:${nowStamp}`,
                 `DTSTART;TZID=Asia/Ho_Chi_Minh:${toIcsDateTime(dtStart)}`,
                 `DTEND;TZID=Asia/Ho_Chi_Minh:${toIcsDateTime(dtEnd)}`,
-                `SUMMARY:${escapeIcs(`${session.courseCode} - ${session.courseName}`)}`,
-                `LOCATION:${escapeIcs(session.room || 'Chua co phong')}`,
-                `DESCRIPTION:${escapeIcs(description)}`,
+                `SUMMARY:${esc(`${session.courseCode} - ${session.courseName}`)}`,
+                `LOCATION:${esc(session.room || 'Chua co phong')}`,
+                `DESCRIPTION:${esc(description)}`,
                 'STATUS:CONFIRMED', 'TRANSP:OPAQUE', 'END:VEVENT'
             );
         }
@@ -119,5 +122,6 @@ export function exportCalendar(schedule: WeeklySchedule) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    return true;
 }

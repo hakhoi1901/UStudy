@@ -10,6 +10,7 @@ import { GroupScheduleComparison } from './components/GroupScheduleComparison';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
+import { AppDialog } from '../../components/ui/overlays/app-dialog';
 import { AppSelect } from '../../components/ui/form';
 import { Input } from '../../components/ui/form/input';
 import { Textarea } from '../../components/ui/form/textarea';
@@ -1411,7 +1412,56 @@ export function GroupSchedulePage({
 
             <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
-            {showSaveGroupScheduleModal && selectedOption && (
+            {selectedOption && (
+                <AppDialog
+                    open={showSaveGroupScheduleModal}
+                    onOpenChange={setShowSaveGroupScheduleModal}
+                    title="Lưu lịch nhóm"
+                    description="Lưu phương án hiện tại để mở lại trong Lịch đã lưu."
+                    icon={Save}
+                    size="sm"
+                    footer={(
+                        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowSaveGroupScheduleModal(false)}
+                                className="inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                onClick={saveSelectedGroupSchedule}
+                                disabled={!groupScheduleName.trim()}
+                                className="inline-flex h-10 items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                                Lưu lịch
+                            </button>
+                        </div>
+                    )}
+                >
+                    <div>
+                        <label htmlFor="group-schedule-name" className="block text-sm font-semibold text-slate-800">
+                            Tên gợi nhớ
+                        </label>
+                        <input
+                            id="group-schedule-name"
+                            autoFocus
+                            type="text"
+                            value={groupScheduleName}
+                            onChange={(event) => setGroupScheduleName(event.target.value)}
+                            placeholder={`Ví dụ: Nhóm - PA ${selectedOption.option}`}
+                            className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/15"
+                            onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
+                        />
+                    </div>
+                    <p className="border-l-2 border-[#004A98] bg-blue-50 px-3 py-2 text-xs leading-5 text-slate-600">
+                        Lưu cả nhóm và các lớp của phương án đang xem. Khi mở lại, bạn vẫn có thể đổi thành viên để xem lịch riêng từng người.
+                    </p>
+                </AppDialog>
+            )}
+
+            {false && showSaveGroupScheduleModal && selectedOption && (
                 <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
                     <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
                         <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">
