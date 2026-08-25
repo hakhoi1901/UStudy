@@ -37,6 +37,13 @@
         }, window.location.origin);
     }
 
+    if (window.location.href.toLowerCase().includes('login')) {
+        const message = 'Bạn cần đăng nhập Portal trước khi đồng bộ dữ liệu.';
+        if (IS_EXTENSION) emitExtensionEvent('USTUDY_PORTAL_SYNC_ERROR', { message });
+        else alert(message);
+        return;
+    }
+
     //  Kiểm tra hạn sử dụng 30 ngày
     if (CONFIG.EXPIRES_AT && Date.now() > CONFIG.EXPIRES_AT) {
         alert("BẢN CẬP NHẬT MỚI\n\nBookmarklet này đã quá hạn (30 ngày). Để đảm bảo tính chính xác và tương thích, vui lòng quay lại trang HCMUS Portal Tool và kéo lại nút mới nhé!");

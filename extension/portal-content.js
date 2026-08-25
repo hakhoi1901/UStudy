@@ -77,8 +77,7 @@ async function callExtension(action, payload, extra = {}) {
 }
 
 function isPortalLoginPage() {
-  const normalizedPath = window.location.pathname.replace(/^\/+/, '/');
-  return new RegExp(EXTENSION_CONFIG.portalLoginPathPattern, 'i').test(normalizedPath);
+  return window.location.href.toLowerCase().includes('login');
 }
 
 function isPortalReady() {
