@@ -34,7 +34,6 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 import org.json.JSONObject;
 
 public class PortalSyncActivity extends AppCompatActivity {
@@ -43,9 +42,6 @@ public class PortalSyncActivity extends AppCompatActivity {
     public static final String EXTRA_RUNTIME_JSON = "portal_runtime_json";
     public static final String EXTRA_RESULT_PATH = "portal_result_path";
     public static final int MAX_PORTAL_RESULT_BYTES = 4 * 1024 * 1024;
-
-    private static final Pattern PORTAL_HOST = Pattern.compile("^new-portal\\d+\\.hcmus\\.edu\\.vn$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern LOGIN_PATH = Pattern.compile("^/+Login\\.aspx(?:/.*)?$", Pattern.CASE_INSENSITIVE);
 
     private WebView webView;
     private View loadingOverlay;
@@ -71,7 +67,7 @@ public class PortalSyncActivity extends AppCompatActivity {
         startUrl = getIntent().getStringExtra(EXTRA_URL);
         runnerSource = getIntent().getStringExtra(EXTRA_RUNNER_SOURCE);
         runtimeJson = getIntent().getStringExtra(EXTRA_RUNTIME_JSON);
-        if (!isSupportedPortalUrl(startUrl) || runnerSource == null || runtimeJson == null) {
+        if (!PortalUrlPolicy.isSupportedPortalUrl(startUrl) || runnerSource == null || runtimeJson == null) {
             setResult(Activity.RESULT_CANCELED);
             finish();
             return;
@@ -115,7 +111,7 @@ public class PortalSyncActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if (!request.isForMainFrame()) return false;
-                if (isSupportedPortalUri(uri)) return false;
+                if (PortalUrlPolicy.isSupportedPortalUri(uri)) return false;
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
                 } catch (Exception ignored) {
@@ -150,7 +146,7 @@ public class PortalSyncActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 CookieManager.getInstance().flush();
                 if (!hasMainFrameError) hideLoading();
-                if (isLoggedInPortalUrl(url)) {
+                if (PortalUrlPolicy.isLoggedInPortalUrl(url)) {
                     view.postDelayed(() -> injectSyncLauncher(), 500);
                 }
             }
@@ -289,7 +285,7 @@ public class PortalSyncActivity extends AppCompatActivity {
     }
 
     private void injectSyncLauncher() {
-        if (webView == null || !isLoggedInPortalUrl(webView.getUrl())) return;
+        if (webView == null || !PortalUrlPolicy.isLoggedInPortalUrl(webView.getUrl())) return;
         String token = JSONObject.quote(bridgeToken);
         String script = "(function(){" +
             "var old=document.getElementById('ustudy-mobile-sync');if(old)old.remove();" +
@@ -306,7 +302,7 @@ public class PortalSyncActivity extends AppCompatActivity {
     }
 
     private void runCrawler() {
-        if (webView == null || !isLoggedInPortalUrl(webView.getUrl())) {
+        if (webView == null || !PortalUrlPolicy.isLoggedInPortalUrl(webView.getUrl())) {
             syncRunning.set(false);
             updateStatus("Hãy đăng nhập Portal trước khi đồng bộ.", true);
             return;
@@ -351,25 +347,6 @@ public class PortalSyncActivity extends AppCompatActivity {
             syncRunning.set(false);
             updateStatus("Không thể lưu kết quả: " + error.getMessage(), true);
         }
-    }
-
-    private boolean isSupportedPortalUrl(String value) {
-        if (value == null) return false;
-        try {
-            return isSupportedPortalUri(Uri.parse(value));
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    private boolean isSupportedPortalUri(Uri uri) {
-        return uri != null && "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null && PORTAL_HOST.matcher(uri.getHost()).matches();
-    }
-
-    private boolean isLoggedInPortalUrl(String value) {
-        if (!isSupportedPortalUrl(value)) return false;
-        String path = Uri.parse(value).getPath();
-        return path != null && !LOGIN_PATH.matcher(path).matches();
     }
 
     private int dp(int value) {

@@ -2,12 +2,30 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { isSupportedPortalOrigin } from '../../../src/portal-sync/protocol';
 
 async function readJson(path: string): Promise<any> {
   return JSON.parse(await readFile(resolve(process.cwd(), path), 'utf8'));
 }
 
 describe('Portal sync extension contract', () => {
+  it('accepts both the canonical and numbered Portal hosts', () => {
+    expect(isSupportedPortalOrigin('https://new-portal.hcmus.edu.vn')).toBe(true);
+    expect(isSupportedPortalOrigin('https://new-portal1.hcmus.edu.vn')).toBe(true);
+    expect(isSupportedPortalOrigin('https://new-portal8.hcmus.edu.vn')).toBe(true);
+    expect(isSupportedPortalOrigin('https://new-portal27.hcmus.edu.vn')).toBe(true);
+    expect(isSupportedPortalOrigin('https://new-portal.evil.example')).toBe(false);
+  });
+
+  it('keeps the Android WebView host policy aligned with shared config', async () => {
+    const policy = await readFile(
+      resolve(process.cwd(), 'android/app/src/main/java/com/ustudy/app/PortalUrlPolicy.java'),
+      'utf8',
+    );
+
+    expect(policy).toContain('^new-portal\\\\d*\\\\.hcmus\\\\.edu\\\\.vn$');
+  });
+
   it('keeps the extension version and production origin aligned with shared config', async () => {
     const config = await readJson('src/portal-sync/config.json');
     const manifest = await readJson('extension/manifest.json');
