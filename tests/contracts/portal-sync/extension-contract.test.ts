@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { X509Certificate } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 import { isSupportedPortalOrigin } from '../../../src/portal-sync/protocol';
@@ -24,6 +25,26 @@ describe('Portal sync extension contract', () => {
     );
 
     expect(policy).toContain('^new-portal\\\\d*\\\\.hcmus\\\\.edu\\\\.vn$');
+  });
+
+  it('provides the missing Sectigo intermediate only to HCMUS domains', async () => {
+    const manifest = await readFile(resolve(process.cwd(), 'android/app/src/main/AndroidManifest.xml'), 'utf8');
+    const networkConfig = await readFile(
+      resolve(process.cwd(), 'android/app/src/main/res/xml/network_security_config.xml'),
+      'utf8',
+    );
+    const certificatePem = await readFile(
+      resolve(process.cwd(), 'android/app/src/main/res/raw/sectigo_public_server_authentication_ca_ov_r36.pem'),
+      'utf8',
+    );
+    const certificate = new X509Certificate(certificatePem);
+
+    expect(manifest).toContain('android:networkSecurityConfig="@xml/network_security_config"');
+    expect(networkConfig).toContain('<domain includeSubdomains="true">hcmus.edu.vn</domain>');
+    expect(networkConfig).toContain('@raw/sectigo_public_server_authentication_ca_ov_r36');
+    expect(networkConfig).toContain('<certificates src="system" />');
+    expect(certificate.subject).toContain('Sectigo Public Server Authentication CA OV R36');
+    expect(certificate.fingerprint256).toBe('65:42:D1:76:BE:D5:0F:19:3C:0C:E2:97:AE:44:EC:D8:A0:A8:6B:EC:2E:DE:68:27:69:34:40:59:B4:E7:85:30');
   });
 
   it('keeps the extension version and production origin aligned with shared config', async () => {
