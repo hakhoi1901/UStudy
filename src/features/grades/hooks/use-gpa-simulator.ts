@@ -176,6 +176,10 @@ export function useGPASimulator(
         () => GPACalculator.calculateProjectedGPA(gradesHistory, projectedPendingCourses),
         [gradesHistory, projectedPendingCourses],
     );
+    const cumulativeGPA4 = useMemo(
+        () => GPACalculator.calculateProjectedFourPointGPA(gradesHistory, projectedPendingCourses),
+        [gradesHistory, projectedPendingCourses],
+    );
 
     const simulatorCourses = selectedSemester?.courses ?? [];
     const semesterGPA = selectedSemester?.semesterGPA ?? 0;
@@ -190,6 +194,7 @@ export function useGPASimulator(
         handleGradeChange,
         semesterGPA,
         cumulativeGPA,
+        cumulativeGPA4,
         totalSimCredits,
         createGradeAttemptKey,
     };

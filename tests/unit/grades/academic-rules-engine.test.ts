@@ -53,7 +53,11 @@ describe('AcademicRulesEngine', () => {
     );
 
     expect(summary.currentGPA).toBe(8);
+    expect(summary.currentGPA4).toBe(3.5);
     expect(summary.accumulatedCredits).toBe(4);
+    expect(summary.gpaPerSemester).toEqual([
+      expect.objectContaining({ semester: '25-26/2', gpa: 8, gpa4: 3.5 }),
+    ]);
     expect(summary.gradesHistory.find((course) => course.code === 'CSC10009')).toMatchObject({
       hasGrade: false,
       status: 'ongoing',

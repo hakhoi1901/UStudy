@@ -1,4 +1,5 @@
 import { ACADEMIC_RULES } from '../../../constants';
+import { score10ToFourPoint } from './grade-scale';
 import { ENGLISH_COURSE_IDS } from '../../../constants/academic';
 import type { StudentCourseGrade } from '../types';
 
@@ -270,23 +271,29 @@ export const AcademicRulesEngine = {
         gradesHistory: StudentCourseGrade[];
         currentGPA: number;
         accumulatedCredits: number;
-        gpaPerSemester: { semester: string; gpa: number; credits: number; earnedCredits: number }[];
+        gpaPerSemester: { semester: string; gpa: number; gpa4: number; credits: number; earnedCredits: number }[];
         foundationGPA: number;
         majorSpecializedGPA: number;
         majorGPA: number;
+        currentGPA4: number;
+        foundationGPA4: number;
+        majorSpecializedGPA4: number;
     } => {
         const gradesHistory: StudentCourseGrade[] = [];
         let accumulatedCredits = 0;
         let totalPoints = 0;
         let totalCreditsForGPA = 0;
+        let totalFourPointPoints = 0;
 
-        const semesterMap = new Map<string, { points: number; credits: number; earnedCredits: number }>();
+        const semesterMap = new Map<string, { points: number; fourPointPoints: number; credits: number; earnedCredits: number }>();
 
         let majorSpecializedPoints = 0;
         let majorSpecializedCredits = 0;
+        let majorSpecializedFourPointPoints = 0;
 
         let foundationPoints = 0;
         let foundationCredits = 0;
+        let foundationFourPointPoints = 0;
         const normalizedCurrentSemester = normalizeSemesterKey(currentSemesterKey);
 
         effectiveGrades.forEach((g: any) => {
@@ -310,12 +317,15 @@ export const AcademicRulesEngine = {
                 accumulatedCredits += earnedCredits;
                 totalPoints += pointsForGPA;
                 totalCreditsForGPA += creditsForGPA;
+                const score4 = score10ToFourPoint(score);
+                totalFourPointPoints += score4 * creditsForGPA;
 
                 // Tích lũy điểm Cơ sở + Chuyên ngành: Ký tự thứ 4 (index 3) là số '1'
                 const isMajorSpecialized = code.length >= 4 && code[3] === '1';
                 if (isMajorSpecialized && creditsForGPA > 0) {
                     majorSpecializedPoints += pointsForGPA;
                     majorSpecializedCredits += creditsForGPA;
+                    majorSpecializedFourPointPoints += score4 * creditsForGPA;
                 }
 
                 // Tích lũy điểm Cơ sở ngành: Theo category 'FOUNDATION'
@@ -324,6 +334,7 @@ export const AcademicRulesEngine = {
                 if (isFoundation && creditsForGPA > 0) {
                     foundationPoints += pointsForGPA;
                     foundationCredits += creditsForGPA;
+                    foundationFourPointPoints += score4 * creditsForGPA;
                 }
             }
 
@@ -361,10 +372,11 @@ export const AcademicRulesEngine = {
                 if (result.creditsForGPA > 0) {
                     const sem = g.semester || 'Không rõ';
                     if (!semesterMap.has(sem)) {
-                        semesterMap.set(sem, { points: 0, credits: 0, earnedCredits: 0 });
+                        semesterMap.set(sem, { points: 0, fourPointPoints: 0, credits: 0, earnedCredits: 0 });
                     }
                     const s = semesterMap.get(sem)!;
                     s.points += result.pointsForGPA;
+                    s.fourPointPoints += score10ToFourPoint(score) * result.creditsForGPA;
                     s.credits += result.creditsForGPA;
                     s.earnedCredits += result.earnedCredits;
                 }
@@ -375,14 +387,18 @@ export const AcademicRulesEngine = {
             .map(([semester, data]) => ({
                 semester,
                 gpa: data.credits > 0 ? data.points / data.credits : 0,
+                gpa4: data.credits > 0 ? data.fourPointPoints / data.credits : 0,
                 credits: data.credits,
                 earnedCredits: data.earnedCredits,
             }))
             .sort((a, b) => a.semester.localeCompare(b.semester));
 
         const currentGPA = totalCreditsForGPA > 0 ? (totalPoints / totalCreditsForGPA) : 0;
+        const currentGPA4 = totalCreditsForGPA > 0 ? (totalFourPointPoints / totalCreditsForGPA) : 0;
         const majorSpecializedGPA = majorSpecializedCredits > 0 ? majorSpecializedPoints / majorSpecializedCredits : 0;
+        const majorSpecializedGPA4 = majorSpecializedCredits > 0 ? majorSpecializedFourPointPoints / majorSpecializedCredits : 0;
         const foundationGPA = foundationCredits > 0 ? foundationPoints / foundationCredits : 0;
+        const foundationGPA4 = foundationCredits > 0 ? foundationFourPointPoints / foundationCredits : 0;
 
         return {
             gradesHistory,
@@ -391,7 +407,10 @@ export const AcademicRulesEngine = {
             gpaPerSemester,
             foundationGPA,
             majorSpecializedGPA,
-            majorGPA: foundationGPA
+            majorGPA: foundationGPA,
+            currentGPA4,
+            foundationGPA4,
+            majorSpecializedGPA4,
         };
     },
 

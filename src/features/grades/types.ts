@@ -46,10 +46,13 @@ export interface GPASummary {
     gradesHistory: StudentCourseGrade[];
     currentGPA: number;
     accumulatedCredits: number;
-    gpaPerSemester: { semester: string; gpa: number; credits: number }[];
+    gpaPerSemester: { semester: string; gpa: number; gpa4: number; credits: number }[];
     foundationGPA: number;
     majorGPA: number;
     majorSpecializedGPA: number;
+    currentGPA4: number;
+    foundationGPA4: number;
+    majorSpecializedGPA4: number;
 }
 
 export interface SimulatorCourseGrade {
@@ -146,6 +149,7 @@ export interface GPAInformationProps {
 export interface SemesterGPA {
     semester: string;
     gpa: number;
+    gpa4: number;
     credits: number;
     earnedCredits: number;
 }

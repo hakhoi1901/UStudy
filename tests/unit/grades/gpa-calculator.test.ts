@@ -54,4 +54,16 @@ describe('GPACalculator', () => {
 
     expect(result).toBeCloseTo((4 * 4 + 3.5 * 2) / 6, 8);
   });
+
+  it('calculates projected four-point GPA from each course before weighting credits', () => {
+    const result = GPACalculator.calculateProjectedFourPointGPA([
+      grade({ code: 'CSC10001', grade: 6 }),
+      grade({ code: 'CSC10002', credits: 2, grade: 8 }),
+      grade({ code: 'CSC10003', status: 'ongoing', grade: 0 }),
+    ], [
+      { code: 'CSC10001', credits: 4, projectedGrade: 9 },
+    ]);
+
+    expect(result).toBeCloseTo((3.5 * 2 + 4 * 4) / 6, 8);
+  });
 });

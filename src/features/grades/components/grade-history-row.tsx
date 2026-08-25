@@ -1,4 +1,5 @@
 import type { StudentCourseGrade } from "../types";
+import { GPACalculator } from "../services/gpa-calculator";
 
 interface GradeHistoryRowProps {
     course: StudentCourseGrade;
@@ -7,6 +8,10 @@ interface GradeHistoryRowProps {
 export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
     const hasGrade = course.hasGrade ?? course.grade > 0;
     const isExempted = course.isExempted === true || course.semester === 'Miễn';
+    const fourPointGrade = hasGrade && !isExempted
+        ? GPACalculator.score10ToFourPoint(course.grade)
+        : null;
+    const letterGrade = fourPointGrade === null ? '---' : GPACalculator.gradeToLetter(fourPointGrade);
     const gradeClass =
         !hasGrade
             ? "text-gray-400 italic"
@@ -83,6 +88,16 @@ export function GradeHistoryRow({ course }: GradeHistoryRowProps) {
                         ? course.grade.toFixed(1)
                         : "---"}
                 </span>
+            </td>
+
+            <td className="px-4 py-3 text-center">
+                <span className="font-semibold tabular-nums text-gray-700">
+                    {fourPointGrade === null ? '---' : fourPointGrade.toFixed(1)}
+                </span>
+            </td>
+
+            <td className="px-4 py-3 text-center">
+                <span className="font-semibold text-gray-700">{letterGrade}</span>
             </td>
 
             <td className="px-4 py-3 text-center">
