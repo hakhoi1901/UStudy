@@ -27,6 +27,28 @@ describe('Portal sync extension contract', () => {
     expect(policy).toContain('^new-portal\\\\d*\\\\.hcmus\\\\.edu\\\\.vn$');
   });
 
+  it('never hands Portal sync navigation to an external Android browser', async () => {
+    const activity = await readFile(
+      resolve(process.cwd(), 'android/app/src/main/java/com/ustudy/app/PortalSyncActivity.java'),
+      'utf8',
+    );
+
+    expect(activity).toContain('PortalUrlPolicy.isSupportedPortalUri(uri)');
+    expect(activity).toContain('showBlockedNavigation(uri)');
+    expect(activity).not.toContain('Intent.ACTION_VIEW');
+  });
+
+  it('keeps in-app update actions on native Android inside the PortalSync flow', async () => {
+    const dataSourceCenter = await readFile(
+      resolve(process.cwd(), 'src/features/settings/components/DataSourceCenter.tsx'),
+      'utf8',
+    );
+
+    expect(dataSourceCenter).toContain('isNativePortalSyncAvailable');
+    expect(dataSourceCenter).toContain('openNativePortalSync');
+    expect(dataSourceCenter).not.toContain('href={APP_CONFIG.PORTAL_LOGIN_URL}');
+  });
+
   it('provides the missing Sectigo intermediate only to HCMUS domains', async () => {
     const manifest = await readFile(resolve(process.cwd(), 'android/app/src/main/AndroidManifest.xml'), 'utf8');
     const networkConfig = await readFile(

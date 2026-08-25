@@ -112,11 +112,7 @@ public class PortalSyncActivity extends AppCompatActivity {
                 Uri uri = request.getUrl();
                 if (!request.isForMainFrame()) return false;
                 if (PortalUrlPolicy.isSupportedPortalUri(uri)) return false;
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                } catch (Exception ignored) {
-                    showLoadError("Không thể mở liên kết ngoài Portal.");
-                }
+                showBlockedNavigation(uri);
                 return true;
             }
 
@@ -257,6 +253,16 @@ public class PortalSyncActivity extends AppCompatActivity {
             loadingMessage.setText(message);
             loadingMessage.setTextColor(Color.rgb(185, 28, 28));
         });
+    }
+
+    private void showBlockedNavigation(Uri uri) {
+        hasMainFrameError = true;
+        String host = uri == null ? null : uri.getHost();
+        String destination = host == null || host.isEmpty() ? "không xác định" : host;
+        showLoadError(
+            "UStudy đã chặn chuyển hướng ra ngoài HCMUS Portal (" + destination + "). " +
+            "Hãy quay lại trang đăng nhập để tiếp tục đồng bộ trong ứng dụng."
+        );
     }
 
     private void handlePortalSslError(SslErrorHandler handler, SslError error) {
