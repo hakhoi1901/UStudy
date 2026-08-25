@@ -1,6 +1,9 @@
 (function () {
 const EXTENSION_CONFIG = globalThis.USTUDY_EXTENSION_CONFIG;
-if (!new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname)) return;
+if (
+  !new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname) ||
+  window.location.href.toLowerCase().includes('login')
+) return;
 
 const HOST_ID = 'ustudy-portal-sync-host';
 const SOURCE_LABELS = {
