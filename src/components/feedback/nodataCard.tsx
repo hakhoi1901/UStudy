@@ -203,7 +203,7 @@ export function NoDataCard() {
                             </div>
                             <a
                                 href={ANDROID_APP_DOWNLOAD_URL}
-                                download
+                                download="UStudy-android.apk"
                                 className="flex min-h-11 w-full items-center justify-center gap-2 border-t border-blue-200 bg-[#004A98] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#003A78]"
                             >
                                 <Download className="h-4 w-4" />
