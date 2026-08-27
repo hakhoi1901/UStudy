@@ -1,6 +1,9 @@
 (function () {
 const EXTENSION_CONFIG = globalThis.USTUDY_EXTENSION_CONFIG;
-if (!new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname)) return;
+if (
+  !new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname) ||
+  window.location.href.toLowerCase().includes('login')
+) return;
 
 const HOST_ID = 'ustudy-portal-sync-host';
 const SOURCE_LABELS = {
@@ -77,8 +80,7 @@ async function callExtension(action, payload, extra = {}) {
 }
 
 function isPortalLoginPage() {
-  const normalizedPath = window.location.pathname.replace(/^\/+/, '/');
-  return new RegExp(EXTENSION_CONFIG.portalLoginPathPattern, 'i').test(normalizedPath);
+  return window.location.href.toLowerCase().includes('login');
 }
 
 function isPortalReady() {
