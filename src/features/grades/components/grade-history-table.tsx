@@ -101,7 +101,7 @@ export function GradeHistoryTable({
             </div>
 
             {/* Desktop: Table view */}
-            <div className={`${sortedHistory.length === 0 ? 'hidden ' : ''}overflow-x-auto md:block`}>
+            <div className={sortedHistory.length === 0 ? 'hidden' : 'hidden overflow-x-auto md:block'}>
                 <table className="w-full table-fixed">
                     <colgroup>
                         <col className="w-[12%]" />
