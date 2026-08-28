@@ -7,7 +7,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -18,7 +18,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -29,7 +29,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -40,7 +40,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -51,7 +51,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -62,7 +62,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_POLITICS",
     "description": ""
   },
   {
@@ -73,8 +73,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
+    "category": "GENERAL_SOCIAL",
+    "description": "Chọn 1 môn trong nhóm tự chọn xã hội"
   },
   {
     "course_id": "BAA00007",
@@ -84,8 +84,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
+    "category": "GENERAL_SOCIAL",
+    "description": "Chọn 1 môn trong nhóm tự chọn xã hội"
   },
   {
     "course_id": "BAA00006",
@@ -95,8 +95,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
+    "category": "GENERAL_SOCIAL",
+    "description": "Chọn 1 môn trong nhóm tự chọn xã hội"
   },
   {
     "course_id": "CHE00001",
@@ -105,8 +105,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -116,8 +116,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -128,7 +128,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 30,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -138,8 +138,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -149,8 +149,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -160,8 +160,19 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
+    "description": ""
+  },
+  {
+    "course_id": "BIO00011",
+    "course_name_vi": "Nhập môn Công nghệ Sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -171,8 +182,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -182,8 +193,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -193,8 +204,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -205,7 +216,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -216,7 +227,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -227,7 +238,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -237,8 +248,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -248,8 +259,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "BB",
+    "category": "GENERAL_MATH_SCIENCE",
     "description": ""
   },
   {
@@ -260,7 +271,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_IT",
     "description": ""
   },
   {
@@ -270,8 +281,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "TC",
+    "category": "GENERAL_ENGLISH",
     "description": ""
   },
   {
@@ -281,8 +292,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "TC",
+    "category": "GENERAL_ENGLISH",
     "description": ""
   },
   {
@@ -292,8 +303,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "TC",
+    "category": "GENERAL_ENGLISH",
     "description": ""
   },
   {
@@ -303,8 +314,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
+    "course_type": "TC",
+    "category": "GENERAL_ENGLISH",
     "description": ""
   },
   {
@@ -315,7 +326,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_PE",
     "description": ""
   },
   {
@@ -326,7 +337,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_PE",
     "description": ""
   },
   {
@@ -337,7 +348,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "GENERAL_DEFENSE",
     "description": ""
   },
   {
@@ -352,8 +363,30 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BTE10014",
-    "course_name_vi": "Ứng dụng thống kê trong nghiên cứu Sinh học",
+    "course_id": "BTE10002",
+    "course_name_vi": "Sinh học tế bào",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10004",
+    "course_name_vi": "Di truyền",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10005",
+    "course_name_vi": "Tin sinh học đại cương",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -363,11 +396,88 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BIO10010",
-    "course_name_vi": "Vi sinh",
+    "course_id": "BTE10006",
+    "course_name_vi": "Phương pháp kiểm nghiệm vi sinh vật",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10007",
+    "course_name_vi": "Kỹ thuật gene",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10009",
+    "course_name_vi": "Sinh hóa",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10010",
+    "course_name_vi": "TT Di truyền",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10011",
+    "course_name_vi": "TT tin sinh học đại cương",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10012",
+    "course_name_vi": "TT Phương pháp kiểm nghiệm vi sinh",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10013",
+    "course_name_vi": "TT Kỹ thuật gene",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10008",
+    "course_name_vi": "Thực tập Sinh hóa",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
@@ -385,17 +495,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BIO10013",
-    "course_name_vi": "Thực tập Tài nguyên đa dạng sinh học",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
     "course_id": "BIO10022",
     "course_name_vi": "Thực tập Sinh học phân tử đại cương",
     "credits": 1,
@@ -407,817 +506,58 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BIO10003",
-    "course_name_vi": "Kỹ năng học tập và làm việc",
-    "credits": 2,
-    "theory_hours": 15,
+    "course_id": "BIO10010",
+    "course_name_vi": "Vi sinh",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
+    "exercise_hours": 0,
+    "course_type": "BB",
     "category": "FOUNDATION",
     "description": ""
   },
   {
-    "course_id": "BIO10104",
-    "course_name_vi": "Sự phát triển hoa và trái",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10105",
-    "course_name_vi": "Sự tăng trưởng ở thực vật cấp cao",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10102",
-    "course_name_vi": "Sinh học phân tử và tế bào thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10106",
-    "course_name_vi": "Phát sinh hình thái thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10107",
-    "course_name_vi": "Sự hóa củ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10110",
-    "course_name_vi": "Những vấn đề mới trong Sinh lý thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10202",
-    "course_name_vi": "Cơ sở tế bào và phân tử của miễn dịch học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10203",
-    "course_name_vi": "Nuôi cấy tế bào động vật: Kỹ thuật và ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10204",
-    "course_name_vi": "Nội tiết học ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10205",
-    "course_name_vi": "Sinh học Sinh sản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10207",
-    "course_name_vi": "Tương tác thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10208",
-    "course_name_vi": "Sinh lý thực vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10209",
-    "course_name_vi": "Cơ sở phân tử của di truyền chọn giống thực vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10210",
-    "course_name_vi": "Bệnh lý học thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10211",
-    "course_name_vi": "CNSH Trong Kiểm Soát Côn Trùng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10302",
-    "course_name_vi": "CNSH Động vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10303",
-    "course_name_vi": "Công nghệ tế bào gốc",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10304",
-    "course_name_vi": "Bệnh miễn dịch và các kỹ thuật miễn dịch thông dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10305",
-    "course_name_vi": "Dược liệu học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10306",
-    "course_name_vi": "Nhập môn miễn dịch học phân tử và tế bào",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10308",
-    "course_name_vi": "Sinh học phân tử trong y dược",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10309",
-    "course_name_vi": "Công nghệ hỗ trợ sinh sản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10310",
-    "course_name_vi": "Sinh lý học người",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10404",
-    "course_name_vi": "Polymer y sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10405",
-    "course_name_vi": "Mô học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10406",
-    "course_name_vi": "Kỹ nghệ mô",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10407",
-    "course_name_vi": "Ứng dụng Tin sinh học trong thiết kế các phân tử sinh học và thuốc",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10408",
-    "course_name_vi": "Vật liệu y sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10409",
-    "course_name_vi": "Lý sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10410",
-    "course_name_vi": "Vật liệu polymer và composite",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10411",
-    "course_name_vi": "Các phương pháp phổ nghiệm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10412",
-    "course_name_vi": "Hóa học nano",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10413",
-    "course_name_vi": "Quang xúc tác và các ứng dụng của màng mỏng quang xúc tác trong diệt khuẩn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10414",
-    "course_name_vi": "Vật liệu từ cấu trúc nano và ứng dụng trong y sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10415",
-    "course_name_vi": "Tổng hợp hữu cơ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10103",
-    "course_name_vi": "Sự phát triển chồi và rễ ở thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10108",
-    "course_name_vi": "Thủy canh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10109",
-    "course_name_vi": "Nuôi cấy mô và tế bào thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10111",
-    "course_name_vi": "Thực tập chuyên đề Phát sinh hình thái thực vật in vitro",
-    "credits": 2,
+    "course_id": "BTE10017",
+    "course_name_vi": "Thực tập Vi sinh",
+    "credits": 1,
     "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10207",
-    "course_name_vi": "Ứng dụng CNSH trong chọn giống vật nuôi",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10208",
-    "course_name_vi": "Di truyền người",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10210",
-    "course_name_vi": "An toàn vệ sinh thực phẩm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10211",
-    "course_name_vi": "CNSH và thực phẩm chức năng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10212",
-    "course_name_vi": "Những vấn đề mới trong Sinh học động vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10214",
-    "course_name_vi": "Mô hình động vật bệnh lí",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10215",
-    "course_name_vi": "Huyết học ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10216",
-    "course_name_vi": "Sinh lí bệnh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10304",
-    "course_name_vi": "Hệ thống học thực vật có mạch",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10310",
-    "course_name_vi": "Chỉ thị sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10311",
-    "course_name_vi": "Chính sách môi trường",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10314",
-    "course_name_vi": "Địa y và Đài thực vật",
-    "credits": 2,
-    "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
-    "course_id": "BIO10318",
-    "course_name_vi": "Ô nhiễm môi trường",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10319",
-    "course_name_vi": "Phiêu sinh và động vật đáy",
+    "course_id": "BTE10014",
+    "course_name_vi": "Ứng dụng thống kê trong nghiên cứu Sinh học",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
-    "course_id": "BIO10320",
-    "course_name_vi": "Quản trị tài nguyên tự nhiên",
+    "course_id": "BTE10019",
+    "course_name_vi": "TT Ứng dụng thống kê trong nghiên cứu Sinh học",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10302",
+    "course_name_vi": "Tiến hóa và đa dạng sinh học",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10325",
-    "course_name_vi": "Tài nguyên di truyền Thực vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10328",
-    "course_name_vi": "Thực vật thủy sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10332",
-    "course_name_vi": "Sự thích nghi ở thực vật",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10335",
-    "course_name_vi": "Viết và trình bày báo cáo khoa học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10414",
-    "course_name_vi": "Sinh hóa nông - lâm - ngư nghiệp",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10502",
-    "course_name_vi": "Di truyền vi sinh vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10503",
-    "course_name_vi": "Kỹ thuật vi sinh",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10504",
-    "course_name_vi": "Những vấn đề mới trong Vi Sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10506",
-    "course_name_vi": "Kỹ thuật nhân giống vô tính cây trồng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10507",
-    "course_name_vi": "Kỹ thuật trồng nấm và chế biến",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10508",
-    "course_name_vi": "Vi sinh học nông nghiệp",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10511",
-    "course_name_vi": "Vi sinh y học",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10602",
-    "course_name_vi": "Kĩ thuật di truyền",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10603",
-    "course_name_vi": "Chọn giống cây trồng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10604",
-    "course_name_vi": "Cơ sở di truyền chọn giống thực vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10606",
-    "course_name_vi": "Cơ sở phân tử của một số bệnh di truyền người",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10607",
-    "course_name_vi": "Sinh học phân tử streptomyces và ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10608",
-    "course_name_vi": "Chẩn đoán phân tử",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO10609",
-    "course_name_vi": "Những vấn đề mới trong Di truyền - Sinh học phân tử",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
@@ -1229,7 +569,7 @@ export const courses = [
     "exercise_hours": 30,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10021",
@@ -1240,7 +580,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10022",
@@ -1251,7 +591,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10023",
@@ -1262,7 +602,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10024",
@@ -1273,7 +613,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10025",
@@ -1284,7 +624,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10026",
@@ -1295,7 +635,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10027",
@@ -1306,7 +646,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10028",
@@ -1317,7 +657,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
     "course_id": "BTE10029",
@@ -1328,117 +668,40 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
-    "course_id": "BTE10212",
-    "course_name_vi": "Công nghệ sản xuất chế phẩm vi sinh ứng dụng trong nông nghiệp",
-    "credits": 2,
-    "theory_hours": 30,
+    "course_id": "BTE10046",
+    "course_name_vi": "Sinh học động vật",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
+    "category": "FOUNDATION",
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
-    "course_id": "BTE10422",
-    "course_name_vi": "Ứng dụng Vật liệu sinh học trong công nghiệp và nông nghiệp",
+    "course_id": "BIO10013",
+    "course_name_vi": "Thực tập Tài nguyên đa dạng sinh học",
     "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
+    "theory_hours": 0,
+    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "FOUNDATION",
+    "description": "Tự chọn cơ sở ngành; tích lũy tối thiểu 5 tín chỉ"
   },
   {
-    "course_id": "BTE10423",
-    "course_name_vi": "Ứng dụng Vật liệu sinh học trong thực phẩm chức năng",
+    "course_id": "BIO10003",
+    "course_name_vi": "Kỹ năng học tập và làm việc",
     "credits": 2,
-    "theory_hours": 30,
+    "theory_hours": 15,
     "lab_hours": 0,
-    "exercise_hours": 0,
+    "exercise_hours": 30,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10424",
-    "course_name_vi": "Ứng dụng Vật liệu sinh học trong công nghệ hỗ trợ sinh sản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10425",
-    "course_name_vi": "Kỹ nghệ tế bào",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10426",
-    "course_name_vi": "Kỹ nghệ phân tử",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10401",
-    "course_name_vi": "Khoa học vật liệu cơ bản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10402",
-    "course_name_vi": "Các phương pháp chế tạo và phân tích vật liệu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
-  },
-  {
-    "course_id": "BTE10112",
-    "course_name_vi": "Công nghệ bề mặt tế bào",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10113",
-    "course_name_vi": "Công nghệ sinh học thực phẩm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
+    "category": "FOUNDATION",
+    "description": "Kiến thức bổ trợ, không tính vào điểm trung bình tích lũy"
   },
   {
     "course_id": "BTE10101",
@@ -1448,7 +711,7 @@ export const courses = [
     "lab_hours": 120,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1459,7 +722,7 @@ export const courses = [
     "lab_hours": 120,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1470,7 +733,7 @@ export const courses = [
     "lab_hours": 120,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1481,7 +744,7 @@ export const courses = [
     "lab_hours": 120,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1492,8 +755,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10103",
@@ -1503,8 +766,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10104",
@@ -1514,8 +777,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10105",
@@ -1525,8 +788,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10106",
@@ -1536,8 +799,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10107",
@@ -1547,8 +810,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10108",
@@ -1558,8 +821,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Sinh viên phải tích lũy được 08 tín chỉ trong danh sách các học phần"
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
   },
   {
     "course_id": "BTE10109",
@@ -1568,8 +831,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1579,8 +842,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1590,8 +853,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1601,8 +864,8 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1612,8 +875,228 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10207",
+    "course_name_vi": "Tương tác thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10208",
+    "course_name_vi": "Sinh lý thực vật",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10209",
+    "course_name_vi": "Cơ sở phân tử của di truyền chọn giống thực vật",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10210",
+    "course_name_vi": "Bệnh lý học thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10302",
+    "course_name_vi": "CNSH Động vật",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10303",
+    "course_name_vi": "Công nghệ tế bào gốc",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10304",
+    "course_name_vi": "Bệnh miễn dịch và các kỹ thuật miễn dịch thông dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10305",
+    "course_name_vi": "Dược liệu học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10306",
+    "course_name_vi": "Nhập môn miễn dịch học phân tử và tế bào",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10203",
+    "course_name_vi": "Nuôi cấy tế bào động vật: Kỹ thuật và ứng dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10308",
+    "course_name_vi": "Sinh học phân tử trong y dược",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10401",
+    "course_name_vi": "Khoa học vật liệu cơ bản",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10402",
+    "course_name_vi": "Các phương pháp chế tạo và phân tích vật liệu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10404",
+    "course_name_vi": "Polymer y sinh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10405",
+    "course_name_vi": "Mô học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10407",
+    "course_name_vi": "Ứng dụng Tin sinh học trong thiết kế các phân tử sinh học và thuốc",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10408",
+    "course_name_vi": "Vật liệu y sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10422",
+    "course_name_vi": "Ứng dụng Vật liệu sinh học trong công nghiệp và nông nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10423",
+    "course_name_vi": "Ứng dụng Vật liệu sinh học trong thực phẩm chức năng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10424",
+    "course_name_vi": "Ứng dụng Vật liệu sinh học trong công nghệ hỗ trợ sinh sản",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1661,36 +1144,58 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BIO10302",
-    "course_name_vi": "Tiến hóa và đa dạng sinh học",
-    "credits": 2,
-    "theory_hours": 30,
+    "course_id": "BTE10192",
+    "course_name_vi": "Thực tập tốt nghiệp chuyên ngành CNSH Công nghiệp",
+    "credits": 6,
+    "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 0,
+    "exercise_hours": 120,
     "course_type": "TC",
-    "category": "FOUNDATION",
+    "category": "GRADUATION",
     "description": ""
   },
   {
-    "course_id": "BTE10006",
-    "course_name_vi": "Phương pháp Kiểm nghiệm vi sinh vật",
+    "course_id": "BTE10292",
+    "course_name_vi": "Thực tập tốt nghiệp chuyên ngành CNSH Nông nghiệp",
+    "credits": 6,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 120,
+    "course_type": "TC",
+    "category": "GRADUATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10392",
+    "course_name_vi": "Thực tập tốt nghiệp chuyên ngành CNSH Y dược",
+    "credits": 6,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 120,
+    "course_type": "TC",
+    "category": "GRADUATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10492",
+    "course_name_vi": "Thực tập tốt nghiệp chuyên ngành Công nghệ Vật liệu sinh học",
+    "credits": 6,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 120,
+    "course_type": "TC",
+    "category": "GRADUATION",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10110",
+    "course_name_vi": "Công nghệ sinh học vi sinh phân tử và ứng dụng",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10019",
-    "course_name_vi": "TT Ứng dụng thống kê trong nghiên cứu Sinh học",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "FOUNDATION",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1700,8 +1205,734 @@ export const courses = [
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10211",
+    "course_name_vi": "CNSH Trong Kiểm Soát Côn Trùng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10309",
+    "course_name_vi": "Công nghệ hỗ trợ sinh sản",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10310",
+    "course_name_vi": "Sinh lý học người",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10406",
+    "course_name_vi": "Kỹ nghệ mô",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10409",
+    "course_name_vi": "Lý sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10410",
+    "course_name_vi": "Vật liệu polymer và composite",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10411",
+    "course_name_vi": "Các phương pháp phổ nghiệm",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10412",
+    "course_name_vi": "Hóa học nano",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10413",
+    "course_name_vi": "Quang xúc tác và các ứng dụng của màng mỏng quang xúc tác trong diệt khuẩn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10414",
+    "course_name_vi": "Vật liệu từ cấu trúc nano và ứng dụng trong y sinh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10415",
+    "course_name_vi": "Tổng hợp hữu cơ",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10102",
+    "course_name_vi": "Sinh học phân tử và tế bào thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10103",
+    "course_name_vi": "Sự phát triển chồi và rễ ở thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10104",
+    "course_name_vi": "Sự phát triển hoa và trái",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10105",
+    "course_name_vi": "Sự tăng trưởng ở thực vật cấp cao",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10106",
+    "course_name_vi": "Phát sinh hình thái thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10107",
+    "course_name_vi": "Sự hóa củ",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10108",
+    "course_name_vi": "Thủy canh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10109",
+    "course_name_vi": "Nuôi cấy mô và tế bào thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10110",
+    "course_name_vi": "Những vấn đề mới trong Sinh lý thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10111",
+    "course_name_vi": "Thực tập chuyên đề Phát sinh hình thái thực vật in vitro",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10202",
+    "course_name_vi": "Cơ sở tế bào và phân tử của miễn dịch học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10204",
+    "course_name_vi": "Nội tiết học ứng dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10205",
+    "course_name_vi": "Sinh học Sinh sản",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10207",
+    "course_name_vi": "Ứng dụng CNSH trong chọn giống vật nuôi",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10208",
+    "course_name_vi": "Di truyền người",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10210",
+    "course_name_vi": "An toàn vệ sinh thực phẩm",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10211",
+    "course_name_vi": "CNSH và thực phẩm chức năng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10212",
+    "course_name_vi": "Những vấn đề mới trong Sinh học động vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10214",
+    "course_name_vi": "Mô hình động vật bệnh lí",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10215",
+    "course_name_vi": "Huyết học ứng dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10216",
+    "course_name_vi": "Sinh lí bệnh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10304",
+    "course_name_vi": "Hệ thống học thực vật có mạch",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10310",
+    "course_name_vi": "Chỉ thị sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10311",
+    "course_name_vi": "Chính sách môi trường",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10314",
+    "course_name_vi": "Địa y và Đài thực vật",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10318",
+    "course_name_vi": "Ô nhiễm môi trường",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10319",
+    "course_name_vi": "Phiêu sinh và động vật đáy",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10320",
+    "course_name_vi": "Quản trị tài nguyên tự nhiên",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10325",
+    "course_name_vi": "Tài nguyên di truyền Thực vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10328",
+    "course_name_vi": "Thực vật thuỷ sinh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10332",
+    "course_name_vi": "Sự thích nghi ở thực vật",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10335",
+    "course_name_vi": "Viết và trình bày báo cáo khoa học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10414",
+    "course_name_vi": "Sinh hóa nông - lâm - ngư nghiệp",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10502",
+    "course_name_vi": "Di truyền vi sinh vật",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10503",
+    "course_name_vi": "Kỹ thuật vi sinh",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10504",
+    "course_name_vi": "Những vấn đề mới trong Vi Sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10506",
+    "course_name_vi": "Kỹ thuật nhân giống vô tính cây trồng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10507",
+    "course_name_vi": "Kỹ thuật trồng nấm và chế biến",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10508",
+    "course_name_vi": "Vi sinh học nông nghiệp",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10511",
+    "course_name_vi": "Vi sinh y học",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10602",
+    "course_name_vi": "Kĩ thuật di truyền",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10603",
+    "course_name_vi": "Chọn giống cây trồng",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10604",
+    "course_name_vi": "Cơ sở di truyền chọn giống thực vật",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10606",
+    "course_name_vi": "Cơ sở phân tử của một số bệnh di truyền người",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10607",
+    "course_name_vi": "Sinh học phân tử streptomyces và ứng dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10608",
+    "course_name_vi": "Chẩn đoán phân tử",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BIO10609",
+    "course_name_vi": "Những vấn đề mới trong Di truyền - Sinh học phân tử",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10212",
+    "course_name_vi": "Công nghệ sản xuất chế phẩm vi sinh ứng dụng trong nông nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10425",
+    "course_name_vi": "Kỹ nghệ tế bào",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10426",
+    "course_name_vi": "Kỹ nghệ phân tử",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10112",
+    "course_name_vi": "Công nghệ bề mặt tế bào",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10113",
+    "course_name_vi": "Công nghệ sinh học thực phẩm",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10213",
+    "course_name_vi": "Thực vật không hạt-",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10214",
+    "course_name_vi": "Ứng dụng công nghệ",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "BTE10312",
+    "course_name_vi": "Proteomics và Ứng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   },
   {
@@ -1711,316 +1942,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH047",
-    "course_name_vi": "Mô hình động vật trong nghiên cứu y sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH073",
-    "course_name_vi": "Những vấn đề sinh học thực vật mới công bố",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH072",
-    "course_name_vi": "Phát sinh hình thái thực vật thực nghiệm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH229",
-    "course_name_vi": "Kiểm soát năng suất ở cây có củ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH075",
-    "course_name_vi": "Giai đoạn trưởng thành ở thực vật cấp cao",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH141",
-    "course_name_vi": "Enzym học nâng cao",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSH142",
-    "course_name_vi": "Thu nhận và ứng dụng các hợp chất có hoạt tính sinh học",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10046",
-    "course_name_vi": "Sinh học động vật",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
     "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10213",
-    "course_name_vi": "Thực vật không hạt - Công nghệ nuôi cấy và ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10214",
-    "course_name_vi": "Ứng dụng công nghệ sinh học xanh trong chăm sóc da",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BIO00011",
-    "course_name_vi": "Nhập môn Công nghệ Sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10002",
-    "course_name_vi": "Sinh học tế bào",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10004",
-    "course_name_vi": "Di truyền",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10005",
-    "course_name_vi": "Tin sinh học đại cương Phương pháp kiểm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10007",
-    "course_name_vi": "Kỹ thuật gene",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10009",
-    "course_name_vi": "Sinh hóa TT tin sinh học đại",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10010",
-    "course_name_vi": "TT Di truyền TT tin sinh học đại",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10011",
-    "course_name_vi": "TT tin sinh học đại cương TT Phương pháp",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10012",
-    "course_name_vi": "kiểm nghiệm vi sinh",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10013",
-    "course_name_vi": "TT Kỹ thuật gene Sinh học phân tử",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10008",
-    "course_name_vi": "Thực tập Sinh hóa Sinh học phân tử",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10017",
-    "course_name_vi": "Thực tập Vi sinh Ứng dụng thống kê",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10192",
-    "course_name_vi": "chuyên ngành CNSH Công nghiệp Thực tập tốt nghiệp",
-    "credits": 6,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GRADUATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10292",
-    "course_name_vi": "chuyên ngành CNSH Nông nghiệp Thực tập tốt nghiệp",
-    "credits": 6,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GRADUATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10392",
-    "course_name_vi": "chuyên ngành CNSH Y dược Thực tập tốt nghiệp",
-    "credits": 6,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GRADUATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10492",
-    "course_name_vi": "chuyên ngành Công",
-    "credits": 6,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GRADUATION",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10312",
-    "course_name_vi": "Proteomics và Ứng Dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "BTE10110",
-    "course_name_vi": "vi sinh phân tử và ứng dụng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_BIOTECHNOLOGY",
     "description": ""
   }
-];
+]
