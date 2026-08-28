@@ -21,7 +21,7 @@ export const categories = {
                 "name": "Khoa học xã hội - Kinh tế - Kỹ năng",
                 "credits": 2,
                 "mandatory": false,
-                "note": "Chọn 1 trong 3 học phần",
+                "note": "Chọn 1 trong 3 học phần. Mục 7.1.2 không xuất hiện trong bản PDF Toán tài năng; nhóm này được đối chiếu từ các CTĐT Toán học/Toán tin/Toán ứng dụng 2025 cùng bộ tài liệu.",
                 "courses": [
                     "BAA00005",
                     "BAA00006",
@@ -133,131 +133,157 @@ export const categories = {
                 "credits_required": 24,
                 "courses": [
                     "MTH10441",
+                    "MTH10403",
                     "MTH10131",
                     "MTH10109",
-                    "MTH10405",
-                    "MTH10407",
-                    "MTH10312",
-                    "MTH10442"
+                    "MTH10412",
+                    "MTH10426",
+                    "MTH10433"
                 ]
             },
             "ELECTIVE": {
                 "credits_required": 8,
                 "courses": [
-                    "MTH10449",
-                    "MTH10450",
-                    "MTH10566",
-                    "MTH10619",
-                    "MTH10708",
-                    "MTH10412",
-                    "MTH10439",
-                    "MTH10433",
-                    "MTH10003"
+                    "MTH10003",
+                    "MTH10004",
+                    "MTH10201",
+                    "MTH10312",
+                    "MTH10405",
+                    "MTH10428",
+                    "MTH10442",
+                    "MTH10449"
                 ]
             }
         }
     },
-    "MAJOR_MATHEMATICS_AND_CS": {
-        "name": "Kiến thức chuyên ngành Toán tin",
+    "MAJOR_MATHEMATICS_TALENT": {
+        "name": "Kiến thức chuyên ngành Toán học - Chương trình tài năng",
         "total_credits_required": 29,
-        "note": "Chọn 1 chuyên ngành để xét tốt nghiệp.",
+        "note": "Chọn 1 chuyên ngành; 20 tín chỉ bắt buộc riêng + tối thiểu 9 tín chỉ tự chọn Phụ lục 1.",
         "breakdown": {
-            "DATA_SCIENCE": {
-                "name": "Chuyên ngành Khoa học dữ liệu",
+            "ALGEBRA": {
+                "name": "Chuyên ngành Đại số",
                 "total_credits_required": 29,
-                "mandatory_credits": 16,
-                "elective_credits": 13,
+                "mandatory_credits": 20,
+                "elective_credits": 9,
                 "mandatory_courses": [
-                    "MTH10318",
-                    "MTH10353",
-                    "MTH10605",
-                    "MTH10358"
+                    "MTH10419",
+                    "MTH10420",
+                    "MTH10421",
+                    "MTH10422",
+                    "MTH10501"
                 ],
                 "elective_courses": [
+                    "MTH10418",
+                    "MTH10492",
+                    "MTH10497",
+                    "MTH10498",
+                    "MTH10503",
+                    "MTH10505",
+                    "MTH10507",
+                    "MTH10525",
+                    "MTH10564",
+                    "MTH10596",
+                    "MTH10601",
+                    "MTH10603"
+                ],
+                "note": "Tích lũy tối thiểu 09 tín chỉ tự chọn trong Phụ lục 1."
+            },
+            "ANALYSIS": {
+                "name": "Chuyên ngành Giải tích",
+                "total_credits_required": 29,
+                "mandatory_credits": 20,
+                "elective_credits": 9,
+                "mandatory_courses": [
+                    "MTH10413",
+                    "MTH10417",
+                    "MTH10436",
+                    "MTH10443",
+                    "MTH10451"
+                ],
+                "elective_courses": [
+                    "MTH10478",
+                    "MTH10480",
+                    "MTH10492",
+                    "MTH10564",
+                    "MTH10409",
+                    "MTH10414",
+                    "MTH10438",
+                    "MTH10439",
+                    "MTH10444",
+                    "MTH10461",
+                    "MTH10473",
+                    "MTH10555",
+                    "MTH10556",
+                    "MTH10604",
+                    "MTH10607"
+                ],
+                "note": "Tích lũy tối thiểu 09 tín chỉ tự chọn trong Phụ lục 1."
+            },
+            "NUMERICAL_ANALYSIS": {
+                "name": "Chuyên ngành Giải tích số",
+                "total_credits_required": 29,
+                "mandatory_credits": 20,
+                "elective_credits": 9,
+                "mandatory_courses": [
+                    "MTH10438",
+                    "MTH10555",
+                    "MTH10556",
+                    "MTH10604",
+                    "MTH10532"
+                ],
+                "elective_courses": [
+                    "MTH10417",
+                    "MTH10478",
+                    "MTH10480",
+                    "MTH10492",
+                    "MTH10564",
+                    "MTH10409",
+                    "MTH10413",
+                    "MTH10414",
+                    "MTH10436",
+                    "MTH10439",
+                    "MTH10443",
+                    "MTH10444",
+                    "MTH10461",
+                    "MTH10473",
+                    "MTH10607"
+                ],
+                "note": "Tích lũy tối thiểu 09 tín chỉ tự chọn trong Phụ lục 1."
+            },
+            "PROBABILITY_STATISTICS": {
+                "name": "Chuyên ngành Xác suất - Thống kê",
+                "total_credits_required": 29,
+                "mandatory_credits": 20,
+                "elective_credits": 9,
+                "mandatory_courses": [
+                    "MTH10423",
+                    "MTH10424",
+                    "MTH10485",
+                    "MTH10619",
+                    "MTH10508"
+                ],
+                "elective_courses": [
+                    "MTH10564",
+                    "MTH10510",
+                    "MTH10511",
+                    "MTH10512",
+                    "MTH10515",
+                    "MTH10518",
                     "MTH10519",
-                    "MTH10315",
-                    "MTH10325",
-                    "MTH10332",
-                    "MTH10317",
-                    "MTH10322",
-                    "MTH10323",
-                    "MTH10344",
-                    "MTH10354",
-                    "MTH10359",
-                    "MTH10607",
-                    "MTH10623",
-                    "MTH10628",
-                    "MTH10620"
+                    "MTH10554",
+                    "MTH10557",
+                    "MTH10558",
+                    "MTH10565",
+                    "MTH10566",
+                    "MTH10708"
                 ],
-                "note": "Nhóm tự chọn gồm seminar ở mục 7.2.2 và các học phần gắn nhãn tương ứng trong Phụ lục 1."
-            },
-            "MATHEMATICAL_METHODS_CS": {
-                "name": "Chuyên ngành Phương pháp toán trong tin học",
-                "total_credits_required": 29,
-                "mandatory_credits": 16,
-                "elective_credits": 13,
-                "mandatory_courses": [
-                    "MTH10318",
-                    "MTH10353",
-                    "MTH10325",
-                    "MTH10324"
-                ],
-                "elective_courses": [
-                    "MTH10315",
-                    "MTH10319",
-                    "MTH10321",
-                    "MTH10332",
-                    "MTH10347",
-                    "MTH10355",
-                    "MTH10317",
-                    "MTH10322",
-                    "MTH10323",
-                    "MTH10354",
-                    "MTH10358",
-                    "MTH10359",
-                    "MTH10605",
-                    "MTH10607",
-                    "MTH10623",
-                    "MTH10628",
-                    "MTH10346"
-                ],
-                "note": "Nhóm tự chọn gồm seminar ở mục 7.2.2 và các học phần gắn nhãn tương ứng trong Phụ lục 1."
-            },
-            "APPLIED_MATH_CS": {
-                "name": "Chuyên ngành Toán tin ứng dụng",
-                "total_credits_required": 29,
-                "mandatory_credits": 16,
-                "elective_credits": 13,
-                "mandatory_courses": [
-                    "MTH10360",
-                    "MTH10311",
-                    "MTH10315",
-                    "MTH10313"
-                ],
-                "elective_courses": [
-                    "MTH10308",
-                    "MTH10309",
-                    "MTH10310",
-                    "MTH10314",
-                    "MTH10332",
-                    "MTH10333",
-                    "MTH10334",
-                    "MTH10335",
-                    "MTH10337",
-                    "MTH10341",
-                    "MTH10345",
-                    "MTH10318",
-                    "MTH10322",
-                    "MTH10331",
-                    "MTH10344",
-                    "MTH10353",
-                    "MTH10359",
-                    "MTH10623",
-                    "MTH10628",
-                    "MTH10326"
-                ],
-                "note": "Nhóm tự chọn gồm seminar ở mục 7.2.2 và các học phần gắn nhãn tương ứng trong Phụ lục 1."
+                "note": "Tích lũy tối thiểu 09 tín chỉ tự chọn trong Phụ lục 1."
             }
+        },
+        "talent_core_requirement": {
+            "credits_required": 78,
+            "note": "Theo điều kiện tốt nghiệp của chương trình tài năng: ít nhất 78 tín chỉ phải tích lũy từ các học phần tổ chức lớp riêng cho chương trình tài năng theo mục 7.2.4.1."
         }
     },
     "GRADUATION": {
@@ -270,16 +296,6 @@ export const categories = {
                 "courses": [
                     "MTH10595"
                 ]
-            },
-            {
-                "type": "PROJECT_AND_ELECTIVE",
-                "credits": 10,
-                "mandatory_courses": [
-                    "MTH10597"
-                ],
-                "mandatory_credits": 6,
-                "elective_credits": 4,
-                "note": "4 tín chỉ tự chọn lấy từ danh sách Phụ lục 1 theo quy định."
             }
         ]
     }
