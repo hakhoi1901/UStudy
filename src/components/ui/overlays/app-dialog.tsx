@@ -44,7 +44,7 @@ export function AppDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        'top-[calc((100dvh-64px-env(safe-area-inset-bottom))/2)] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100dvh-9rem-env(safe-area-inset-bottom))] gap-0 overflow-hidden rounded-2xl border-0 border-slate-200 bg-white p-0 shadow-2xl outline-none ring-0 sm:top-1/2 sm:max-h-[calc(100vh-2rem)]',
+        'top-[calc((100dvh-var(--ustudy-mobile-nav-height)-env(safe-area-inset-bottom))/2)] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100dvh-9rem-env(safe-area-inset-bottom))] gap-0 overflow-hidden rounded-2xl border-0 border-slate-200 bg-white p-0 shadow-2xl outline-none ring-0 sm:top-1/2 sm:max-h-[calc(100vh-2rem)]',
         mobileFullScreen && 'max-md:inset-0 max-md:left-0 max-md:top-0 max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:w-screen max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-none max-md:shadow-none',
         sizeClasses[size],
         className,

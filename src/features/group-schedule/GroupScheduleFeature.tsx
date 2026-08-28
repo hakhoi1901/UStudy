@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, Fragment } from 'react';
-import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, MoreHorizontal, ChevronDown, ChevronUp, List, Info } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Moon, Plus, Save, Settings, Sun, Users, X, Zap, List } from 'lucide-react';
 
 import { GroupMemberCard } from './components/GroupMemberCard';
 import { buildSavedGroupSchedule, GroupScheduleCalendarPreview } from './components/GroupScheduleCalendarPreview';
@@ -8,13 +8,12 @@ import { GroupScheduleResultViewTabs } from './components/GroupScheduleResultVie
 import { CourseSharingEditor } from './components/CourseSharingEditor';
 import { GroupScheduleComparison } from './components/GroupScheduleComparison';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
+import { SaveGroupScheduleDialog } from './components/SaveGroupScheduleDialog';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
-import { AppDialog } from '../../components/ui/overlays/app-dialog';
 import { AppSelect } from '../../components/ui/form';
 import { Input } from '../../components/ui/form/input';
 import { Textarea } from '../../components/ui/form/textarea';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../components/ui/overlays/dropdown-menu';
 import { PageHeader } from '../../components/layout/page-header';
 import { buildDensityMap, decodeGroupURL } from './services/group-scheduler';
 import type { ClassPreferenceLevel, ClassPreferenceSelection, CourseSharingMap, GroupMemberToken, GroupScheduleOption } from './types';
@@ -1413,96 +1412,14 @@ export function GroupSchedulePage({
             <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
             {selectedOption && (
-                <AppDialog
+                <SaveGroupScheduleDialog
                     open={showSaveGroupScheduleModal}
                     onOpenChange={setShowSaveGroupScheduleModal}
-                    title="Lưu lịch nhóm"
-                    description="Lưu phương án hiện tại để mở lại trong Lịch đã lưu."
-                    icon={Save}
-                    size="sm"
-                    footer={(
-                        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setShowSaveGroupScheduleModal(false)}
-                                className="inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                type="button"
-                                onClick={saveSelectedGroupSchedule}
-                                disabled={!groupScheduleName.trim()}
-                                className="inline-flex h-10 items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-slate-300"
-                            >
-                                Lưu lịch
-                            </button>
-                        </div>
-                    )}
-                >
-                    <div>
-                        <label htmlFor="group-schedule-name" className="block text-sm font-semibold text-slate-800">
-                            Tên gợi nhớ
-                        </label>
-                        <input
-                            id="group-schedule-name"
-                            autoFocus
-                            type="text"
-                            value={groupScheduleName}
-                            onChange={(event) => setGroupScheduleName(event.target.value)}
-                            placeholder={`Ví dụ: Nhóm - PA ${selectedOption.option}`}
-                            className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/15"
-                            onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
-                        />
-                    </div>
-                    <p className="border-l-2 border-[#004A98] bg-blue-50 px-3 py-2 text-xs leading-5 text-slate-600">
-                        Lưu cả nhóm và các lớp của phương án đang xem. Khi mở lại, bạn vẫn có thể đổi thành viên để xem lịch riêng từng người.
-                    </p>
-                </AppDialog>
-            )}
-
-            {false && showSaveGroupScheduleModal && selectedOption && (
-                <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-                    <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
-                        <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">
-                            <h3 className="flex items-center gap-2 text-base font-bold text-gray-900">
-                                <Save className="h-4 w-4 text-emerald-600" />
-                                Lưu lịch nhóm
-                            </h3>
-                            <button type="button" onClick={() => setShowSaveGroupScheduleModal(false)} className="rounded-full p-1 transition-colors hover:bg-gray-100">
-                                <X className="h-5 w-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="p-4 md:p-6">
-                            <label className="mb-2 block text-sm font-bold text-gray-700">Tên gợi nhớ cho lịch này</label>
-                            <input
-                                autoFocus
-                                type="text"
-                                value={groupScheduleName}
-                                onChange={(event) => setGroupScheduleName(event.target.value)}
-                                placeholder={`VD: Nhóm - PA ${selectedOption.option}`}
-                                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500"
-                                onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
-                            />
-                            <p className="mt-3 text-xs italic text-gray-400">
-                                Lưu toàn bộ thành viên trong phương án hiện tại. Khi mở lại ở tab lịch dự kiến, bạn có thể chuyển qua lại giữa các thành viên.
-                            </p>
-                        </div>
-                        <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 md:p-5">
-                            <button type="button" onClick={() => setShowSaveGroupScheduleModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800">
-                                Hủy
-                            </button>
-                            <button
-                                type="button"
-                                onClick={saveSelectedGroupSchedule}
-                                disabled={!groupScheduleName.trim()}
-                                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-emerald-700 disabled:opacity-50"
-                            >
-                                Xác nhận lưu
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                    name={groupScheduleName}
+                    onNameChange={setGroupScheduleName}
+                    onSave={saveSelectedGroupSchedule}
+                    optionNumber={selectedOption.option}
+                />
             )}
 
             <SavedSchedulesModal

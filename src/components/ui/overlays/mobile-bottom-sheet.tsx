@@ -26,6 +26,8 @@ export function MobileBottomSheet({
     sheetId,
 }: MobileBottomSheetProps) {
     const sheetRef = useRef<HTMLElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const previousFocusRef = useRef<HTMLElement | null>(null);
     const dragStartYRef = useRef(0);
     const dragOffsetRef = useRef(0);
     const [dragOffset, setDragOffset] = useState(0);
@@ -33,16 +35,39 @@ export function MobileBottomSheet({
 
     useEffect(() => {
         const previousOverflow = document.body.style.overflow;
+        previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose();
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+                return;
+            }
+
+            if (event.key !== 'Tab' || !sheetRef.current) return;
+            const focusable = Array.from(sheetRef.current.querySelectorAll<HTMLElement>(
+                'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ));
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
         };
 
         document.body.style.overflow = 'hidden';
         window.addEventListener('keydown', handleKeyDown);
+        const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
 
         return () => {
+            window.clearTimeout(focusTimer);
             document.body.style.overflow = previousOverflow;
             window.removeEventListener('keydown', handleKeyDown);
+            previousFocusRef.current?.focus();
         };
     }, [onClose]);
 
@@ -82,7 +107,7 @@ export function MobileBottomSheet({
     };
 
     return createPortal((
-        <div className={`fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[9000] ${className}`}>
+        <div className={`fixed inset-x-0 top-0 bottom-[calc(var(--ustudy-mobile-nav-height)+env(safe-area-inset-bottom))] z-[9000] ${className}`}>
             <button
                 type="button"
                 aria-label="Đóng"
@@ -94,6 +119,7 @@ export function MobileBottomSheet({
                 role="dialog"
                 aria-modal="true"
                 aria-label={ariaLabel || title}
+                id={sheetId}
                 data-mobile-sheet={sheetId}
                 className="absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl"
                 style={{
@@ -136,6 +162,7 @@ export function MobileBottomSheet({
                         </div>
 
                         <button
+                            ref={closeButtonRef}
                             type="button"
                             onClick={onClose}
                             className="rounded-lg border-0 bg-transparent p-2 text-white/85 transition-colors hover:bg-white/15 hover:text-white"

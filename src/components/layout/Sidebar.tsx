@@ -1,36 +1,63 @@
-import { Home, Map, Bot, MapPinned, Info, BarChart3, DollarSign, Calendar, Settings, ChevronLeft, ChevronRight, Subtitles, Menu, X, Shield } from 'lucide-react';
-import { useState } from 'react';
+import {
+  BarChart3,
+  Bot,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  DollarSign,
+  Home,
+  Info,
+  Map,
+  Menu,
+  Settings,
+  Shield,
+  Subtitles,
+} from 'lucide-react';
+import { useRef, useState, type ElementType } from 'react';
 import { createPortal } from 'react-dom';
-import { getPathForPage } from '../../app/routes';
+import { getPathForPage, type PageId } from '../../app/routes';
+import { prefetchPage } from '../../app/route-loaders';
 import { APP_CONFIG } from '../../config/appConfig';
+import { MobileBottomSheet } from '../ui/overlays/mobile-bottom-sheet';
 
-// định nghĩa các nhóm điều hướng
-const navGroups = [
+interface NavItem {
+  icon: ElementType;
+  label: string;
+  subtitle?: string;
+  page: PageId;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     title: 'Chính',
     items: [
-      { icon: Home, label: 'Tổng quan', subtitle: "Điểm & tín chỉ tích lũy", page: 'dashboard' },
-      { icon: Map, label: 'Lộ trình học tập', subtitle: 'Chọn môn & Lịch', page: 'courses' },
-      { icon: BarChart3, label: 'Quản lý điểm', subtitle: 'GPA & Môn học lại', page: 'grades' },
+      { icon: Home, label: 'Tổng quan', subtitle: 'Điểm và tín chỉ tích lũy', page: 'dashboard' },
+      { icon: Map, label: 'Lộ trình học tập', subtitle: 'Kế hoạch, môn và lịch dự kiến', page: 'courses' },
+      { icon: BarChart3, label: 'Quản lý điểm', subtitle: 'GPA và môn học lại', page: 'grades' },
       { icon: Subtitles, label: 'Lịch thi', subtitle: 'Lịch thi học kỳ', page: 'examSchedule' },
     ],
   },
   {
     title: 'Tài chính',
     items: [
-      { icon: DollarSign, label: 'Học phí', subtitle: "Học phí năm học", page: 'tuition' },
+      { icon: DollarSign, label: 'Học phí', subtitle: 'Học phí năm học', page: 'tuition' },
     ],
   },
   {
     title: 'Công cụ',
     items: [
       ...(APP_CONFIG.CHATBOT_ENABLED
-        ? [{ icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi & Đáp', page: 'chatbot' }]
+        ? [{ icon: Bot, label: 'Trợ lý', subtitle: 'Hỏi và đáp', page: 'chatbot' as const }]
         : []),
-      { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch đã chốt', page: 'schedule' },
+      { icon: Calendar, label: 'Thời khóa biểu', subtitle: 'Lịch học đã đăng ký', page: 'schedule' },
       { icon: Info, label: 'Thông tin trường', subtitle: 'Bản đồ và kế hoạch năm học', page: 'campusInfo' },
-      { icon: Settings, label: 'Cài đặt', subtitle: "Thiết lập cá nhân", page: 'settings' },
-      { icon: Shield, label: 'Bảo mật & Quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
+      { icon: Settings, label: 'Cài đặt', subtitle: 'Thiết lập cá nhân', page: 'settings' },
+      { icon: Shield, label: 'Bảo mật và quyền', subtitle: 'Quyền riêng tư dữ liệu', page: 'privacy' },
     ],
   },
 ];
@@ -40,12 +67,11 @@ const desktopNavGroups = navGroups.map((group) => ({
   items: group.items.filter((item) => item.page !== 'chatbot'),
 }));
 
-// các item hiển thị trên bottom nav (mobile)
-const bottomNavItems = [
+const bottomNavItems: Array<{ icon: ElementType; label: string; page: PageId | '__more__' }> = [
   { icon: Home, label: 'Tổng quan', page: 'dashboard' },
   { icon: Map, label: 'Lộ trình', page: 'courses' },
   { icon: BarChart3, label: 'Điểm', page: 'grades' },
-  { icon: Calendar ,label: "TKB", page: 'schedule'},
+  { icon: Calendar, label: 'TKB', page: 'schedule' },
   { icon: Menu, label: 'Thêm', page: '__more__' },
 ];
 
@@ -57,263 +83,171 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handlePageChange = (page: string) => {
+  const handlePageChange = (page: PageId) => {
     onPageChange(page);
     setIsDrawerOpen(false);
   };
 
-  // ---- Desktop Sidebar (ẩn trên mobile) ----
-  const DesktopSidebar = (
-    <aside
-      className={`hidden md:flex bg-[#004A98] text-white flex-col flex-shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'}`}
-      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-    >
-      {/* Logo */}
-      <div className={`p-6 relative ${isCollapsed ? 'px-4' : ''}`}>
+  const renderDesktopGroup = (group: NavGroup) => (
+    <div key={group.title} className="mb-6">
+      {!isCollapsed ? (
+        <p className="mb-2 truncate px-3 text-xs font-medium uppercase tracking-wider text-blue-300">
+          {group.title}
+        </p>
+      ) : (
+        <div className="mx-2 mb-3 h-px bg-blue-400/30" />
+      )}
+      <ul className="space-y-1">
+        {group.items.map((item) => {
+          const isActive = currentPage === item.page;
+          const Icon = item.icon;
+          return (
+            <li key={item.page}>
+              <a
+                href={getPathForPage(item.page)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handlePageChange(item.page);
+                }}
+                onMouseEnter={() => prefetchPage(item.page)}
+                onFocus={() => prefetchPage(item.page)}
+                className={`group relative flex items-start gap-3 rounded px-3 py-2.5 transition-colors ${isActive ? 'bg-white/10' : 'hover:bg-white/5'} ${isCollapsed ? 'justify-center' : ''}`}
+                title={isCollapsed ? item.label : undefined}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {isActive && <span className={`absolute left-0 top-1/2 w-1 -translate-y-1/2 rounded-r bg-white ${isCollapsed ? 'h-10' : 'h-8'}`} />}
+                <Icon className={`h-5 w-5 shrink-0 ${isCollapsed ? '' : 'mt-0.5'}`} strokeWidth={1.5} />
+                {!isCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <p className={`truncate ${isActive ? 'font-medium text-white' : 'text-blue-100 group-hover:text-white'}`}>{item.label}</p>
+                    {item.subtitle && <p className="mt-0.5 truncate text-xs leading-tight text-blue-300">{item.subtitle}</p>}
+                  </div>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
+  const desktopSidebar = (
+    <aside className={`hidden shrink-0 flex-col bg-[var(--ustudy-brand)] text-white transition-[width] duration-300 md:flex ${isCollapsed ? 'w-20' : 'w-64'}`}>
+      <div className={`relative p-6 ${isCollapsed ? 'px-4' : ''}`}>
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-[#004A98]" style={{ fontWeight: 600 }}>UNP</span>
-          </div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white font-semibold text-[var(--ustudy-brand)]">US</div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <h3 className="text-white truncate" style={{ fontWeight: 600 }}>UStudy</h3>
-              <p className="text-blue-200 text-sm truncate" style={{ fontWeight: 400 }}>Hỗ trợ quản lý học tập</p>
+              <h3 className="truncate font-semibold text-white">UStudy</h3>
+              <p className="truncate text-sm text-blue-200">Hỗ trợ quản lý học tập</p>
             </div>
           )}
         </div>
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-8 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200"
-          aria-label={isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+          type="button"
+          onClick={() => setIsCollapsed((current) => !current)}
+          className="ustudy-focus-ring absolute -right-3 top-8 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md hover:bg-gray-100"
+          aria-label={isCollapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
         >
-          {isCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-[#004A98]" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-[#004A98]" />
-          )}
+          {isCollapsed ? <ChevronRight className="h-4 w-4 text-[var(--ustudy-brand)]" /> : <ChevronLeft className="h-4 w-4 text-[var(--ustudy-brand)]" />}
         </button>
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
-        {desktopNavGroups.map((group) => (
-          <div key={group.title} className="mb-6">
-            {!isCollapsed && (
-              <p className="px-3 mb-2 text-xs text-blue-300 uppercase tracking-wider truncate" style={{ fontWeight: 500 }}>
-                {group.title}
-              </p>
-            )}
-            {isCollapsed && <div className="h-px bg-blue-400/30 mb-3 mx-2"></div>}
-            <ul className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = currentPage === item.page;
-                return (
-                  <li key={item.label}>
-                    <a
-                      href={getPathForPage(item.page)}
-                      onClick={(e) => { e.preventDefault(); handlePageChange(item.page); }}
-                      className={`flex items-start gap-3 px-3 py-2.5 rounded transition-all group relative ${isActive ? 'bg-white/10' : 'hover:bg-white/5'} ${isCollapsed ? 'justify-center' : ''}`}
-                      title={isCollapsed ? item.label : undefined}
-                    >
-                      {isActive && (
-                        <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 ${isCollapsed ? 'h-10' : 'h-8'} bg-white rounded-r`}></div>
-                      )}
-                      <item.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? '' : 'mt-0.5'}`} strokeWidth={1.5} />
-                      {!isCollapsed && (
-                        <div className="flex-1 min-w-0">
-                          <p className={`truncate ${isActive ? 'text-white' : 'text-blue-100 group-hover:text-white'}`} style={{ fontWeight: isActive ? 500 : 400 }}>
-                            {item.label}
-                          </p>
-                          {item.subtitle && (
-                            <p className="text-blue-300 text-xs mt-0.5 leading-tight truncate" style={{ fontWeight: 400 }}>
-                              {item.subtitle}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+      <nav className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng chính">
+        {desktopNavGroups.map(renderDesktopGroup)}
       </nav>
     </aside>
   );
 
-  // ---- Mobile Portal: render thẳng vào document.body, thoát khỏi mọi container cha ----
-  const MobilePortal = createPortal(
-    <div className="md:hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-
-      {/* Backdrop */}
+  const mobileNavigation = createPortal((
+    <div className="md:hidden">
       {isDrawerOpen && (
-        <div
-          onClick={() => setIsDrawerOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(2px)',
-            zIndex: 9040,
-          }}
-        />
+        <MobileBottomSheet
+          title="Điều hướng"
+          eyebrow="UStudy"
+          ariaLabel="Menu điều hướng"
+          className="md:hidden"
+          contentClassName="bg-white px-3 py-4"
+          onClose={() => setIsDrawerOpen(false)}
+          sheetId="main-navigation"
+        >
+          <nav aria-label="Điều hướng mở rộng" className="space-y-5">
+            {navGroups.map((group) => (
+              <section key={group.title}>
+                <div className="mb-2 flex items-center justify-between px-2">
+                  <h2 className="text-[11px] font-semibold uppercase text-slate-500">{group.title}</h2>
+                  <span className="text-[11px] tabular-nums text-slate-400">{group.items.length}</span>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                  {group.items.map((item, index) => {
+                    const isActive = currentPage === item.page;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.page}
+                        type="button"
+                        onClick={() => handlePageChange(item.page)}
+                        onPointerDown={() => prefetchPage(item.page)}
+                        className={`ustudy-focus-ring relative flex w-full items-center gap-3 px-3 py-3 text-left transition-colors ${index > 0 ? 'border-t border-gray-100' : ''} ${isActive ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        {isActive && <span className="absolute inset-y-2 left-0 w-0.5 rounded-r bg-[var(--ustudy-brand)]" />}
+                        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? 'bg-white text-[var(--ustudy-brand)]' : 'bg-slate-100 text-slate-500'}`}>
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className={`block truncate text-sm font-semibold ${isActive ? 'text-[var(--ustudy-brand)]' : 'text-gray-800'}`}>{item.label}</span>
+                          {item.subtitle && <span className="mt-0.5 block truncate text-xs text-slate-500">{item.subtitle}</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </nav>
+        </MobileBottomSheet>
       )}
 
-      {/* Drawer Panel */}
-      <div
-        style={{
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          maxHeight: '70vh',
-          overflowY: 'auto',
-          background: '#004A98',
-          borderRadius: '16px 16px 0 0',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.3)',
-          zIndex: 9050,
-          transform: isDrawerOpen ? 'translateY(0)' : 'translateY(calc(100%))',
-          opacity: isDrawerOpen ? 1 : 0,
-          pointerEvents: isDrawerOpen ? 'auto' : 'none',
-          transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s',
-        }}
-      >
-        {/* Handle bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px' }}>
-          <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}></div>
-        </div>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <span style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>Menu</span>
-          <button
-            onClick={() => setIsDrawerOpen(false)}
-            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer' }}
-          >
-            <X style={{ width: '16px', height: '16px', color: 'white' }} />
-          </button>
-        </div>
-
-        {/* Nav groups */}
-        <nav style={{ padding: '12px 16px 24px' }}>
-          {navGroups.map((group) => (
-            <div key={group.title} style={{ marginBottom: '16px' }}>
-              <p style={{ padding: '0 8px', marginBottom: '8px', fontSize: '11px', color: 'rgba(147,197,253,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
-                {group.title}
-              </p>
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {group.items.map((item) => {
-                  const isActive = currentPage === item.page;
-                  return (
-                    <li key={item.label}>
-                      <a
-                        href={getPathForPage(item.page)}
-                        onClick={(e) => { e.preventDefault(); handlePageChange(item.page); }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px',
-                          borderRadius: '8px',
-                          textDecoration: 'none',
-                          background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
-                          position: 'relative',
-                          marginBottom: '2px',
-                        }}
-                      >
-                        {isActive && (
-                          <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: '3px', height: '28px', background: 'white', borderRadius: '0 2px 2px 0' }}></div>
-                        )}
-                        <item.icon style={{ width: '20px', height: '20px', color: 'white', flexShrink: 0 }} strokeWidth={1.5} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: 'white', fontWeight: isActive ? 600 : 400, fontSize: '14px', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {item.label}
-                          </p>
-                          {item.subtitle && (
-                            <p style={{ color: 'rgba(147,197,253,0.8)', fontSize: '12px', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {item.subtitle}
-                            </p>
-                          )}
-                        </div>
-                        {isActive && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white', flexShrink: 0 }}></div>}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      {/* Bottom Navigation Bar */}
       <nav
-        style={{
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '64px',
-          background: '#004A98',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
-          zIndex: 9030,
-          display: 'flex',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
+        className="fixed inset-x-0 bottom-0 z-[9030] flex border-t border-white/10 bg-[var(--ustudy-brand)]"
+        style={{ height: 'calc(var(--ustudy-mobile-nav-height) + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        aria-label="Điều hướng nhanh"
       >
         {bottomNavItems.map((item) => {
           const isMore = item.page === '__more__';
           const isActive = isMore ? isDrawerOpen : currentPage === item.page;
-
+          const Icon = item.icon;
           return (
             <button
               key={item.page}
-              onClick={() => {
-                if (isMore) {
-                  setIsDrawerOpen(!isDrawerOpen);
-                } else {
-                  handlePageChange(item.page);
-                }
+              ref={isMore ? moreButtonRef : undefined}
+              type="button"
+              onClick={() => isMore ? setIsDrawerOpen((current) => !current) : handlePageChange(item.page)}
+              onPointerDown={() => {
+                if (item.page !== '__more__') prefetchPage(item.page);
               }}
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px 4px',
-                background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                position: 'relative',
-                WebkitTapHighlightColor: 'transparent',
-              }}
+              className={`ustudy-focus-ring relative flex flex-1 flex-col items-center justify-center px-1 py-2 ${isActive ? 'bg-white/10 text-white' : 'text-blue-200'}`}
+              aria-label={item.label}
+              aria-expanded={isMore ? isDrawerOpen : undefined}
+              aria-controls={isMore ? 'main-navigation' : undefined}
+              aria-current={!isMore && isActive ? 'page' : undefined}
             >
-              {/* Active indicator */}
-              {isActive && !isMore && (
-                <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '32px', height: '2px', background: 'white', borderRadius: '0 0 4px 4px' }}></div>
-              )}
-              <item.icon
-                style={{ width: '20px', height: '20px', marginBottom: '4px', color: isActive ? 'white' : 'rgba(147,197,253,0.8)' }}
-                strokeWidth={isActive ? 2 : 1.5}
-              />
-              <span style={{ fontSize: '10px', lineHeight: 1, color: isActive ? 'white' : 'rgba(147,197,253,0.8)', fontWeight: isActive ? 600 : 400 }}>
-                {item.label}
-              </span>
+              {isActive && !isMore && <span className="absolute left-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-b bg-white" />}
+              <Icon className="mb-1 h-5 w-5" strokeWidth={isActive ? 2 : 1.5} />
+              <span className="text-[10px] leading-none">{item.label}</span>
             </button>
           );
         })}
       </nav>
-    </div>,
-    document.body
-  );
+    </div>
+  ), document.body);
 
   return (
     <>
-      {DesktopSidebar}
-      {MobilePortal}
+      {desktopSidebar}
+      {mobileNavigation}
     </>
   );
 }

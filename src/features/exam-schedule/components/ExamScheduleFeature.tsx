@@ -7,6 +7,7 @@ import { NoDataCard } from '../../../components/feedback';
 import { PageHeader } from '../../../components/layout/page-header';
 import { PageShell } from '../../../components/layout/page-shell';
 import { AppSelect } from '../../../components/ui/form';
+import { PageLoadingState } from '../../../components/ui/display';
 
 interface ExamData {
     id: string;
@@ -190,9 +191,11 @@ export function ExamScheduleVi() {
 
     if (!isReady) {
         return (
-            <div className="flex h-[calc(100vh-100px)] items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#004A98]" />
-            </div>
+            <PageShell
+                header={<PageHeader title="Lịch thi" description="Xem và quản lý lịch thi giữa kỳ và cuối kỳ của bạn." />}
+            >
+                <PageLoadingState label="Đang tải lịch thi" />
+            </PageShell>
         );
     }
 

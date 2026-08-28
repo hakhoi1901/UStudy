@@ -18,6 +18,7 @@ interface SelectionBasketProps {
     classPreferenceMap?: Record<string, ClassPreferenceSelection>;
     setClassPreferenceMap?: React.Dispatch<React.SetStateAction<Record<string, ClassPreferenceSelection>>>;
     compact?: boolean;
+    bare?: boolean;
     title?: string;
     description?: string;
 }
@@ -41,6 +42,7 @@ export function SelectionBasket({
     classPreferenceMap,
     setClassPreferenceMap,
     compact = false,
+    bare = false,
     title = 'Giỏ môn học',
     description,
 }: SelectionBasketProps) {
@@ -99,13 +101,13 @@ export function SelectionBasket({
     const formatCurrency = (amount: number) => FinancialLogic.formatCurrency(amount);
 
     return (
-        <div className={`ustudy-card flex h-full w-full flex-col overflow-hidden ${compact ? '' : 'shadow-lg'}`}>
-            <div className="w-full flex-shrink-0 border-b border-gray-200 p-4">
+        <div className={`flex h-full w-full flex-col overflow-hidden ${bare ? 'bg-white' : `ustudy-card ${compact ? '' : 'shadow-lg'}`}`}>
+            {!bare && <div className="w-full flex-shrink-0 border-b border-gray-200 p-4">
                 <h3 className="ustudy-card-title">{title}</h3>
                 <p className="ustudy-card-subtitle mt-1">
                     {basketDescription}
                 </p>
-            </div>
+            </div>}
 
             <div className="ustudy-scrollbar flex-1 space-y-2 overflow-y-auto p-3">
                 {selectedCourses.length === 0 ? (

@@ -1,7 +1,8 @@
 import { BookOpen, CalendarDays, GraduationCap, Settings2 } from 'lucide-react';
 import type { DashboardCalendarEvent } from '../services/dashboard-calendar-events';
 import type { DashboardCalendarSource } from '../services/dashboard-layout';
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 
 interface DashboardCalendarWidgetProps {
   sources: DashboardCalendarSource[];
@@ -45,6 +46,7 @@ export function DashboardCalendarWidget({
   onOpenSettings,
   showSettings = true,
 }: DashboardCalendarWidgetProps) {
+  const [selectedEvent, setSelectedEvent] = useState<DashboardCalendarEvent | null>(null);
   const sourceLabel = [
     sources.includes('classes') ? 'Lịch học' : null,
     sources.includes('exams') ? 'Lịch thi' : null,
@@ -77,7 +79,8 @@ export function DashboardCalendarWidget({
   }, [events]);
 
   return (
-    <section className="ustudy-card ustudy-card-padding flex max-h-[420px] min-h-[280px] min-h-0 flex-col overflow-hidden">
+    <>
+    <section className="ustudy-card ustudy-card-padding flex min-h-[280px] max-h-[420px] flex-col overflow-hidden">
       {/* Header */}
       <header className="relative z-30 flex shrink-0 items-start justify-between gap-4 border-b border-gray-200 bg-white pb-3">        <div className="min-w-0">
         <div className="flex items-center gap-2">
@@ -142,9 +145,12 @@ export function DashboardCalendarWidget({
                     const SourceIcon = isClass ? BookOpen : GraduationCap;
 
                     return (
-                      <article
+                      <button
+                        type="button"
                         key={event.id}
-                        className="group flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-blue-300 hover:bg-blue-50/40"
+                        onClick={() => setSelectedEvent(event)}
+                        className="ustudy-focus-ring group flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-blue-300 hover:bg-blue-50/40"
+                        aria-label={`Xem chi tiết ${event.title}`}
                       >
                         <SourceIcon className={`mt-0.5 h-4 w-4 shrink-0 ${isClass ? 'text-[#004A98]' : 'text-violet-600'}`} />
 
@@ -162,7 +168,7 @@ export function DashboardCalendarWidget({
                             {event.room && <span className="truncate">{event.room}</span>}
                           </div>
                         </div>
-                      </article>
+                      </button>
                     );
                   })}
                 </div>
@@ -186,5 +192,29 @@ export function DashboardCalendarWidget({
         </div>
       )}
     </section>
+    <AppDialog
+      open={selectedEvent !== null}
+      onOpenChange={(open) => { if (!open) setSelectedEvent(null); }}
+      title={selectedEvent?.title || 'Chi tiết sự kiện'}
+      description={selectedEvent?.source === 'classes' ? 'Lịch học sắp tới' : 'Lịch thi sắp tới'}
+      icon={CalendarDays}
+      size="sm"
+    >
+      {selectedEvent && (
+        <dl className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white text-sm">
+          <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-2.5">
+            <dt className="text-gray-500">Ngày</dt>
+            <dd className="font-medium text-gray-900">{selectedEvent.date.toLocaleDateString('vi-VN')}</dd>
+          </div>
+          <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-2.5">
+            <dt className="text-gray-500">Thời gian</dt>
+            <dd className="font-medium tabular-nums text-[var(--ustudy-brand)]">{selectedEvent.startTime || 'Chưa có giờ'}{selectedEvent.endTime ? `–${selectedEvent.endTime}` : ''}</dd>
+          </div>
+          {selectedEvent.subtitle && <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-2.5"><dt className="text-gray-500">Thông tin</dt><dd className="text-gray-800">{selectedEvent.subtitle}</dd></div>}
+          {selectedEvent.room && <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-2.5"><dt className="text-gray-500">Phòng</dt><dd className="font-medium text-gray-900">{selectedEvent.room}</dd></div>}
+        </dl>
+      )}
+    </AppDialog>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { LogOut, ChevronDown, LogIn, ExternalLink, GraduationCap, LoaderCircle } from 'lucide-react';
+import { LogOut, LogIn, ExternalLink, GraduationCap, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LogoutConfirmModal } from './LogoutConfirmModal';
 import { BookmarkletButton } from '../portal/BookmarkletButton';
@@ -10,6 +10,15 @@ import { APP_CONFIG, STORAGE_KEYS } from '../../config';
 import { readFromStorage, clearAllStorage } from '../../helpers/localStorage/save';
 import { useCrypto } from '../../context/CryptoContext';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../../mobile/portal-sync';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/overlays/dropdown-menu';
+import { AppSelect } from '../ui/form/app-select';
 
 export interface HeaderProps {
   selectedSemester?: string;
@@ -26,7 +35,6 @@ export function Header({
   const [hasStudentProfile, setHasStudentProfile] = useState(false);
   const [localSemester, setLocalSemester] = useState(`Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`);
   const selectedSemester = propSelectedSemester || localSemester;
-  const [showSemesterDropdown, setShowSemesterDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const { academicYear, semesterNumber, setAcademicYear, setSemesterNumber } = useDepartmentData();
@@ -77,7 +85,6 @@ export function Header({
         setAcademicYear(yearStr);
       }
     }
-    setShowSemesterDropdown(false);
   };
 
   // xử lý đăng xuất
@@ -148,43 +155,25 @@ export function Header({
 
             {/* Bộ chọn học kỳ */}
             {showSemesterSelector && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowSemesterDropdown(!showSemesterDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#004A98] text-white rounded-full hover:bg-[#003A78] transition-colors shadow-sm"
-                >
-                  {/* Desktop: tên đầy đủ, Mobile: tên rút gọn */}
-                  <span className="hidden md:inline text-sm" style={{ fontWeight: 500 }}>{selectedSemester}</span>
-                  <span className="md:hidden text-xs" style={{ fontWeight: 500 }}>{shortSemester}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSemesterDropdown ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {showSemesterDropdown && (
+              <AppSelect
+                value={selectedSemester}
+                onChange={(semester) => {
+                  handleSemesterSelect(semester);
+                  if (onSemesterChange) onSemesterChange(semester);
+                  else setLocalSemester(semester);
+                }}
+                options={semesters.map((semester) => ({ id: semester, name: semester }))}
+                ariaLabel="Chọn học kỳ"
+                className="w-32 md:w-64"
+                triggerClassName="h-9 rounded-full border-transparent bg-[var(--ustudy-brand)] px-3 py-0 font-medium text-white hover:border-transparent hover:bg-[var(--ustudy-brand-strong)] [&_svg]:text-white"
+                menuClassName="w-64"
+                valueContent={(
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowSemesterDropdown(false)}></div>
-                    <div className="ustudy-dropdown-menu border border-gray-300 w-56 md:w-64 max-h-72">
-                      {semesters.map((semester) => (
-                        <button
-                          key={semester}
-                          onClick={() => {
-                            handleSemesterSelect(semester);
-                            if (onSemesterChange) onSemesterChange(semester);
-                            else setLocalSemester(semester);
-                          }}
-                          className={`${selectedSemester === semester
-                            ? 'ustudy-dropdown-option ustudy-dropdown-option-active'
-                            : 'ustudy-dropdown-option'
-                            }`}
-                          style={{ fontWeight: selectedSemester === semester ? 500 : 400 }}
-                        >
-                          {semester}
-                        </button>
-                      ))}
-                    </div>
+                    <span className="hidden truncate text-sm md:block">{selectedSemester}</span>
+                    <span className="truncate text-xs md:hidden">{shortSemester}</span>
                   </>
                 )}
-              </div>
+              />
             )}
           </div>
 
@@ -198,43 +187,73 @@ export function Header({
 
             {hasStudentProfile ? (
               <>
-                {/* User Avatar + Info */}
-                <div className="flex items-center gap-2 md:gap-3 md:px-3 md:py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-[#004A98] to-[#0066CC] flex items-center justify-center shadow-sm flex-shrink-0">
-                    <span className="text-white text-xs md:text-sm" style={{ fontWeight: 600 }}>{nameInitial}</span>
+                <div className="hidden items-center gap-3 md:flex">
+                  <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--ustudy-brand)] to-[#0066CC] shadow-sm">
+                      <span className="text-sm font-semibold text-white">{nameInitial}</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">{studentName || 'Sinh viên'}</p>
+                      <p className="text-xs text-gray-500">Đã đồng bộ</p>
+                    </div>
                   </div>
-                  {/* Tên sinh viên: ẩn trên mobile */}
-                  <div className="hidden md:block text-left">
-                    <p className="text-gray-900 text-sm" style={{ fontWeight: 500 }}>{studentName || 'Sinh viên'}</p>
-                    <p className="text-gray-500 text-xs" style={{ fontWeight: 400 }}>Đã đồng bộ</p>
-                  </div>
+
+                  <div className="h-10 w-px bg-gray-200" />
+
+                  <button
+                    type="button"
+                    onClick={() => void handleLogin()}
+                    disabled={isOpeningPortal}
+                    className="ustudy-button-white"
+                    title={isNativePortalSyncAvailable() ? 'Mở Portal và đồng bộ dữ liệu' : 'Mở HCMUS Portal để đồng bộ dữ liệu'}
+                  >
+                    {isOpeningPortal
+                      ? <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+                      : <ExternalLink className="h-4 w-4" strokeWidth={2.5} />}
+                    <span>Mở Portal</span>
+                  </button>
+
+                  <button type="button" onClick={handleLogOutClick} className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 font-medium text-white shadow-sm transition-colors hover:bg-red-700">
+                    <LogOut className="h-4 w-4" strokeWidth={2.5} />
+                    <span>Đăng xuất</span>
+                  </button>
                 </div>
 
-                {/* Divider - ẩn trên mobile */}
-                <div className="hidden md:block h-10 w-px bg-gray-200"></div>
-
-                {/* Open Portal Button */}
-                <button
-                  onClick={() => void handleLogin()}
-                  disabled={isOpeningPortal}
-                  className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-gray-200 focus:ring-offset-2"
-                  title={isNativePortalSyncAvailable() ? 'Mở Portal và đồng bộ dữ liệu' : 'Mở HCMUS Portal để đồng bộ dữ liệu'}
-                >
-                  {isOpeningPortal
-                    ? <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2.5} />
-                    : <ExternalLink className="h-4 w-4" strokeWidth={2.5} />}
-                  <span className="hidden md:inline" style={{ fontWeight: 500 }}>Mở Portal</span>
-                </button>
-
-                {/* Log Out Button */}
-                <button
-                  onClick={handleLogOutClick}
-                  className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-sm focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-                >
-                  <LogOut className="w-4 h-4" strokeWidth={2.5} />
-                  {/* Text: ẩn trên mobile */}
-                  <span className="hidden md:inline" style={{ fontWeight: 500 }}>Đăng xuất</span>
-                </button>
+                <div className="md:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="ustudy-focus-ring flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[var(--ustudy-brand)] to-[#0066CC] text-xs font-semibold text-white shadow-sm"
+                        aria-label="Mở menu tài khoản"
+                      >
+                        {nameInitial}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="z-[9200] w-60 rounded-xl border-gray-200 bg-white p-1.5 text-gray-800 shadow-xl">
+                      <DropdownMenuLabel className="px-3 py-2">
+                        <span className="block truncate text-sm font-semibold text-gray-900">{studentName || 'Sinh viên'}</span>
+                        <span className="mt-0.5 block text-xs font-normal text-gray-500">Dữ liệu đã đồng bộ</span>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-gray-100" />
+                      <DropdownMenuItem
+                        disabled={isOpeningPortal}
+                        onSelect={() => void handleLogin()}
+                        className="cursor-pointer rounded-lg px-3 py-2.5 focus:bg-blue-50 focus:text-[var(--ustudy-brand)]"
+                      >
+                        {isOpeningPortal ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                        Mở Portal và đồng bộ
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={handleLogOutClick}
+                        className="cursor-pointer rounded-lg px-3 py-2.5 text-red-600 focus:bg-red-50 focus:text-red-700"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Đăng xuất
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </>
             ) : (
               <>

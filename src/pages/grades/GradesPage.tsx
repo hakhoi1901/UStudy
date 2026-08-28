@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NoDataCard } from '../../components/feedback';
 import { SectionTabs } from '../../components/ui/navigation/section-tabs';
+import { PageLoadingState } from '../../components/ui/display';
 import { PageHeader } from '../../components/layout/page-header';
 import { PageShell } from '../../components/layout/page-shell';
 import { TranscriptExportMenu } from '../../features/grades';
@@ -106,9 +107,11 @@ export function GradesPage() {
 
   if (!isReady) {
     return (
-      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004A98]"></div>
-      </div>
+      <PageShell
+        header={<PageHeader title="Quản lý điểm" description="Xem điểm số, mô phỏng GPA và theo dõi tiến độ học tập." />}
+      >
+        <PageLoadingState label="Đang tải dữ liệu điểm" />
+      </PageShell>
     );
   }
 

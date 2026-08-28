@@ -16,10 +16,12 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 
-import { useStudentGradeData, GPACalculator } from '../../features/grades';
+import { useStudentGradeData } from '../../features/grades/hooks/use-student-grade-data';
+import { GPACalculator } from '../../features/grades/services/gpa-calculator';
 import { useStudentDb } from '../../hooks/useStudentDb';
-import { useSchedule } from '../../features/visual-schedule';
+import { useSchedule } from '../../features/visual-schedule/hooks/use-schedule';
 import { NoDataCard } from '../../components/feedback';
+import { PageLoadingState } from '../../components/ui/display';
 import { PageHeader } from '../../components/layout/page-header';
 import { PageShell } from '../../components/layout/page-shell';
 import { FinancialLogic } from '../../logic/FinancialLogic';
@@ -201,13 +203,13 @@ export function DashboardWidgets() {
     }
   };
 
-  if (!isMounted) return null;
-
-  if (!isReady) {
+  if (!isMounted || !isReady) {
     return (
-      <div className="flex h-40 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#004A98]" />
-      </div>
+      <PageShell
+        header={<PageHeader title="Trang tổng quan" description="Tổng hợp nhanh tiến độ học tập của bạn." />}
+      >
+        <PageLoadingState label="Đang tải trang tổng quan" />
+      </PageShell>
     );
   }
 
@@ -216,7 +218,7 @@ export function DashboardWidgets() {
       <PageShell
         header={
           <PageHeader
-            title="Tổng quan"
+            title="Trang tổng quan"
             description="Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn."
           />
         }

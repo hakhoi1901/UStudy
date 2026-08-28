@@ -11,6 +11,9 @@
     --ustudy-text: #111827;
     --ustudy-text-muted: #64748b;
     --ustudy-ring: rgba(0, 74, 152, 0.28);
+    --ustudy-mobile-nav-height: 64px;
+    --ustudy-page-max-width: 1600px;
+    --ustudy-header-offset: 7rem;
   }
 }
 
@@ -24,11 +27,13 @@
   }
 
   .ustudy-main-scroll {
-    @apply relative flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0;
+    @apply relative flex-1 overflow-y-auto overflow-x-hidden md:pb-0;
+    padding-bottom: calc(var(--ustudy-mobile-nav-height) + env(safe-area-inset-bottom));
   }
 
   .ustudy-page-container {
-    @apply mx-auto w-full max-w-[1600px] p-4 md:p-6;
+    @apply mx-auto w-full p-4 md:p-6;
+    max-width: var(--ustudy-page-max-width);
   }
 
   .ustudy-page-shell {
@@ -100,11 +105,13 @@
   }
 
   .ustudy-icon-primary {
-    @apply bg-[#004A98] text-white;
+    @apply text-white;
+    background-color: var(--ustudy-brand);
   }
 
   .ustudy-icon-primary-soft {
-    @apply bg-blue-50 text-[#004A98];
+    @apply bg-blue-50;
+    color: var(--ustudy-brand);
   }
 
   .ustudy-icon-success {
@@ -157,11 +164,13 @@
   }
 
   .ustudy-tab-active {
-    @apply border-[#004A98] text-[#004A98];
+    border-color: var(--ustudy-brand);
+    color: var(--ustudy-brand);
   }
 
   .ustudy-badge-count {
-    @apply min-w-[20px] rounded-full bg-[#004A98] px-1.5 py-0.5 text-center text-xs text-white;
+    @apply min-w-[20px] rounded-full px-1.5 py-0.5 text-center text-xs text-white;
+    background-color: var(--ustudy-brand);
   }
 
   .ustudy-button-white {
@@ -169,11 +178,16 @@
   }
 
   .ustudy-button-normal {
-    @apply relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]
+    @apply relative inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-[var(--ustudy-brand)]
   }
 
   .ustudy-button-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#004A98] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#003A78] hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none;
+    background-color: var(--ustudy-brand);
+  }
+
+  .ustudy-button-primary:hover {
+    background-color: var(--ustudy-brand-strong);
   }
 
   .ustudy-button-success {
@@ -181,7 +195,9 @@
   }
 
   .ustudy-button-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#004A98]/30 bg-white px-4 py-2 text-sm font-semibold text-[#004A98] shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid color-mix(in srgb, var(--ustudy-brand) 30%, transparent);
+    color: var(--ustudy-brand);
   }
 
   /* Button nâng nhẹ khi hover, phù hợp cho command chính/phụ trong toolbar. */
@@ -190,7 +206,7 @@
   }
 
   .ustudy-button-lift-primary {
-    @apply border-2 border-transparent bg-[#004A98] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:bg-[#003A78] active:translate-y-1 active:shadow-none;
+    @apply border-2 border-transparent bg-[var(--ustudy-brand)] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:bg-[var(--ustudy-brand-strong)] active:translate-y-1 active:shadow-none;
   }
 
   .ustudy-button-lift-outline {
@@ -210,11 +226,11 @@
   }
 
   .ustudy-button-dialog-confirm {
-    @apply bg-[#004A98] text-white hover:bg-[#003A78];
+    @apply bg-[var(--ustudy-brand)] text-white hover:bg-[var(--ustudy-brand-strong)];
   }
 
   .ustudy-button-text {
-    @apply text-xs font-semibold text-[#004A98] transition-colors hover:text-[#003A78];
+    @apply text-xs font-semibold text-[var(--ustudy-brand)] transition-colors hover:text-[var(--ustudy-brand-strong)];
   }
 
   .ustudy-button-text-muted {
@@ -226,11 +242,19 @@
   }
 
   .ustudy-action-icon-primary {
-    @apply text-[#004A98] hover:bg-blue-50 hover:text-[#003A78];
+    @apply text-[var(--ustudy-brand)] hover:bg-blue-50 hover:text-[var(--ustudy-brand-strong)];
   }
 
   .ustudy-action-icon-danger {
     @apply text-rose-600 hover:bg-rose-50 hover:text-rose-700;
+  }
+
+  .ustudy-focus-ring {
+    outline: none;
+  }
+
+  .ustudy-focus-ring:focus-visible {
+    box-shadow: 0 0 0 3px var(--ustudy-ring);
   }
 
   .ustudy-list-item {
@@ -304,7 +328,7 @@
   }
 
   .ustudy-dropdown-trigger-open {
-    @apply border-[#004A98] bg-white ring-2 ring-[#004A98]/20;
+    @apply border-[var(--ustudy-brand)] bg-white ring-2 ring-blue-100;
   }
 
   .ustudy-dropdown-option {
@@ -314,7 +338,7 @@
   }
 
   .ustudy-dropdown-option-active {
-    @apply bg-[#004A98] font-medium text-white hover:bg-[#003A78];
+    @apply bg-[var(--ustudy-brand)] font-medium text-white hover:bg-[var(--ustudy-brand-strong)];
   }
 
   /* Custom Scrollbar for Sidebar/Content */

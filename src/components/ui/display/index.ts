@@ -7,6 +7,7 @@ export * from './card';
 export * from './carousel';
 export * from './chart';
 export * from './progress';
+export * from './page-loading-state';
 export * from './scroll-area';
 export * from './skeleton';
 export * from './table';
