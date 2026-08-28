@@ -164,21 +164,21 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-toan',
                 name: 'Khoa Toán - Tin học',
                 majors: [
-                    { id: 'toan-hoc', name: 'Toán học' },
-                    { id: 'toan-tin', name: 'Toán - Tin' },
-                    { id: 'toan-ung-dung', name: 'Toán ứng dụng' },
-                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu' },
-                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
-                    { id: 'thong-ke', name: 'Thống kê' },
+                    { id: 'toan-hoc', name: 'Toán học', dataSourceCohort: 'k25' },
+                    { id: 'toan-tin', name: 'Toán - Tin', dataSourceCohort: 'k25' },
+                    { id: 'toan-ung-dung', name: 'Toán ứng dụng', dataSourceCohort: 'k25' },
+                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu', dataSourceCohort: 'k25' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSourceCohort: 'k25' },
+                    { id: 'thong-ke', name: 'Thống kê', dataSourceCohort: 'k25' },
                 ],
             },
             {
                 id: 'khoa-dia-chat',
                 name: 'Khoa Địa chất',
                 majors: [
-                    { id: 'dia-chat-hoc', name: 'Địa chất học' },
-                    { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất' },
-                    { id: 'kinh-te-dat-dai', name: 'Kinh tế đất đai' },
+                    { id: 'dia-chat-hoc', name: 'Địa chất học', dataSourceCohort: 'k25' },
+                    { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất', dataSourceCohort: 'k25' },
+                    { id: 'kinh-te-dat-dai', name: 'Kinh tế đất đai', dataSourceCohort: 'k25' },
                 ],
             },
             {
@@ -205,8 +205,8 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-sinh',
                 name: 'Khoa Sinh học - Công nghệ sinh học',
                 majors: [
-                    { id: 'sinh-hoc', name: 'Sinh học' },
-                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học' },
+                    { id: 'sinh-hoc', name: 'Sinh học', dataSourceCohort: 'k25' },
+                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học', dataSourceCohort: 'k25' },
                 ],
             },
             {
