@@ -52,7 +52,7 @@ export function getProgramAssets(facultyId: string, majorId: string, cohortId: s
     const sourceCohort = getProgramDataSourceCohort(cohortId, facultyId, majorId) ?? resolveDataCohort(facultyId, majorId, cohortId);
 
     return PROGRAM_FILES.map((file) => {
-        const path = `${facultyId}/${majorId}/${sourceCohort}/${file.fileName}`;
+        const path = `academic-programs/${facultyId}/${majorId}/${sourceCohort}/${file.fileName}`;
         return {
             ...file,
             path,

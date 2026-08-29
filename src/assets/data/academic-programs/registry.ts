@@ -46,6 +46,98 @@ export interface FacultyInfo {
 
 export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
     {
+        cohortId: 'k23',
+        label: 'Khóa 2023 (K23)',
+        faculties: [
+            {
+                id: 'khoa-cntt',
+                name: 'Khoa Công nghệ Thông tin',
+                majors: [
+                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
+                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
+                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },
+                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính' },
+                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
+                ],
+            },
+            {
+                id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
+                name: 'Khoa Khoa học và Công nghệ Vật liệu',
+                majors: [
+                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu' },
+                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu' },
+                ],
+            },
+            {
+                id: 'khoa-toan',
+                name: 'Khoa Toán - Tin học',
+                majors: [
+                    { id: 'toan-hoc', name: 'Toán học' },
+                    { id: 'toan-tin', name: 'Toán - Tin' },
+                    { id: 'toan-ung-dung', name: 'Toán ứng dụng' },
+                    { id: 'khoa-hoc-du-lieu', name: 'Khoa học dữ liệu' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành Toán học' },
+                ],
+            },
+            {
+                id: 'khoa-dia-chat',
+                name: 'Khoa Địa chất',
+                majors: [
+                    { id: 'dia-chat-hoc', name: 'Địa chất học' },
+                    { id: 'ky-thuat-dia-chat', name: 'Kỹ thuật địa chất' },
+                ],
+            },
+            {
+                id: 'khoa-ly',
+                name: 'Khoa Vật lý - Vật lý Kỹ thuật',
+                majors: [
+                    { id: 'vat-ly-hoc', name: 'Vật lý học' },
+                    { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa' },
+                    { id: 'hai-duong-hoc', name: 'Hải dương học' },
+                    { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân' },
+                    {
+                        id: 'cong-nghe-vat-ly-dien-tu-va-tin-hoc',
+                        name: 'CN Vật lý điện tử và tin học',
+                    },
+                    { id: 'cu-nhan-tai-nang-vat-ly-hoc', name: 'Cử nhân tài năng ngành Vật lý học' },
+                ],
+            },
+            {
+                id: 'khoa-hoa',
+                name: 'Khoa Hóa học',
+                majors: [
+                    { id: 'hoa-hoc', name: 'Hóa học' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
+                ],
+            },
+            {
+                id: 'khoa-sinh',
+                name: 'Khoa Sinh học - Công nghệ sinh học',
+                majors: [
+                    { id: 'sinh-hoc', name: 'Sinh học' },
+                    { id: 'cong-nghe-sinh-hoc', name: 'Công nghệ sinh học' },
+                ],
+            },
+            {
+                id: 'khoa-moi-truong',
+                name: 'Khoa Môi trường',
+                majors: [
+                    { id: 'cong-nghe-ky-thuat-moi-truong', name: 'Công nghệ kỹ thuật môi trường' },
+                    { id: 'khoa-hoc-moi-truong', name: 'Khoa học môi trường' },
+                    { id: 'quan-ly-tai-nguyen-va-moi-truong', name: 'Quản lý tài nguyên và môi trường' },
+                ],
+            },
+            {
+                id: 'khoa-dien-tu-vien-thong',
+                name: 'Khoa Điện tử - Viễn thông',
+                majors: [
+                    { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
+                ],
+            },
+        ],
+    },
+    {
         cohortId: 'k24',
         label: 'Khóa 2024 (K24)',
         faculties: [
