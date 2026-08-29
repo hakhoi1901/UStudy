@@ -1,9 +1,10 @@
 import { STORAGE_KEYS } from '../../../config/storageKeys';
+import { getCryptoMetadataKeys } from '../../../helpers/localStorage/save';
 
 export const SYSTEM_BACKUP_SOURCE = 'hcmus-portal-tool';
 
 const KNOWN_STORAGE_KEYS = new Set<string>(Object.values(STORAGE_KEYS));
-const BACKUP_ENVELOPE_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__']);
+const BACKUP_ENVELOPE_KEYS = new Set(getCryptoMetadataKeys());
 
 export function isManagedStorageKey(key: string): boolean {
   return KNOWN_STORAGE_KEYS.has(key);

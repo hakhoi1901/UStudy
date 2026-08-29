@@ -167,9 +167,13 @@ export function WorkspaceStorageFeature() {
         const storedEntries = readStorageEntries();
         const nextEntries = await Promise.all(storedEntries.map(async (entry) => {
             if (!entry.isSecure || entry.isJson || !cryptoKey) return entry;
-            const decrypted = await readSecure<unknown | symbol>(entry.key, cryptoKey, UNDECRYPTABLE);
-            if (decrypted === UNDECRYPTABLE) return entry;
-            return { ...entry, value: decrypted as JsonValue, isJson: true, isDecrypted: true };
+            try {
+                const decrypted = await readSecure<unknown | symbol>(entry.key, cryptoKey, UNDECRYPTABLE);
+                if (decrypted === UNDECRYPTABLE) return entry;
+                return { ...entry, value: decrypted as JsonValue, isJson: true, isDecrypted: true };
+            } catch {
+                return entry;
+            }
         }));
         setEntries(nextEntries);
         setSelectedKey((current) => nextEntries.some((entry) => entry.key === current) ? current : (nextEntries[0]?.key ?? null));

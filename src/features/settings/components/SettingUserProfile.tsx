@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import { useAppNotification } from "../../../context/NotificationContext";
 import { useCrypto } from "../../../context/CryptoContext";
 import { processRawData } from "../../../logic/dataProcessor";
-import { createImportRollbackSnapshot, readFromStorage, savePlain, saveSecure, populateSecureCache } from "../../../helpers/localStorage/save";
+import { createImportRollbackSnapshot, getCryptoMetadataKeys, importBackupWithCurrentKey, isEncryptedBackup, readFromStorage, savePlain, saveSecure, populateSecureCache, SECURE_DATA_KEYS } from "../../../helpers/localStorage/save";
 import { CACHE_POPULATED_EVENT } from "../../../context/CryptoContext";
 import { SecurityLock } from "../../../components/security";
 import { STORAGE_KEYS } from "../../../config/storageKeys";
@@ -119,7 +119,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                         if (!cryptoKey) {
                             // Nếu backup có salt → là bản backup đã mã hóa
                             // Restore thẳng vào localStorage, SecurityGate sẽ tự hiện màn hình nhập mật khẩu.
-                            if (storageData['__pbkdf2_salt__']) {
+                            if (isEncryptedBackup(storageData)) {
                                 for (const [key, value] of Object.entries(storageData)) {
                                     localStorage.setItem(key, value);
                                 }
@@ -139,14 +139,20 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                         }
 
                         // Lưu từng key: secure keys thì mã hóa, các key khác thì plain
-                        const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
-                        for (const [key, value] of Object.entries(storageData)) {
-                            if (SECURE_KEYS.has(key)) {
-                                const parsedValue = parseStorageBackupValue(value);
-                                await saveSecure(key, parsedValue, cryptoKey);
-                                populateSecureCache(key, parsedValue);
-                            } else {
-                                localStorage.setItem(key, value);
+                        if (isEncryptedBackup(storageData)) {
+                            const backupPin = window.prompt('Nhập mật khẩu của file sao lưu để khôi phục dữ liệu:');
+                            if (!backupPin) return;
+                            await importBackupWithCurrentKey(storageData, backupPin, cryptoKey);
+                        } else {
+                            const secureKeys = new Set<string>(SECURE_DATA_KEYS);
+                            for (const [key, value] of Object.entries(storageData)) {
+                                if (secureKeys.has(key)) {
+                                    const parsedValue = parseStorageBackupValue(value);
+                                    await saveSecure(key, parsedValue, cryptoKey);
+                                    populateSecureCache(key, parsedValue);
+                                } else if (!getCryptoMetadataKeys().includes(key)) {
+                                    localStorage.setItem(key, value);
+                                }
                             }
                         }
                         // Báo các hook re-render
@@ -212,13 +218,13 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                         unlock(key);
                         const { type, data } = pendingImport;
                         if (type === 'FULL_DUMP') {
-                            const SECURE_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline', 'import_meta']);
+                            const secureKeys = new Set<string>(SECURE_DATA_KEYS);
                             for (const [storageKey, value] of Object.entries(data as Record<string, string>)) {
-                                if (SECURE_KEYS.has(storageKey)) {
+                                if (secureKeys.has(storageKey)) {
                                     const parsedValue = parseStorageBackupValue(value);
                                     await saveSecure(storageKey, parsedValue, key);
                                     populateSecureCache(storageKey, parsedValue);
-                                } else {
+                                } else if (!getCryptoMetadataKeys().includes(storageKey)) {
                                     localStorage.setItem(storageKey, value);
                                 }
                             }

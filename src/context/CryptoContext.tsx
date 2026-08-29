@@ -8,9 +8,9 @@ import {
 } from '../helpers/localStorage/save';
 
 /**
- * CryptoContext - RAM-only key manager
+ * CryptoContext - RAM-only Master Data Key manager
  *
- * Giữ CryptoKey hoàn toàn trong RAM (không bao giờ ghi ra storage).
+ * Giữ Master Data Key hoàn toàn trong RAM (không bao giờ ghi ra storage).
  * Sử dụng window-level variable để persist qua HMR (Vite hot reload),
  * nhưng vẫn mất khi đóng tab/reload trang - đảm bảo bảo mật.
  * Sau khi unlock, tự động decrypt toàn bộ secure data và populate module RAM cache
@@ -35,7 +35,7 @@ function setPersistedKey(key: CryptoKey | null): void {
 }
 
 interface CryptoContextType {
-    /** CryptoKey hiện tại - null nghĩa là chưa unlock */
+    /** Master Data Key hiện tại - null nghĩa là chưa unlock */
     cryptoKey: CryptoKey | null;
     /** true khi SecurityGate đã kiểm tra xong (tránh flash UI) */
     isReady: boolean;
@@ -70,9 +70,13 @@ export function CryptoProvider({ children }: { children: React.ReactNode }) {
         (async () => {
             await Promise.all(
                 SECURE_DATA_KEYS.map(async (key) => {
-                    const val = await readSecure(key, cryptoKey, null);
-                    if (val !== null) {
-                        populateSecureCache(key, val);
+                    try {
+                        const val = await readSecure(key, cryptoKey, null);
+                        if (val !== null) {
+                            populateSecureCache(key, val);
+                        }
+                    } catch (error) {
+                        console.error(`[crypto] Secure data integrity check failed for "${key}".`, error);
                     }
                 })
             );

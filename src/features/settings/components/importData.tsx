@@ -4,7 +4,7 @@ import type { ChangeEvent } from 'react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { SecurityLock } from '../../../components/security';
 import { CACHE_POPULATED_EVENT, useCrypto } from '../../../context/CryptoContext';
-import { createImportRollbackSnapshot, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, populateSecureCache, saveSecure, SECURE_DATA_KEYS, verifyBackupPin } from '../../../helpers/localStorage/save';
+import { createImportRollbackSnapshot, getCryptoMetadataKeys, hasSecureData, IMPORT_HISTORY_STORAGE_KEY, IMPORT_ROLLBACK_STORAGE_KEY, importBackupWithCurrentKey, isEncryptedBackup, populateSecureCache, saveSecure, SECURE_DATA_KEYS, unlockBackupKey } from '../../../helpers/localStorage/save';
 import { recordDataImport } from '../../../helpers/localStorage/data-import-status';
 import { processRawData } from '../../../logic/dataProcessor';
 import { OpticalReceiverDialog, OpticalSenderDialog } from '../../optical-sync';
@@ -52,7 +52,7 @@ interface ExportPreview {
   selectedKeys: string[];
 }
 
-const INTERNAL_BACKUP_KEYS = new Set(['__pbkdf2_salt__', '__pin_verify__', '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY, IMPORT_HISTORY_STORAGE_KEY]);
+const INTERNAL_BACKUP_KEYS = new Set([...getCryptoMetadataKeys(), '__fail_count__', '__lockout_until__', IMPORT_ROLLBACK_STORAGE_KEY, IMPORT_HISTORY_STORAGE_KEY]);
 const MAX_BACKUP_FILE_BYTES = 8 * 1024 * 1024;
 const ACADEMIC_DATA_KEYS = new Set(['raw_student_db', 'student_db_full', 'course_db_offline']);
 
@@ -156,7 +156,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       const includesSecureData = selectedKeys.some((key) => (SECURE_DATA_KEYS as readonly string[]).includes(key));
 
       if (includesSecureData) {
-        ['__pbkdf2_salt__', '__pin_verify__'].forEach((key) => {
+        getCryptoMetadataKeys().forEach((key) => {
           const value = exportPreview.data[key];
           if (value) exportData[key] = value;
         });
@@ -211,7 +211,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
       window.alert('Gói đồng bộ không chứa mục dữ liệu có thể nhập.');
       return false;
     }
-    const encrypted = Boolean(importData.__pbkdf2_salt__ && importData.__pin_verify__);
+    const encrypted = isEncryptedBackup(importData);
     setPreview({
       data: importData,
       encrypted,
@@ -452,16 +452,18 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
           customTitle="Xác thực tệp sao lưu"
           customSubtitle="Nhập mật khẩu đã tạo khi xuất tệp để áp dụng các mục đã chọn."
           customVerify={async (pin) => {
-            const isValid = await verifyBackupPin(pin, pendingImport.data.__pbkdf2_salt__, pendingImport.data.__pin_verify__);
-            if (!isValid) return false;
+            const backupKey = await unlockBackupKey(pin, pendingImport.data);
+            if (!backupKey) return false;
 
             if (hasSecureData() && cryptoKey) {
               await importBackupWithCurrentKey(pendingImport.data, pin, cryptoKey, pendingImport.selectedKeys);
             } else if (hasSecureData() && !cryptoKey) {
               return false;
             } else {
-              localStorage.setItem('__pbkdf2_salt__', pendingImport.data.__pbkdf2_salt__);
-              localStorage.setItem('__pin_verify__', pendingImport.data.__pin_verify__);
+              getCryptoMetadataKeys().forEach((key) => {
+                const value = pendingImport.data[key];
+                if (value) localStorage.setItem(key, value);
+              });
               pendingImport.selectedKeys.forEach((key) => localStorage.setItem(key, pendingImport.data[key]));
             }
             if (pendingImport.selectedKeys.some((key) => ACADEMIC_DATA_KEYS.has(key))) {

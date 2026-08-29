@@ -72,8 +72,8 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
             // Thêm delay nhỏ để UI cập nhật trước khi PBKDF2 chạy
             await new Promise(r => setTimeout(r, 50));
 
-            setProgress('Đang tạo khóa mã hóa mới (PBKDF2)...');
-            const newKey = await changePin(cryptoKey, newPassword);
+            setProgress('Đang bảo vệ lại khóa dữ liệu bằng mật khẩu mới...');
+            const newKey = await changePin(cryptoKey, oldPassword, newPassword);
 
             setProgress('Hoàn tất!');
             unlock(newKey);
@@ -119,7 +119,7 @@ export const ChangePinModal: React.FC<ChangePinModalProps> = ({ onClose }) => {
         },
         'success': {
             title: 'Đổi mật khẩu thành công!',
-            subtitle: 'Mật khẩu mới đã được áp dụng. Dữ liệu đã được mã hóa lại.',
+            subtitle: 'Mật khẩu mới đã được áp dụng. Dữ liệu học tập không cần mã hóa lại.',
             password: '',
             setPassword: () => {},
             showPassword: false,

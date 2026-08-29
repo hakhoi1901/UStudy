@@ -2,10 +2,10 @@
  * save.tsx - Secure Storage Layer
  *
  * Kiến trúc:
- *  - PBKDF2 (310,000 iterations) + AES-GCM 256-bit (Web Crypto API)
- *  - CryptoKey chỉ sống trong RAM (React Context) - không bao giờ ghi ra storage
+ *  - PIN -> PBKDF2 KEK -> wrapped Master Data Key -> AES-GCM 256-bit data encryption
+ *  - Master Data Key chỉ sống trong RAM (React Context) - không bao giờ ghi ra storage
  *  - Random Salt 16 bytes (lưu plain), Random IV 12 bytes mỗi lần encrypt
- *  - Test blob '__pin_verify__' để verify PIN nhanh
+ *  - Legacy v1 dùng '__pin_verify__'; v2 xác minh PIN bằng cách mở Master Data Key
  *
  * Phân tầng:
  *  - savePlain / readPlain  → settings không nhạy cảm (faculty, semester, ...)
@@ -17,16 +17,57 @@
 const PBKDF2_ITERATIONS = 310_000;
 const SALT_BYTES = 16;
 const IV_BYTES = 12;
+const MASTER_KEY_BYTES = 32;
+const CRYPTO_VERSION_V2 = 2;
+const MASTER_KEY_WRAP_AAD = new TextEncoder().encode('ustudy:master-key:v2');
+const MIGRATION_STAGE_KEY = '__crypto_v2_migration_stage__';
+const MIGRATION_LEGACY_PREFIX = '__crypto_v2_legacy__:';
+const MIGRATION_DATA_PREFIX = '__crypto_v2_data__:';
+const PIN_CHANGE_STAGE_KEY = '__crypto_v2_pin_change_stage__';
 
 /** Keys nội bộ của hệ thống bảo mật, không export ra STORAGE_KEYS */
 const INTERNAL_KEYS = {
+    VERSION: '__crypto_version__',
     SALT: '__pbkdf2_salt__',
     PIN_VERIFY: '__pin_verify__',
+    MASTER_KEY_IV: '__master_key_iv__',
+    ENCRYPTED_MASTER_KEY: '__encrypted_master_key__',
     FAIL_COUNT: '__fail_count__',
     LOCKOUT_UNTIL: '__lockout_until__',
 } as const;
 
-/** Keys dữ liệu nhạy cảm cần re-encrypt khi đổi PIN */
+const CRYPTO_METADATA_KEYS = [
+    INTERNAL_KEYS.VERSION,
+    INTERNAL_KEYS.SALT,
+    INTERNAL_KEYS.PIN_VERIFY,
+    INTERNAL_KEYS.MASTER_KEY_IV,
+    INTERNAL_KEYS.ENCRYPTED_MASTER_KEY,
+] as const;
+
+type CryptoVersion = 1 | 2;
+
+interface MigrationStage {
+    kind: 'migration';
+    phase: 'staging' | 'ready' | 'committing' | 'committed';
+    keys: string[];
+    legacySalt: string;
+    legacyPinVerify: string;
+    masterKeyIv: string;
+    encryptedMasterKey: string;
+}
+
+interface PinChangeStage {
+    kind: 'pin-change';
+    phase: 'prepared' | 'committed';
+    previousSalt: string;
+    previousMasterKeyIv: string;
+    previousEncryptedMasterKey: string;
+    nextSalt: string;
+    nextMasterKeyIv: string;
+    nextEncryptedMasterKey: string;
+}
+
+/** Nguồn truth cho các giá trị luôn được mã hóa bằng Master Data Key. */
 export const SECURE_DATA_KEYS = [
     'raw_student_db',
     'student_db_full',
@@ -79,6 +120,101 @@ function decodePayload(payload: string): { salt: Uint8Array; iv: Uint8Array; cip
     }
 }
 
+export function getCryptoVersion(): CryptoVersion {
+    return localStorage.getItem(INTERNAL_KEYS.VERSION) === String(CRYPTO_VERSION_V2) ? 2 : 1;
+}
+
+function getCryptoVersionFromSnapshot(data: Record<string, string>): CryptoVersion {
+    return data[INTERNAL_KEYS.VERSION] === String(CRYPTO_VERSION_V2) ? 2 : 1;
+}
+
+export function isEncryptedBackup(data: Record<string, string>): boolean {
+    return Boolean(
+        data[INTERNAL_KEYS.SALT]
+        && (
+            data[INTERNAL_KEYS.PIN_VERIFY]
+            || (
+                data[INTERNAL_KEYS.VERSION] === String(CRYPTO_VERSION_V2)
+                && data[INTERNAL_KEYS.MASTER_KEY_IV]
+                && data[INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]
+            )
+        ),
+    );
+}
+
+export function getCryptoMetadataKeys(): readonly string[] {
+    return CRYPTO_METADATA_KEYS;
+}
+
+function isSecureDataKey(key: string): key is typeof SECURE_DATA_KEYS[number] {
+    return (SECURE_DATA_KEYS as readonly string[]).includes(key);
+}
+
+function clearCryptoMigrationArtifacts(): void {
+    const keysToRemove: string[] = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (key?.startsWith(MIGRATION_LEGACY_PREFIX) || key?.startsWith(MIGRATION_DATA_PREFIX)) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem(MIGRATION_STAGE_KEY);
+}
+
+function recoverInterruptedCryptoOperations(): void {
+    const pinChangeRaw = localStorage.getItem(PIN_CHANGE_STAGE_KEY);
+    if (pinChangeRaw) {
+        try {
+            const stage = JSON.parse(pinChangeRaw) as PinChangeStage;
+            if (stage.kind === 'pin-change') {
+                if (stage.phase === 'committed') {
+                    localStorage.removeItem(PIN_CHANGE_STAGE_KEY);
+                } else {
+                    localStorage.setItem(INTERNAL_KEYS.SALT, stage.previousSalt);
+                    localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, stage.previousMasterKeyIv);
+                    localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, stage.previousEncryptedMasterKey);
+                    localStorage.removeItem(PIN_CHANGE_STAGE_KEY);
+                }
+            }
+        } catch {
+            // Keep existing metadata untouched if the recovery journal is unreadable.
+        }
+    }
+
+    const migrationRaw = localStorage.getItem(MIGRATION_STAGE_KEY);
+    if (!migrationRaw) return;
+    try {
+        const stage = JSON.parse(migrationRaw) as MigrationStage;
+        if (stage.kind !== 'migration') return;
+
+        if (getCryptoVersion() === 2) {
+            // Version is written only after every primary v2 payload and envelope field.
+            // A failed post-commit cleanup must not leave legacy PIN metadata behind.
+            localStorage.removeItem(INTERNAL_KEYS.PIN_VERIFY);
+            clearCryptoMigrationArtifacts();
+            return;
+        }
+
+        if (stage.phase === 'committing' || stage.phase === 'ready') {
+            for (const key of stage.keys) {
+                const legacyValue = localStorage.getItem(`${MIGRATION_LEGACY_PREFIX}${key}`);
+                if (legacyValue === null) throw new Error('MISSING_LEGACY_STAGING_DATA');
+                localStorage.setItem(key, legacyValue);
+            }
+        }
+
+        localStorage.setItem(INTERNAL_KEYS.SALT, stage.legacySalt);
+        localStorage.setItem(INTERNAL_KEYS.PIN_VERIFY, stage.legacyPinVerify);
+        localStorage.removeItem(INTERNAL_KEYS.VERSION);
+        localStorage.removeItem(INTERNAL_KEYS.MASTER_KEY_IV);
+        localStorage.removeItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
+        clearCryptoMigrationArtifacts();
+    } catch (error) {
+        console.error('[crypto] Không thể khôi phục migration chưa hoàn tất:', error);
+    }
+}
+
 // ─── Key Derivation ───────────────────────────────────────────────────────────
 
 /** Lấy salt hiện tại từ localStorage, hoặc tạo mới nếu chưa có */
@@ -115,6 +251,68 @@ export async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKe
     );
 }
 
+/** PIN-derived Key Encryption Key. `deriveKey` remains for legacy compatibility. */
+export const deriveKek = deriveKey;
+
+function generateMasterKeyMaterial(): Uint8Array {
+    return crypto.getRandomValues(new Uint8Array(MASTER_KEY_BYTES));
+}
+
+async function importMasterDataKey(rawMasterKey: Uint8Array): Promise<CryptoKey> {
+    return crypto.subtle.importKey(
+        'raw',
+        rawMasterKey,
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt', 'decrypt'],
+    );
+}
+
+async function wrapMasterKey(rawMasterKey: Uint8Array, kek: CryptoKey): Promise<{ iv: Uint8Array; ciphertext: ArrayBuffer }> {
+    const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+    const ciphertext = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv, additionalData: MASTER_KEY_WRAP_AAD },
+        kek,
+        rawMasterKey,
+    );
+    return { iv, ciphertext };
+}
+
+async function unwrapMasterKey(kek: CryptoKey, ivRaw: string, ciphertextRaw: string): Promise<Uint8Array> {
+    const iv = fromBase64(ivRaw);
+    const ciphertext = fromBase64(ciphertextRaw);
+    const rawMasterKey = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv, additionalData: MASTER_KEY_WRAP_AAD },
+        kek,
+        ciphertext,
+    );
+    return new Uint8Array(rawMasterKey);
+}
+
+async function createMasterKeyEnvelope(kek: CryptoKey): Promise<{ masterKey: CryptoKey; iv: string; ciphertext: string }> {
+    const rawMasterKey = generateMasterKeyMaterial();
+    try {
+        const masterKey = await importMasterDataKey(rawMasterKey);
+        const wrapped = await wrapMasterKey(rawMasterKey, kek);
+        return {
+            masterKey,
+            iv: toBase64(wrapped.iv),
+            ciphertext: toBase64(wrapped.ciphertext),
+        };
+    } finally {
+        rawMasterKey.fill(0);
+    }
+}
+
+async function openMasterKeyEnvelope(kek: CryptoKey, iv: string, ciphertext: string): Promise<CryptoKey> {
+    const rawMasterKey = await unwrapMasterKey(kek, iv, ciphertext);
+    try {
+        return await importMasterDataKey(rawMasterKey);
+    } finally {
+        rawMasterKey.fill(0);
+    }
+}
+
 // ─── Low-level Encrypt / Decrypt ──────────────────────────────────────────────
 
 async function encryptWithKey(data: unknown, key: CryptoKey): Promise<string> {
@@ -135,6 +333,20 @@ async function decryptWithKey(payload: string, key: CryptoKey): Promise<unknown>
         Uint8Array.from(ciphertext),
     );
     return JSON.parse(new TextDecoder().decode(plaintext));
+}
+
+/** Legacy installations occasionally stored a now-sensitive key as plain JSON. */
+async function readLegacySecureValue(payload: string, legacyKey: CryptoKey): Promise<unknown> {
+    try {
+        return await decryptWithKey(payload, legacyKey);
+    } catch (error) {
+        if (!(error instanceof Error) || error.message !== 'INVALID_PAYLOAD') throw error;
+        try {
+            return JSON.parse(payload);
+        } catch {
+            throw error;
+        }
+    }
 }
 
 // ─── Public: Plain Storage ────────────────────────────────────────────────────
@@ -173,82 +385,82 @@ export async function saveSecure(key: string, value: unknown, cryptoKey: CryptoK
 
 /** Đọc và giải mã dữ liệu nhạy cảm */
 export async function readSecure<T>(key: string, cryptoKey: CryptoKey, fallback: T): Promise<T> {
-    try {
-        const raw = localStorage.getItem(key);
-        if (raw === null) return fallback;
-        const decrypted = await decryptWithKey(raw, cryptoKey);
-        return decrypted as T;
-    } catch {
-        return fallback;
-    }
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    return await decryptWithKey(raw, cryptoKey) as T;
 }
 
 // ─── PIN Management ───────────────────────────────────────────────────────────
 
-/**
- * Thiết lập PIN lần đầu:
- * 1. Tạo salt mới
- * 2. Derive key
- * 3. Lưu test blob để verify nhanh sau này
- * @returns CryptoKey đã sẵn sàng dùng
- */
 export async function setupPin(pin: string): Promise<CryptoKey> {
-    // Tạo salt mới (ghi đè salt cũ nếu có)
     const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+    const kek = await deriveKek(pin, salt);
+    const envelope = await createMasterKeyEnvelope(kek);
+
     localStorage.setItem(INTERNAL_KEYS.SALT, toBase64(salt));
-
-    const key = await deriveKey(pin, salt);
-
-    // Lưu test blob
-    await saveSecure(INTERNAL_KEYS.PIN_VERIFY, { ok: true, ts: Date.now() }, key);
-
-    return key;
+    localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, envelope.iv);
+    localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, envelope.ciphertext);
+    localStorage.setItem(INTERNAL_KEYS.VERSION, String(CRYPTO_VERSION_V2));
+    localStorage.removeItem(INTERNAL_KEYS.PIN_VERIFY);
+    return envelope.masterKey;
 }
 
-/**
- * Xác minh PIN mà không ghi bất kỳ thứ gì vào storage
- * @returns CryptoKey nếu PIN đúng, null nếu sai
- */
 export async function verifyPin(pin: string): Promise<CryptoKey | null> {
+    recoverInterruptedCryptoOperations();
     try {
         const saltRaw = localStorage.getItem(INTERNAL_KEYS.SALT);
         if (!saltRaw) return null;
         const salt = fromBase64(saltRaw);
-        const key = await deriveKey(pin, salt);
+        const kek = await deriveKek(pin, salt);
+
+        if (getCryptoVersion() === 2) {
+            const masterKeyIv = localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV);
+            const encryptedMasterKey = localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
+            if (!masterKeyIv || !encryptedMasterKey) return null;
+            return await openMasterKeyEnvelope(kek, masterKeyIv, encryptedMasterKey);
+        }
 
         const verifyPayload = localStorage.getItem(INTERNAL_KEYS.PIN_VERIFY);
         if (!verifyPayload) return null;
-
-        const result = await decryptWithKey(verifyPayload, key) as any;
-        if (result?.ok === true) return key;
+        const result = await decryptWithKey(verifyPayload, kek) as any;
+        if (result?.ok === true) {
+            return await migrateLegacyDataToV2(kek, saltRaw, verifyPayload);
+        }
         return null;
     } catch {
         return null;
     }
 }
 
-/**
- * Xác minh PIN của file backup trước khi import
- */
 export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayload: string): Promise<boolean> {
     try {
         const salt = fromBase64(saltRaw);
-        const key = await deriveKey(pin, salt);
-
-        const decoded = decodePayload(verifyPayload);
-        if (!decoded) return false;
-
-        const { iv, ciphertext } = decoded;
-        const plaintext = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: Uint8Array.from(iv) },
-            key,
-            Uint8Array.from(ciphertext),
-        );
-        const result = JSON.parse(new TextDecoder().decode(plaintext));
-
+        const key = await deriveKek(pin, salt);
+        const result = await decryptWithKey(verifyPayload, key) as { ok?: boolean };
         return result?.ok === true;
     } catch {
         return false;
+    }
+}
+
+export async function unlockBackupKey(pin: string, backupData: Record<string, string>): Promise<CryptoKey | null> {
+    try {
+        const saltRaw = backupData[INTERNAL_KEYS.SALT];
+        if (!saltRaw) return null;
+        const kek = await deriveKek(pin, fromBase64(saltRaw));
+
+        if (backupData[INTERNAL_KEYS.VERSION] === String(CRYPTO_VERSION_V2)) {
+            const iv = backupData[INTERNAL_KEYS.MASTER_KEY_IV];
+            const ciphertext = backupData[INTERNAL_KEYS.ENCRYPTED_MASTER_KEY];
+            if (!iv || !ciphertext) return null;
+            return await openMasterKeyEnvelope(kek, iv, ciphertext);
+        }
+
+        const verifyPayload = backupData[INTERNAL_KEYS.PIN_VERIFY];
+        if (!verifyPayload || !await verifyBackupPin(pin, saltRaw, verifyPayload)) return null;
+        return kek;
+    } catch {
+        return null;
     }
 }
 
@@ -261,90 +473,148 @@ export async function importBackupWithCurrentKey(
     currentKey: CryptoKey,
     selectedKeys?: readonly string[],
 ): Promise<void> {
-    const backupSaltRaw = backupData[INTERNAL_KEYS.SALT];
-    if (!backupSaltRaw) throw new Error('File backup không hợp lệ');
-    const backupSalt = fromBase64(backupSaltRaw);
-    const backupKey = await deriveKey(backupPin, backupSalt);
+    const backupKey = await unlockBackupKey(backupPin, backupData);
+    if (!backupKey) throw new Error('Không thể mở khóa file sao lưu');
 
     for (const [k, v] of Object.entries(backupData)) {
         if (selectedKeys && !selectedKeys.includes(k)) {
             continue;
         }
 
-        if (k === INTERNAL_KEYS.SALT || k === INTERNAL_KEYS.PIN_VERIFY || k === INTERNAL_KEYS.FAIL_COUNT || k === INTERNAL_KEYS.LOCKOUT_UNTIL) {
-            continue; // Bỏ qua các key hệ thống của backup
+        if (CRYPTO_METADATA_KEYS.includes(k as typeof CRYPTO_METADATA_KEYS[number]) || k === INTERNAL_KEYS.FAIL_COUNT || k === INTERNAL_KEYS.LOCKOUT_UNTIL) {
+            continue;
         }
 
-        // Kiểm tra xem key này có phải là dữ liệu nhạy cảm cần giải mã không
-        if ((SECURE_DATA_KEYS as readonly string[]).includes(k)) {
-            try {
-                const decoded = decodePayload(v);
-                if (!decoded) continue;
-                const { iv, ciphertext } = decoded;
-                const plaintext = await crypto.subtle.decrypt(
-                    { name: 'AES-GCM', iv: Uint8Array.from(iv) },
-                    backupKey,
-                    Uint8Array.from(ciphertext),
-                );
-                const parsed = JSON.parse(new TextDecoder().decode(plaintext));
-
-                // Encrypt lại bằng currentKey và lưu vào localStorage
-                await saveSecure(k, parsed, currentKey);
-            } catch {
-                // Ignore lỗi decrypt từng key
-            }
+        if (isSecureDataKey(k)) {
+            const parsed = await decryptWithKey(v, backupKey);
+            await saveSecure(k, parsed, currentKey);
         } else {
-            // Dữ liệu plain
             localStorage.setItem(k, v);
         }
     }
 }
 
 
-/**
- * Đổi PIN:
- * 1. Decrypt toàn bộ SECURE_DATA_KEYS bằng oldKey
- * 2. Tạo salt mới, derive newKey
- * 3. Re-encrypt toàn bộ bằng newKey (atomic)
- * @returns CryptoKey mới
- */
-export async function changePin(oldKey: CryptoKey, newPin: string): Promise<CryptoKey> {
-    // 1. Decrypt tất cả data hiện có
-    const decryptedData: Record<string, unknown> = {};
-    for (const k of SECURE_DATA_KEYS) {
-        const raw = localStorage.getItem(k);
-        if (raw) {
-            try {
-                decryptedData[k] = await decryptWithKey(raw, oldKey);
-            } catch {
-                // key không decrypt được thì bỏ qua (có thể là data plain cũ)
+async function migrateLegacyDataToV2(
+    legacyKey: CryptoKey,
+    legacySalt: string,
+    legacyPinVerify: string,
+): Promise<CryptoKey> {
+    let masterKey: CryptoKey | null = null;
+    try {
+        const decryptedData: Array<[string, unknown]> = [];
+        for (const key of SECURE_DATA_KEYS) {
+            const payload = localStorage.getItem(key);
+            if (payload === null) continue;
+            decryptedData.push([key, await readLegacySecureValue(payload, legacyKey)]);
+        }
+
+        const envelope = await createMasterKeyEnvelope(legacyKey);
+        masterKey = envelope.masterKey;
+        const stage: MigrationStage = {
+            kind: 'migration',
+            phase: 'staging',
+            keys: [],
+            legacySalt,
+            legacyPinVerify,
+            masterKeyIv: envelope.iv,
+            encryptedMasterKey: envelope.ciphertext,
+        };
+        localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
+
+        for (const [key, value] of decryptedData) {
+            const legacyPayload = localStorage.getItem(key);
+            if (legacyPayload === null) throw new Error(`MISSING_LEGACY_DATA:${key}`);
+            const encryptedPayload = await encryptWithKey(value, envelope.masterKey);
+            localStorage.setItem(`${MIGRATION_LEGACY_PREFIX}${key}`, legacyPayload);
+            localStorage.setItem(`${MIGRATION_DATA_PREFIX}${key}`, encryptedPayload);
+            stage.keys.push(key);
+            localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
+        }
+
+        const expectedValues = new Map(decryptedData);
+        for (const key of stage.keys) {
+            const payload = localStorage.getItem(`${MIGRATION_DATA_PREFIX}${key}`);
+            if (!payload) throw new Error(`MISSING_STAGED_DATA:${key}`);
+            const restored = await decryptWithKey(payload, envelope.masterKey);
+            if (JSON.stringify(restored) !== JSON.stringify(expectedValues.get(key))) {
+                throw new Error(`STAGED_DATA_MISMATCH:${key}`);
             }
         }
+
+        stage.phase = 'ready';
+        localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
+        stage.phase = 'committing';
+        localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
+
+        for (const key of stage.keys) {
+            const payload = localStorage.getItem(`${MIGRATION_DATA_PREFIX}${key}`);
+            if (!payload) throw new Error(`MISSING_STAGED_DATA:${key}`);
+            localStorage.setItem(key, payload);
+        }
+
+        localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, stage.masterKeyIv);
+        localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, stage.encryptedMasterKey);
+        localStorage.setItem(INTERNAL_KEYS.VERSION, String(CRYPTO_VERSION_V2));
+        stage.phase = 'committed';
+        localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
+        localStorage.removeItem(INTERNAL_KEYS.PIN_VERIFY);
+        clearCryptoMigrationArtifacts();
+        return envelope.masterKey;
+    } catch (error) {
+        recoverInterruptedCryptoOperations();
+        if (getCryptoVersion() === 2 && masterKey) {
+            return masterKey;
+        }
+        console.warn('[crypto] Migration v1 -> v2 chưa hoàn tất, tiếp tục dùng định dạng cũ.', error);
+        return legacyKey;
+    }
+}
+
+/** Re-wrap the Master Data Key only; secure data ciphertext remains unchanged. */
+export async function changePin(currentMasterKey: CryptoKey, oldPin: string, newPin: string): Promise<CryptoKey> {
+    recoverInterruptedCryptoOperations();
+    if (getCryptoVersion() !== 2) {
+        throw new Error('Dữ liệu cũ chưa thể nâng cấp sang kiến trúc Master Key.');
     }
 
-    // 2. Tạo salt mới + derive key mới
-    const newSalt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-    localStorage.setItem(INTERNAL_KEYS.SALT, toBase64(newSalt));
-    const newKey = await deriveKey(newPin, newSalt);
-
-    // 3. Re-encrypt tất cả (atomic: chỉ ghi sau khi tất cả encrypt xong)
-    const encryptedEntries: Array<[string, string]> = [];
-    for (const [k, v] of Object.entries(decryptedData)) {
-        const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-        const plaintext = new TextEncoder().encode(JSON.stringify(v));
-        const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, newKey, plaintext);
-        encryptedEntries.push([k, encodePayload(newSalt, iv, cipher)]);
+    const previousSalt = localStorage.getItem(INTERNAL_KEYS.SALT);
+    const previousMasterKeyIv = localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV);
+    const previousEncryptedMasterKey = localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
+    if (!previousSalt || !previousMasterKeyIv || !previousEncryptedMasterKey) {
+        throw new Error('Thiếu metadata mã hóa Master Key.');
     }
 
-    // Ghi tất cả cùng lúc
-    for (const [k, v] of encryptedEntries) {
-        localStorage.setItem(k, v);
+    const oldKek = await deriveKek(oldPin, fromBase64(previousSalt));
+    const rawMasterKey = await unwrapMasterKey(oldKek, previousMasterKeyIv, previousEncryptedMasterKey);
+    try {
+        const nextSalt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+        const nextKek = await deriveKek(newPin, nextSalt);
+        const wrapped = await wrapMasterKey(rawMasterKey, nextKek);
+        const stage: PinChangeStage = {
+            kind: 'pin-change',
+            phase: 'prepared',
+            previousSalt,
+            previousMasterKeyIv,
+            previousEncryptedMasterKey,
+            nextSalt: toBase64(nextSalt),
+            nextMasterKeyIv: toBase64(wrapped.iv),
+            nextEncryptedMasterKey: toBase64(wrapped.ciphertext),
+        };
+
+        localStorage.setItem(PIN_CHANGE_STAGE_KEY, JSON.stringify(stage));
+        localStorage.setItem(INTERNAL_KEYS.SALT, stage.nextSalt);
+        localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, stage.nextMasterKeyIv);
+        localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, stage.nextEncryptedMasterKey);
+
+        await openMasterKeyEnvelope(nextKek, stage.nextMasterKeyIv, stage.nextEncryptedMasterKey);
+        stage.phase = 'committed';
+        localStorage.setItem(PIN_CHANGE_STAGE_KEY, JSON.stringify(stage));
+        localStorage.removeItem(PIN_CHANGE_STAGE_KEY);
+        return currentMasterKey;
+    } finally {
+        rawMasterKey.fill(0);
     }
-
-    // Ghi test blob mới
-    await saveSecure(INTERNAL_KEYS.PIN_VERIFY, { ok: true, ts: Date.now() }, newKey);
-
-    return newKey;
 }
 
 // ─── Brute-force Protection ───────────────────────────────────────────────────
@@ -388,8 +658,15 @@ export function getLockoutSeconds(): number {
 
 /** Kiểm tra xem có dữ liệu nhạy cảm trong localStorage không */
 export function hasSecureData(): boolean {
+    if (
+        getCryptoVersion() === 2
+        && localStorage.getItem(INTERNAL_KEYS.SALT)
+        && localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV)
+        && localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY)
+    ) return true;
+
     return !!(
-        localStorage.getItem('__pin_verify__') ||
+        localStorage.getItem(INTERNAL_KEYS.PIN_VERIFY) ||
         localStorage.getItem('raw_student_db') ||
         localStorage.getItem('student_db_full')
     );
@@ -583,6 +860,9 @@ export async function readImportRollbackValue<T>(key: string, cryptoKey: CryptoK
     if (!snapshot) return fallback;
 
     const data = await readImportRollbackData(snapshot);
+    if (data && getCryptoVersionFromSnapshot(data) !== getCryptoVersion()) {
+        throw new Error('INCOMPATIBLE_CRYPTO_SNAPSHOT');
+    }
     const raw = data?.[key];
     if (!raw) return fallback;
     try {
@@ -619,6 +899,13 @@ export async function restoreLastImportRollback(): Promise<boolean> {
     try {
         const data = await readImportRollbackData(snapshot);
         if (!data) return false;
+        if (getCryptoVersionFromSnapshot(data) === 2 && getCryptoVersion() === 2) {
+            for (const key of CRYPTO_METADATA_KEYS) {
+                const currentValue = localStorage.getItem(key);
+                if (currentValue === null) delete data[key];
+                else data[key] = currentValue;
+            }
+        }
         localStorage.clear();
         Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
         if (snapshot.storage === 'indexeddb') await deleteImportRollbackData();

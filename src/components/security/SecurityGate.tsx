@@ -18,7 +18,15 @@ export const SecurityGate: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
             // Chỉ phản ứng khi key quan trọng bị xóa (clear toàn bộ hoặc xóa từng key)
-            const sensitiveKeys = ['raw_student_db', 'student_db_full', '__pbkdf2_salt__', '__pin_verify__'];
+            const sensitiveKeys = [
+                'raw_student_db',
+                'student_db_full',
+                '__pbkdf2_salt__',
+                '__pin_verify__',
+                '__crypto_version__',
+                '__master_key_iv__',
+                '__encrypted_master_key__',
+            ];
             if (e.key === null || (e.key && sensitiveKeys.includes(e.key) && e.newValue === null)) {
                 window.location.reload();
             }
