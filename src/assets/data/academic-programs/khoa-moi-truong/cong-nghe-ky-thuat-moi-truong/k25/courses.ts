@@ -74,7 +74,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần nhóm TC1"
+    "description": "Chọn 1 môn trong nhóm tự chọn xã hội"
   },
   {
     "course_id": "BAA00007",
@@ -85,7 +85,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần nhóm TC1"
+    "description": "Chọn 1 môn TC1"
   },
   {
     "course_id": "BAA00006",
@@ -96,7 +96,95 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần nhóm TC1"
+    "description": "Chọn 1 môn TC1"
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
+  },
+  {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
   },
   {
     "course_id": "CHE00001",
@@ -206,7 +294,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần nhóm TC2"
+    "description": ""
   },
   {
     "course_id": "ENV00004",
@@ -217,7 +305,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần nhóm TC2"
+    "description": "Chọn 1 trong MTH00040/ENV00004"
   },
   {
     "course_id": "ENV00011",
@@ -257,94 +345,6 @@ export const courses = [
     "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
     "credits": 3,
     "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học"
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng - An ninh",
-    "credits": 4,
-    "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -677,8 +677,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -689,7 +689,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -699,8 +699,8 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 0,
     "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -710,8 +710,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -721,8 +721,8 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -733,7 +733,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -743,8 +743,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -754,8 +754,8 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -766,7 +766,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -776,8 +776,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -788,18 +788,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENE10177",
-    "course_name_vi": "Tái chế và tái sử dụng chất thải rắn theo định hướng kinh tế tuần hoàn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -810,7 +799,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -821,7 +810,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -832,7 +821,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -843,7 +832,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -854,7 +843,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -865,7 +854,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -876,7 +865,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -887,7 +876,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -898,7 +887,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -909,7 +898,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -920,7 +909,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -931,7 +920,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -942,7 +931,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -953,7 +942,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -964,7 +953,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
+    "description": ""
+  },
+  {
+    "course_id": "ENE10177",
+    "course_name_vi": "Tái chế và tái sử dụng chất thải rắn theo định hướng kinh tế tuần hoàn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -975,7 +975,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -986,7 +986,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 15,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -997,7 +997,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -1008,7 +1008,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ENVIRONMENTAL_ENGINEERING",
     "description": ""
   },
   {
@@ -1018,7 +1018,7 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 300,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
   },
@@ -1029,8 +1029,8 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 180,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
   }
-];
+]
