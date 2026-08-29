@@ -1,45 +1,45 @@
 export const courses = [
   {
-    "course_id": "BAA00101",
-    "course_name_vi": "Triết học Mác - Lênin",
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
     "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
+    "theory_hours": 30,
+    "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00102",
-    "course_name_vi": "Kinh tế chính trị Mác - Lênin",
-    "credits": 2,
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00103",
-    "course_name_vi": "Chủ nghĩa xã hội khoa học",
-    "credits": 2,
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00104",
-    "course_name_vi": "Lịch sử Đảng Cộng sản Việt Nam",
-    "credits": 2,
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "BB",
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
@@ -99,11 +99,143 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "BAA00015",
+    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00016",
     "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00101",
+    "course_name_vi": "Triết học Mác - Lênin",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00102",
+    "course_name_vi": "Kinh tế chính trị Mác - Lênin",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00103",
+    "course_name_vi": "Chủ nghĩa xã hội khoa học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00104",
+    "course_name_vi": "Lịch sử Đảng Cộng sản Việt Nam",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00001",
+    "course_name_vi": "Hóa đại cương 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
@@ -132,17 +264,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "MTH00081",
-    "course_name_vi": "Thực hành Vi tích phân 1B",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "MTH00030",
     "course_name_vi": "Đại số tuyến tính",
     "credits": 3,
@@ -165,12 +286,12 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "CHE00001",
-    "course_name_vi": "Hóa đại cương 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
+    "course_id": "MTH00081",
+    "course_name_vi": "Thực hành Vi tích phân 1B",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
@@ -188,7 +309,7 @@ export const courses = [
   },
   {
     "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
+    "course_name_vi": "Vật lý đại cương 2 (Điện tử - Quang)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -242,127 +363,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "GEO00002",
-    "course_name_vi": "Khoa học Trái đất",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
-    "credits": 4,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "PHY10001",
     "course_name_vi": "Hàm phức",
     "credits": 2,
@@ -397,7 +397,7 @@ export const courses = [
   },
   {
     "course_id": "PHY10005",
-    "course_name_vi": "Điện từ cơ bản",
+    "course_name_vi": "Điện tử cơ bản",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
@@ -462,292 +462,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY10625",
-    "course_name_vi": "Phương pháp tính",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10331",
-    "course_name_vi": "Vật lý hạt nhân",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10324",
-    "course_name_vi": "Xử lý ảnh",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10433",
-    "course_name_vi": "Trường vật lý: lý thuyết và ứng dụng",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10628",
-    "course_name_vi": "Mô phỏng và mô hình hóa",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10440",
-    "course_name_vi": "Các phương pháp NDT",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10609",
-    "course_name_vi": "Lập trình hướng đối tượng",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10626",
-    "course_name_vi": "Hệ thống số và ứng dụng",
-    "credits": 4,
-    "theory_hours": 45,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10237",
-    "course_name_vi": "Vật lý chất rắn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10228",
-    "course_name_vi": "Vật lý linh kiện bán dẫn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10627",
-    "course_name_vi": "Phân giải mạch",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10727",
-    "course_name_vi": "Quang phổ và ứng dụng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10532",
-    "course_name_vi": "Vật lý tính toán",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10517",
-    "course_name_vi": "Cơ lượng tử nâng cao",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10529",
-    "course_name_vi": "Trạng thái rắn cơ bản",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10528",
-    "course_name_vi": "Quang lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10507",
-    "course_name_vi": "Lý thuyết trường lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10537",
-    "course_name_vi": "Nhập môn tính toán lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10438",
-    "course_name_vi": "Vật lý thiên văn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10531",
-    "course_name_vi": "Tư duy phản biện",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10316",
-    "course_name_vi": "Vật lý hạt cơ bản",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10322",
-    "course_name_vi": "Những vấn đề mới trong vật lý hiện đại",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10432",
-    "course_name_vi": "Vật lý môi trường",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10441",
-    "course_name_vi": "Khoa học dữ liệu",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10439",
-    "course_name_vi": "Các nguồn năng lượng mới",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10614",
-    "course_name_vi": "Thực tập thực tế",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
     "course_id": "PHY10302",
     "course_name_vi": "Vật lý phóng xạ",
     "credits": 2,
@@ -755,51 +469,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10325",
-    "course_name_vi": "Lý thuyết hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10326",
-    "course_name_vi": "Phương pháp và thiết bị ghi đo bức xạ hạt nhân",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10327",
-    "course_name_vi": "Phân tích thống kê số liệu thực nghiệm hạt nhân",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10328",
-    "course_name_vi": "An toàn và liều lượng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -810,7 +480,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -821,7 +491,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -832,7 +502,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 30,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -843,7 +513,84 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10316",
+    "course_name_vi": "Vật lý hạt cơ bản",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10322",
+    "course_name_vi": "Những vấn đề mới trong vật lý hiện đại",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10324",
+    "course_name_vi": "Xử lý ảnh",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10325",
+    "course_name_vi": "Lý thuyết hạt nhân",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10326",
+    "course_name_vi": "Phương pháp và thiết bị ghi đo bức xạ hạt nhân",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10327",
+    "course_name_vi": "Phân tích thống kê số liệu thực nghiệm hạt nhân",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10328",
+    "course_name_vi": "An toàn và liều lượng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -854,7 +601,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -865,7 +612,139 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10331",
+    "course_name_vi": "Vật lý hạt nhân",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10432",
+    "course_name_vi": "Vật lý môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10433",
+    "course_name_vi": "Trường Vật lý: lý thuyết và ứng dụng",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10438",
+    "course_name_vi": "Vật lý thiên văn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10439",
+    "course_name_vi": "Các nguồn năng lượng mới",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10440",
+    "course_name_vi": "Các phương pháp NDT",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10441",
+    "course_name_vi": "Khoa học dữ liệu",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10529",
+    "course_name_vi": "Trạng thái rắn cơ bản",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10531",
+    "course_name_vi": "Tư duy phản biện",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10614",
+    "course_name_vi": "Thực tập thực tế",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10625",
+    "course_name_vi": "Phương pháp tính",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10628",
+    "course_name_vi": "Mô phỏng và mô hình hóa",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_NUCLEAR_PHYSICS",
     "description": ""
   },
   {
@@ -876,7 +755,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_GEOPHYSICS",
     "description": ""
   },
   {
@@ -887,40 +766,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10431",
-    "course_name_vi": "Phương pháp thăm dò địa chấn",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10435",
-    "course_name_vi": "Thăm dò điện từ",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10436",
-    "course_name_vi": "Phân tích dữ liệu địa vật lý",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_GEOPHYSICS",
     "description": ""
   },
   {
@@ -931,18 +777,51 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_GEOPHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10437",
-    "course_name_vi": "Khoa học trái đất nâng cao",
+    "course_id": "PHY10431",
+    "course_name_vi": "Phương pháp thăm dò địa chấn",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_GEOPHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10435",
+    "course_name_vi": "Thăm dò điện từ",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_GEOPHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10436",
+    "course_name_vi": "Phân tích dữ liệu địa vật lý",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_GEOPHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10437",
+    "course_name_vi": "Khoa học Trái Đất nâng cao",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_GEOPHYSICS",
     "description": ""
   },
   {
@@ -953,194 +832,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10124",
-    "course_name_vi": "Xử lý tín hiệu số",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10229",
-    "course_name_vi": "Khoa học vật liệu và ứng dụng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10611",
-    "course_name_vi": "Cảm biến & đo lường",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10618",
-    "course_name_vi": "Máy học",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10132",
-    "course_name_vi": "Ứng dụng Internet vạn vật (IoT)",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10630",
-    "course_name_vi": "Cấu trúc dữ liệu và giải thuật",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10724",
-    "course_name_vi": "Công nghệ chế tạo vật liệu",
-    "credits": 4,
-    "theory_hours": 30,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10726",
-    "course_name_vi": "Kỹ thuật phân tích vật liệu",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10634",
-    "course_name_vi": "Mô phỏng cấu trúc vùng năng lượng trong vật liệu bán dẫn",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10635",
-    "course_name_vi": "Quản lý nhiệt cho các linh kiện điện tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10128",
-    "course_name_vi": "Thiết kế mạch tích hợp",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10136",
-    "course_name_vi": "Vi điều khiển và ứng dụng",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10636",
-    "course_name_vi": "Khai thác dữ liệu lớn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10102",
-    "course_name_vi": "Kỹ thuật điện tử ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10135",
-    "course_name_vi": "Thiết kế hệ thống trên chip (SoC)",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10622",
-    "course_name_vi": "Mạng nơ-ron",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10133",
-    "course_name_vi": "Thiết kế hệ thống nhúng",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1151,128 +843,51 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10111",
-    "course_name_vi": "Điện tử y - sinh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10115",
-    "course_name_vi": "Thị giác máy tính",
+    "course_id": "PHY10124",
+    "course_name_vi": "Xử lý tín hiệu số",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10122",
-    "course_name_vi": "Robot điện tử",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10126",
-    "course_name_vi": "Điện tử công suất",
+    "course_id": "PHY10128",
+    "course_name_vi": "Thiết kế mạch tích hợp",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10127",
-    "course_name_vi": "Đồ án chuyên đề",
-    "credits": 2,
-    "theory_hours": 15,
+    "course_id": "PHY10132",
+    "course_name_vi": "Ứng dụng Internet vạn vật (IoT)",
+    "credits": 3,
+    "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10130",
-    "course_name_vi": "Hệ thống năng lượng tái tạo",
-    "credits": 2,
+    "course_id": "PHY10136",
+    "course_name_vi": "Vi điều khiển và ứng dụng",
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10131",
-    "course_name_vi": "Hệ vi cơ điện tử (MEMS)",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10230",
-    "course_name_vi": "Công nghệ chế tạo linh kiện bán dẫn",
-    "credits": 4,
-    "theory_hours": 45,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10231",
-    "course_name_vi": "Tính chất đặc trưng vật liệu",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10238",
-    "course_name_vi": "Từ học và linh kiện Spintronics",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10232",
-    "course_name_vi": "Thực tập chuyên ngành",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1283,7 +898,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1294,7 +909,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1305,7 +920,62 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10228",
+    "course_name_vi": "Vật lý linh kiện bán dẫn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10229",
+    "course_name_vi": "Khoa học vật liệu và ứng dụng",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10230",
+    "course_name_vi": "Công nghệ chế tạo linh kiện bán dẫn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10231",
+    "course_name_vi": "Tính chất đặc trưng vật liệu",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10232",
+    "course_name_vi": "Thực tập chuyên ngành",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1316,7 +986,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1327,7 +997,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1338,7 +1008,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
@@ -1349,18 +1019,172 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10631",
-    "course_name_vi": "Cơ sở dữ liệu",
+    "course_id": "PHY10237",
+    "course_name_vi": "Vật lý chất rắn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10238",
+    "course_name_vi": "Từ học và linh kiện Spintronics",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10609",
+    "course_name_vi": "Lập trình hướng đối tượng",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10611",
+    "course_name_vi": "Cảm biến & đo lường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10618",
+    "course_name_vi": "Máy học",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10626",
+    "course_name_vi": "Hệ thống số và ứng dụng",
+    "credits": 4,
+    "theory_hours": 45,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10627",
+    "course_name_vi": "Phân giải mạch",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10630",
+    "course_name_vi": "Cấu trúc dữ liệu và giải thuật",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10634",
+    "course_name_vi": "Mô phỏng cấu trúc vùng năng lượng trong vật liệu bán dẫn",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10635",
+    "course_name_vi": "Quản lý nhiệt cho các linh kiện điện tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10636",
+    "course_name_vi": "Khai thác dữ liệu lớn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10724",
+    "course_name_vi": "Công nghệ chế tạo vật liệu",
+    "credits": 4,
+    "theory_hours": 30,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10726",
+    "course_name_vi": "Kỹ thuật phân tích vật liệu",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10727",
+    "course_name_vi": "Quang phổ và ứng dụng",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONIC_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10115",
+    "course_name_vi": "Thị giác máy tính",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1371,7 +1195,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1382,7 +1206,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1393,7 +1217,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1404,7 +1228,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1415,7 +1239,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1426,7 +1250,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1437,7 +1261,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1448,7 +1272,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10631",
+    "course_name_vi": "Cơ sở dữ liệu",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1459,7 +1294,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1470,18 +1305,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10705",
-    "course_name_vi": "Vật lý chân không và màng mỏng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_COMPUTATIONAL_PHYSICS",
     "description": ""
   },
   {
@@ -1492,18 +1316,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10725",
-    "course_name_vi": "Quang điện tử bán dẫn",
+    "course_id": "PHY10705",
+    "course_name_vi": "Vật lý chân không và màng mỏng",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1514,7 +1338,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1525,7 +1349,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1536,7 +1360,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1547,7 +1371,18 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10725",
+    "course_name_vi": "Quang điện tử bán dẫn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1558,7 +1393,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1569,7 +1404,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1580,7 +1415,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1591,7 +1426,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
     "description": ""
   },
   {
@@ -1602,7 +1437,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_APPLIED_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10507",
+    "course_name_vi": "Lý thuyết trường lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1613,95 +1459,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10535",
-    "course_name_vi": "Các phương pháp gần đúng trong cơ lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10538",
-    "course_name_vi": "Cơ sở lý thuyết thông tin lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10539",
-    "course_name_vi": "Toán học cho tính toán lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10540",
-    "course_name_vi": "Thuật toán và lập trình lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10541",
-    "course_name_vi": "Giải thuật và lập trình",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10542",
-    "course_name_vi": "Máy học và ứng dụng",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10543",
-    "course_name_vi": "Lý thuyết ước lượng lượng tử",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10534",
-    "course_name_vi": "Nhập môn vật lý hệ nhiều hạt",
-    "credits": 4,
-    "theory_hours": 60,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1712,18 +1470,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10533",
-    "course_name_vi": "Lý thuyết tương đối",
+    "course_id": "PHY10517",
+    "course_name_vi": "Cơ lượng tử nâng cao",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1734,7 +1492,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1745,18 +1503,139 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
-    "course_id": "PHY10544",
-    "course_name_vi": "Mô phỏng lượng tử từ các hệ vật chất",
+    "course_id": "PHY10528",
+    "course_name_vi": "Quang lượng tử",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10532",
+    "course_name_vi": "Vật lý tính toán",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10533",
+    "course_name_vi": "Lý thuyết trường đối ngẫu",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10535",
+    "course_name_vi": "Các phương pháp gần đúng trong cơ lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10537",
+    "course_name_vi": "Nhập môn tính toán lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10538",
+    "course_name_vi": "Cơ sở lý thuyết thông tin lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10539",
+    "course_name_vi": "Toán học cho tính toán lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10540",
+    "course_name_vi": "Thuật toán và lập trình lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10541",
+    "course_name_vi": "Giải thuật và lập trình",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10542",
+    "course_name_vi": "Máy học và ứng dụng",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10543",
+    "course_name_vi": "Lý thuyết ước lượng lượng tử",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10544",
+    "course_name_vi": "Mô phỏng lượng tử các hệ vật chất",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1767,7 +1646,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_THEORETICAL_PHYSICS",
     "description": ""
   },
   {
@@ -1778,18 +1657,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
     "course_id": "PHY10546",
-    "course_name_vi": "Cơ sở lý thuyết phần cứng lượng tử",
+    "course_name_vi": "Cơ sở lý thuyết phản ứng lượng tử",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
@@ -1800,7 +1679,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
@@ -1811,7 +1690,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
@@ -1822,7 +1701,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
@@ -1833,7 +1712,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_QUANTUM_COMPUTING",
     "description": ""
   },
   {
@@ -1842,9 +1721,9 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
   }
-];
+]

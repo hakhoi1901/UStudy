@@ -1,121 +1,171 @@
 export const categories = {
-  "GENERAL_EDUCATION": {
-    "name": "Giáo dục đại cương",
-    "total_credits_required": 51,
-    "courses": [
-      "BAA00003",
-      "BAA00004",
-      "BAA00101",
-      "BAA00102",
-      "BAA00103",
-      "BAA00104",
-      "BAA00005",
-      "BAA00006",
-      "BAA00007",
-      "CHE00001",
-      "MTH00003",
-      "MTH00004",
-      "MTH00030",
-      "MTH00040",
-      "MTH00081",
-      "PHY00001",
-      "PHY00002",
-      "PHY00004",
-      "PHY00081",
-      "SEM00001",
-      "SEM00002",
-      "ENV00001",
-      "GEO00002",
-      "BAA00015",
-      "CSC00003",
-      "ADD00031",
-      "ADD00032",
-      "ADD00033",
-      "ADD00034",
-      "BAA00021",
-      "BAA00022",
-      "BAA00030"
-    ]
-  },
-  "FOUNDATION": {
-    "name": "Kiến thức cơ sở ngành",
-    "total_credits_required": 39,
-    "courses": [
-      "PHY10003",
-      "PHY10005",
-      "PHY10007",
-      "SEM10001",
-      "SEM10002",
-      "SEM10003",
-      "SEM10004",
-      "SEM10005",
-      "SEM10006",
-      "SEM10007",
-      "SEM10008",
-      "SEM10009",
-      "SEM10010"
-    ]
-  },
-  "MAJOR": {
-    "name": "Kiến thức ngành",
-    "total_credits_required": 37,
-    "breakdown": {
-      "PROGRAM_COURSES": {
-        "name": "Các học phần chuyên ngành",
-        "credits_required": 37,
+    "GENERAL_EDUCATION": {
+        "name": "Giáo dục đại cương",
+        "total_credits_required": 51,
+        "note": "Không kể học phần GDQP-AN, GDTC, Tin học cơ sở và Ngoại ngữ",
+        "breakdown": {
+            "GENERAL_POLITICS": {
+                "name": "Lý luận chính trị - Pháp luật",
+                "credits": 14,
+                "mandatory": true,
+                "courses": [
+                    "BAA00101",
+                    "BAA00102",
+                    "BAA00103",
+                    "BAA00104",
+                    "BAA00003",
+                    "BAA00004"
+                ]
+            },
+            "GENERAL_SOCIAL": {
+                "name": "Khoa học xã hội - Kinh tế - Kỹ năng",
+                "credits": 2,
+                "mandatory": false,
+                "note": "Chọn 1 trong 3 học phần",
+                "courses": [
+                    "BAA00005",
+                    "BAA00006",
+                    "BAA00007"
+                ]
+            },
+            "GENERAL_MATH_SCIENCE": {
+                "name": "Toán - Khoa học tự nhiên - Công nghệ - Môi trường",
+                "mandatory": true,
+                "courses": [
+                    "CHE00001",
+                    "MTH00003",
+                    "MTH00004",
+                    "MTH00030",
+                    "MTH00040",
+                    "MTH00081",
+                    "PHY00001",
+                    "PHY00002",
+                    "PHY00004",
+                    "PHY00081",
+                    "SEM00001",
+                    "SEM00002",
+                    "ENV00001",
+                    "GEO00002",
+                    "BAA00015"
+                ]
+            },
+            "GENERAL_IT": {
+                "name": "Tin học",
+                "credits": 3,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "CSC00003"
+                ]
+            },
+            "GENERAL_ENGLISH": {
+                "name": "Ngoại ngữ",
+                "credits": 12,
+                "mandatory": false,
+                "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. Sinh viên đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký các học phần Anh văn.",
+                "courses": [
+                    "ADD00031",
+                    "ADD00032",
+                    "ADD00033",
+                    "ADD00034"
+                ]
+            },
+            "GENERAL_PE": {
+                "name": "Giáo dục thể chất",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "BAA00021",
+                    "BAA00022"
+                ]
+            },
+            "GENERAL_DEFENSE": {
+                "name": "Giáo dục quốc phòng - An ninh",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "BAA00030"
+                ]
+            }
+        }
+    },
+    "FOUNDATION": {
+        "name": "Kiến thức cơ sở ngành",
+        "mandatory": true,
         "courses": [
-          "PHY10614",
-          "PHY10618",
-          "PHY10620",
-          "SEM10101",
-          "SEM10102",
-          "SEM10103",
-          "SEM10104",
-          "SEM10105",
-          "SEM10106",
-          "SEM10107",
-          "SEM10108",
-          "SEM10109",
-          "SEM10110",
-          "SEM10111",
-          "SEM10112",
-          "SEM10113",
-          "SEM10114",
-          "SEM10115",
-          "SEM10116",
-          "SEM10117",
-          "SEM10118",
-          "SEM10119",
-          "SEM10120",
-          "SEM10121",
-          "SEM10122",
-          "SEM10123",
-          "SEM10124",
-          "SEM10125",
-          "SEM10126",
-          "SEM10127",
-          "SEM10128",
-          "SEM10129",
-          "SEM10130",
-          "SEM10131",
-          "SEM10132",
-          "SEM10133",
-          "SEM10134",
-          "SEM10135",
-          "SEM10136",
-          "SEM10137",
-          "SEM10138",
-          "SEM10139",
-          "SEM10140"
+            "PHY10003",
+            "PHY10005",
+            "PHY10007",
+            "PHY10002",
+            "SEM10002",
+            "SEM10003",
+            "SEM10004",
+            "SEM10005",
+            "SEM10006",
+            "SEM10007",
+            "SEM10008",
+            "SEM10009",
+            "SEM10010"
         ]
-      }
+    },
+    "MAJOR_SEMICONDUCTOR": {
+        "name": "Kiến thức chuyên ngành Công nghệ bán dẫn",
+        "total_credits_required": 37,
+        "mandatory": false,
+        "note": "Tích lũy 37 tín chỉ từ danh sách học phần tự chọn",
+        "courses": [
+            "PHY10614",
+            "PHY10618",
+            "PHY10620",
+            "SEM10101",
+            "SEM10102",
+            "SEM10103",
+            "SEM10104",
+            "SEM10105",
+            "SEM10106",
+            "SEM10107",
+            "SEM10108",
+            "SEM10109",
+            "SEM10110",
+            "SEM10111",
+            "SEM10112",
+            "SEM10113",
+            "SEM10114",
+            "SEM10115",
+            "SEM10116",
+            "SEM10117",
+            "SEM10118",
+            "SEM10119",
+            "SEM10120",
+            "SEM10121",
+            "SEM10122",
+            "SEM10123",
+            "SEM10124",
+            "SEM10125",
+            "SEM10126",
+            "SEM10127",
+            "SEM10128",
+            "SEM10129",
+            "SEM10130",
+            "SEM10131",
+            "SEM10132",
+            "SEM10133",
+            "SEM10134",
+            "SEM10135",
+            "SEM10136",
+            "SEM10137",
+            "SEM10138",
+            "SEM10139",
+            "SEM10140"
+        ]
+    },
+    "GRADUATION": {
+        "name": "Kiến thức tốt nghiệp",
+        "total_credits_required": 10,
+        "courses": [
+            "SEM10995"
+        ]
     }
-  },
-  "GRADUATION": {
-    "name": "Kiến thức tốt nghiệp",
-    "total_credits_required": 10,
-    "courses": [
-      "SEM10995"
-    ]
-  }
-};
+}
