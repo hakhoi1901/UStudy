@@ -1,20 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Eye, RotateCcw, SlidersHorizontal } from 'lucide-react';
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  rectSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
+import { SlidersHorizontal } from 'lucide-react';
 
 import { useStudentGradeData, GPACalculator } from '../../features/grades';
 import { useStudentDb } from '../../hooks/useStudentDb';
@@ -30,10 +15,8 @@ import { DashboardCalendarWidget } from './components/DashboardCalendarWidget';
 import { DashboardCalendarSettingsDialog } from './components/DashboardCalendarSettingsDialog';
 import { DashboardCustomizerDialog } from './components/DashboardCustomizerDialog';
 import { CreditsWidget, GpaWidget, TuitionWidget } from './components/DashboardSummaryWidgets';
-import { SortableDashboardWidget } from './components/SortableDashboardWidget';
 import { buildDashboardCalendarEvents } from './services/dashboard-calendar-events';
 import {
-  DEFAULT_DASHBOARD_LAYOUT,
   normalizeDashboardLayout,
   readDashboardLayout,
   saveDashboardLayout,
@@ -41,17 +24,9 @@ import {
   type DashboardWidgetId,
 } from './services/dashboard-layout';
 import {
-  requestCalendarNotificationPermission,
+  prepareCalendarNotificationPermission,
   syncCalendarNotifications,
 } from '../../mobile/calendar-notifications';
-
-const WIDGET_LABELS: Record<DashboardWidgetId, string> = {
-  gpa: 'GPA hiện tại',
-  credits: 'Tín chỉ tích lũy',
-  tuition: 'Học phí học kỳ',
-  calendar: 'Lịch',
-  creditDistribution: 'Phân bổ tín chỉ',
-};
 
 const WIDGET_SPANS: Record<DashboardWidgetId, string> = {
   gpa: 'md:col-span-2',
@@ -63,18 +38,12 @@ const WIDGET_SPANS: Record<DashboardWidgetId, string> = {
 
 export function DashboardWidgets() {
   const [isMounted, setIsMounted] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isCalendarSettingsOpen, setIsCalendarSettingsOpen] = useState(false);
   const [layout, setLayout] = useState<DashboardLayoutPreferences>(readDashboardLayout);
   const { academicYear, semesterNumber } = useDepartmentData();
   const schedule = useSchedule();
   const { exams } = useStudentDb();
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
   const {
     currentGPA,
     accumulatedCredits,
@@ -141,38 +110,6 @@ export function DashboardWidgets() {
     setLayout(normalizeDashboardLayout(nextLayout));
   };
 
-  const hideWidget = (id: DashboardWidgetId) => {
-    setLayout((current) => normalizeDashboardLayout({
-      ...current,
-      hidden: [...current.hidden, id],
-    }));
-  };
-
-  const resetLayout = () => {
-    setLayout({
-      ...DEFAULT_DASHBOARD_LAYOUT,
-      order: [...DEFAULT_DASHBOARD_LAYOUT.order],
-      hidden: [...DEFAULT_DASHBOARD_LAYOUT.hidden],
-      calendarSources: [...layout.calendarSources],
-      calendarDays: layout.calendarDays,
-      calendarNotificationsEnabled: layout.calendarNotificationsEnabled,
-      calendarReminderMinutes: [...layout.calendarReminderMinutes],
-    });
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || active.id === over.id) return;
-    const activeId = active.id as DashboardWidgetId;
-    const overId = over.id as DashboardWidgetId;
-
-    setLayout((current) => {
-      const oldIndex = current.order.indexOf(activeId);
-      const newIndex = current.order.indexOf(overId);
-      if (oldIndex < 0 || newIndex < 0) return current;
-      return { ...current, order: arrayMove(current.order, oldIndex, newIndex) };
-    });
-  };
-
   const renderWidget = (id: DashboardWidgetId) => {
     switch (id) {
       case 'gpa':
@@ -193,7 +130,7 @@ export function DashboardWidgets() {
             days={layout.calendarDays}
             events={calendarEvents}
             onOpenSettings={() => setIsCalendarSettingsOpen(true)}
-            showSettings={!isEditing}
+            showSettings
           />
         );
       case 'creditDistribution':
@@ -214,12 +151,12 @@ export function DashboardWidgets() {
   if (!hasData) {
     return (
       <PageShell
-        header={
+        header={(
           <PageHeader
             title="Tổng quan"
             description="Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn."
           />
-        }
+        )}
       >
         <NoDataCard />
       </PageShell>
@@ -228,72 +165,33 @@ export function DashboardWidgets() {
 
   return (
     <PageShell
-      header={
+      header={(
         <PageHeader
           title="Trang tổng quan"
           description="Chào mừng bạn trở lại! Đây là tổng quan học tập của bạn."
-          actions={
-            <button
-              type="button"
-              onClick={() => setIsEditing((current) => !current)}
-              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors md:h-10 md:w-auto md:gap-2 md:px-4 md:text-sm md:font-semibold ${isEditing
-                ? 'border-[#004A98] bg-[#004A98] text-white hover:bg-[#003A78]'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98]'
-                }`}
-              aria-label={isEditing ? 'Hoàn tất chỉnh sửa dashboard' : 'Tùy chỉnh dashboard'}
-              title={isEditing ? 'Hoàn tất' : 'Tùy chỉnh'}
-            >
-              {isEditing ? <Check className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
-              <span className="hidden md:inline">{isEditing ? 'Hoàn tất' : 'Tùy chỉnh'}</span>
-            </button>
-          }
-        />
-      }
-    >
-
-      {isEditing && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-y border-blue-100 bg-[#F4F8FF] px-3 py-2.5 md:mb-6 md:px-4">
-          <p className="text-sm font-semibold text-[#004A98]">Đang chỉnh sửa bố cục</p>
-          <div className="flex items-center gap-1">
+          actions={(
             <button
               type="button"
               onClick={() => setIsCustomizerOpen(true)}
-              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-[#004A98] hover:bg-white"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:border-[#004A98]/40 hover:bg-blue-50 hover:text-[#004A98] md:h-10 md:w-auto md:gap-2 md:px-4 md:text-sm md:font-semibold"
+              aria-label="Tùy chỉnh dashboard"
+              title="Tùy chỉnh dashboard"
             >
-              <Eye className="h-4 w-4" />
-              Quản lý thẻ
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden md:inline">Tùy chỉnh</span>
             </button>
-            <button
-              type="button"
-              onClick={resetLayout}
-              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-gray-600 hover:bg-white hover:text-gray-900"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Mặc định
-            </button>
-          </div>
-        </div>
+          )}
+        />
       )}
-
+    >
       {visibleWidgetIds.length > 0 ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={visibleWidgetIds} strategy={rectSortingStrategy}>
-            <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 md:grid-cols-6 md:gap-6">
-              {visibleWidgetIds.map((id) => (
-                <SortableDashboardWidget
-                  key={id}
-                  id={id}
-                  label={WIDGET_LABELS[id]}
-                  isEditing={isEditing}
-                  onHide={hideWidget}
-                  className={WIDGET_SPANS[id]}
-                >
-                  {renderWidget(id)}
-                </SortableDashboardWidget>
-              ))}
+        <div className="mb-4 grid grid-cols-1 gap-4 md:mb-6 md:grid-cols-6 md:gap-6">
+          {visibleWidgetIds.map((id) => (
+            <div key={id} className={`min-w-0 ${WIDGET_SPANS[id]}`}>
+              {renderWidget(id)}
             </div>
-          </SortableContext>
-        </DndContext>
+          ))}
+        </div>
       ) : (
         <div className="mb-6 flex min-h-64 flex-col items-center justify-center border-y border-gray-200 py-12 text-center">
           <SlidersHorizontal className="h-8 w-8 text-gray-300" />
@@ -303,7 +201,7 @@ export function DashboardWidgets() {
             onClick={() => setIsCustomizerOpen(true)}
             className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white hover:bg-[#003A78]"
           >
-            <Eye className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
             Chọn thẻ hiển thị
           </button>
         </div>
@@ -329,30 +227,21 @@ export function DashboardWidgets() {
           notificationsEnabled: calendarNotificationsEnabled,
           reminderMinutes: calendarReminderMinutes,
         }) => {
-          try {
-            if (calendarNotificationsEnabled) {
-              const permission = await requestCalendarNotificationPermission();
-              if (!permission.granted) return { saved: false, message: permission.message };
-            }
+          updateLayout({
+            ...layout,
+            calendarSources,
+            calendarDays,
+            calendarNotificationsEnabled,
+            calendarReminderMinutes,
+          });
 
-            updateLayout({
-              ...layout,
-              calendarSources,
-              calendarDays,
-              calendarNotificationsEnabled,
-              calendarReminderMinutes,
-            });
-            return { saved: true };
-          } catch (error) {
-            console.error('[calendar-settings] Không thể xin quyền thông báo:', error);
-            return {
-              saved: false,
-              message: 'Android không phản hồi yêu cầu cấp quyền. Hãy đóng hẳn UStudy, mở lại rồi thử lần nữa.',
-            };
+          if (calendarNotificationsEnabled) {
+            prepareCalendarNotificationPermission();
           }
+
+          return { saved: true };
         }}
       />
-
     </PageShell>
   );
 }

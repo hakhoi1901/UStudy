@@ -1,7 +1,24 @@
-import { BookOpen, CalendarDays, Check, DollarSign, RotateCcw, SlidersHorizontal, TrendingUp } from 'lucide-react';
+import { BookOpen, CalendarDays, DollarSign, Eye, EyeOff, RotateCcw, SlidersHorizontal, TrendingUp } from 'lucide-react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import type { DashboardLayoutPreferences, DashboardWidgetId } from '../services/dashboard-layout';
 import { DASHBOARD_WIDGET_IDS, DEFAULT_DASHBOARD_LAYOUT } from '../services/dashboard-layout';
+import { DashboardCustomizerItem } from './DashboardCustomizerItem';
 
 interface DashboardCustomizerDialogProps {
   open: boolean;
@@ -28,7 +45,12 @@ export function DashboardCustomizerDialog({
   layout,
   onChange,
 }: DashboardCustomizerDialogProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const hiddenSet = new Set(layout.hidden);
+  const visibleCount = layout.order.length - layout.hidden.length;
 
   const toggleWidget = (id: DashboardWidgetId) => {
     const hidden = hiddenSet.has(id)
@@ -37,87 +59,97 @@ export function DashboardCustomizerDialog({
     onChange({ ...layout, hidden });
   };
 
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = layout.order.indexOf(active.id as DashboardWidgetId);
+    const newIndex = layout.order.indexOf(over.id as DashboardWidgetId);
+    if (oldIndex < 0 || newIndex < 0) return;
+    onChange({ ...layout, order: arrayMove(layout.order, oldIndex, newIndex) });
+  };
+
+  const restoreDefaults = () => {
+    onChange({
+      ...layout,
+      order: [...DEFAULT_DASHBOARD_LAYOUT.order],
+      hidden: [...DEFAULT_DASHBOARD_LAYOUT.hidden],
+    });
+  };
+
   return (
     <AppDialog
       open={open}
       onOpenChange={onOpenChange}
       title="Tùy chỉnh trang tổng quan"
-      description="Chọn những thông tin bạn muốn theo dõi trên dashboard."
+      description="Chọn thẻ muốn theo dõi và kéo để sắp xếp lại vị trí."
       icon={SlidersHorizontal}
       size="md"
       footer={(
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white hover:bg-[#003A78] sm:w-auto"
-        >
-          Hoàn tất
-        </button>
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={restoreDefaults}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/30"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Khôi phục mặc định
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004A98]/30 focus-visible:ring-offset-2"
+          >
+            Hoàn tất
+          </button>
+        </div>
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-3">
-        <p className="text-xs font-semibold uppercase text-gray-500">Thẻ hiển thị</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">Thẻ tổng quan</p>
+          <p className="mt-0.5 text-xs text-gray-500">{visibleCount}/{layout.order.length} thẻ đang hiển thị</p>
+        </div>
         <div className="flex items-center gap-1 text-xs font-semibold">
           <button
             type="button"
             onClick={() => onChange({ ...layout, hidden: [] })}
-            className="rounded-lg px-2.5 py-1.5 text-[#004A98] hover:bg-blue-50"
+            disabled={layout.hidden.length === 0}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[#004A98] transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Chọn tất cả
+            <Eye className="h-3.5 w-3.5" />
+            Hiện tất cả
           </button>
           <button
             type="button"
             onClick={() => onChange({ ...layout, hidden: [...DASHBOARD_WIDGET_IDS] })}
-            className="rounded-lg px-2.5 py-1.5 text-gray-500 hover:bg-gray-100"
+            disabled={visibleCount === 0}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-gray-500 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Bỏ tất cả
+            <EyeOff className="h-3.5 w-3.5" />
+            Ẩn tất cả
           </button>
         </div>
       </div>
 
-      <div className="divide-y divide-gray-100">
-        {layout.order.map((id) => {
-          const meta = WIDGET_META[id];
-          const Icon = meta.icon;
-          const isEnabled = !hiddenSet.has(id);
-          return (
-            <button
-              key={id}
-              type="button"
-              role="switch"
-              aria-checked={isEnabled}
-              onClick={() => toggleWidget(id)}
-              className="flex w-full items-center gap-3 py-3 text-left"
-            >
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isEnabled ? 'bg-blue-50 text-[#004A98]' : 'bg-gray-100 text-gray-400'}`}>
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-gray-900">{meta.label}</span>
-                <span className="mt-0.5 block text-xs leading-5 text-gray-500">{meta.description}</span>
-              </span>
-              <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${isEnabled ? 'bg-[#004A98]' : 'bg-gray-300'}`}>
-                <span className={`absolute top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`}>
-                  {isEnabled && <Check className="h-2.5 w-2.5 text-[#004A98]" />}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onChange({
-          ...layout,
-          order: [...DEFAULT_DASHBOARD_LAYOUT.order],
-          hidden: [...DEFAULT_DASHBOARD_LAYOUT.hidden],
-        })}
-        className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      >
-        <RotateCcw className="h-4 w-4" />
-        Khôi phục mặc định
-      </button>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={layout.order} strategy={verticalListSortingStrategy}>
+          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {layout.order.map((id) => {
+              const meta = WIDGET_META[id];
+              return (
+                <DashboardCustomizerItem
+                  key={id}
+                  id={id}
+                  label={meta.label}
+                  description={meta.description}
+                  icon={meta.icon}
+                  enabled={!hiddenSet.has(id)}
+                  onToggle={() => toggleWidget(id)}
+                />
+              );
+            })}
+          </div>
+        </SortableContext>
+      </DndContext>
     </AppDialog>
   );
 }

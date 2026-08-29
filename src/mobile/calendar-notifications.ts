@@ -63,6 +63,14 @@ export async function requestCalendarNotificationPermission(): Promise<CalendarN
   }
 }
 
+// Start the permission flow without making calendar settings wait for Android.
+export function prepareCalendarNotificationPermission(): void {
+  if (!supportsCalendarNotifications()) return;
+  void requestCalendarNotificationPermission().catch((error) => {
+    console.error('[calendar-notifications] Không thể chuẩn bị quyền thông báo:', error);
+  });
+}
+
 function hashNotificationId(value: string): number {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
