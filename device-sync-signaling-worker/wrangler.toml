@@ -1,0 +1,11 @@
+name = "ustudy-device-sync-signaling"
+main = "src/index.mjs"
+compatibility_date = "2026-08-29"
+
+[[durable_objects.bindings]]
+name = "DEVICE_SYNC_SESSION"
+class_name = "DeviceSyncSession"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DeviceSyncSession"]

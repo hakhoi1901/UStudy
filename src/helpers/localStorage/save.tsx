@@ -24,6 +24,9 @@ const MIGRATION_STAGE_KEY = '__crypto_v2_migration_stage__';
 const MIGRATION_LEGACY_PREFIX = '__crypto_v2_legacy__:';
 const MIGRATION_DATA_PREFIX = '__crypto_v2_data__:';
 const PIN_CHANGE_STAGE_KEY = '__crypto_v2_pin_change_stage__';
+const DEVICE_SYNC_STAGE_KEY = '__device_sync_import_stage__';
+const DEVICE_SYNC_PREVIOUS_PREFIX = '__device_sync_previous__:';
+const DEVICE_SYNC_NEXT_PREFIX = '__device_sync_next__:';
 
 /** Keys nội bộ của hệ thống bảo mật, không export ra STORAGE_KEYS */
 const INTERNAL_KEYS = {
@@ -65,6 +68,14 @@ interface PinChangeStage {
     nextSalt: string;
     nextMasterKeyIv: string;
     nextEncryptedMasterKey: string;
+}
+
+interface DeviceSyncStage {
+    kind: 'device-sync';
+    phase: 'staging' | 'ready' | 'committing' | 'committed';
+    keys: string[];
+    previousCryptoMetadata: Record<string, string | null>;
+    nextCryptoMetadata: Record<string, string>;
 }
 
 /** Nguồn truth cho các giá trị luôn được mã hóa bằng Master Data Key. */
@@ -162,7 +173,50 @@ function clearCryptoMigrationArtifacts(): void {
     localStorage.removeItem(MIGRATION_STAGE_KEY);
 }
 
+function clearDeviceSyncArtifacts(): void {
+    const keysToRemove: string[] = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (key?.startsWith(DEVICE_SYNC_PREVIOUS_PREFIX) || key?.startsWith(DEVICE_SYNC_NEXT_PREFIX)) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem(DEVICE_SYNC_STAGE_KEY);
+}
+
+function recoverInterruptedDeviceSync(): void {
+    const rawStage = localStorage.getItem(DEVICE_SYNC_STAGE_KEY);
+    if (!rawStage) return;
+
+    try {
+        const stage = JSON.parse(rawStage) as DeviceSyncStage;
+        if (stage.kind !== 'device-sync') return;
+        if (stage.phase === 'committed') {
+            clearDeviceSyncArtifacts();
+            return;
+        }
+
+        for (const key of stage.keys) {
+            const previousRaw = localStorage.getItem(`${DEVICE_SYNC_PREVIOUS_PREFIX}${key}`);
+            if (!previousRaw) throw new Error(`MISSING_DEVICE_SYNC_PREVIOUS:${key}`);
+            const previous = JSON.parse(previousRaw) as { exists: boolean; value?: string };
+            if (previous.exists) localStorage.setItem(key, previous.value ?? '');
+            else localStorage.removeItem(key);
+        }
+        for (const key of CRYPTO_METADATA_KEYS) {
+            const previous = stage.previousCryptoMetadata[key];
+            if (previous === null || previous === undefined) localStorage.removeItem(key);
+            else localStorage.setItem(key, previous);
+        }
+        clearDeviceSyncArtifacts();
+    } catch (error) {
+        console.error('[crypto] Khong the khoi phuc dong bo thiet bi chua hoan tat:', error);
+    }
+}
+
 function recoverInterruptedCryptoOperations(): void {
+    recoverInterruptedDeviceSync();
     const pinChangeRaw = localStorage.getItem(PIN_CHANGE_STAGE_KEY);
     if (pinChangeRaw) {
         try {
@@ -403,6 +457,111 @@ export async function setupPin(pin: string): Promise<CryptoKey> {
     localStorage.setItem(INTERNAL_KEYS.VERSION, String(CRYPTO_VERSION_V2));
     localStorage.removeItem(INTERNAL_KEYS.PIN_VERIFY);
     return envelope.masterKey;
+}
+
+/** Returns the raw v2 Master Data Key only for a short-lived device-transfer session. */
+export async function exportMasterKeyForDeviceSync(pin: string): Promise<Uint8Array> {
+    recoverInterruptedCryptoOperations();
+    if (getCryptoVersion() !== 2) throw new Error('DEVICE_SYNC_REQUIRES_CRYPTO_V2');
+    const saltRaw = localStorage.getItem(INTERNAL_KEYS.SALT);
+    const masterKeyIv = localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV);
+    const encryptedMasterKey = localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
+    if (!saltRaw || !masterKeyIv || !encryptedMasterKey) throw new Error('DEVICE_SYNC_MASTER_KEY_UNAVAILABLE');
+    const kek = await deriveKek(pin, fromBase64(saltRaw));
+    return await unwrapMasterKey(kek, masterKeyIv, encryptedMasterKey);
+}
+
+export interface ReceivedMasterKeySetup {
+    masterKey: CryptoKey;
+    cryptoMetadata: Record<string, string>;
+}
+
+/** Prepares receiver-local v2 metadata without persisting the transferred Master Key. */
+export async function prepareReceivedMasterKey(pin: string, rawMasterKey: Uint8Array): Promise<ReceivedMasterKeySetup> {
+    if (rawMasterKey.byteLength !== MASTER_KEY_BYTES) throw new Error('INVALID_TRANSFERRED_MASTER_KEY');
+    const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+    const kek = await deriveKek(pin, salt);
+    const masterKey = await importMasterDataKey(rawMasterKey);
+    const wrapped = await wrapMasterKey(rawMasterKey, kek);
+    return {
+        masterKey,
+        cryptoMetadata: {
+            [INTERNAL_KEYS.VERSION]: String(CRYPTO_VERSION_V2),
+            [INTERNAL_KEYS.SALT]: toBase64(salt),
+            [INTERNAL_KEYS.MASTER_KEY_IV]: toBase64(wrapped.iv),
+            [INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]: toBase64(wrapped.ciphertext),
+        },
+    };
+}
+
+/**
+ * Replaces a curated set of user-data keys as one recoverable local transaction.
+ * New values are staged first; a quota failure never intentionally deletes old data.
+ */
+export async function replaceDeviceSyncData(
+    nextValues: Record<string, string>,
+    syncKeys: readonly string[],
+    nextCryptoMetadata: Record<string, string>,
+    masterKey: CryptoKey,
+): Promise<void> {
+    recoverInterruptedCryptoOperations();
+    const keys = Array.from(new Set(syncKeys));
+    const preparedValues: Record<string, string> = {};
+    for (const [key, value] of Object.entries(nextValues)) {
+        if (!keys.includes(key)) continue;
+        if (isSecureDataKey(key)) {
+            let parsed: unknown;
+            try {
+                parsed = JSON.parse(value);
+            } catch {
+                throw new Error(`INVALID_DEVICE_SYNC_SECURE_VALUE:${key}`);
+            }
+            preparedValues[key] = await encryptWithKey(parsed, masterKey);
+        } else {
+            preparedValues[key] = value;
+        }
+    }
+    const stage: DeviceSyncStage = {
+        kind: 'device-sync',
+        phase: 'staging',
+        keys: [],
+        previousCryptoMetadata: Object.fromEntries(CRYPTO_METADATA_KEYS.map((key) => [key, localStorage.getItem(key)])),
+        nextCryptoMetadata,
+    };
+
+    try {
+        localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
+        for (const key of keys) {
+            const previous = localStorage.getItem(key);
+            localStorage.setItem(`${DEVICE_SYNC_PREVIOUS_PREFIX}${key}`, JSON.stringify({ exists: previous !== null, value: previous ?? undefined }));
+            if (Object.prototype.hasOwnProperty.call(preparedValues, key)) {
+                localStorage.setItem(`${DEVICE_SYNC_NEXT_PREFIX}${key}`, preparedValues[key]);
+            }
+            stage.keys.push(key);
+            localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
+        }
+
+        stage.phase = 'ready';
+        localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
+        stage.phase = 'committing';
+        localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
+        for (const key of stage.keys) {
+            const next = localStorage.getItem(`${DEVICE_SYNC_NEXT_PREFIX}${key}`);
+            if (next === null) localStorage.removeItem(key);
+            else localStorage.setItem(key, next);
+        }
+        for (const key of CRYPTO_METADATA_KEYS) {
+            const next = stage.nextCryptoMetadata[key];
+            if (next === undefined) localStorage.removeItem(key);
+            else localStorage.setItem(key, next);
+        }
+        stage.phase = 'committed';
+        localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
+        clearDeviceSyncArtifacts();
+    } catch (error) {
+        recoverInterruptedDeviceSync();
+        throw error;
+    }
 }
 
 export async function verifyPin(pin: string): Promise<CryptoKey | null> {

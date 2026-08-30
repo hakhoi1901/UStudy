@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   changePin,
   deriveKek,
+  exportMasterKeyForDeviceSync,
   getCryptoVersion,
   importBackupWithCurrentKey,
   readImportRollbackValue,
   readSecure,
+  prepareReceivedMasterKey,
+  replaceDeviceSyncData,
   saveSecure,
   setupPin,
   verifyPin,
@@ -250,6 +253,54 @@ describe('secure storage v2', () => {
     await expect(verifyPin('old-pin')).resolves.toBeNull();
     await expect(verifyPin('new-pin')).resolves.not.toBeNull();
     await expect(readSecure('raw_student_db', keyAfterPinChange, null)).resolves.toEqual({ id: 'student-1' });
+  });
+
+  it('hands a Master Key to a second device and wraps it with that device PIN', async () => {
+    const sourceMasterKey = await setupPin('source-pin');
+    await saveSecure('raw_student_db', { id: 'student-sync' }, sourceMasterKey);
+    const rawMasterKey = await exportMasterKeyForDeviceSync('source-pin');
+
+    localStorage.clear();
+    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', rawMasterKey);
+    rawMasterKey.fill(0);
+    await replaceDeviceSyncData(
+      { raw_student_db: JSON.stringify({ id: 'student-sync' }) },
+      ['raw_student_db'],
+      receiverSetup.cryptoMetadata,
+      receiverSetup.masterKey,
+    );
+
+    const reopenedKey = await verifyPin('receiver-pin');
+    expect(reopenedKey).not.toBeNull();
+    await expect(readSecure('raw_student_db', reopenedKey!, null)).resolves.toEqual({ id: 'student-sync' });
+  });
+
+  it('rolls back a failed device-sync replacement without leaving partial data', async () => {
+    const currentKey = await setupPin('current-pin');
+    await saveSecure('raw_student_db', { id: 'before-sync' }, currentKey);
+    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', crypto.getRandomValues(new Uint8Array(32)));
+    const originalSetItem = localStorage.setItem.bind(localStorage);
+    let committing = false;
+    let failed = false;
+    const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation((key: string, value: string) => {
+      if (key === '__device_sync_import_stage__' && JSON.parse(value).phase === 'committing') committing = true;
+      if (committing && !failed && key === 'raw_student_db') {
+        failed = true;
+        throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+      }
+      originalSetItem(key, value);
+    });
+
+    await expect(replaceDeviceSyncData(
+      { raw_student_db: JSON.stringify({ id: 'after-sync' }) },
+      ['raw_student_db'],
+      receiverSetup.cryptoMetadata,
+      receiverSetup.masterKey,
+    )).rejects.toBeDefined();
+    setItemSpy.mockRestore();
+
+    expect(localStorage.getItem('__device_sync_import_stage__')).toBeNull();
+    await expect(readSecure('raw_student_db', currentKey, null)).resolves.toEqual({ id: 'before-sync' });
   });
 
   it('imports a v2 encrypted backup and re-encrypts selected data with the current Master Key', async () => {
