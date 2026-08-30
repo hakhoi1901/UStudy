@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { readPlain, savePlain } from '../helpers/localStorage/save';
+import { populateSecureCache, readSecure, saveSecure } from '../helpers/localStorage/save';
 import type { ReactNode } from 'react';
+import { useCrypto } from './CryptoContext';
 
 /*
 import { useAppNotification } from '../context/NotificationContext';
@@ -79,30 +80,45 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+function createDefaultNotifications(): AppNotification[] {
+    return [{
+        id: '1',
+        title: 'Chào mừng trở lại',
+        message: 'Dữ liệu học tập của bạn đã được cập nhật mới nhất.',
+        type: 'info',
+        isRead: false,
+        timestamp: new Date(),
+    }];
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
-    const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-        const saved = readPlain<any[]>('app_notifications', []);
-        if (saved) {
-            return saved.map((n: any) => ({
-                ...n,
-                timestamp: new Date(n.timestamp)
-            }));
-        }
-        return [
-            {
-                id: '1',
-                title: 'Chào mừng trở lại',
-                message: 'Dữ liệu học tập của bạn đã được cập nhật mới nhất.',
-                type: 'info',
-                isRead: false,
-                timestamp: new Date()
-            }
-        ]; // Dữ liệu mẫu ban đầu
-    });
+    const { cryptoKey } = useCrypto();
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        savePlain('app_notifications', notifications);
-    }, [notifications]);
+        if (!cryptoKey) return;
+        let active = true;
+        void readSecure<any[]>('app_notifications', cryptoKey, createDefaultNotifications())
+            .then((saved) => {
+                if (!active) return;
+                setNotifications(saved.map((notification: any) => ({
+                    ...notification,
+                    timestamp: new Date(notification.timestamp),
+                })));
+                setIsHydrated(true);
+            })
+            .catch((error) => {
+                console.error('[notifications] Khong the doc thong bao da ma hoa.', error);
+            });
+        return () => { active = false; };
+    }, [cryptoKey]);
+
+    useEffect(() => {
+        if (!cryptoKey || !isHydrated) return;
+        populateSecureCache('app_notifications', notifications);
+        void saveSecure('app_notifications', notifications, cryptoKey);
+    }, [cryptoKey, isHydrated, notifications]);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 

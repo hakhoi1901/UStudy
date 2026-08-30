@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { readFromStorage, readPlain, savePlain } from '../../../helpers/localStorage/save';
+import { populateSecureCache, readFromStorage, readPlain, savePlain, saveSecure } from '../../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../../config';
+import { useCrypto } from '../../../context/CryptoContext';
 import { GPACalculator } from '../services/gpa-calculator';
 import {
     buildProjectionSemesters,
@@ -22,7 +23,7 @@ function readProjectedGrades(): {
     grades: Record<string, number>;
     legacyGrades: Record<string, number>;
 } {
-    const saved = readPlain<unknown>(STORAGE_KEYS.PROJECTED_GRADES, {});
+    const saved = readFromStorage<unknown>(STORAGE_KEYS.PROJECTED_GRADES, {});
     if (saved && typeof saved === 'object' && (saved as StoredProjectedGradesV2).version === 2) {
         const grades = (saved as StoredProjectedGradesV2).grades ?? {};
         return {
@@ -55,6 +56,7 @@ export function useGPASimulator(
     gradesHistory: StudentCourseGrade[],
     allCoursesMeta: any[],
 ) {
+    const { cryptoKey } = useCrypto();
     const initialProjectedGrades = useMemo(readProjectedGrades, []);
     const legacyGradesRef = useRef(initialProjectedGrades.legacyGrades);
     const [projectedGrades, setProjectedGrades] = useState<Record<string, number>>(initialProjectedGrades.grades);
@@ -109,11 +111,14 @@ export function useGPASimulator(
     }, [projectionSemesters]);
 
     useEffect(() => {
-        savePlain(STORAGE_KEYS.PROJECTED_GRADES, {
+        if (!cryptoKey) return;
+        const value = {
             version: 2,
             grades: projectedGrades,
-        } satisfies StoredProjectedGradesV2);
-    }, [projectedGrades]);
+        } satisfies StoredProjectedGradesV2;
+        populateSecureCache(STORAGE_KEYS.PROJECTED_GRADES, value);
+        void saveSecure(STORAGE_KEYS.PROJECTED_GRADES, value, cryptoKey);
+    }, [cryptoKey, projectedGrades]);
 
     useEffect(() => {
         if (projectionSemesters.length === 0) {

@@ -10,7 +10,9 @@ import {
   readSecure,
   prepareReceivedMasterKey,
   replaceDeviceSyncData,
+  saveToStorage,
   saveSecure,
+  setActiveSecureStorageKey,
   setupPin,
   verifyPin,
 } from '../../../src/helpers/localStorage/save';
@@ -73,6 +75,7 @@ function failOneMigrationCommitWrite(failAt: number, primaryKeys: string[]) {
       ...primaryKeys,
       '__master_key_iv__',
       '__encrypted_master_key__',
+      '__secure_data_schema_version__',
       '__crypto_version__',
     ].includes(key)) {
       isCommitWrite = true;
@@ -112,6 +115,38 @@ describe('secure storage v2', () => {
 
     await expect(verifyPin('wrong-pin')).resolves.toBeNull();
     expect(snapshotStorage()).toEqual(before);
+  });
+
+  it('upgrades plain JSON written by early v2 secure-key writers after unlock', async () => {
+    await setupPin('correct-pin');
+    localStorage.removeItem('__secure_data_schema_version__');
+    localStorage.setItem('gpa_projected_grades', JSON.stringify({ version: 2, grades: { CSC10001: 8.5 } }));
+    localStorage.setItem('allowed_classes_map', JSON.stringify({ CSC10001: ['24CTT1'] }));
+
+    const reopenedKey = await verifyPin('correct-pin');
+
+    expect(reopenedKey).not.toBeNull();
+    expect(localStorage.getItem('__secure_data_schema_version__')).toBe('1');
+    expect(localStorage.getItem('gpa_projected_grades')?.split(':')).toHaveLength(3);
+    await expect(readSecure('gpa_projected_grades', reopenedKey!, null)).resolves.toEqual({
+      version: 2,
+      grades: { CSC10001: 8.5 },
+    });
+    await expect(readSecure('allowed_classes_map', reopenedKey!, null)).resolves.toEqual({ CSC10001: ['24CTT1'] });
+  });
+
+  it('keeps legacy saveToStorage callers encrypted for secure keys', async () => {
+    const masterKey = await setupPin('correct-pin');
+    setActiveSecureStorageKey(masterKey);
+
+    saveToStorage('solver_preferences', { daysOff: [2], strategy: 'compress' });
+
+    await vi.waitFor(() => expect(localStorage.getItem('solver_preferences')?.split(':')).toHaveLength(3));
+    await expect(readSecure('solver_preferences', masterKey, null)).resolves.toEqual({
+      daysOff: [2],
+      strategy: 'compress',
+    });
+    setActiveSecureStorageKey(null);
   });
 
   it('migrates legacy data to v2 on the first successful unlock', async () => {
@@ -187,7 +222,7 @@ describe('secure storage v2', () => {
     expect(localStorage.getItem('__crypto_v2_migration_stage__')).toBeNull();
   });
 
-  it.each([1, 2, 3, 4, 5, 6, 7])('keeps migration atomic when quota fails at commit write %i', async (failAt) => {
+  it.each([1, 2, 3, 4, 5, 6, 7, 8])('keeps migration atomic when quota fails at commit write %i', async (failAt) => {
     await createLegacyStorage('legacy-pin', {
       raw_student_db: { name: 'Quota-safe Student' },
       saved_schedules: [{ id: 'quota-safe-schedule' }],
@@ -204,7 +239,7 @@ describe('secure storage v2', () => {
     expect(localStorage.getItem('__crypto_v2_legacy__:raw_student_db')).toBeNull();
     expect(localStorage.getItem('__crypto_v2_data__:raw_student_db')).toBeNull();
 
-    if (failAt < 7) {
+    if (failAt < 8) {
       expect(getCryptoVersion()).toBe(1);
       expect(localStorage.getItem('__master_key_iv__')).toBeNull();
       expect(localStorage.getItem('__encrypted_master_key__')).toBeNull();
@@ -301,6 +336,30 @@ describe('secure storage v2', () => {
 
     expect(localStorage.getItem('__device_sync_import_stage__')).toBeNull();
     await expect(readSecure('raw_student_db', currentKey, null)).resolves.toEqual({ id: 'before-sync' });
+  });
+
+  it('releases a large staged value before committing its primary storage key', async () => {
+    await setupPin('current-pin');
+    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', crypto.getRandomValues(new Uint8Array(32)));
+    const largeResult = JSON.stringify({ solutions: ['x'.repeat(128 * 1024)] });
+    const originalSetItem = localStorage.setItem.bind(localStorage);
+    const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation((key: string, value: string) => {
+      if (key === 'group_schedule_last_result' && localStorage.getItem('__device_sync_next__:group_schedule_last_result') !== null) {
+        throw new DOMException('Duplicate staged value exceeded quota', 'QuotaExceededError');
+      }
+      originalSetItem(key, value);
+    });
+
+    await replaceDeviceSyncData(
+      { group_schedule_last_result: largeResult },
+      ['group_schedule_last_result'],
+      receiverSetup.cryptoMetadata,
+      receiverSetup.masterKey,
+    );
+    setItemSpy.mockRestore();
+
+    expect(localStorage.getItem('group_schedule_last_result')).toBe(largeResult);
+    expect(localStorage.getItem('__device_sync_next__:group_schedule_last_result')).toBeNull();
   });
 
   it('imports a v2 encrypted backup and re-encrypts selected data with the current Master Key', async () => {

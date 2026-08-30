@@ -17,13 +17,30 @@ export function createWebRtcTransport(
 ): WebRtcTransport {
   const connection = new RTCPeerConnection({ iceServers: STUN_SERVERS });
   let channel: RTCDataChannel | null = null;
+  const pendingRemoteCandidates: RTCIceCandidateInit[] = [];
+
+  const addRemoteCandidate = async (candidate: RTCIceCandidateInit) => {
+    if (!connection.remoteDescription) {
+      pendingRemoteCandidates.push(candidate);
+      return;
+    }
+    await connection.addIceCandidate(candidate);
+  };
+
+  const applyRemoteDescription = async (description: RTCSessionDescriptionInit) => {
+    await connection.setRemoteDescription(description);
+    while (pendingRemoteCandidates.length) {
+      const candidate = pendingRemoteCandidates.shift();
+      if (candidate) await connection.addIceCandidate(candidate);
+    }
+  };
   const attachChannel = (next: RTCDataChannel) => {
     next.binaryType = 'arraybuffer';
     channel = next;
     onChannel(next);
   };
   connection.onicecandidate = (event) => {
-    if (event.candidate) signaling.send({ type: 'ice', candidate: event.candidate.toJSON() });
+    if (event.candidate) signaling.send({ type: 'ice', payload: event.candidate.toJSON() });
   };
   connection.onconnectionstatechange = () => onConnectionState(connection.connectionState);
   if (role === 'sender') attachChannel(connection.createDataChannel('ustudy-sync-v1', { ordered: true }));
@@ -35,18 +52,18 @@ export function createWebRtcTransport(
       if (role !== 'sender') return;
       const offer = await connection.createOffer();
       await connection.setLocalDescription(offer);
-      signaling.send({ type: 'offer', sdp: offer });
+      signaling.send({ type: 'offer', payload: offer });
     },
     async handleSignal(message) {
       if (message.type === 'offer' && role === 'receiver') {
-        await connection.setRemoteDescription(message.sdp as RTCSessionDescriptionInit);
+        await applyRemoteDescription(message.payload as RTCSessionDescriptionInit);
         const answer = await connection.createAnswer();
         await connection.setLocalDescription(answer);
-        signaling.send({ type: 'answer', sdp: answer });
+        signaling.send({ type: 'answer', payload: answer });
       } else if (message.type === 'answer' && role === 'sender') {
-        await connection.setRemoteDescription(message.sdp as RTCSessionDescriptionInit);
-      } else if (message.type === 'ice' && message.candidate) {
-        await connection.addIceCandidate(message.candidate as RTCIceCandidateInit);
+        await applyRemoteDescription(message.payload as RTCSessionDescriptionInit);
+      } else if (message.type === 'ice' && message.payload) {
+        await addRemoteCandidate(message.payload as RTCIceCandidateInit);
       }
     },
     close() {

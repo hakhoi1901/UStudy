@@ -7,11 +7,15 @@ import { useCrypto } from '../../context/CryptoContext';
 import { PageHeader } from '../../components/layout/page-header';
 import { PageShell } from '../../components/layout/page-shell';
 import { DeviceSyncDataTransfer } from '../../features/device-sync';
+import { useIsMobile } from '../../components/ui/use-mobile';
+import { isNativePortalSyncAvailable } from '../../mobile/portal-sync';
 
 export function SettingsPage({ onPageChange }: { onPageChange: (page: string) => void }) {
     const { name } = useStudentDb();
     const { lock, hasData } = useCrypto();
     const [showChangePinModal, setShowChangePinModal] = useState(false);
+    const isMobile = useIsMobile();
+    const deviceSyncModes = isMobile || isNativePortalSyncAvailable() ? ['receive'] as const : ['send', 'receive'] as const;
 
     const handleLockNow = () => {
         lock();
@@ -61,7 +65,7 @@ export function SettingsPage({ onPageChange }: { onPageChange: (page: string) =>
                           </div>
 
                           <div className="ustudy-settings-group">
-                            <DeviceSyncDataTransfer />
+                            <DeviceSyncDataTransfer availableModes={deviceSyncModes} />
                           </div>
                         </div>
                     </div>

@@ -6,8 +6,6 @@ export const DEVICE_SYNC_CHUNK_BYTES = 32 * 1024;
 export interface PairingQrPayload {
   protocol: typeof DEVICE_SYNC_PROTOCOL;
   sessionId: string;
-  publicKey: string;
-  nonce: string;
 }
 
 export interface SyncPackageV1 {
@@ -23,6 +21,7 @@ export type SyncMessage =
   | { type: 'sync-start'; totalBytes: number; totalChunks: number; hash: string }
   | { type: 'chunk'; index: number; data: string }
   | { type: 'sync-end' }
+  | { type: 'sas-confirmed' }
   | { type: 'ack' }
   | { type: 'error'; code: string };
 
@@ -38,19 +37,22 @@ export function parsePairingQr(value: string): PairingQrPayload {
   if (
     payload.protocol !== DEVICE_SYNC_PROTOCOL
     || typeof payload.sessionId !== 'string'
-    || !/^[A-Z2-7]{16}$/.test(payload.sessionId)
-    || typeof payload.publicKey !== 'string'
-    || typeof payload.nonce !== 'string'
-    || payload.publicKey.length < 80
-    || payload.nonce.length < 16
+    || !/^[A-HJ-NP-Z2-9]{6}$/.test(payload.sessionId)
   ) throw new Error('INVALID_PAIRING_QR');
-  try {
-    const key = syncBase64.fromBase64(payload.publicKey);
-    if (key.byteLength !== 65) throw new Error('INVALID_PAIRING_QR');
-  } catch {
-    throw new Error('INVALID_PAIRING_QR');
-  }
   return payload as PairingQrPayload;
+}
+
+export function formatPairingCode(sessionId: string): string {
+  if (!/^[A-HJ-NP-Z2-9]{6}$/.test(sessionId)) throw new Error('INVALID_PAIRING_CODE');
+  return sessionId;
+}
+
+export function parsePairingInput(value: string): PairingQrPayload {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('{')) return parsePairingQr(trimmed);
+  const sessionId = trimmed.toUpperCase().replace(/[\s-]/g, '');
+  if (!/^[A-HJ-NP-Z2-9]{6}$/.test(sessionId)) throw new Error('INVALID_PAIRING_CODE');
+  return { protocol: DEVICE_SYNC_PROTOCOL, sessionId };
 }
 
 export async function sha256Base64(bytes: Uint8Array): Promise<string> {

@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ustudy-sync-signaling",
+  "account_id": "1861eccb6ab24d0621df06f599df42d3",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-29",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SYNC_SESSION",
+        "class_name": "SyncSession"
+      }
+    ]
+  },
+  "exports": {
+    "SyncSession": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://ustudy.hakhoi.io.vn,https://localhost:3005,http://localhost:3005"
+  }
+}

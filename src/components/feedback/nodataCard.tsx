@@ -4,20 +4,21 @@ import {
     Download,
     ExternalLink,
     FileUp,
+    Laptop,
     LoaderCircle,
     Monitor,
     Puzzle,
-    ShieldCheck,
     Smartphone,
 } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { ImportData, OpticalDataTransfer } from '../../features/settings';
+import { DeviceSyncDataTransfer } from '../../features/device-sync';
 import { isNativePortalSyncAvailable, openNativePortalSync } from '../../mobile/portal-sync';
 import { BookmarkletButton } from '../portal';
 import { portalSyncConfig } from '../../portal-sync/protocol';
 
 const ANDROID_APP_DOWNLOAD_URL = '/downloads/UStudy-android.apk';
-type DesktopSyncMethod = 'extension' | 'bookmarklet' | 'json';
+type DesktopSyncMethod = 'extension' | 'bookmarklet' | 'device-sync' | 'json';
 
 const DESKTOP_SYNC_GUIDES: Record<DesktopSyncMethod, { title: string; description: string; steps: InstructionStepProps[] }> = {
     extension: {
@@ -45,6 +46,15 @@ const DESKTOP_SYNC_GUIDES: Record<DesktopSyncMethod, { title: string; descriptio
             { number: 1, title: 'Xuất dữ liệu từ thiết bị nguồn', description: 'Vào Cài đặt của UStudy trên thiết bị đang có dữ liệu và chọn Xuất dữ liệu.' },
             { number: 2, title: 'Chuyển file sang thiết bị này', description: 'Bạn có thể dùng Drive, email, Zalo hoặc bất kỳ cách gửi file nào thuận tiện.' },
             { number: 3, title: 'Chọn file và xem trước', description: 'Chọn file JSON bên dưới, sau đó chỉ tích những nhóm dữ liệu bạn muốn nhận.' },
+        ],
+    },
+    'device-sync': {
+        title: 'Đồng bộ từ thiết bị khác',
+        description: 'Chuyển trực tiếp toàn bộ dữ liệu UStudy từ laptop sang thiết bị này, không cần tạo file JSON.',
+        steps: [
+            { number: 1, title: 'Tạo mã trên máy gửi', description: 'Trên thiết bị đang có dữ liệu, chọn Gửi dữ liệu rồi tạo mã kết nối sáu ký tự.' },
+            { number: 2, title: 'Nhập mã trên máy nhận', description: 'Trên thiết bị cần nhận dữ liệu, chọn Nhận dữ liệu và nhập mã vừa tạo.' },
+            { number: 3, title: 'Đối chiếu mã xác minh', description: 'Chỉ xác nhận khi hai thiết bị hiển thị cùng một mã xác minh.' },
         ],
     },
 };
@@ -128,12 +138,15 @@ export function NoDataCard() {
 
                 {!isMobile ? (
                     <div className="mx-auto max-w-2xl">
-                        <div className="grid grid-cols-3 gap-2 rounded-xl bg-gray-100 p-1.5" role="tablist" aria-label="Chọn cách đồng bộ dữ liệu">
+                        <div className="grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1.5 sm:grid-cols-4" role="tablist" aria-label="Chọn cách đồng bộ dữ liệu">
                             <button type="button" role="tab" aria-selected={desktopSyncMethod === 'bookmarklet'} onClick={() => setDesktopSyncMethod('bookmarklet')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'bookmarklet' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                                 <Bookmark className="h-4 w-4" />Bookmarklet
                             </button>
                             <button type="button" role="tab" aria-selected={desktopSyncMethod === 'extension'} onClick={() => setDesktopSyncMethod('extension')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'extension' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                                 <Puzzle className="h-4 w-4" />Extension
+                            </button>
+                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'device-sync'} onClick={() => setDesktopSyncMethod('device-sync')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'device-sync' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                                <Laptop className="h-4 w-4" />Đồng bộ
                             </button>
                             <button type="button" role="tab" aria-selected={desktopSyncMethod === 'json'} onClick={() => setDesktopSyncMethod('json')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'json' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                                 <FileUp className="h-4 w-4" />File JSON
@@ -155,6 +168,8 @@ export function NoDataCard() {
                                 <a href={`/downloads/ustudy-portal-sync.zip?v=${encodeURIComponent(portalSyncConfig.extensionVersion)}`} download className="ustudy-button-primary mt-4 inline-flex h-10 px-4 text-sm">
                                     <Download className="h-4 w-4" />Tải Extension v{portalSyncConfig.extensionVersion}
                                 </a>
+                            ) : desktopSyncMethod === 'device-sync' ? (
+                                <div className="mt-4"><DeviceSyncDataTransfer hideHeader /></div>
                             ) : (
                                 <div className="mt-4">
                                     <BookmarkletButton variant="primary" hideInstructions={false} className="flex w-fit flex-col items-start" />
@@ -163,7 +178,7 @@ export function NoDataCard() {
                         </section>
                     </div>
                 ) : nativePortalSyncAvailable ? (
-                    <div className="mx-auto max-w-lg">
+                    <div className="mx-auto max-w-lg space-y-4">
                         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
                             <InstructionStep number={1} title="Mở Portal" description="Nhấn nút bên dưới để mở Portal ngay trong UStudy." />
                             <InstructionStep number={2} title="Đăng nhập và đồng bộ" description="Đăng nhập, sau đó nhấn Đồng bộ với UStudy ở góc dưới bên phải." />
@@ -186,6 +201,32 @@ export function NoDataCard() {
                                 {portalError}
                             </p>
                         )}
+
+                        <section className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white">
+                                    <Smartphone className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-900">Đồng bộ từ laptop</h3>
+                                    <p className="mt-1 text-xs leading-5 text-gray-600">Nhận trực tiếp dữ liệu từ UStudy trên laptop bằng mã kết nối ngắn.</p>
+                                </div>
+                            </div>
+                            <DeviceSyncDataTransfer availableModes={['receive']} hideHeader />
+                        </section>
+
+                        <section className="rounded-xl border border-gray-200 bg-white p-4">
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                                    <FileUp className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-900">Nhập file JSON</h3>
+                                    <p className="mt-1 text-xs leading-5 text-gray-600">Dùng bản sao lưu đã xuất từ UStudy trên thiết bị khác.</p>
+                                </div>
+                            </div>
+                            <ImportData compact importButtonLabel="Chọn file JSON" />
+                        </section>
                     </div>
                 ) : (
                     <div className="mx-auto max-w-lg space-y-4">
@@ -211,16 +252,17 @@ export function NoDataCard() {
                             </a>
                         </section>
 
-                        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                            <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
-                                <ShieldCheck className="h-4 w-4 text-[#004A98]" />
-                                <h3 className="text-sm font-bold text-gray-900">Cài đặt và sử dụng</h3>
+                        <section className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#004A98] text-white">
+                                    <Smartphone className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-900">Đồng bộ từ laptop</h3>
+                                    <p className="mt-1 text-xs leading-5 text-gray-600">Nhận trực tiếp dữ liệu từ UStudy trên laptop bằng mã kết nối ngắn.</p>
+                                </div>
                             </div>
-                            <div className="divide-y divide-gray-100">
-                                <InstructionStep number={1} title="Cài file APK" description="Mở file vừa tải và cho phép trình duyệt cài ứng dụng nếu Android yêu cầu." />
-                                <InstructionStep number={2} title="Mở Portal trong UStudy" description="Trong ứng dụng, nhấn Mở Portal và đồng bộ rồi đăng nhập tài khoản sinh viên." />
-                                <InstructionStep number={3} title="Nhận dữ liệu" description="Nhấn Đồng bộ với UStudy trên Portal, xem trước thay đổi và xác nhận những mục muốn nhập." />
-                            </div>
+                            <DeviceSyncDataTransfer availableModes={['receive']} hideHeader />
                         </section>
 
                         <section className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 md:hidden">

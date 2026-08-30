@@ -19,6 +19,7 @@ const SALT_BYTES = 16;
 const IV_BYTES = 12;
 const MASTER_KEY_BYTES = 32;
 const CRYPTO_VERSION_V2 = 2;
+const SECURE_DATA_SCHEMA_VERSION = 1;
 const MASTER_KEY_WRAP_AAD = new TextEncoder().encode('ustudy:master-key:v2');
 const MIGRATION_STAGE_KEY = '__crypto_v2_migration_stage__';
 const MIGRATION_LEGACY_PREFIX = '__crypto_v2_legacy__:';
@@ -35,6 +36,7 @@ const INTERNAL_KEYS = {
     PIN_VERIFY: '__pin_verify__',
     MASTER_KEY_IV: '__master_key_iv__',
     ENCRYPTED_MASTER_KEY: '__encrypted_master_key__',
+    SECURE_DATA_SCHEMA: '__secure_data_schema_version__',
     FAIL_COUNT: '__fail_count__',
     LOCKOUT_UNTIL: '__lockout_until__',
 } as const;
@@ -45,6 +47,7 @@ const CRYPTO_METADATA_KEYS = [
     INTERNAL_KEYS.PIN_VERIFY,
     INTERNAL_KEYS.MASTER_KEY_IV,
     INTERNAL_KEYS.ENCRYPTED_MASTER_KEY,
+    INTERNAL_KEYS.SECURE_DATA_SCHEMA,
 ] as const;
 
 type CryptoVersion = 1 | 2;
@@ -161,6 +164,38 @@ function isSecureDataKey(key: string): key is typeof SECURE_DATA_KEYS[number] {
     return (SECURE_DATA_KEYS as readonly string[]).includes(key);
 }
 
+/**
+ * Early v2 builds added secure keys before every writer had been migrated away
+ * from plain JSON. Upgrade those known legacy values once, after the Master Key
+ * has been authenticated. Three-part payloads are never treated as plaintext:
+ * damaged ciphertext must continue to fail AES-GCM authentication.
+ */
+async function migratePlainSecureValuesToCurrentSchema(masterKey: CryptoKey): Promise<void> {
+    if (localStorage.getItem(INTERNAL_KEYS.SECURE_DATA_SCHEMA) === String(SECURE_DATA_SCHEMA_VERSION)) return;
+
+    for (const key of SECURE_DATA_KEYS) {
+        const raw = localStorage.getItem(key);
+        if (raw === null || decodePayload(raw)) continue;
+
+        let value: unknown;
+        try {
+            value = JSON.parse(raw);
+        } catch {
+            // Unknown or damaged values remain untouched and fail closed on read.
+            continue;
+        }
+
+        const encrypted = await encryptWithKey(value, masterKey);
+        const verified = await decryptWithKey(encrypted, masterKey);
+        if (JSON.stringify(verified) !== JSON.stringify(value)) {
+            throw new Error(`SECURE_SCHEMA_MIGRATION_MISMATCH:${key}`);
+        }
+        localStorage.setItem(key, encrypted);
+    }
+
+    localStorage.setItem(INTERNAL_KEYS.SECURE_DATA_SCHEMA, String(SECURE_DATA_SCHEMA_VERSION));
+}
+
 function clearCryptoMigrationArtifacts(): void {
     const keysToRemove: string[] = [];
     for (let index = 0; index < localStorage.length; index += 1) {
@@ -263,6 +298,7 @@ function recoverInterruptedCryptoOperations(): void {
         localStorage.removeItem(INTERNAL_KEYS.VERSION);
         localStorage.removeItem(INTERNAL_KEYS.MASTER_KEY_IV);
         localStorage.removeItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
+        localStorage.removeItem(INTERNAL_KEYS.SECURE_DATA_SCHEMA);
         clearCryptoMigrationArtifacts();
     } catch (error) {
         console.error('[crypto] Không thể khôi phục migration chưa hoàn tất:', error);
@@ -454,6 +490,7 @@ export async function setupPin(pin: string): Promise<CryptoKey> {
     localStorage.setItem(INTERNAL_KEYS.SALT, toBase64(salt));
     localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, envelope.iv);
     localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, envelope.ciphertext);
+    localStorage.setItem(INTERNAL_KEYS.SECURE_DATA_SCHEMA, String(SECURE_DATA_SCHEMA_VERSION));
     localStorage.setItem(INTERNAL_KEYS.VERSION, String(CRYPTO_VERSION_V2));
     localStorage.removeItem(INTERNAL_KEYS.PIN_VERIFY);
     return envelope.masterKey;
@@ -490,6 +527,7 @@ export async function prepareReceivedMasterKey(pin: string, rawMasterKey: Uint8A
             [INTERNAL_KEYS.SALT]: toBase64(salt),
             [INTERNAL_KEYS.MASTER_KEY_IV]: toBase64(wrapped.iv),
             [INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]: toBase64(wrapped.ciphertext),
+            [INTERNAL_KEYS.SECURE_DATA_SCHEMA]: String(SECURE_DATA_SCHEMA_VERSION),
         },
     };
 }
@@ -546,9 +584,13 @@ export async function replaceDeviceSyncData(
         stage.phase = 'committing';
         localStorage.setItem(DEVICE_SYNC_STAGE_KEY, JSON.stringify(stage));
         for (const key of stage.keys) {
-            const next = localStorage.getItem(`${DEVICE_SYNC_NEXT_PREFIX}${key}`);
-            if (next === null) localStorage.removeItem(key);
-            else localStorage.setItem(key, next);
+            const nextStageKey = `${DEVICE_SYNC_NEXT_PREFIX}${key}`;
+            const hasNext = Object.prototype.hasOwnProperty.call(preparedValues, key);
+            // Free the staged copy before writing the primary key. The previous
+            // value is still journaled, so a failed write can roll back safely.
+            localStorage.removeItem(nextStageKey);
+            if (!hasNext) localStorage.removeItem(key);
+            else localStorage.setItem(key, preparedValues[key]);
         }
         for (const key of CRYPTO_METADATA_KEYS) {
             const next = stage.nextCryptoMetadata[key];
@@ -576,7 +618,14 @@ export async function verifyPin(pin: string): Promise<CryptoKey | null> {
             const masterKeyIv = localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV);
             const encryptedMasterKey = localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
             if (!masterKeyIv || !encryptedMasterKey) return null;
-            return await openMasterKeyEnvelope(kek, masterKeyIv, encryptedMasterKey);
+            const masterKey = await openMasterKeyEnvelope(kek, masterKeyIv, encryptedMasterKey);
+            try {
+                await migratePlainSecureValuesToCurrentSchema(masterKey);
+            } catch (error) {
+                // A schema upgrade must never turn a valid PIN into a lockout.
+                console.warn('[crypto] Secure data schema migration is incomplete.', error);
+            }
+            return masterKey;
         }
 
         const verifyPayload = localStorage.getItem(INTERNAL_KEYS.PIN_VERIFY);
@@ -714,6 +763,7 @@ async function migrateLegacyDataToV2(
 
         localStorage.setItem(INTERNAL_KEYS.MASTER_KEY_IV, stage.masterKeyIv);
         localStorage.setItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY, stage.encryptedMasterKey);
+        localStorage.setItem(INTERNAL_KEYS.SECURE_DATA_SCHEMA, String(SECURE_DATA_SCHEMA_VERSION));
         localStorage.setItem(INTERNAL_KEYS.VERSION, String(CRYPTO_VERSION_V2));
         stage.phase = 'committed';
         localStorage.setItem(MIGRATION_STAGE_KEY, JSON.stringify(stage));
@@ -1086,6 +1136,12 @@ export function clearAllStorage(): void {
 // Cache được populate bởi CryptoContext sau khi unlock.
 
 const _ramCache: Record<string, any> = {};
+let _activeCryptoKey: CryptoKey | null = null;
+
+/** Keeps the non-extractable Master Key available to legacy synchronous writers. */
+export function setActiveSecureStorageKey(key: CryptoKey | null): void {
+    _activeCryptoKey = key;
+}
 
 /** Ghi một entry vào RAM cache */
 export function populateSecureCache(key: string, value: any): void {
@@ -1100,7 +1156,18 @@ export function clearSecureCache(): void {
 // ─── Backward Compat Shims ────────────────────────────────────────────────────
 
 /** @deprecated Dùng saveSecure() hoặc savePlain() thay thế */
-export const saveToStorage = savePlain;
+export function saveToStorage<T>(key: string, value: T): void {
+    if (!isSecureDataKey(key)) {
+        savePlain(key, value);
+        return;
+    }
+    if (!_activeCryptoKey) {
+        console.error(`[saveToStorage] Khong the luu secure key "${key}" khi du lieu dang khoa.`);
+        return;
+    }
+    populateSecureCache(key, value);
+    void saveSecure(key, value, _activeCryptoKey);
+}
 
 /**
  * @deprecated Dùng readSecure() thay thế cho data nhạy cảm.
@@ -1111,6 +1178,7 @@ export const readFromStorage = <T,>(key: string, fallback: T): T => {
     if (Object.prototype.hasOwnProperty.call(_ramCache, key)) {
         return _ramCache[key] as T;
     }
+    if (isSecureDataKey(key)) return fallback;
     return readPlain(key, fallback);
 };
 

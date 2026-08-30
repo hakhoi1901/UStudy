@@ -5,6 +5,7 @@ import {
     populateSecureCache,
     clearSecureCache,
     SECURE_DATA_KEYS,
+    setActiveSecureStorageKey,
 } from '../helpers/localStorage/save';
 
 /**
@@ -55,9 +56,27 @@ const CryptoContext = createContext<CryptoContextType | null>(null);
 export const CACHE_POPULATED_EVENT = 'CACHE_POPULATED';
 
 export function CryptoProvider({ children }: { children: React.ReactNode }) {
-    const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(() => getPersistedKey());
+    const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(() => {
+        const persistedKey = getPersistedKey();
+        setActiveSecureStorageKey(persistedKey);
+        return persistedKey;
+    });
     const [isReady, setIsReady] = useState(false);
     const [hasData, setHasData] = useState(false);
+    const unlockSequence = React.useRef(0);
+
+    const hydrateSecureData = useCallback(async (key: CryptoKey) => {
+        await Promise.all(
+            SECURE_DATA_KEYS.map(async (storageKey) => {
+                try {
+                    const value = await readSecure(storageKey, key, null);
+                    if (value !== null) populateSecureCache(storageKey, value);
+                } catch (error) {
+                    console.error(`[crypto] Secure data integrity check failed for "${storageKey}".`, error);
+                }
+            }),
+        );
+    }, []);
 
     // Sau khi cryptoKey thay đổi → populate/clear RAM cache
     useEffect(() => {
@@ -66,34 +85,27 @@ export function CryptoProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        // Decrypt toàn bộ secure data và đưa vào RAM cache
-        (async () => {
-            await Promise.all(
-                SECURE_DATA_KEYS.map(async (key) => {
-                    try {
-                        const val = await readSecure(key, cryptoKey, null);
-                        if (val !== null) {
-                            populateSecureCache(key, val);
-                        }
-                    } catch (error) {
-                        console.error(`[crypto] Secure data integrity check failed for "${key}".`, error);
-                    }
-                })
-            );
-
+        void hydrateSecureData(cryptoKey).then(() => {
             // Dùng postMessage thay vì dispatchEvent(new MessageEvent) để đảm bảo event vào queue async
             // Giúp React có đủ thời gian mount các component và gắn listener
             window.postMessage({ type: CACHE_POPULATED_EVENT }, '*');
-        })();
-    }, [cryptoKey]);
+        });
+    }, [cryptoKey, hydrateSecureData]);
 
     const unlock = useCallback((key: CryptoKey) => {
+        const sequence = ++unlockSequence.current;
         setPersistedKey(key);
-        setCryptoKey(key);
-    }, []);
+        setActiveSecureStorageKey(key);
+        clearSecureCache();
+        void hydrateSecureData(key).then(() => {
+            if (unlockSequence.current === sequence) setCryptoKey(key);
+        });
+    }, [hydrateSecureData]);
 
     const lock = useCallback(() => {
+        unlockSequence.current += 1;
         setPersistedKey(null);
+        setActiveSecureStorageKey(null);
         setCryptoKey(null);
         clearSecureCache();
     }, []);

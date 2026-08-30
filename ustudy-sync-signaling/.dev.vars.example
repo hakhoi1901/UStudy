@@ -1,0 +1,2 @@
+# Dev-only example. Do not commit real origin lists that are not intended for this environment.
+ALLOWED_ORIGINS=https://ustudy.hakhoi.io.vn,https://localhost:3005,http://localhost:3005
