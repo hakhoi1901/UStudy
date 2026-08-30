@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEphemeralKeyPair, decryptSyncMessage, deriveSessionKey, encryptSyncMessage } from '../../../src/features/device-sync/services/sync-crypto';
 import { DEVICE_SYNC_PROTOCOL, formatPairingCode, parsePairingInput, parsePairingQr, reassembleSyncChunks, sha256Base64, splitSyncChunks } from '../../../src/features/device-sync/services/sync-protocol';
-import { SyncPackageReceiver } from '../../../src/features/device-sync/services/transfer';
+import { sendSyncPackage, SyncPackageReceiver } from '../../../src/features/device-sync/services/transfer';
 
 describe('device sync core protocol', () => {
   it('derives the same session key for both ephemeral peers', async () => {
@@ -59,13 +59,30 @@ describe('device sync core protocol', () => {
     const bytes = new TextEncoder().encode(JSON.stringify({ protocolVersion: 1, cryptoVersion: 2, createdAt: 1, data: { selected_major_id: '"cntt"' } }));
     const chunk = bytes;
     const receiver = new SyncPackageReceiver();
-    const masterKey = crypto.getRandomValues(new Uint8Array(32));
-    await receiver.accept({ type: 'key-transfer', data: btoa(String.fromCharCode(...masterKey)) });
     await receiver.accept({ type: 'sync-start', totalBytes: bytes.byteLength, totalChunks: 1, hash: await sha256Base64(bytes) });
     await receiver.accept({ type: 'chunk', index: 0, data: btoa(String.fromCharCode(...chunk)) });
     await expect(receiver.accept({ type: 'chunk', index: 0, data: btoa('different') })).rejects.toThrow('CONFLICTING_DUPLICATE_CHUNK');
     const result = await receiver.accept({ type: 'sync-end' });
-    expect(result?.syncPackage.data.selected_major_id).toBe('"cntt"');
+    expect(result?.data.selected_major_id).toBe('"cntt"');
     receiver.release();
+  });
+
+  it('transfers only the dataset and never sends a Master Key message', async () => {
+    const sender = await createEphemeralKeyPair();
+    const receiver = await createEphemeralKeyPair();
+    const sessionKey = await deriveSessionKey(sender.privateKey, receiver.publicKey, 'K7M4Q2', 'nonce-1234567890');
+    const bytes = new TextEncoder().encode(JSON.stringify({ protocolVersion: 1, cryptoVersion: 2, createdAt: 1, data: { raw_student_db: '{}' } }));
+    const envelopes: string[] = [];
+    const channel = {
+      readyState: 'open',
+      bufferedAmount: 0,
+      send: (value: string) => envelopes.push(value),
+    } as unknown as RTCDataChannel;
+
+    await sendSyncPackage(channel, sessionKey, 'K7M4Q2', bytes);
+    const messages = await Promise.all(envelopes.map((raw) => decryptSyncMessage(JSON.parse(raw), sessionKey, 'K7M4Q2')));
+
+    expect(messages.map((message: any) => message.type)).toEqual(['sync-start', 'chunk', 'sync-end']);
+    expect(messages.some((message: any) => message.type === 'key-transfer')).toBe(false);
   });
 });

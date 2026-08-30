@@ -2,8 +2,9 @@ import { Camera, Copy, Laptop, QrCode, RefreshCw, Send, ShieldCheck, Smartphone,
 import QRCode from 'qrcode';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { SecurityLock } from '../../../components/security';
 import { useCrypto } from '../../../context/CryptoContext';
-import { exportMasterKeyForDeviceSync, prepareReceivedMasterKey, replaceDeviceSyncData } from '../../../helpers/localStorage/save';
+import { getCurrentCryptoMetadata, prepareNewLocalMasterKey, replaceDeviceSyncData } from '../../../helpers/localStorage/save';
 import { createOpticalDecodeWorker } from '../../optical-sync/workers/create-optical-decode-worker';
 import { createEphemeralKeyPair, deriveSessionKey, deriveShortAuthenticationString } from '../services/sync-crypto';
 import { DEVICE_SYNC_PROTOCOL, formatPairingCode, parsePairingInput, type PairingQrPayload } from '../services/sync-protocol';
@@ -134,13 +135,12 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
   const [pairingCode, setPairingCode] = useState('');
   const [showQr, setShowQr] = useState(false);
   const [pairingText, setPairingText] = useState('');
-  const [pin, setPin] = useState('');
   const [sas, setSas] = useState('');
   const [progress, setProgress] = useState(0);
-  const [received, setReceived] = useState<{ masterKey: Uint8Array; data: Record<string, string> } | null>(null);
+  const [received, setReceived] = useState<{ data: Record<string, string> } | null>(null);
   const [replaceConfirmed, setReplaceConfirmed] = useState(false);
-  const [sasConfirmed, setSasConfirmed] = useState(false);
-  const [peerSasConfirmed, setPeerSasConfirmed] = useState(false);
+  const [transferAuthorized, setTransferAuthorized] = useState(false);
+  const [showReceiverPinSetup, setShowReceiverPinSetup] = useState(false);
   const signalingRef = useRef<DeviceSyncSignalingClient | null>(null);
   const transportRef = useRef<ReturnType<typeof createWebRtcTransport> | null>(null);
   const receiverRef = useRef<SyncPackageReceiver | null>(null);
@@ -150,9 +150,10 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
   const sasRef = useRef('');
   const syncCompletedRef = useRef(false);
   const connectionTimeoutRef = useRef<number | null>(null);
+  const ackTimeoutRef = useRef<number | null>(null);
   const senderPairingSentRef = useRef(false);
-  const sasConfirmedRef = useRef(false);
-  const peerSasConfirmedRef = useRef(false);
+  const transferAuthorizedRef = useRef(false);
+  const transferStartedRef = useRef(false);
 
   const failTransport = (caught: unknown) => {
     const message = caught instanceof Error ? caught.message : 'Không thể thiết lập kết nối trực tiếp giữa hai thiết bị.';
@@ -163,20 +164,21 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
   const close = () => {
     syncCompletedRef.current = true;
     if (connectionTimeoutRef.current !== null) window.clearTimeout(connectionTimeoutRef.current);
+    if (ackTimeoutRef.current !== null) window.clearTimeout(ackTimeoutRef.current);
     connectionTimeoutRef.current = null;
+    ackTimeoutRef.current = null;
     signalingRef.current?.close();
     transportRef.current?.close();
     receiverRef.current?.release();
-    received?.masterKey.fill(0);
     signalingRef.current = null;
     transportRef.current = null;
     receiverRef.current = null;
     sessionKeyRef.current = null;
     sessionIdRef.current = ''; nonceRef.current = ''; sasRef.current = '';
     senderPairingSentRef.current = false;
-    sasConfirmedRef.current = false;
-    peerSasConfirmedRef.current = false;
-    setMode(null); setPhase('idle'); setError(''); setQrImage(''); setPairingCode(''); setShowQr(false); setPairingText(''); setPin(''); setSas(''); setProgress(0); setReceived(null); setReplaceConfirmed(false); setSasConfirmed(false); setPeerSasConfirmed(false);
+    transferAuthorizedRef.current = false;
+    transferStartedRef.current = false;
+    setMode(null); setPhase('idle'); setError(''); setQrImage(''); setPairingCode(''); setShowQr(false); setPairingText(''); setSas(''); setProgress(0); setReceived(null); setReplaceConfirmed(false); setTransferAuthorized(false); setShowReceiverPinSetup(false);
   };
 
   useEffect(() => () => close(), []);
@@ -199,20 +201,31 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
           if (message.protocol !== DEVICE_SYNC_PROTOCOL || message.sessionId !== sessionIdRef.current || message.nonce !== nonceRef.current || message.sas !== sasRef.current) throw new Error('PAIRING_VERIFICATION_FAILED');
           return;
         }
-        if (message.type === 'sas-confirmed') {
-          peerSasConfirmedRef.current = true;
-          setPeerSasConfirmed(true);
+        if (message.type === 'transfer-authorized') {
+          if (role !== 'receiver') throw new Error('INVALID_TRANSFER_AUTHORIZATION');
+          transferAuthorizedRef.current = true;
+          setTransferAuthorized(true);
+          setPhase('transferring');
+          return;
+        }
+        if (message.type === 'ack') {
+          if (role !== 'sender' || !transferStartedRef.current) throw new Error('INVALID_SYNC_ACK');
+          if (ackTimeoutRef.current !== null) window.clearTimeout(ackTimeoutRef.current);
+          ackTimeoutRef.current = null;
+          syncCompletedRef.current = true;
+          setProgress(1);
+          setPhase('done');
           return;
         }
         if (role !== 'receiver') return;
-        if (!sasConfirmedRef.current || !peerSasConfirmedRef.current) {
+        if (!transferAuthorizedRef.current) {
           throw new Error('TRANSFER_BEFORE_SAS_CONFIRMATION');
         }
         const result = await receiverRef.current?.accept(message);
         setProgress(receiverRef.current?.progress ?? 0);
         if (result) {
           syncCompletedRef.current = true;
-          setReceived({ masterKey: result.masterKey, data: result.syncPackage.data });
+          setReceived({ data: result.data });
           setPhase('received');
           await sendEncryptedSyncMessage(channel, key, sessionIdRef.current, { type: 'ack' });
         }
@@ -223,16 +236,18 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
     })();
   };
 
-  const confirmSas = async () => {
+  const confirmSasAndSend = async () => {
     const channel = transportRef.current?.channel;
     const key = sessionKeyRef.current;
-    if (!channel || !key || !sas) return;
+    if (mode !== 'send' || !channel || !key || !sas || transferStartedRef.current) return;
+    transferStartedRef.current = true;
     try {
-      await sendEncryptedSyncMessage(channel, key, sessionIdRef.current, { type: 'sas-confirmed' });
-      sasConfirmedRef.current = true;
-      setSasConfirmed(true);
+      await sendEncryptedSyncMessage(channel, key, sessionIdRef.current, { type: 'transfer-authorized' });
+      transferAuthorizedRef.current = true;
+      setTransferAuthorized(true);
+      await send();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Không thể xác nhận mã ghép đôi.');
+      setError(caught instanceof Error ? caught.message : 'Không thể xác nhận và gửi dữ liệu.');
       setPhase('error');
     }
   };
@@ -266,10 +281,9 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
     if (!url || !cryptoKey) { setError(!url ? 'Chưa cấu hình máy chủ thiết lập kết nối.' : 'Hãy mở khóa dữ liệu trước khi gửi.'); setPhase('error'); return; }
     syncCompletedRef.current = false;
     senderPairingSentRef.current = false;
-    sasConfirmedRef.current = false;
-    peerSasConfirmedRef.current = false;
-    setSasConfirmed(false);
-    setPeerSasConfirmed(false);
+    transferAuthorizedRef.current = false;
+    transferStartedRef.current = false;
+    setTransferAuthorized(false);
     setPhase('creating'); setError('');
     try {
       const pair = await createEphemeralKeyPair();
@@ -310,10 +324,9 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
     const url = getDeviceSyncSignalingUrl();
     if (!url) { setError('Chưa cấu hình máy chủ thiết lập kết nối.'); setPhase('error'); return; }
     syncCompletedRef.current = false;
-    sasConfirmedRef.current = false;
-    peerSasConfirmedRef.current = false;
-    setSasConfirmed(false);
-    setPeerSasConfirmed(false);
+    transferAuthorizedRef.current = false;
+    transferStartedRef.current = false;
+    setTransferAuthorized(false);
     setPhase('connecting'); setError('');
     try {
       const pairing = parsePairingInput(value);
@@ -345,33 +358,48 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể tham gia phiên nhận.'); setPhase('error'); }
   };
 
-  const send = async () => {
+  async function send() {
     const channel = transportRef.current?.channel;
     const key = sessionKeyRef.current;
-    if (!channel || !key || !cryptoKey || !pin || !sasConfirmedRef.current || !peerSasConfirmedRef.current) return;
+    if (!channel || !key || !cryptoKey || !transferAuthorizedRef.current) return;
     setPhase('transferring'); setError('');
-    let rawMasterKey: Uint8Array | null = null;
     try {
-      rawMasterKey = await exportMasterKeyForDeviceSync(pin);
       const bytes = serializeDeviceSyncPackage(await buildDeviceSyncPackage(cryptoKey));
-      await sendSyncPackage(channel, key, sessionIdRef.current, rawMasterKey, bytes, setProgress);
-      syncCompletedRef.current = true;
-      setPhase('done');
-    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể gửi dữ liệu.'); setPhase('error'); }
-    finally { rawMasterKey?.fill(0); }
-  };
+      ackTimeoutRef.current = window.setTimeout(() => {
+        if (syncCompletedRef.current) return;
+        setError('Thiết bị nhận chưa xác nhận gói dữ liệu. Hãy kết nối lại và thử lần nữa.');
+        setPhase('error');
+      }, 20_000);
+      await sendSyncPackage(channel, key, sessionIdRef.current, bytes, setProgress);
+    } catch (caught) {
+      if (ackTimeoutRef.current !== null) window.clearTimeout(ackTimeoutRef.current);
+      ackTimeoutRef.current = null;
+      setError(caught instanceof Error ? caught.message : 'Không thể gửi dữ liệu.');
+      setPhase('error');
+    }
+  }
 
-  const commitReceived = async () => {
-    if (!received || !pin || (hasData && !replaceConfirmed)) return;
+  const commitReceivedToCurrentVault = async () => {
+    if (!received || !hasData || !cryptoKey || !replaceConfirmed) return;
     setPhase('transferring'); setError('');
     try {
-      const setup = await prepareReceivedMasterKey(pin, received.masterKey);
-      await replaceDeviceSyncData(received.data, DEVICE_SYNC_STORAGE_KEYS, setup.cryptoMetadata, setup.masterKey);
-      received.masterKey.fill(0);
-      unlock(setup.masterKey);
+      await replaceDeviceSyncData(received.data, DEVICE_SYNC_STORAGE_KEYS, getCurrentCryptoMetadata(), cryptoKey);
+      unlock(cryptoKey);
       syncCompletedRef.current = true;
       setPhase('done');
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể lưu dữ liệu đã nhận.'); setPhase('error'); }
+  };
+
+  const setupFreshReceiverVault = async (nextPin: string): Promise<CryptoKey> => {
+    if (!received || hasData) throw new Error('INVALID_FRESH_RECEIVER_STATE');
+    const setup = await prepareNewLocalMasterKey(nextPin);
+    try {
+      await replaceDeviceSyncData(received.data, DEVICE_SYNC_STORAGE_KEYS, setup.cryptoMetadata, setup.masterKey);
+      return setup.masterKey;
+    } catch (caught) {
+      setPhase('received');
+      throw caught;
+    }
   };
 
   const configured = Boolean(getDeviceSyncSignalingUrl());
@@ -384,7 +412,7 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
       </div>
     </div>
     {!configured && <p className="mt-3 text-xs text-amber-700">Cần đặt <code>VITE_DEVICE_SYNC_SIGNALING_URL</code> sau khi deploy Worker signaling.</p>}
-    <AppDialog open={mode !== null} onOpenChange={(open) => { if (!open) close(); }} title={mode === 'send' ? 'Gửi sang thiết bị khác' : 'Nhận từ thiết bị khác'} description="Dữ liệu đi trực tiếp qua kết nối giữa hai thiết bị. Server chỉ giúp hai thiết bị thiết lập kết nối, không lưu nội dung đồng bộ." icon={mode === 'send' ? Laptop : QrCode} size="lg" mobileFullScreen contentClassName="space-y-4" footer={<button type="button" onClick={close} className="ustudy-button-outline h-10"><X className="h-4 w-4" />Đóng</button>}>
+    <AppDialog open={mode !== null && !showReceiverPinSetup} onOpenChange={(open) => { if (!open && !showReceiverPinSetup) close(); }} title={mode === 'send' ? 'Gửi sang thiết bị khác' : 'Nhận từ thiết bị khác'} description="Dữ liệu đi trực tiếp qua kết nối giữa hai thiết bị. Server chỉ giúp hai thiết bị thiết lập kết nối, không lưu nội dung đồng bộ." icon={mode === 'send' ? Laptop : QrCode} size="sm" mobileFullScreen contentClassName="space-y-4" footer={<button type="button" onClick={close} className="ustudy-button-outline h-10"><X className="h-4 w-4" />Đóng</button>}>
       {mode === 'send' && phase === 'idle' && <button type="button" onClick={() => void createSenderSession()} className="ustudy-button-primary h-11 w-full"><Laptop className="h-4 w-4" />Tạo mã kết nối</button>}
       {mode === 'send' && phase === 'creating' && <div className="rounded-lg bg-blue-50 p-3 text-center text-sm text-[#004A98]">Đang tạo mã kết nối...</div>}
       {mode === 'send' && phase === 'waiting' && <div className="space-y-4 text-center">
@@ -416,19 +444,38 @@ export function DeviceSyncDataTransfer({ availableModes = ['send', 'receive'], h
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Mã xác minh trên cả hai thiết bị</p>
           <p className="mt-1 font-mono text-3xl font-bold tracking-[0.16em] text-[#004A98]">{sas || '...'}</p>
           <p className="mt-2 text-xs text-gray-500">Hãy kiểm tra mã này có giống trên thiết bị còn lại không.</p>
-          {!sasConfirmed && <div className="mt-3 grid grid-cols-2 gap-2">
+          {mode === 'send' && !transferAuthorized && <div className="mt-3 grid grid-cols-2 gap-2">
             <button type="button" onClick={close} className="ustudy-button-outline h-10"><X className="h-4 w-4" />Không giống</button>
-            <button type="button" onClick={() => void confirmSas()} className="ustudy-button-primary h-10" disabled={!sas}><ShieldCheck className="h-4 w-4" />Giống nhau</button>
+            <button type="button" onClick={() => void confirmSasAndSend()} className="ustudy-button-primary h-10" disabled={!sas}><ShieldCheck className="h-4 w-4" />Giống nhau và gửi</button>
           </div>}
-          {sasConfirmed && !peerSasConfirmed && <p className="mt-3 text-sm font-medium text-amber-700">Đã xác nhận. Đang chờ thiết bị kia xác nhận.</p>}
-          {sasConfirmed && peerSasConfirmed && <p className="mt-3 text-sm font-medium text-emerald-700">Hai thiết bị đã xác minh với nhau.</p>}
+          {mode === 'receive' && !transferAuthorized && <p className="mt-3 text-sm font-medium text-amber-700">Chỉ tiếp tục khi mã trên máy gửi giống mã này.</p>}
         </div>}
         <div className="h-2 overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-[#004A98] transition-[width]" style={{ width: `${progress * 100}%` }} /></div>
-        {mode === 'send' && phase === 'connected' && sasConfirmed && peerSasConfirmed && <><input value={pin} onChange={(event) => setPin(event.target.value)} type="password" placeholder="Nhập lại PIN hiện tại" className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-[#004A98]" /><button type="button" onClick={() => void send()} className="ustudy-button-primary h-11 w-full" disabled={!pin}>Bắt đầu truyền</button></>}
       </div>}
-      {mode === 'receive' && phase === 'received' && received && <div className="space-y-3"><div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-800"><ShieldCheck className="mr-2 inline h-4 w-4" />Đã nhận và kiểm tra toàn vẹn {Object.keys(received.data).length} mục dữ liệu.</div>{hasData && <label className="flex gap-2 text-sm text-amber-800"><input type="checkbox" checked={replaceConfirmed} onChange={(event) => setReplaceConfirmed(event.target.checked)} />Thiết bị này đã có dữ liệu. Tôi xác nhận thay thế dữ liệu UStudy hiện tại.</label>}<input value={pin} onChange={(event) => setPin(event.target.value)} type="password" placeholder="Đặt PIN riêng cho thiết bị này" className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-[#004A98]" /><button type="button" onClick={() => void commitReceived()} className="ustudy-button-primary h-11 w-full" disabled={!pin || (hasData && !replaceConfirmed)}>Lưu dữ liệu vào thiết bị này</button></div>}
+      {mode === 'receive' && phase === 'received' && received && <div className="space-y-3">
+        <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-800"><ShieldCheck className="mr-2 inline h-4 w-4" />Đã nhận và kiểm tra toàn vẹn {Object.keys(received.data).length} mục dữ liệu.</div>
+        {hasData ? <>
+          <label className="flex gap-2 text-sm text-amber-800"><input type="checkbox" checked={replaceConfirmed} onChange={(event) => setReplaceConfirmed(event.target.checked)} />Thiết bị này đã có dữ liệu. Tôi xác nhận thay thế dữ liệu UStudy hiện tại.</label>
+          <button type="button" onClick={() => void commitReceivedToCurrentVault()} className="ustudy-button-primary h-11 w-full" disabled={!cryptoKey || !replaceConfirmed}>Thay thế bằng dữ liệu vừa nhận</button>
+        </> : <>
+          <p className="text-sm text-gray-600">Tạo mật khẩu riêng cho thiết bị này để mã hóa dữ liệu trước khi lưu.</p>
+          <button type="button" onClick={() => setShowReceiverPinSetup(true)} className="ustudy-button-primary h-11 w-full">Thiết lập mật khẩu và lưu</button>
+        </>}
+      </div>}
       {phase === 'done' && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><ShieldCheck className="mr-2 inline h-4 w-4" />Đồng bộ đã hoàn tất. Khóa phiên đã được xóa khỏi bộ nhớ.</div>}
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     </AppDialog>
+    {showReceiverPinSetup && received && !hasData && <SecurityLock
+      setupMode
+      customTitle="Bảo vệ dữ liệu trên thiết bị này"
+      customSubtitle="Tạo mật khẩu riêng để mã hóa dữ liệu vừa nhận. Mật khẩu không được gửi sang thiết bị còn lại."
+      customSetup={setupFreshReceiverVault}
+      onUnlock={(key) => {
+        unlock(key);
+        syncCompletedRef.current = true;
+        setShowReceiverPinSetup(false);
+        setPhase('done');
+      }}
+    />}
   </>;
 }

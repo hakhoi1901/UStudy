@@ -1,5 +1,9 @@
 const textEncoder = new TextEncoder();
 
+function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return Uint8Array.from(bytes).buffer;
+}
+
 export interface EphemeralKeyPair {
   privateKey: CryptoKey;
   publicKey: string;
@@ -23,7 +27,7 @@ function fromBase64(value: string): Uint8Array {
 }
 
 async function hashText(value: string): Promise<Uint8Array> {
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', textEncoder.encode(value)));
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', asArrayBuffer(textEncoder.encode(value))));
 }
 
 async function deriveHkdfBits(
@@ -36,19 +40,19 @@ async function deriveHkdfBits(
 ): Promise<Uint8Array> {
   const peer = await crypto.subtle.importKey(
     'raw',
-    fromBase64(peerPublicKey),
+    asArrayBuffer(fromBase64(peerPublicKey)),
     { name: 'ECDH', namedCurve: 'P-256' },
     false,
     [],
   );
   const sharedSecret = new Uint8Array(await crypto.subtle.deriveBits({ name: 'ECDH', public: peer }, privateKey, 256));
   try {
-    const material = await crypto.subtle.importKey('raw', sharedSecret, 'HKDF', false, ['deriveBits']);
+    const material = await crypto.subtle.importKey('raw', asArrayBuffer(sharedSecret), 'HKDF', false, ['deriveBits']);
     return new Uint8Array(await crypto.subtle.deriveBits({
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: await hashText(`ustudy:sync:v1:${sessionId}:${nonce}`),
-      info: textEncoder.encode(info),
+      salt: asArrayBuffer(await hashText(`ustudy:sync:v1:${sessionId}:${nonce}`)),
+      info: asArrayBuffer(textEncoder.encode(info)),
     }, material, length));
   } finally {
     sharedSecret.fill(0);
@@ -82,7 +86,7 @@ export async function deriveSessionKey(
     256,
   );
   try {
-    return await crypto.subtle.importKey('raw', bits, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+    return await crypto.subtle.importKey('raw', asArrayBuffer(bits), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
   } finally {
     bits.fill(0);
   }
@@ -118,9 +122,9 @@ export async function encryptSyncMessage(
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = textEncoder.encode(JSON.stringify(value));
   const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv, additionalData: textEncoder.encode(`ustudy:sync:v1:${sessionId}`) },
+    { name: 'AES-GCM', iv: asArrayBuffer(iv), additionalData: asArrayBuffer(textEncoder.encode(`ustudy:sync:v1:${sessionId}`)) },
     sessionKey,
-    plaintext,
+    asArrayBuffer(plaintext),
   );
   return { iv: toBase64(iv), ciphertext: toBase64(ciphertext) };
 }
@@ -131,9 +135,9 @@ export async function decryptSyncMessage<T>(
   sessionId: string,
 ): Promise<T> {
   const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: fromBase64(message.iv), additionalData: textEncoder.encode(`ustudy:sync:v1:${sessionId}`) },
+    { name: 'AES-GCM', iv: asArrayBuffer(fromBase64(message.iv)), additionalData: asArrayBuffer(textEncoder.encode(`ustudy:sync:v1:${sessionId}`)) },
     sessionKey,
-    fromBase64(message.ciphertext),
+    asArrayBuffer(fromBase64(message.ciphertext)),
   );
   return JSON.parse(new TextDecoder().decode(plaintext)) as T;
 }

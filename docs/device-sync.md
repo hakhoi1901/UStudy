@@ -17,9 +17,10 @@ May gui tu sinh ma ket noi 6 ky tu khong mo ho va ket noi truoc vao `wss://<work
 1. May gui tao session, key ECDH P-256 tam thoi, nonce va ma phong 6 ky tu. QR tuy chon chi chua protocol va session ID.
 2. May nhan nhap ma hoac quet QR, tao key tam thoi khac. Hai peer trao doi public key qua signaling va tao AES-GCM session key bang ECDH + HKDF-SHA-256.
 3. SDP/ICE di qua Worker. Sau khi DataChannel mo, hai may tu tinh va hien cung ma SAS 6 chu so tu shared secret.
-4. Ca hai nguoi dung phai xac nhan SAS giong nhau. Chi sau khi ca hai message `sas-confirmed` da den, protocol moi cho phep truyen du lieu.
-5. May gui yeu cau nhap lai PIN de mo Master Data Key trong RAM, gui key nay trong message AES-GCM cua phien, roi xoa buffer raw.
-6. May nhan dat PIN rieng. Master key nhan duoc chi duoc wrap lai bang KEK cua PIN moi va chi ghi sau khi package da du chunk, dung hash va dung schema.
+4. Nguoi dung doi chieu SAS tren hai thiet bi. Chi may gui bam `Giong nhau va gui`; message `transfer-authorized` moi cho phep may nhan tiep nhan package.
+5. May gui dung Master Data Key dang co trong RAM de doc du lieu, sau do ma hoa dataset bang session key cua WebRTC. PIN, KEK va Master Key khong nam trong protocol va khong roi khoi may gui.
+6. May nhan kiem tra AES-GCM, hash va schema. Neu da co vault dang mo khoa, du lieu duoc ma hoa lai bang Master Key hien tai sau khi nguoi dung xac nhan thay the.
+7. Neu may nhan chua co vault, UStudy mo popup tao PIN. Master Key moi duoc sinh tai may nhan va du lieu chi duoc ghi sau khi da ma hoa bang khoa nay.
 
 Package dong bo dung danh sach key curatred trong `DEVICE_SYNC_STORAGE_KEYS`; khong copy migration journal, PIN metadata cu, tab dang mo hay state UI tam thoi. Du lieu co san tren may nhan chi bi thay the sau khi nguoi dung tich xac nhan.
 
@@ -27,4 +28,4 @@ Package dong bo dung danh sach key curatred trong `DEVICE_SYNC_STORAGE_KEYS`; kh
 
 - Chi co STUN cong khai, chua co TURN. Mot so mang NAT chat co the khong ket noi duoc.
 - Khong merge hai bo du lieu, khong resume, khong co lich su phien.
-- Worker van thay session ID, IP/timestamp, SDP, ICE candidate va public key tam thoi; khong nhan PIN, Master Key raw hay payload du lieu.
+- Worker van thay session ID, IP/timestamp, SDP, ICE candidate va public key tam thoi; khong nhan PIN, Master Key hay payload du lieu.

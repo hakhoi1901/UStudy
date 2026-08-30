@@ -348,10 +348,14 @@ function generateMasterKeyMaterial(): Uint8Array {
     return crypto.getRandomValues(new Uint8Array(MASTER_KEY_BYTES));
 }
 
+function asCryptoBuffer(bytes: Uint8Array): ArrayBuffer {
+    return Uint8Array.from(bytes).buffer;
+}
+
 async function importMasterDataKey(rawMasterKey: Uint8Array): Promise<CryptoKey> {
     return crypto.subtle.importKey(
         'raw',
-        rawMasterKey,
+        asCryptoBuffer(rawMasterKey),
         { name: 'AES-GCM' },
         false,
         ['encrypt', 'decrypt'],
@@ -361,9 +365,9 @@ async function importMasterDataKey(rawMasterKey: Uint8Array): Promise<CryptoKey>
 async function wrapMasterKey(rawMasterKey: Uint8Array, kek: CryptoKey): Promise<{ iv: Uint8Array; ciphertext: ArrayBuffer }> {
     const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
     const ciphertext = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv, additionalData: MASTER_KEY_WRAP_AAD },
+        { name: 'AES-GCM', iv: asCryptoBuffer(iv), additionalData: asCryptoBuffer(MASTER_KEY_WRAP_AAD) },
         kek,
-        rawMasterKey,
+        asCryptoBuffer(rawMasterKey),
     );
     return { iv, ciphertext };
 }
@@ -372,9 +376,9 @@ async function unwrapMasterKey(kek: CryptoKey, ivRaw: string, ciphertextRaw: str
     const iv = fromBase64(ivRaw);
     const ciphertext = fromBase64(ciphertextRaw);
     const rawMasterKey = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv, additionalData: MASTER_KEY_WRAP_AAD },
+        { name: 'AES-GCM', iv: asCryptoBuffer(iv), additionalData: asCryptoBuffer(MASTER_KEY_WRAP_AAD) },
         kek,
-        ciphertext,
+        asCryptoBuffer(ciphertext),
     );
     return new Uint8Array(rawMasterKey);
 }
@@ -496,40 +500,41 @@ export async function setupPin(pin: string): Promise<CryptoKey> {
     return envelope.masterKey;
 }
 
-/** Returns the raw v2 Master Data Key only for a short-lived device-transfer session. */
-export async function exportMasterKeyForDeviceSync(pin: string): Promise<Uint8Array> {
-    recoverInterruptedCryptoOperations();
-    if (getCryptoVersion() !== 2) throw new Error('DEVICE_SYNC_REQUIRES_CRYPTO_V2');
-    const saltRaw = localStorage.getItem(INTERNAL_KEYS.SALT);
-    const masterKeyIv = localStorage.getItem(INTERNAL_KEYS.MASTER_KEY_IV);
-    const encryptedMasterKey = localStorage.getItem(INTERNAL_KEYS.ENCRYPTED_MASTER_KEY);
-    if (!saltRaw || !masterKeyIv || !encryptedMasterKey) throw new Error('DEVICE_SYNC_MASTER_KEY_UNAVAILABLE');
-    const kek = await deriveKek(pin, fromBase64(saltRaw));
-    return await unwrapMasterKey(kek, masterKeyIv, encryptedMasterKey);
-}
-
-export interface ReceivedMasterKeySetup {
+export interface LocalMasterKeySetup {
     masterKey: CryptoKey;
     cryptoMetadata: Record<string, string>;
 }
 
-/** Prepares receiver-local v2 metadata without persisting the transferred Master Key. */
-export async function prepareReceivedMasterKey(pin: string, rawMasterKey: Uint8Array): Promise<ReceivedMasterKeySetup> {
-    if (rawMasterKey.byteLength !== MASTER_KEY_BYTES) throw new Error('INVALID_TRANSFERRED_MASTER_KEY');
+/** Creates a receiver-local Master Key without exposing or transferring its raw bytes. */
+export async function prepareNewLocalMasterKey(pin: string): Promise<LocalMasterKeySetup> {
     const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
     const kek = await deriveKek(pin, salt);
-    const masterKey = await importMasterDataKey(rawMasterKey);
-    const wrapped = await wrapMasterKey(rawMasterKey, kek);
+    const envelope = await createMasterKeyEnvelope(kek);
     return {
-        masterKey,
+        masterKey: envelope.masterKey,
         cryptoMetadata: {
             [INTERNAL_KEYS.VERSION]: String(CRYPTO_VERSION_V2),
             [INTERNAL_KEYS.SALT]: toBase64(salt),
-            [INTERNAL_KEYS.MASTER_KEY_IV]: toBase64(wrapped.iv),
-            [INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]: toBase64(wrapped.ciphertext),
+            [INTERNAL_KEYS.MASTER_KEY_IV]: envelope.iv,
+            [INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]: envelope.ciphertext,
             [INTERNAL_KEYS.SECURE_DATA_SCHEMA]: String(SECURE_DATA_SCHEMA_VERSION),
         },
     };
+}
+
+/** Returns the authenticated metadata for reusing the receiver's current vault. */
+export function getCurrentCryptoMetadata(): Record<string, string> {
+    recoverInterruptedCryptoOperations();
+    if (getCryptoVersion() !== 2) throw new Error('DEVICE_SYNC_REQUIRES_CRYPTO_V2');
+    const metadata: Record<string, string> = {};
+    for (const key of CRYPTO_METADATA_KEYS) {
+        const value = localStorage.getItem(key);
+        if (value !== null) metadata[key] = value;
+    }
+    if (!metadata[INTERNAL_KEYS.SALT] || !metadata[INTERNAL_KEYS.MASTER_KEY_IV] || !metadata[INTERNAL_KEYS.ENCRYPTED_MASTER_KEY]) {
+        throw new Error('DEVICE_SYNC_MASTER_KEY_UNAVAILABLE');
+    }
+    return metadata;
 }
 
 /**

@@ -33,13 +33,11 @@ export async function sendSyncPackage(
   channel: RTCDataChannel,
   sessionKey: CryptoKey,
   sessionId: string,
-  rawMasterKey: Uint8Array,
   bytes: Uint8Array,
   onProgress?: (progress: number) => void,
 ): Promise<void> {
-  if (rawMasterKey.byteLength !== 32 || bytes.byteLength > MAX_SYNC_PACKAGE_BYTES) throw new Error('INVALID_SYNC_TRANSFER');
+  if (bytes.byteLength > MAX_SYNC_PACKAGE_BYTES) throw new Error('INVALID_SYNC_TRANSFER');
   const chunks = splitSyncChunks(bytes);
-  await sendEncryptedSyncMessage(channel, sessionKey, sessionId, { type: 'key-transfer', data: syncBase64.toBase64(rawMasterKey) });
   await sendEncryptedSyncMessage(channel, sessionKey, sessionId, {
     type: 'sync-start', totalBytes: bytes.byteLength, totalChunks: chunks.length, hash: await sha256Base64(bytes),
   });
@@ -52,7 +50,6 @@ export async function sendSyncPackage(
 }
 
 export class SyncPackageReceiver {
-  private masterKey: Uint8Array | null = null;
   private totalBytes = 0;
   private totalChunks = 0;
   private hash = '';
@@ -63,21 +60,12 @@ export class SyncPackageReceiver {
   }
 
   release(): void {
-    this.masterKey?.fill(0);
-    this.masterKey = null;
     this.chunks.clear();
   }
 
-  async accept(message: SyncMessage): Promise<{ masterKey: Uint8Array; syncPackage: SyncPackageV1 } | null> {
-    if (message.type === 'key-transfer') {
-      if (this.masterKey) throw new Error('DUPLICATE_MASTER_KEY');
-      const value = syncBase64.fromBase64(message.data);
-      if (value.byteLength !== 32) throw new Error('INVALID_TRANSFERRED_MASTER_KEY');
-      this.masterKey = value;
-      return null;
-    }
+  async accept(message: SyncMessage): Promise<SyncPackageV1 | null> {
     if (message.type === 'sync-start') {
-      if (!this.masterKey || this.totalChunks || message.totalBytes < 0 || message.totalBytes > MAX_SYNC_PACKAGE_BYTES || message.totalChunks < 1) throw new Error('INVALID_SYNC_START');
+      if (this.totalChunks || message.totalBytes < 0 || message.totalBytes > MAX_SYNC_PACKAGE_BYTES || message.totalChunks < 1) throw new Error('INVALID_SYNC_START');
       this.totalBytes = message.totalBytes;
       this.totalChunks = message.totalChunks;
       this.hash = message.hash;
@@ -92,11 +80,8 @@ export class SyncPackageReceiver {
       return null;
     }
     if (message.type !== 'sync-end') return null;
-    if (!this.masterKey) throw new Error('MISSING_TRANSFERRED_MASTER_KEY');
     const bytes = reassembleSyncChunks(this.chunks, this.totalChunks);
     if (bytes.byteLength !== this.totalBytes || await sha256Base64(bytes) !== this.hash) throw new Error('SYNC_PACKAGE_INTEGRITY_FAILED');
-    const masterKey = this.masterKey;
-    this.masterKey = null;
-    return { masterKey, syncPackage: parseSyncPackage(bytes) };
+    return parseSyncPackage(bytes);
   }
 }

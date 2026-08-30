@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   changePin,
   deriveKek,
-  exportMasterKeyForDeviceSync,
+  getCurrentCryptoMetadata,
   getCryptoVersion,
   importBackupWithCurrentKey,
   readImportRollbackValue,
   readSecure,
-  prepareReceivedMasterKey,
+  prepareNewLocalMasterKey,
   replaceDeviceSyncData,
   saveToStorage,
   saveSecure,
@@ -290,14 +290,12 @@ describe('secure storage v2', () => {
     await expect(readSecure('raw_student_db', keyAfterPinChange, null)).resolves.toEqual({ id: 'student-1' });
   });
 
-  it('hands a Master Key to a second device and wraps it with that device PIN', async () => {
+  it('creates an independent receiver Master Key and encrypts transferred data locally', async () => {
     const sourceMasterKey = await setupPin('source-pin');
     await saveSecure('raw_student_db', { id: 'student-sync' }, sourceMasterKey);
-    const rawMasterKey = await exportMasterKeyForDeviceSync('source-pin');
 
     localStorage.clear();
-    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', rawMasterKey);
-    rawMasterKey.fill(0);
+    const receiverSetup = await prepareNewLocalMasterKey('receiver-pin');
     await replaceDeviceSyncData(
       { raw_student_db: JSON.stringify({ id: 'student-sync' }) },
       ['raw_student_db'],
@@ -310,10 +308,26 @@ describe('secure storage v2', () => {
     await expect(readSecure('raw_student_db', reopenedKey!, null)).resolves.toEqual({ id: 'student-sync' });
   });
 
+  it('reuses an unlocked receiver vault without changing its PIN or Master Key envelope', async () => {
+    const receiverKey = await setupPin('receiver-pin');
+    const envelopeBefore = localStorage.getItem('__encrypted_master_key__');
+
+    await replaceDeviceSyncData(
+      { raw_student_db: JSON.stringify({ id: 'updated-on-existing-device' }) },
+      ['raw_student_db'],
+      getCurrentCryptoMetadata(),
+      receiverKey,
+    );
+
+    expect(localStorage.getItem('__encrypted_master_key__')).toBe(envelopeBefore);
+    await expect(verifyPin('receiver-pin')).resolves.not.toBeNull();
+    await expect(readSecure('raw_student_db', receiverKey, null)).resolves.toEqual({ id: 'updated-on-existing-device' });
+  });
+
   it('rolls back a failed device-sync replacement without leaving partial data', async () => {
     const currentKey = await setupPin('current-pin');
     await saveSecure('raw_student_db', { id: 'before-sync' }, currentKey);
-    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', crypto.getRandomValues(new Uint8Array(32)));
+    const receiverSetup = await prepareNewLocalMasterKey('receiver-pin');
     const originalSetItem = localStorage.setItem.bind(localStorage);
     let committing = false;
     let failed = false;
@@ -340,7 +354,7 @@ describe('secure storage v2', () => {
 
   it('releases a large staged value before committing its primary storage key', async () => {
     await setupPin('current-pin');
-    const receiverSetup = await prepareReceivedMasterKey('receiver-pin', crypto.getRandomValues(new Uint8Array(32)));
+    const receiverSetup = await prepareNewLocalMasterKey('receiver-pin');
     const largeResult = JSON.stringify({ solutions: ['x'.repeat(128 * 1024)] });
     const originalSetItem = localStorage.setItem.bind(localStorage);
     const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation((key: string, value: string) => {

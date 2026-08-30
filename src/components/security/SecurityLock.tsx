@@ -12,6 +12,7 @@ import {
 interface SecurityLockProps {
     onUnlock: (key: any) => void;
     setupMode?: boolean;
+    customSetup?: (pin: string) => Promise<CryptoKey>;
     customVerify?: (pin: string) => Promise<boolean>;
     customTitle?: string;
     customSubtitle?: string;
@@ -304,7 +305,7 @@ const styles = `
     }
 `;
 
-export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false, customVerify, customTitle, customSubtitle }) => {
+export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode = false, customSetup, customVerify, customTitle, customSubtitle }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -350,7 +351,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
         }
         setIsVerifying(true);
         try {
-            const key = await setupPin(password);
+            const key = customSetup ? await customSetup(password) : await setupPin(password);
             onUnlock(key);
         } catch (err: any) {
             if (!window.crypto || !window.crypto.subtle) {
@@ -360,7 +361,7 @@ export const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, setupMode 
             }
             setIsVerifying(false);
         }
-    }, [password, confirmPassword, onUnlock]);
+    }, [password, confirmPassword, onUnlock, customSetup]);
 
     const handleVerify = useCallback(async () => {
         if (!password || isLocked || isVerifying) return;

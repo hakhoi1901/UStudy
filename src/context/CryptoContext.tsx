@@ -98,7 +98,9 @@ export function CryptoProvider({ children }: { children: React.ReactNode }) {
         setActiveSecureStorageKey(key);
         clearSecureCache();
         void hydrateSecureData(key).then(() => {
-            if (unlockSequence.current === sequence) setCryptoKey(key);
+            if (unlockSequence.current !== sequence) return;
+            setHasData(hasSecureData());
+            setCryptoKey(key);
         });
     }, [hydrateSecureData]);
 

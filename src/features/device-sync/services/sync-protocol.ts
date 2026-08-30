@@ -17,11 +17,10 @@ export interface SyncPackageV1 {
 
 export type SyncMessage =
   | { type: 'hello'; protocol: typeof DEVICE_SYNC_PROTOCOL; sessionId: string; nonce: string; sas: string }
-  | { type: 'key-transfer'; data: string }
+  | { type: 'transfer-authorized' }
   | { type: 'sync-start'; totalBytes: number; totalChunks: number; hash: string }
   | { type: 'chunk'; index: number; data: string }
   | { type: 'sync-end' }
-  | { type: 'sas-confirmed' }
   | { type: 'ack' }
   | { type: 'error'; code: string };
 
@@ -56,7 +55,7 @@ export function parsePairingInput(value: string): PairingQrPayload {
 }
 
 export async function sha256Base64(bytes: Uint8Array): Promise<string> {
-  return syncBase64.toBase64(await crypto.subtle.digest('SHA-256', bytes));
+  return syncBase64.toBase64(await crypto.subtle.digest('SHA-256', Uint8Array.from(bytes).buffer));
 }
 
 export function splitSyncChunks(bytes: Uint8Array, size = DEVICE_SYNC_CHUNK_BYTES): Uint8Array[] {
