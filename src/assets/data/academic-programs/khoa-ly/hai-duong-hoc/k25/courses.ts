@@ -1,5 +1,148 @@
 export const courses = [
   {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00003",
+    "course_name_vi": "Tư tưởng Hồ Chí Minh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00004",
+    "course_name_vi": "Pháp luật đại cương",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00005",
+    "course_name_vi": "Kinh tế đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00006",
+    "course_name_vi": "Tâm lý đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00007",
+    "course_name_vi": "Phương pháp luận sáng tạo",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00015",
+    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00101",
     "course_name_vi": "Triết học Mác - Lênin",
     "credits": 3,
@@ -44,59 +187,70 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BAA00003",
-    "course_name_vi": "Tư tưởng Hồ Chí Minh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00004",
-    "course_name_vi": "Pháp luật đại cương",
+    "course_id": "BIO00001",
+    "course_name_vi": "Sinh đại cương 1",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BIO00002",
+    "course_name_vi": "Sinh đại cương 2",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00001",
+    "course_name_vi": "Hóa đại cương 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00002",
+    "course_name_vi": "Hóa đại cương 2",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00005",
-    "course_name_vi": "Kinh tế đại cương",
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "BAA00006",
-    "course_name_vi": "Tâm lý đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "BAA00007",
-    "course_name_vi": "Phương pháp luận sáng tạo",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
     "course_id": "MTH00003",
@@ -154,6 +308,17 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "OMH00001",
+    "course_name_vi": "Giới thiệu ngành Hải dương",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "PHY00001",
     "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
     "credits": 3,
@@ -166,7 +331,7 @@ export const courses = [
   },
   {
     "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
+    "course_name_vi": "Vật lý đại cương 2 (Điện tử - Quang)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -184,182 +349,6 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CHE00001",
-    "course_name_vi": "Hóa đại cương 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "CHE00002",
-    "course_name_vi": "Hóa đại cương 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "BIO00001",
-    "course_name_vi": "Sinh đại cương 1",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "BIO00002",
-    "course_name_vi": "Sinh đại cương 2",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 2 học phần"
-  },
-  {
-    "course_id": "OMH00001",
-    "course_name_vi": "Giới thiệu ngành Hải dương",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình và tín chỉ tích lũy"
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình và tín chỉ tích lũy"
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình và tín chỉ tích lũy"
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình và tín chỉ tích lũy"
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình"
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình"
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
-    "credits": 4,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": "Không tính vào điểm trung bình"
-  },
-  {
-    "course_id": "PHY10001",
-    "course_name_vi": "Hàm phức",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
     "description": ""
   },
   {
@@ -495,6 +484,17 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "OMH10013",
+    "course_name_vi": "Các phương pháp khai thác dữ liệu 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
     "course_id": "OMH10014",
     "course_name_vi": "Viễn thám và GIS",
     "credits": 3,
@@ -507,7 +507,7 @@ export const courses = [
   },
   {
     "course_id": "OMH10015",
-    "course_name_vi": "Thực tập thực tế HD, KT & TV",
+    "course_name_vi": "Thực tập thực tế Hải dương, Khí tượng và Thủy văn",
     "credits": 1,
     "theory_hours": 0,
     "lab_hours": 30,
@@ -520,16 +520,16 @@ export const courses = [
     "course_id": "OMH10016",
     "course_name_vi": "Ô nhiễm môi trường",
     "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
+    "theory_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
     "description": ""
   },
   {
-    "course_id": "OMH10013",
-    "course_name_vi": "Các phương pháp khai thác dữ liệu I",
+    "course_id": "OMH10017",
+    "course_name_vi": "Khai thác dữ liệu trong khoa học Trái Đất",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
@@ -539,13 +539,13 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "OMH10017",
-    "course_name_vi": "Khai thác dữ liệu trong khoa học Trái đất",
+    "course_id": "PHY10001",
+    "course_name_vi": "Hàm phức",
     "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
+    "theory_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "FOUNDATION",
     "description": ""
   },
@@ -557,7 +557,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -568,7 +568,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -579,7 +579,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -589,9 +589,9 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Hải dương học"
+    "course_type": "BB",
+    "category": "MAJOR_OCEANOGRAPHY",
+    "description": ""
   },
   {
     "course_id": "OMH10105",
@@ -600,9 +600,9 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Hải dương học"
+    "course_type": "BB",
+    "category": "MAJOR_OCEANOGRAPHY",
+    "description": ""
   },
   {
     "course_id": "OMH10106",
@@ -611,9 +611,9 @@ export const courses = [
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Hải dương học"
+    "course_type": "BB",
+    "category": "MAJOR_OCEANOGRAPHY",
+    "description": ""
   },
   {
     "course_id": "OMH10107",
@@ -623,7 +623,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -633,9 +633,9 @@ export const courses = [
     "theory_hours": 0,
     "lab_hours": 120,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Hải dương học"
+    "course_type": "BB",
+    "category": "MAJOR_OCEANOGRAPHY",
+    "description": ""
   },
   {
     "course_id": "OMH10109",
@@ -645,7 +645,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -656,7 +656,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -667,7 +667,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -678,7 +678,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -689,7 +689,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -700,7 +700,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -711,7 +711,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -722,7 +722,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -733,7 +733,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -744,7 +744,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -755,7 +755,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -766,502 +766,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
-  },
-  {
-    "course_id": "OMH10121",
-    "course_name_vi": "Các chuyên đề tương tác đại dương - khí quyển",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10201",
-    "course_name_vi": "Nhiệt động lực học khí quyển",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Khí tượng học"
-  },
-  {
-    "course_id": "OMH10202",
-    "course_name_vi": "Khí tượng động lực",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Khí tượng học"
-  },
-  {
-    "course_id": "OMH10203",
-    "course_name_vi": "Khí tượng synop",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Khí tượng học"
-  },
-  {
-    "course_id": "OMH10204",
-    "course_name_vi": "Khí hậu học và khí hậu Việt Nam",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10205",
-    "course_name_vi": "Các chuyên đề khí tượng",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10206",
-    "course_name_vi": "Khí tượng thực hành",
-    "credits": 3,
-    "theory_hours": 0,
-    "lab_hours": 90,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Khí tượng học"
-  },
-  {
-    "course_id": "OMH10207",
-    "course_name_vi": "Các công cụ mô hình hóa trong khí tượng",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10208",
-    "course_name_vi": "Khí tượng lớp biên",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10209",
-    "course_name_vi": "Dự báo số trị",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10210",
-    "course_name_vi": "Khí hậu nông nghiệp",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10211",
-    "course_name_vi": "Khí tượng hàng không",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10212",
-    "course_name_vi": "Khí tượng nhiệt đới",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10213",
-    "course_name_vi": "Dự báo thời tiết bằng phương pháp số",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10214",
-    "course_name_vi": "Khí hậu đại dương và tương tác biển khí",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10215",
-    "course_name_vi": "Vi khí hậu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10216",
-    "course_name_vi": "Các phương pháp thống kê trong khí hậu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10217",
-    "course_name_vi": "Đối lưu khí quyển",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10218",
-    "course_name_vi": "Xử lý số liệu khí tượng và dự báo thời tiết bằng phương pháp thống kê vật lý",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10301",
-    "course_name_vi": "Động lực học sông ngòi",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Thủy văn học"
-  },
-  {
-    "course_id": "OMH10302",
-    "course_name_vi": "Thủy lực",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Thủy văn học"
-  },
-  {
-    "course_id": "OMH10303",
-    "course_name_vi": "Thủy văn lưu vực",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Thủy văn học"
-  },
-  {
-    "course_id": "OMH10304",
-    "course_name_vi": "Các chuyên đề thủy văn",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10305",
-    "course_name_vi": "Thủy văn thực hành",
-    "credits": 3,
-    "theory_hours": 0,
-    "lab_hours": 90,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Thủy văn học"
-  },
-  {
-    "course_id": "OMH10306",
-    "course_name_vi": "Địa lý, địa chất thủy văn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10307",
-    "course_name_vi": "Sinh thái thủy văn vùng cửa sông",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10308",
-    "course_name_vi": "Các công cụ mô hình hóa trong thủy văn",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10309",
-    "course_name_vi": "Thủy văn nông nghiệp và đô thị",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10310",
-    "course_name_vi": "Tính toán thủy văn",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10311",
-    "course_name_vi": "Dự báo thủy văn",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10312",
-    "course_name_vi": "Mô hình thủy văn, thủy lực",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10313",
-    "course_name_vi": "Đo đạc thủy văn",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10314",
-    "course_name_vi": "Thủy văn môi trường",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10315",
-    "course_name_vi": "Chỉnh trị sông",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10316",
-    "course_name_vi": "Quản lý tài nguyên nước",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10401",
-    "course_name_vi": "Động lực học môi trường biển",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Liên ngành"
-  },
-  {
-    "course_id": "OMH10402",
-    "course_name_vi": "Các quá trình vùng ven bờ",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10403",
-    "course_name_vi": "Động lực học môi trường khí quyển",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Liên ngành"
   },
   {
     "course_id": "OMH10404",
-    "course_name_vi": "Động lực học sinh thái thủy-hải văn vùng ven bờ",
+    "course_name_vi": "Động lực học sinh thái thủy - hải văn vùng ven bờ",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10405",
-    "course_name_vi": "Các chuyên đề hải dương, khí tượng và thủy văn",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10406",
-    "course_name_vi": "Thực tập thực tế chuyên ngành",
-    "credits": 4,
-    "theory_hours": 0,
-    "lab_hours": 120,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Bắt buộc ở CN Liên ngành"
-  },
-  {
-    "course_id": "OMH10407",
-    "course_name_vi": "Các công cụ mô hình hóa",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10408",
-    "course_name_vi": "Dự báo khí tượng",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10409",
-    "course_name_vi": "Quản lý tổng hợp đới bờ",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10410",
-    "course_name_vi": "Các quá trình ven bờ vùng Đồng bằng sông Cửu Long",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -1272,7 +788,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -1283,18 +799,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10413",
-    "course_name_vi": "Ứng dụng công nghệ tiên tiến trong khí tượng nông nghiệp",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -1305,7 +810,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -1316,51 +821,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10416",
-    "course_name_vi": "Các chuyên đề trong Khoa học trái đất và Môi trường",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10417",
-    "course_name_vi": "Các mô hình thủy động lực học ứng dụng trong khoa học trái đất",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10418",
-    "course_name_vi": "Dự báo thời tiết và mô hình khí quyển",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10419",
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_name_vi": "Thủy văn nước ngầm",
-    "credits": 2,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
@@ -1371,40 +832,546 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "OMH10421",
-    "course_name_vi": "Các kỹ thuật môi trường ứng phó biến đổi khí hậu",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
     "course_id": "OMH10422",
-    "course_name_vi": "Ứng dụng thống kê và học máy trong khoa học trái đất",
+    "course_name_vi": "Ứng dụng thống kê và học máy trong khoa học Trái Đất",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
     "description": ""
   },
   {
     "course_id": "OMH10423",
-    "course_name_vi": "Ứng dụng AI trong khoa học trái đất",
+    "course_name_vi": "Ứng dụng AI trong khoa học Trái Đất",
     "credits": 2,
     "theory_hours": 15,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_OCEANOGRAPHY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10201",
+    "course_name_vi": "Nhiệt động lực học khí quyển",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10202",
+    "course_name_vi": "Khí tượng động lực",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10203",
+    "course_name_vi": "Khí tượng synop",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10204",
+    "course_name_vi": "Khí hậu học và khí hậu Việt Nam",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10205",
+    "course_name_vi": "Các chuyên đề khí tượng",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10206",
+    "course_name_vi": "Khí tượng thực hành",
+    "credits": 3,
+    "theory_hours": 0,
+    "lab_hours": 90,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10207",
+    "course_name_vi": "Các công cụ mô hình hóa trong khí tượng",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10208",
+    "course_name_vi": "Khí tượng lớp biên",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10209",
+    "course_name_vi": "Dự báo số trị",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10210",
+    "course_name_vi": "Khí hậu nông nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10211",
+    "course_name_vi": "Khí tượng hàng không",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10212",
+    "course_name_vi": "Khí tượng nhiệt đới",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10213",
+    "course_name_vi": "Dự báo thời tiết bằng phương pháp số",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10214",
+    "course_name_vi": "Khí hậu đại dương và tương tác biển - khí",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10215",
+    "course_name_vi": "Vi khí hậu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10216",
+    "course_name_vi": "Các phương pháp thống kê trong khí hậu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10217",
+    "course_name_vi": "Dữ liệu khí quyển",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10413",
+    "course_name_vi": "Ứng dụng công nghệ tiên tiến trong khí tượng nông nghiệp",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10418",
+    "course_name_vi": "Dự báo thời tiết và mô hình khí quyển",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10421",
+    "course_name_vi": "Các kỹ thuật mới trong ứng phó biến đổi khí hậu",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_METEOROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10301",
+    "course_name_vi": "Động lực học sông ngòi",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10302",
+    "course_name_vi": "Thủy lực",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10303",
+    "course_name_vi": "Thủy văn lưu vực",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10304",
+    "course_name_vi": "Các chuyên đề thủy văn",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10305",
+    "course_name_vi": "Thủy văn thực hành",
+    "credits": 3,
+    "theory_hours": 0,
+    "lab_hours": 90,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10306",
+    "course_name_vi": "Địa lý, địa chất thủy văn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10307",
+    "course_name_vi": "Sinh thái thủy văn vùng cửa sông",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10308",
+    "course_name_vi": "Các công cụ mô hình hóa trong thủy văn",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10309",
+    "course_name_vi": "Thủy văn nông nghiệp và đô thị",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10310",
+    "course_name_vi": "Tính toán thủy văn",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10311",
+    "course_name_vi": "Dự báo thủy văn",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10312",
+    "course_name_vi": "Mô hình thủy văn, thủy lực",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10313",
+    "course_name_vi": "Đo đạc thủy văn",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10314",
+    "course_name_vi": "Thủy văn môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10315",
+    "course_name_vi": "Chỉnh trị sông",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10316",
+    "course_name_vi": "Quản lý tài nguyên nước",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10410",
+    "course_name_vi": "Các quá trình ven bờ vùng Đồng bằng sông Cửu Long",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10419",
+    "course_name_vi": "Thủy văn nước ngầm",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_HYDROLOGY",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10401",
+    "course_name_vi": "Động lực học môi trường biển",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10402",
+    "course_name_vi": "Các quá trình vùng ven bờ",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10403",
+    "course_name_vi": "Dòng lưu học môi trường biển",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10405",
+    "course_name_vi": "Các chuyên đề hải dương, khí tượng và thủy văn",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10406",
+    "course_name_vi": "Thực tập thực tế chuyên ngành",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 120,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10407",
+    "course_name_vi": "Các công cụ mô hình hóa",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10408",
+    "course_name_vi": "Dự báo khí tượng",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10416",
+    "course_name_vi": "Khoa học Trái Đất và môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
+    "description": ""
+  },
+  {
+    "course_id": "OMH10417",
+    "course_name_vi": "Các mô hình thủy động lực ứng dụng trong khoa học Trái Đất",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_INTEGRATED_OCEAN_MET_HYDRO",
     "description": ""
   },
   {
@@ -1413,7 +1380,7 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
@@ -1424,9 +1391,31 @@ export const courses = [
     "credits": 6,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 180,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
+  },
+  {
+    "course_id": "BAA00016",
+    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "",
+    "description": ""
+  },
+  {
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "",
+    "description": ""
   }
-];
+]

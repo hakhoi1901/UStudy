@@ -1,7 +1,7 @@
 export const courses = [
   {
     "course_id": "BAA00101",
-    "course_name_vi": "Triết học Mác – Lênin",
+    "course_name_vi": "Triết học Mác - Lênin",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -12,7 +12,7 @@ export const courses = [
   },
   {
     "course_id": "BAA00102",
-    "course_name_vi": "Kinh tế chính trị Mác – Lênin",
+    "course_name_vi": "Kinh tế chính trị Mác - Lênin",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
@@ -74,7 +74,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 môn trong nhóm tự chọn xã hội"
   },
   {
     "course_id": "BAA00006",
@@ -85,7 +85,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 môn TC1"
   },
   {
     "course_id": "BAA00007",
@@ -96,71 +96,27 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 môn TC1"
   },
   {
-    "course_id": "MST00005",
-    "course_name_vi": "Kỹ năng học tập và làm việc chuyên nghiệp",
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 4 học phần"
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
+    "credits": 2,
     "theory_hours": 30,
-    "lab_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "SV đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký học các học phần Anh văn",
+    "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
@@ -171,29 +127,40 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC00010",
-    "course_name_vi": "Giới thiệu ngành Khoa học vật liệu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "PHY00001",
-    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
+    "course_id": "CHE00002",
+    "course_name_vi": "Hóa đại cương 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CHE00081",
+    "course_name_vi": "Thực hành Hóa đại cương 1",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chọn tối thiểu 2 tín chỉ trong nhóm Khoa học tự nhiên"
+  },
+  {
+    "course_id": "BIO00001",
+    "course_name_vi": "Sinh đại cương 1",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
@@ -203,17 +170,6 @@ export const courses = [
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
@@ -231,116 +187,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "CHE00002",
-    "course_name_vi": "Hóa đại cương 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "GEO00002",
-    "course_name_vi": "Khoa học Trái đất",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MST00001",
-    "course_name_vi": "An toàn phòng thí nghiệm",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC00004",
-    "course_name_vi": "??i c??ng khoa h?c",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC00005",
-    "course_name_vi": "Th?c h�nh ??i c??ng",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CHE00081",
-    "course_name_vi": "Thực hành Hóa đại cương 1",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00081",
-    "course_name_vi": "Thực hành Vật lý đại cương",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "MTH00040",
     "course_name_vi": "Xác suất thống kê",
     "credits": 3,
@@ -352,8 +198,8 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PHY00004",
-    "course_name_vi": "Vật lý hiện đại (Lượng tử-Nguyên tử-Hạt nhân)",
+    "course_id": "PHY00001",
+    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -363,10 +209,10 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
-    "credits": 4,
-    "theory_hours": 0,
+    "course_id": "PHY00002",
+    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -374,15 +220,136 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "MSC10021",
-    "course_name_vi": "H�a h?c v?t li?u",
+    "course_id": "PHY00081",
+    "course_name_vi": "Thực hành Vật lý đại cương",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "PHY00004",
+    "course_name_vi": "Vật lý hiện đại (Lượng tử - Nguyên tử - Hạt nhân)",
     "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy"
+  },
+  {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
     "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": "Không tính vào điểm trung bình"
+  },
+  {
+    "course_id": "MSC00001",
+    "course_name_vi": "Cơ sở Khoa học vật liệu",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC00010",
+    "course_name_vi": "Nhập môn Khoa học vật liệu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10004",
@@ -393,18 +360,29 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10022",
-    "course_name_vi": "C�c ph??ng ph�p ph�n",
+    "course_id": "MSC10018",
+    "course_name_vi": "Thực hành phân tích đặc trưng vật liệu",
     "credits": 2,
     "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10002",
+    "course_name_vi": "Nhiệt động lực học vật liệu",
+    "credits": 2,
+    "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10010",
@@ -415,51 +393,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MST10023",
-    "course_name_vi": "Nhiệt động lực học vật liệu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10020",
-    "course_name_vi": "Vật liệu polymer và composite",
-    "credits": 2,
-    "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MST10037",
-    "course_name_vi": "T�nh ch?t c? l� c?a",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10023",
-    "course_name_vi": "V?t li?u v� ph�t tri?n",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10011",
@@ -470,348 +404,117 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10024",
-    "course_name_vi": "V?t li?u sinh h?c",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10016",
-    "course_name_vi": "Các phương pháp phân tích vật liệu 2",
+    "course_name_vi": "Phương pháp phân tích vật liệu 2",
     "credits": 2,
     "theory_hours": 22.5,
     "lab_hours": 0,
     "exercise_hours": 15,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10017",
-    "course_name_vi": "Thực hành chế tạo vật liệu",
+    "course_name_vi": "Thực hành phương pháp chế tạo vật liệu",
     "credits": 2,
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10018",
-    "course_name_vi": "Thực hành phương pháp phân tích vật liệu",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10025",
-    "course_name_vi": "V?t li?u g?m, kim",
+    "course_id": "MSC10005",
+    "course_name_vi": "Vật liệu gốm, kim loại và bán dẫn",
     "credits": 3,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MST10015",
-    "course_name_vi": "Tính toán và mô phỏng cho vật liệu",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10219",
-    "course_name_vi": "Kỹ thuật gia công vật liệu polymer",
-    "credits": 2,
-    "theory_hours": 22.5,
+    "theory_hours": 37.5,
     "lab_hours": 0,
     "exercise_hours": 15,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10222",
-    "course_name_vi": "Tính chất cơ lý Polymer",
-    "credits": 2,
-    "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
+    "category": "FOUNDATION",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10203",
     "course_name_vi": "Công nghệ tổng hợp và tái chế polymer",
     "credits": 2,
-    "theory_hours": 30,
+    "theory_hours": 22.5,
     "lab_hours": 0,
-    "exercise_hours": 0,
+    "exercise_hours": 15,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10209",
-    "course_name_vi": "Cao su: hóa học và công nghệ",
+    "course_name_vi": "Hóa học và công nghệ cao su",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10206",
-    "course_name_vi": "Hỗn hợp polymer",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10223",
-    "course_name_vi": "V?t li?u composite v�",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10217",
-    "course_name_vi": "Biến tính polymer",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10319",
-    "course_name_vi": "Học tập với doanh nghiệp",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
-  },
-  {
-    "course_id": "MSC10321",
-    "course_name_vi": "Cảm biến sinh học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
-  },
-  {
-    "course_id": "MSC10307",
-    "course_name_vi": "Biến tính bề mặt vật liệu",
-    "credits": 3,
-    "theory_hours": 37.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
-  },
-  {
-    "course_id": "MSC10322",
-    "course_name_vi": "V?t li?u y sinh ch?c",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10323",
-    "course_name_vi": "Thi?t k? v� ?�nh gi�",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10324",
-    "course_name_vi": "T??ng t�c v?t li?u v�",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10325",
-    "course_name_vi": "V?t li?u y sinh ph�n",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10109",
-    "course_name_vi": "Công nghệ micro và nano điện tử",
-    "credits": 3,
-    "theory_hours": 37.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
-  },
-  {
-    "course_id": "MSC10107",
-    "course_name_vi": "Khoa học bề mặt chất rắn",
+    "course_id": "MSC10219",
+    "course_name_vi": "Công nghệ gia công polymer",
     "credits": 2,
     "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
+    "lab_hours": 15,
+    "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10105",
-    "course_name_vi": "Vật lý màng mỏng",
-    "credits": 3,
-    "theory_hours": 37.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
-  },
-  {
-    "course_id": "MSC10101",
-    "course_name_vi": "Khuyết tật hóa học trong vật liệu",
+    "course_id": "MSC10204",
+    "course_name_vi": "Phương pháp kiểm tra và phân tích polymer",
     "credits": 2,
-    "theory_hours": 22.5,
+    "theory_hours": 30,
     "lab_hours": 0,
-    "exercise_hours": 15,
+    "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10110",
-    "course_name_vi": "Biến tính bề mặt vật liệu",
+    "course_id": "MSC10211",
+    "course_name_vi": "Vật liệu composite và nanocomposite",
     "credits": 2,
-    "theory_hours": 22.5,
+    "theory_hours": 30,
     "lab_hours": 0,
-    "exercise_hours": 15,
+    "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10103",
-    "course_name_vi": "Thực tập tổng hợp và phân tích vật liệu chuyên ngành 1",
+    "course_id": "MSC10202",
+    "course_name_vi": "Thực hành cơ tính polymer",
     "credits": 2,
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MST10149",
-    "course_name_vi": "Th?c t?p doanh nghi?p",
+    "course_id": "MSC10201",
+    "course_name_vi": "Thực hành tổng hợp polymer",
     "credits": 2,
     "theory_hours": 0,
-    "lab_hours": 0,
+    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10218",
-    "course_name_vi": "Vật liệu polymer thông minh và ứng dụng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MST10138",
-    "course_name_vi": "Kỹ thuật phân tích vật liệu polymer",
-    "credits": 2,
-    "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Công nghệ Vật liệu Polymer & Composite"
-  },
-  {
-    "course_id": "MSC10221",
-    "course_name_vi": "Phụ gia polymer",
-    "credits": 2,
-    "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10220",
-    "course_name_vi": "Vật liệu Polymer trong điện tử và bán dẫn",
-    "credits": 2,
-    "theory_hours": 22.5,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10208",
@@ -821,74 +524,107 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 60,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10202",
-    "course_name_vi": "Thực tập tính chất cơ lý polymer",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10201",
-    "course_name_vi": "Thực tập tổng hợp polymer",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MST10137",
-    "course_name_vi": "Đổi mới sáng tạo, khởi nghiệp",
+    "course_id": "MSC10217",
+    "course_name_vi": "Biến tính polymer",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần tự chọn chuyên ngành"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10326",
-    "course_name_vi": "T??ng t�c v?t li?u v�",
+    "course_id": "MSC10206",
+    "course_name_vi": "Polymer blend",
     "credits": 2,
-    "theory_hours": 0,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10205",
+    "course_name_vi": "Phụ gia polymer",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10218",
+    "course_name_vi": "Vật liệu polymer thông minh và ứng dụng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10220",
+    "course_name_vi": "Vật liệu polymer cho vi điện tử và bán dẫn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10302",
+    "course_name_vi": "Sinh học chuyên ngành",
+    "credits": 2,
+    "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10327",
-    "course_name_vi": "Ti�u chu?n an to�n v�",
-    "credits": 2,
-    "theory_hours": 0,
+    "course_id": "MSC10304",
+    "course_name_vi": "Vật liệu y sinh chức năng",
+    "credits": 3,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10315",
-    "course_name_vi": "Thực hành đánh giá tính chất sinh học của vật liệu",
+    "course_id": "MSC10305",
+    "course_name_vi": "Kỹ thuật phân tử trong chẩn đoán",
     "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
+    "theory_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10306",
+    "course_name_vi": "Kỹ thuật y sinh",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10320",
@@ -898,30 +634,52 @@ export const courses = [
     "lab_hours": 90,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10316",
-    "course_name_vi": "Vật liệu ứng dụng trong nha khoa",
+    "course_id": "MSC10314",
+    "course_name_vi": "Thực hành sinh hóa",
     "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
+    "theory_hours": 0,
+    "lab_hours": 60,
     "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10315",
+    "course_name_vi": "Đánh giá tính chất sinh học của vật liệu",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10307",
+    "course_name_vi": "Biến tính bề mặt vật liệu",
+    "credits": 3,
+    "theory_hours": 37.5,
+    "lab_hours": 0,
+    "exercise_hours": 15,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10317",
-    "course_name_vi": "Trị liệu ung thư bằng phương pháp miễn dịch",
+    "course_name_vi": "Điều trị ung thư bằng kỹ thuật miễn dịch",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10318",
@@ -931,30 +689,129 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu y sinh"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10111",
-    "course_name_vi": "Vật liệu lưu trữ và chuyển hóa năng lượng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
-  },
-  {
-    "course_id": "MSC10112",
-    "course_name_vi": "Vật liệu cách âm - cách nhiệt - cơ học",
+    "course_id": "MSC10316",
+    "course_name_vi": "Vật liệu nha khoa",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10321",
+    "course_name_vi": "Cảm biến sinh học",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10319",
+    "course_name_vi": "Học tập cùng doanh nghiệp",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10312",
+    "course_name_vi": "Kỹ thuật mô",
+    "credits": 2,
+    "theory_hours": 22.5,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10101",
+    "course_name_vi": "Khuyết tật hóa học trong vật liệu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MST10109",
+    "course_name_vi": "Kỹ thuật vi điện tử và nano",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10103",
+    "course_name_vi": "Thực hành phương pháp phân tích vật liệu 1",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10107",
+    "course_name_vi": "Khoa học bề mặt và giao diện chất rắn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10105",
+    "course_name_vi": "Vật lý màng mỏng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10108",
+    "course_name_vi": "Vật liệu tính toán",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10111",
+    "course_name_vi": "Vật liệu và linh kiện lưu trữ năng lượng",
+    "credits": 2,
+    "theory_hours": 22.5,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10113",
@@ -964,52 +821,85 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
-  },
-  {
-    "course_id": "MSC10114",
-    "course_name_vi": "Vật liệu và cảm biến khí",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
-  },
-  {
-    "course_id": "MSC10116",
-    "course_name_vi": "Vật liệu và linh kiện lưu trữ dữ liệu",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10104",
-    "course_name_vi": "Thực tập tổng hợp và phân tích vật liệu chuyên ngành 2",
+    "course_name_vi": "Thực hành tổng hợp và phân tích vật liệu 2",
     "credits": 2,
     "theory_hours": 0,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10118",
-    "course_name_vi": "Ứng dụng của công nghệ bức xạ trong khoa học vật liệu",
+    "course_id": "MSC10110",
+    "course_name_vi": "Chức năng hóa bề mặt vật liệu",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10112",
+    "course_name_vi": "Vật liệu cách âm, cách nhiệt và cơ tính",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10114",
+    "course_name_vi": "Vật liệu cảm biến khí",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10115",
+    "course_name_vi": "Vật liệu quang xúc tác",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10116",
+    "course_name_vi": "Vật liệu và linh kiện nhớ điện",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
+  },
+  {
+    "course_id": "MSC10118",
+    "course_name_vi": "Ứng dụng công nghệ bức xạ trong khoa học vật liệu",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
     "course_id": "MSC10119",
@@ -1019,73 +909,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Chuyên ngành Vật liệu màng mỏng"
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   },
   {
-    "course_id": "MSC10122",
-    "course_name_vi": "V?t li?u ti�n ti?n cho",
+    "course_id": "MSC10120",
+    "course_name_vi": "Thực hành vật liệu tính toán",
     "credits": 2,
     "theory_hours": 0,
-    "lab_hours": 0,
+    "lab_hours": 60,
     "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MST10144",
-    "course_name_vi": "M� h�nh ho� v� m�",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MST10148",
-    "course_name_vi": "Học máy cho mô ph?ng",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "MSC10295",
-    "course_name_vi": "Khóa luận tốt nghiệp",
-    "credits": 10,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 300,
-    "course_type": "BB",
-    "category": "GRADUATION",
-    "description": "Phương án 1 - Vật liệu Polymer và Composite"
-  },
-  {
-    "course_id": "MSC10395",
-    "course_name_vi": "Khóa luận tốt nghiệp",
-    "credits": 10,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 300,
-    "course_type": "BB",
-    "category": "GRADUATION",
-    "description": "Phương án 1 - Vật liệu y sinh"
-  },
-  {
-    "course_id": "MSC10195",
-    "course_name_vi": "Khóa luận tốt nghiệp",
-    "credits": 10,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 300,
-    "course_type": "BB",
-    "category": "GRADUATION",
-    "description": "Phương án 1 - Vật liệu màng mỏng"
+    "course_type": "TC",
+    "category": "MAJOR_MATERIALS_SCIENCE",
+    "description": "Tên Việt hóa từ Module Handbook 2025; course_id lấy trực tiếp từ handbook."
   }
-];
+]
