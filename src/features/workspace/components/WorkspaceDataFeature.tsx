@@ -439,7 +439,7 @@ export function WorkspaceDataFeature() {
                     </section>
 
                     <div className="grid gap-3 sm:grid-cols-3">
-                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Khoa</p><p className="mt-1 text-2xl font-bold text-gray-900">{FACULTIES.length}</p></div>
+                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Khoa</p><p className="mt-1 text-2xl font-bold text-gray-900">{new Set(allCoverage.map((item) => item.faculty.id)).size}</p></div>
                         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Ngành đủ 3 dữ liệu</p><p className="mt-1 text-2xl font-bold text-emerald-700">{completeMajors}/{allCoverage.length}</p></div>
                         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Ngành cần bổ sung</p><p className="mt-1 text-2xl font-bold text-amber-700">{missingMajors}</p></div>
                     </div>
