@@ -76,9 +76,9 @@ export function SelectionBasket({
         registeredOnlyCourseCodes.length > 0 ? `${registeredOnlyCourseCodes.length} môn trường đăng ký` : null,
     ].filter(Boolean).join(' · ');
 
-    const estimatedTuition = selectedCourses.reduce((sum, course) => {
+    const selectedTuition = selectedCourses.reduce((sum, course) => {
         const { courseFee } = FinancialLogic.calculateCourseFee(
-            course.code,
+            course.code || course.id,
             course.credits,
             tuition_rates,
             allCoursesMeta
@@ -86,12 +86,29 @@ export function SelectionBasket({
         course.price = courseFee;
         return sum + courseFee;
     }, 0);
+    const registeredTuitionCourses = registeredOnlyCourseCodes.map((courseCode) => ({
+        id: courseCode,
+        credits: creditsByCourseCode.get(courseCode) ?? 0,
+    }));
+    const registeredTuition = FinancialLogic.calculateTotalTuition(
+        registeredTuitionCourses,
+        tuition_rates,
+        allCoursesMeta,
+    );
+    const estimatedTuition = selectedTuition + registeredTuition;
+    const allTuitionCourses = [
+        ...selectedCourses.map((course) => ({
+            id: normalizeCourseCode(course.code || course.id),
+            credits: parseCredits(course.credits),
+        })),
+        ...registeredTuitionCourses,
+    ];
     const forecastAcademicYear = '2026-2027';
     const comparisonAcademicYear = academicYear === forecastAcademicYear
         ? '2025-2026'
         : forecastAcademicYear;
     const comparisonTuition = FinancialLogic.calculateTotalTuition(
-        selectedCourses,
+        allTuitionCourses,
         getTuitionRates(comparisonAcademicYear, majorId),
         allCoursesMeta,
     );
@@ -217,9 +234,7 @@ export function SelectionBasket({
                                 </span>
                             </div>
                             <p className="mt-1 text-[10px] leading-4 text-gray-500">
-                                {academicYear === forecastAcademicYear
-                                    ? 'Đơn giá 2026-2027 là dữ liệu dự báo; mức tham khảo được tính theo đơn giá 2025-2026.'
-                                    : 'Mức dự báo chỉ để tham khảo, không phải mức thu chính thức của trường.'}
+                                Tổng học phí dự kiến là dự đoán tham khảo, không phải mức thu chính thức của trường.
                             </p>
                         </div>
                     </div>
