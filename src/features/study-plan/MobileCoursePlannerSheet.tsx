@@ -86,12 +86,32 @@ export function MobileCoursePlannerSheet({
                         />
                     )}
                     prerequisiteContent={prerequisiteContent}
-                    additionalContent={selectedPlannedSemester ? (
-                        <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50 p-3">
-                            <p className="text-xs font-medium text-indigo-700">Đã lên lịch ở</p>
-                            <p className="mt-0.5 text-sm font-bold text-indigo-900">{selectedPlannedSemester.label}</p>
-                        </div>
-                    ) : undefined}
+                    additionalContent={
+                        (course.openClassAvailability?.length ?? 0) > 0 || selectedPlannedSemester ? (
+                            <div className="mt-4 space-y-3">
+                                {(course.openClassAvailability?.length ?? 0) > 0 && (
+                                    <div className="rounded-xl border border-blue-100 bg-blue-50 p-3">
+                                        <p className="text-xs font-semibold text-[#004A98]">Dự kiến mở lớp</p>
+                                        <div className="mt-2 space-y-1.5 text-xs text-gray-700">
+                                            {course.openClassAvailability?.map((availability) => (
+                                                <p key={availability.semester}>
+                                                    <span className="font-semibold">Học kỳ {availability.semester}</span>
+                                                    <span className="mx-1.5 text-gray-400">·</span>
+                                                    {availability.years.map((year) => `Năm ${year}`).join(', ')}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedPlannedSemester && (
+                                    <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
+                                        <p className="text-xs font-medium text-indigo-700">Đã lên lịch ở</p>
+                                        <p className="mt-0.5 text-sm font-bold text-indigo-900">{selectedPlannedSemester.label}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : undefined
+                    }
                 />
             ) : (
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">

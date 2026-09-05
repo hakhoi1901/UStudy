@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { DatabaseBackup } from 'lucide-react';
 import { useDepartmentData } from '../../context/DepartmentContext';
 import { useStudentDb } from '../../hooks/useStudentDb';
@@ -8,6 +8,7 @@ import { AcademicRulesEngine } from '../grades';
 import { StudyPlanCourseListPanel } from './StudyPlanCourseListPanel';
 import { StudyPlanSemesterPanel } from './StudyPlanSemesterPanel';
 import { MobileCoursePlannerSheet } from './MobileCoursePlannerSheet';
+import { getCourseOpenClassAvailability } from './open-class-availability';
 import {
     DEFAULT_LEFT_PANEL_PERCENT,
     DEFAULT_SEMESTER_COUNT,
@@ -28,7 +29,7 @@ import type { CourseMeta, CourseStatus, StudyPlanStorage, MobilePlannerTab, Mobi
 const StudyPlanPreview = lazy(() => import('./StudyPlanPreview'));
 
 export function StudyPlanContainer() {
-    const { data: { courses, categories, prerequisites } } = useDepartmentData() as ReturnType<typeof useDepartmentData> & {
+    const { data: { courses, categories, prerequisites }, facultyId } = useDepartmentData() as ReturnType<typeof useDepartmentData> & {
         data: ReturnType<typeof useDepartmentData>['data'] & { prerequisites: PrerequisiteRule[] };
     };
 
@@ -81,12 +82,20 @@ export function StudyPlanContainer() {
         return new Map(courses.map((course: CourseMeta) => [course.course_id, course]));
     }, [courses]);
 
+    const getCourseOpeningSchedule = useCallback((courseId: string) => (
+        getCourseOpenClassAvailability(facultyId, courseId)
+    ), [facultyId]);
+
     const selectedMobileCourse = useMemo(() => {
         if (!selectedMobileCourseId) return null;
         const course = courseById.get(selectedMobileCourseId);
         if (!course) return null;
-        return { ...course, status: getCourseStatus(course.course_id) };
-    }, [courseById, getCourseStatus, selectedMobileCourseId]);
+        return {
+            ...course,
+            status: getCourseStatus(course.course_id),
+            openClassAvailability: getCourseOpeningSchedule(course.course_id),
+        };
+    }, [courseById, getCourseOpeningSchedule, getCourseStatus, selectedMobileCourseId]);
 
     const historicalStudyPlan = useMemo(() => {
         return buildHistoricalStudyPlan(
@@ -205,6 +214,7 @@ export function StudyPlanContainer() {
                     .map((course) => ({
                         ...course,
                         status: getCourseStatus(course.course_id),
+                        openClassAvailability: getCourseOpeningSchedule(course.course_id),
                         prerequisites: (prereqByCourse.get(course.course_id) || []).map((rule) => ({
                             id: rule.prereq_id,
                             name: courseById.get(rule.prereq_id)?.course_name_vi || 'Chưa có tên môn',
@@ -254,7 +264,7 @@ export function StudyPlanContainer() {
             acc[key] = attachCoursesData(category);
             return acc;
         }, {});
-    }, [categories, courseById, getCourseStatus, prereqByCourse, searchTerm]);
+    }, [categories, courseById, getCourseOpeningSchedule, getCourseStatus, prereqByCourse, searchTerm]);
 
     const handleDragStart = (courseId: string, event: DragEvent<HTMLDivElement>) => {
         event.dataTransfer.effectAllowed = 'move';

@@ -170,6 +170,23 @@ export function StudyPlanCourseRow({
                         </div>
                     </div>
 
+                    {(course.openClassAvailability?.length ?? 0) > 0 && (
+                        <div className="border-b border-gray-200 py-3">
+                            <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500">Dự kiến mở lớp</p>
+                            <div className="mt-2 space-y-1.5">
+                                {course.openClassAvailability?.map((availability) => (
+                                    <div key={availability.semester} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                                        <span className="font-semibold text-[#004A98]">Học kỳ {availability.semester}</span>
+                                        <span className="text-gray-400">·</span>
+                                        <span className="text-gray-700">
+                                            {availability.years.map((year) => `Năm ${year}`).join(', ')}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {(course.prerequisites?.length ?? 0) > 0 && (
                         <div className="border-b border-gray-200 py-3">
                             <div className="flex items-center gap-2">

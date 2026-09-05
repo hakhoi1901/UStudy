@@ -11,6 +11,11 @@ export interface CoursePrerequisiteMeta {
     status: CourseStatus;
 }
 
+export interface CourseOpenClassAvailability {
+    semester: 1 | 2 | 3;
+    years: readonly number[];
+}
+
 export interface CourseMeta {
     course_id: string;
     course_name_vi: string;
@@ -23,6 +28,7 @@ export interface CourseMeta {
     description: string;
     status?: CourseStatus;
     prerequisites?: CoursePrerequisiteMeta[];
+    openClassAvailability?: readonly CourseOpenClassAvailability[];
 }
 
 export interface StudyPlanSemester {
