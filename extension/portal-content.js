@@ -1,6 +1,10 @@
 (function () {
 const EXTENSION_CONFIG = globalThis.USTUDY_EXTENSION_CONFIG;
-if (!new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname)) return;
+if (
+  !new RegExp(EXTENSION_CONFIG.portalHostnamePattern, 'i').test(window.location.hostname) ||
+  window.location.href.toLowerCase().includes('login')
+) return;
+
 const HOST_ID = 'ustudy-portal-sync-host';
 const SOURCE_LABELS = {
   grades: 'Bảng điểm',
@@ -75,8 +79,12 @@ async function callExtension(action, payload, extra = {}) {
   return response.data;
 }
 
+function isPortalLoginPage() {
+  return window.location.href.toLowerCase().includes('login');
+}
+
 function isPortalReady() {
-  return !new RegExp(EXTENSION_CONFIG.portalLoginPathPattern, 'i').test(window.location.pathname);
+  return !isPortalLoginPage();
 }
 
 function formatLastSync(value) {
@@ -110,7 +118,7 @@ function renderSettingsBody(settings) {
     <section class="section">
       <div class="section-heading"><h2>Kỳ cho lớp mở và ĐKHP</h2></div>
       <div class="period-grid">
-        <label for="ustudy-year">Năm học<input id="ustudy-year" maxlength="5" placeholder="25-26"></label>
+        <label for="ustudy-year">Năm học<input id="ustudy-year" maxlength="5" placeholder="26-27"></label>
         <label for="ustudy-semester">Học kỳ<select id="ustudy-semester"><option value="1" ${settings.semester === '1' ? 'selected' : ''}>Học kỳ 1</option><option value="2" ${settings.semester === '2' ? 'selected' : ''}>Học kỳ 2</option><option value="3" ${settings.semester === '3' ? 'selected' : ''}>Học kỳ 3</option></select></label>
       </div>
     </section>

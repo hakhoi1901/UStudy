@@ -89,7 +89,9 @@ export function isPortalSyncPacket(value: unknown): value is PortalSyncPacket {
 
 export function isSupportedPortalOrigin(origin: string): boolean {
   try {
-    return new RegExp(portalSyncConfig.portalHostnamePattern, 'i').test(new URL(origin).hostname);
+    const url = new URL(origin);
+    return url.protocol === 'https:'
+      && new RegExp(portalSyncConfig.portalHostnamePattern, 'i').test(url.hostname);
   } catch {
     return false;
   }

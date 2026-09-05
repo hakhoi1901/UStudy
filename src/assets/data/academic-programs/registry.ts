@@ -138,26 +138,26 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
     }, {
         cohortId: 'k25',
         label: 'Khóa 2025',
-        defaultProgramDataSource: 'k24',
+        defaultProgramDataSource: 'k25',
         faculties: [
             {
                 id: 'khoa-cntt',
                 name: 'Khoa Công nghệ Thông tin',
                 majors: [
-                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin', dataSourceCohort: 'k25' },
-                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin', dataSourceCohort: 'k25' },
-                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm', dataSourceCohort: 'k25' },
-                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính', dataSourceCohort: 'k25' },
-                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo', dataSourceCohort: 'k25' },
-                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng', dataSourceCohort: 'k25' },
+                    { id: 'cong-nghe-thong-tin', name: 'Công nghệ Thông tin' },
+                    { id: 'he-thong-thong-tin', name: 'Hệ thống thông tin' },
+                    { id: 'ky-thuat-phan-mem', name: 'Kỹ thuật phần mềm' },
+                    { id: 'khoa-hoc-may-tinh', name: 'Khoa học máy tính' },
+                    { id: 'tri-tue-nhan-tao', name: 'Trí tuệ nhân tạo' },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng' },
                 ],
             },
             {
                 id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
                 name: 'Khoa Khoa học và Công nghệ Vật liệu',
                 majors: [
-                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu' },
-                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu' },
+                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSourceCohort: 'k24'  },
+                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSourceCohort: 'k24'  },
                 ],
             },
             {
@@ -186,6 +186,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Vật lý - Vật lý Kỹ thuật',
                 majors: [
                     { id: 'vat-ly-hoc', name: 'Vật lý học' },
+                    { id: 'cu-nhan-tai-nang-vat-ly-hoc', name: 'cử nhân tài năng vật lý học'},
                     { id: 'vat-ly-y-khoa', name: 'Vật lý y khoa' },
                     { id: 'hai-duong-hoc', name: 'Hải dương học' },
                     { id: 'ky-thuat-hat-nhan', name: 'Kỹ thuật hạt nhân' },
@@ -197,8 +198,8 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-hoa',
                 name: 'Khoa Hóa học',
                 majors: [
-                    { id: 'hoa-hoc', name: 'Hóa học' },
-                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học', dataSourceCohort: 'k25' },
+                    { id: 'hoa-hoc', name: 'Hóa học', dataSourceCohort: 'k24'  },
+                    { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
                 ],
             },
             {
@@ -223,7 +224,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 name: 'Khoa Điện tử - Viễn thông',
                 majors: [
                     { id: 'ky-thuat-dien-tu-vien-thong', name: 'Kỹ thuật Điện tử - Viễn thông' },
-                    { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch', dataSourceCohort: 'k24' },
+                    { id: 'thiet-ke-vi-mach', name: 'Thiết kế vi mạch' },
                 ],
             },
             {
@@ -235,7 +236,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
     }, {
         cohortId: 'k26',
         label: 'Khóa 2026',
-        defaultProgramDataSource: 'k24',
+        defaultProgramDataSource: 'k25',
         faculties: [
             {
                 id: 'khoa-cntt',
@@ -253,8 +254,8 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-khoa-hoc-va-cong-nghe-vat-lieu',
                 name: 'Khoa Khoa học và Công nghệ Vật liệu',
                 majors: [
-                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu' },
-                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu' },
+                    { id: 'khoa-hoc-vat-lieu', name: 'Khoa học vật liệu', dataSourceCohort: 'k24' },
+                    { id: 'cong-nghe-vat-lieu', name: 'Công nghệ vật liệu', dataSourceCohort: 'k24' },
                 ],
             },
             {
@@ -294,7 +295,7 @@ export const ACADEMIC_YEAR_MAJOR_CATALOGS: AcademicYearMajorCatalog[] = [
                 id: 'khoa-hoa',
                 name: 'Khoa Hóa học',
                 majors: [
-                    { id: 'hoa-hoc', name: 'Hóa học' },
+                    { id: 'hoa-hoc', name: 'Hóa học', dataSourceCohort: 'k24' },
                     { id: 'cu-nhan-tai-nang', name: 'Cử nhân tài năng ngành hóa học' },
                 ],
             },

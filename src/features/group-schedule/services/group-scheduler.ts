@@ -36,6 +36,7 @@ const MAX_GROUP_URL_JSON_LENGTH = 64 * 1024;
 const MAX_GROUP_MEMBERS = 20;
 const MAX_GROUP_COURSES_PER_MEMBER = 60;
 const MAX_GROUP_NICKNAME_LENGTH = 80;
+const MAX_GROUP_MEMBER_ID_LENGTH = 128;
 const MAX_GROUP_COURSE_ID_LENGTH = 32;
 const GROUP_DAY_OFF_PENALTY = 40_000;
 const memberAssignmentKey = (courseId: string, memberIndex: number) => `${courseId}__member_${memberIndex}`;
@@ -54,6 +55,8 @@ interface SolveGroupAttempt {
   reachedSearchBudget: boolean;
   reachedSolutionLimit: boolean;
 }
+
+type GroupSolutionScorer = (solution: GroupSolution) => number;
 
 interface SolveStagesResult {
   solutions: GroupSolution[];
@@ -124,7 +127,7 @@ function inflateGroupPayload(bytes: Uint8Array): string {
   let output = '';
   const inflater = new pako.Inflate({ to: 'string' });
   inflater.onData = (chunk) => {
-    const textChunk = chunk as string;
+    const textChunk = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
     if (output.length + textChunk.length > MAX_GROUP_URL_JSON_LENGTH) {
       throw new Error('Payload giải nén vượt quá giới hạn cho phép.');
     }
@@ -154,11 +157,16 @@ function parseGroupMembers(value: unknown): GroupMemberToken[] {
   return value.map((candidate) => {
     if (!candidate || typeof candidate !== 'object') throw new Error('Thành viên nhóm không hợp lệ.');
     const member = candidate as Record<string, unknown>;
+    const id = member.id;
+    if (id !== undefined && (typeof id !== 'string' || id.length > MAX_GROUP_MEMBER_ID_LENGTH)) {
+      throw new Error('Mã thành viên nhóm không hợp lệ.');
+    }
     const nickname = member.nickname;
     if (nickname !== undefined && (typeof nickname !== 'string' || nickname.length > MAX_GROUP_NICKNAME_LENGTH)) {
       throw new Error('Tên thành viên vượt quá giới hạn.');
     }
     return sanitizeGroupMember({
+      id: typeof id === 'string' ? id : undefined,
       nickname: typeof nickname === 'string' ? nickname : undefined,
       sharedCourses: readCourseIds(member.sharedCourses, 'Danh sách môn chung'),
       personalCourses: readCourseIds(member.personalCourses, 'Danh sách môn riêng'),
@@ -200,7 +208,10 @@ function normalizePreferenceSelection(value: string[] | ClassPreferenceSelection
 function normalizePreferenceMap(map?: ClassPreferenceMap): Record<string, Required<ClassPreferenceSelection>> {
   return Object.fromEntries(
     Object.entries(map ?? {})
-      .map(([courseId, selection]) => [normalizeCourseId(courseId), normalizePreferenceSelection(selection)])
+      .map(([courseId, selection]): [string, Required<ClassPreferenceSelection>] => [
+        normalizeCourseId(courseId),
+        normalizePreferenceSelection(selection),
+      ])
       .filter(([, selection]) => selection.excluded.length > 0 || selection.preferred.length > 0 || selection.required.length > 0),
   );
 }
@@ -331,7 +342,7 @@ function maskHasBit(mask: number[], index: number): boolean {
 function countDayOffViolations(mask: number[], daysOff: DayOffPreference[] | undefined): number {
   if (!daysOff?.length) return 0;
 
-  return daysOff.reduce((count, value) => {
+  return daysOff.reduce<number>((count, value) => {
     const [rawDay, rawSession] = String(value).split(':');
     const day = Number(rawDay);
     if (!Number.isInteger(day) || day < 0 || day > 6) return count;
@@ -418,6 +429,7 @@ export function sanitizeGroupMember(member: GroupMemberToken): GroupMemberToken 
   const personalCourses = uniqueCourseIds(member.personalCourses).filter((courseId) => !sharedCourses.includes(courseId));
 
   return {
+    id: member.id?.trim() || undefined,
     nickname: member.nickname?.trim() || undefined,
     sharedCourses,
     personalCourses,
@@ -484,7 +496,7 @@ export function buildDensityMap(members: GroupMemberToken[], courseSharing: Cour
   });
 
   return Array.from(courseSubscribers.entries())
-    .flatMap(([courseId, subscribers]) => {
+    .flatMap<CourseWeight>(([courseId, subscribers]) => {
       const subscriberList = Array.from(subscribers).sort((a, b) => a - b);
       const rawRule = courseSharing[courseId];
       const mode: CourseSharingMode = subscriberList.length < 2 ? 'independent' : rawRule?.mode ?? 'required';
@@ -552,8 +564,10 @@ function solveGroupWithTrace(
   searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
   hardConstraints?: HardClassConstraints,
   limitRelaxedCandidates = true,
+  scoreSolution?: GroupSolutionScorer,
 ): SolveGroupAttempt {
   const solutions: GroupSolution[] = [];
+  const rankedSolutions: Array<{ solution: GroupSolution; fitness: number }> = [];
   const orderedCourses = [...courses].sort((left, right) => {
     if (right.subscribers.length !== left.subscribers.length) return right.subscribers.length - left.subscribers.length;
     const leftMember = left.subscribers[0] ?? Number.MAX_SAFE_INTEGER;
@@ -568,17 +582,44 @@ function solveGroupWithTrace(
   let reachedSearchBudget = false;
   let reachedSolutionLimit = false;
 
+  const hasReachedSolutionLimit = () => !scoreSolution && solutions.length >= maxSolutions;
+
+  // Ranking mode keeps the best K candidates while DFS continues through the search budget.
+  const keepSolution = (solution: GroupSolution) => {
+    if (!scoreSolution) {
+      solutions.push(solution);
+      return;
+    }
+
+    if (maxSolutions <= 0) return;
+    const fitness = scoreSolution(solution);
+    if (rankedSolutions.length < maxSolutions) {
+      rankedSolutions.push({ solution, fitness });
+      return;
+    }
+
+    let weakestIndex = 0;
+    for (let index = 1; index < rankedSolutions.length; index++) {
+      if (rankedSolutions[index].fitness < rankedSolutions[weakestIndex].fitness) weakestIndex = index;
+    }
+    if (fitness > rankedSolutions[weakestIndex].fitness) {
+      rankedSolutions[weakestIndex] = { solution, fitness };
+    }
+  };
+
   function dfs(courseIndex: number, state: StateMatrix, assignments: Map<string, string>) {
-    if (solutions.length >= maxSolutions) {
+    if (hasReachedSolutionLimit()) {
       reachedSolutionLimit = true;
       return;
     }
-    if (visitedNodes++ >= searchBudget) {
+    if (reachedSearchBudget) return;
+    if (visitedNodes >= searchBudget) {
       reachedSearchBudget = true;
       return;
     }
+    visitedNodes++;
     if (courseIndex === orderedCourses.length) {
-      solutions.push({
+      keepSolution({
         assignments: new Map(assignments),
         stateMatrix: state.map((memberMask) => [...memberMask]),
       });
@@ -586,7 +627,7 @@ function solveGroupWithTrace(
     }
 
     const course = orderedCourses[courseIndex];
-    const availableClasses = getClasses(courseDatabase, course.courseId)
+    const availableClasses = [...getClasses(courseDatabase, course.courseId)]
       .sort((a, b) => {
         const dayOffDifference = getDayOffPriorityPenalty(a, course.subscribers, members, config) - getDayOffPriorityPenalty(b, course.subscribers, members, config);
         if (dayOffDifference !== 0) return dayOffDifference;
@@ -597,14 +638,16 @@ function solveGroupWithTrace(
 
     if (mode === 'split' && course.subscribers.length > 1 && course.sharingMode !== 'required') {
       function assignSubscriber(subscriberOffset: number, workingState: StateMatrix) {
-        if (solutions.length >= maxSolutions) {
+        if (hasReachedSolutionLimit()) {
           reachedSolutionLimit = true;
           return;
         }
-        if (visitedNodes++ >= searchBudget) {
+        if (reachedSearchBudget) return;
+        if (visitedNodes >= searchBudget) {
           reachedSearchBudget = true;
           return;
         }
+        visitedNodes++;
         if (subscriberOffset === course.subscribers.length) {
           dfs(courseIndex + 1, workingState, assignments);
           return;
@@ -630,6 +673,7 @@ function solveGroupWithTrace(
           assignments.set(memberAssignmentKey(course.assignmentKey, memberIndex), cls.id);
           assignSubscriber(subscriberOffset + 1, nextState);
           assignments.delete(memberAssignmentKey(course.assignmentKey, memberIndex));
+          if (reachedSearchBudget || hasReachedSolutionLimit()) break;
         }
       }
 
@@ -650,10 +694,15 @@ function solveGroupWithTrace(
       assignments.set(course.assignmentKey, cls.id);
       dfs(courseIndex + 1, nextState, assignments);
       assignments.delete(course.assignmentKey);
+      if (reachedSearchBudget || hasReachedSolutionLimit()) break;
     }
   }
 
   dfs(0, initialState, new Map());
+  if (scoreSolution) {
+    rankedSolutions.sort((left, right) => right.fitness - left.fitness);
+    solutions.push(...rankedSolutions.map(({ solution }) => solution));
+  }
   return { solutions, visitedNodes, reachedSearchBudget, reachedSolutionLimit };
 }
 
@@ -891,21 +940,28 @@ function runSolveStages(
   hardConstraints?: HardClassConstraints,
   searchBudget = GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
   limitRelaxedCandidates = true,
+  rankSolutions = false,
 ): SolveStagesResult {
   const trace: GroupSolveTrace[] = [];
   const preferenceModes: PreferenceConstraintMode[] = ['strict', 'relaxed'];
+  const hasSplittableCourse = density.some(
+    (course) => course.subscribers.length > 1 && course.sharingMode !== 'required',
+  );
 
   for (const preferenceMode of preferenceModes) {
     const solutionsByAssignment = new Map<string, GroupSolution>();
-    const attempts: Array<{ stage: GroupSolveStage; mode: SolveMode }> = preferenceMode === 'strict'
-      ? [
-          { stage: 'shared-strict', mode: 'shared-first' },
-          { stage: 'split-strict', mode: 'split' },
-        ]
-      : [
-          { stage: 'shared-relaxed', mode: 'shared-first' },
-          { stage: 'split-relaxed', mode: 'split' },
-        ];
+    const attempts: Array<{ stage: GroupSolveStage; mode: SolveMode }> = [
+      {
+        stage: preferenceMode === 'strict' ? 'shared-strict' : 'shared-relaxed',
+        mode: 'shared-first',
+      },
+    ];
+    if (hasSplittableCourse) {
+      attempts.push({
+        stage: preferenceMode === 'strict' ? 'split-strict' : 'split-relaxed',
+        mode: 'split',
+      });
+    }
 
     for (const attempt of attempts) {
       const result = solveGroupWithTrace(
@@ -919,6 +975,9 @@ function runSolveStages(
         searchBudget,
         hardConstraints,
         limitRelaxedCandidates,
+        rankSolutions
+          ? (solution) => scoreGroupSolution(solution, courseDatabase, density, members, fitnessConfig)
+          : undefined,
       );
       trace.push({
         stage: attempt.stage,
@@ -1018,7 +1077,11 @@ function buildObservedTradeoffs(
       return selectedClassViolatesPreference(groupSelection, classId) || selectedClassViolatesPreference(personalSelection, classId);
     })).map((course) => course.courseId)));
     const strictAttempts = trace.filter((entry) => entry.stage.endsWith('strict'));
-    const strictWasExhaustive = strictAttempts.length === 2 && strictAttempts.every((entry) => entry.solutionCount === 0 && !entry.reachedSearchBudget);
+    const expectedStrictAttempts = courses.some(
+      (candidate) => candidate.subscribers.length > 1 && candidate.sharingMode !== 'required',
+    ) ? 2 : 1;
+    const strictWasExhaustive = strictAttempts.length === expectedStrictAttempts
+      && strictAttempts.every((entry) => entry.solutionCount === 0 && !entry.reachedSearchBudget);
     if (conflictedCourses.length > 0) {
       tradeoffs.push({
         id: 'relaxed-class-preference',
@@ -1062,7 +1125,17 @@ export function runGroupScheduleSolver(
   }
 
   const fitnessConfig = buildFitnessConfig(config);
-  const staged = runSolveStages(density, courseDatabase, sanitizedMembers, fitnessConfig, maxSolutions);
+  const staged = runSolveStages(
+    density,
+    courseDatabase,
+    sanitizedMembers,
+    fitnessConfig,
+    maxSolutions,
+    undefined,
+    GROUP_SCHEDULER_CONFIG.SEARCH_NODE_BUDGET,
+    true,
+    true,
+  );
   const sharedStrictTrace = staged.trace.find((entry) => entry.stage === 'shared-strict');
   const splitStrictTrace = staged.trace.find((entry) => entry.stage === 'split-strict');
   if (sharedStrictTrace?.solutionCount === 0 && (splitStrictTrace?.solutionCount ?? 0) > 0) {
@@ -1167,7 +1240,10 @@ export function analyzeGroupScheduleTradeoff(
     };
   }
 
-  const wasExhaustive = counterfactual.trace.length === 4
+  const expectedTraceLength = density.some(
+    (course) => course.subscribers.length > 1 && course.sharingMode !== 'required',
+  ) ? 4 : 2;
+  const wasExhaustive = counterfactual.trace.length === expectedTraceLength
     && counterfactual.trace.every((entry) => entry.solutionCount === 0 && !entry.reachedSearchBudget && !entry.reachedSolutionLimit);
   if (wasExhaustive) {
     const coursesWithoutAlternative = (tradeoff.courseIds ?? []).filter((courseId) => {
@@ -1221,20 +1297,6 @@ export function analyzeGroupScheduleTradeoff(
 
 export function isDuplicateMember(member: GroupMemberToken, members: GroupMemberToken[]): boolean {
   const current = sanitizeGroupMember(member);
-    const currentKey = JSON.stringify({
-    sharedCourses: [...current.sharedCourses].sort(),
-    personalCourses: [...current.personalCourses].sort(),
-    busyMask: current.busyMask,
-    preferredClasses: current.preferredClasses ?? {},
-  });
-
-  return members.some((existing) => {
-    const sanitized = sanitizeGroupMember(existing);
-    return JSON.stringify({
-      sharedCourses: [...sanitized.sharedCourses].sort(),
-      personalCourses: [...sanitized.personalCourses].sort(),
-      busyMask: sanitized.busyMask,
-      preferredClasses: sanitized.preferredClasses ?? {},
-    }) === currentKey;
-  });
+  if (!current.id) return false;
+  return members.some((existing) => sanitizeGroupMember(existing).id === current.id);
 }

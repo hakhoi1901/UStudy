@@ -7,7 +7,7 @@ export function exportTuitionData(summary: TuitionSummary, courses: TuitionCours
     content += `Học kỳ: ${summary.semester}\n`;
     content += `Tổng tín chỉ: ${summary.totalCredits} TC (${summary.totalTuitionCredits} TC học phí)\n`;
     content += `Tổng số tiết: ${summary.totalPeriods} tiết\n`;
-    content += `Hạn thanh toán: ${new Date(summary.dueDate).toLocaleDateString('vi-VN')}\n`;
+    content += `Hạn thanh toán: ${summary.dueDate ? new Date(`${summary.dueDate}T00:00:00`).toLocaleDateString('vi-VN') : 'Chưa công bố'}\n`;
     content += `Trạng thái: ${summary.status === 'paid' ? 'Đã thanh toán' : summary.status === 'partial' ? 'Thanh toán một phần' : 'Chưa thanh toán'}\n\n`;
 
     content += `CHI TIẾT CÁC MÔN HỌC:\n`;

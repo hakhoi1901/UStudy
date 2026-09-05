@@ -289,7 +289,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     window.location.reload();
   }
 
-  function createRollbackForPreview(importPreview: ImportPreview): boolean {
+  async function createRollbackForPreview(importPreview: ImportPreview): Promise<boolean> {
     const selectedItems = importPreview.items.filter((item) => importPreview.selectedKeys.includes(item.key));
     return createImportRollbackSnapshot('Tệp sao lưu', {
       added: selectedItems.filter((item) => item.status === 'add').length,
@@ -298,9 +298,10 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
     }, [], importPreview.sourceName);
   }
 
-  function confirmPreview() {
+  async function confirmPreview() {
     if (!preview || preview.selectedKeys.length === 0) return;
-    if (!createRollbackForPreview(preview)) {
+    if (!await createRollbackForPreview(preview)) {
+      setPreview(null);
       window.alert('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
       return;
     }
@@ -369,7 +370,7 @@ export function ImportData({ compact = false, importButtonLabel = 'Nhập dữ l
         footer={(
           <>
             <button type="button" onClick={() => setPreview(null)} className="ustudy-button-dialog ustudy-button-dialog-cancel">Hủy</button>
-            <button type="button" disabled={!preview?.selectedKeys.length} onClick={confirmPreview} className="ustudy-button-dialog ustudy-button-dialog-confirm">Nhập {preview?.selectedKeys.length ?? 0} mục</button>
+            <button type="button" disabled={!preview?.selectedKeys.length} onClick={() => { void confirmPreview(); }} className="ustudy-button-dialog ustudy-button-dialog-confirm">Nhập {preview?.selectedKeys.length ?? 0} mục</button>
           </>
         )}
       >

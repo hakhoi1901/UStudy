@@ -11,24 +11,8 @@
  * Khi nha truong thong bao han moi, chi can sua/thêm trong object nay.
  */
 export const TUITION_DEADLINES_BY_SEMESTER: Record<string, string> = {
-    '25-26/3': '2026-08-20',
+    '25-26/7': '2026-08-20',
 };
-
-function formatLocalDateISO(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-/**
- * Fallback khi hoc ky chua duoc set trong TUITION_DEADLINES_BY_SEMESTER.
- * Mac dinh: ngay 15 cua thang sau, giu hanh vi cu cua app.
- */
-export function getDefaultTuitionDeadline(): string {
-    const now = new Date();
-    return formatLocalDateISO(new Date(now.getFullYear(), now.getMonth() + 1, 15));
-}
 
 export function normalizeTuitionSemesterKey(value: string | undefined | null): string {
     const raw = String(value || '').trim();
@@ -59,13 +43,14 @@ export function buildTuitionSemesterKey(academicYear: string, semesterNumber: nu
     return `${year}/${semester}`;
 }
 
-export function getTuitionDeadline(semester: string | undefined | null): string {
+/** Chi tra ve han da duoc nha truong cong bo trong bang cau hinh. */
+export function getTuitionDeadline(semester: string | undefined | null): string | null {
     const key = normalizeTuitionSemesterKey(semester);
-    return TUITION_DEADLINES_BY_SEMESTER[key] || getDefaultTuitionDeadline();
+    return TUITION_DEADLINES_BY_SEMESTER[key] ?? null;
 }
 
-export function formatTuitionDeadline(dateString: string): string {
-    if (!dateString) return '-';
+export function formatTuitionDeadline(dateString: string | null | undefined): string {
+    if (!dateString) return 'Chua cong bo';
 
     const date = new Date(`${dateString}T00:00:00`);
     if (Number.isNaN(date.getTime())) return dateString;

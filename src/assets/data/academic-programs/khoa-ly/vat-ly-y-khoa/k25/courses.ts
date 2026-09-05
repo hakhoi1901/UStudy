@@ -1,5 +1,159 @@
 export const courses = [
   {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00003",
+    "course_name_vi": "Tư tưởng Hồ Chí Minh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00004",
+    "course_name_vi": "Pháp luật đại cương",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00005",
+    "course_name_vi": "Kinh tế đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00006",
+    "course_name_vi": "Tâm lý đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00007",
+    "course_name_vi": "Phương pháp luận sáng tạo",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00015",
+    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00016",
+    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00101",
     "course_name_vi": "Triết học Mác - Lênin",
     "credits": 3,
@@ -44,70 +198,59 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BAA00003",
-    "course_name_vi": "Tư tưởng Hồ Chí Minh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00004",
-    "course_name_vi": "Pháp luật đại cương",
+    "course_id": "CHE00001",
+    "course_name_vi": "Hóa đại cương 1",
     "credits": 3,
-    "theory_hours": 45,
+    "theory_hours": 30,
     "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00005",
-    "course_name_vi": "Kinh tế đại cương",
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 4 học phần thuộc nhóm Khoa học xã hội - Kinh tế - Kỹ năng"
+    "description": ""
   },
   {
-    "course_id": "BAA00006",
-    "course_name_vi": "Tâm lý đại cương",
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 4 học phần thuộc nhóm Khoa học xã hội - Kinh tế - Kỹ năng"
+    "description": ""
   },
   {
-    "course_id": "BAA00007",
-    "course_name_vi": "Phương pháp luận sáng tạo",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 4 học phần thuộc nhóm Khoa học xã hội - Kinh tế - Kỹ năng"
-  },
-  {
-    "course_id": "BAA00016",
-    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
-    "credits": 2,
+    "course_id": "MPH00001",
+    "course_name_vi": "Giới thiệu ngành Vật lý y khoa",
+    "credits": 3,
     "theory_hours": 15,
-    "lab_hours": 30,
+    "lab_hours": 60,
     "exercise_hours": 0,
-    "course_type": "TC",
+    "course_type": "BB",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 4 học phần thuộc nhóm Khoa học xã hội - Kinh tế - Kỹ năng"
+    "description": ""
   },
   {
     "course_id": "MTH00003",
@@ -126,17 +269,6 @@ export const courses = [
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MTH00081",
-    "course_name_vi": "Thực hành Vi tích phân 1B",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
@@ -165,12 +297,12 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "CHE00001",
-    "course_name_vi": "Hóa đại cương 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
+    "course_id": "MTH00081",
+    "course_name_vi": "Thực hành Vi tích phân 1B",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
@@ -188,7 +320,7 @@ export const courses = [
   },
   {
     "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
+    "course_name_vi": "Vật lý đại cương 2 (Điện tử - Quang)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -199,7 +331,7 @@ export const courses = [
   },
   {
     "course_id": "PHY00003",
-    "course_name_vi": "Vật lý đại cương 3 (Cơ-Nhiệt nâng cao)",
+    "course_name_vi": "Vật lý đại cương 3 (Cơ - Nhiệt nâng cao)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -220,17 +352,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "MPH00001",
-    "course_name_vi": "Giới thiệu ngành Vật lý y khoa",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "PHY00081",
     "course_name_vi": "Thực hành Vật lý đại cương",
     "credits": 2,
@@ -242,124 +363,14 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "GEO00002",
-    "course_name_vi": "Khoa học Trái đất",
+    "course_id": "MPH10001",
+    "course_name_vi": "Cơ sở ngành Vật lý y khoa",
     "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần (GEO00002, ENV00001, BAA00015)"
-  },
-  {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần (GEO00002, ENV00001, BAA00015)"
-  },
-  {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần (GEO00002, ENV00001, BAA00015)"
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
     "theory_hours": 15,
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Học phần Anh văn tự chọn"
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Học phần Anh văn tự chọn"
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Học phần Anh văn tự chọn"
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Học phần Anh văn tự chọn"
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
-    "credits": 4,
-    "theory_hours": 0,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
@@ -473,17 +484,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "MPH10001",
-    "course_name_vi": "Cơ sở ngành vật lý y khoa",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
     "course_id": "MPH10101",
     "course_name_vi": "Cơ sở vật lý phóng xạ",
     "credits": 2,
@@ -491,7 +491,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -502,7 +502,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -513,7 +513,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -524,7 +524,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -535,7 +535,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -546,7 +546,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -557,7 +557,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -568,7 +568,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -579,7 +579,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -590,7 +590,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -601,7 +601,7 @@ export const courses = [
     "lab_hours": 90,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -612,7 +612,7 @@ export const courses = [
     "lab_hours": 90,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_MEDICAL_PHYSICS",
     "description": ""
   },
   {
@@ -623,8 +623,8 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10114",
@@ -634,8 +634,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10115",
@@ -645,8 +645,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10116",
@@ -656,8 +656,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10117",
@@ -667,8 +667,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10118",
@@ -678,8 +678,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10119",
@@ -689,8 +689,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10120",
@@ -700,8 +700,8 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": "Học phần chuyên ngành tự chọn"
+    "category": "MAJOR_MEDICAL_PHYSICS",
+    "description": ""
   },
   {
     "course_id": "MPH10995",
@@ -709,9 +709,9 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
   }
-];
+]

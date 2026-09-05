@@ -1,5 +1,49 @@
 export const courses = [
   {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00003",
     "course_name_vi": "Tư tưởng Hồ Chí Minh",
     "credits": 2,
@@ -15,6 +59,83 @@ export const courses = [
     "course_name_vi": "Pháp luật đại cương",
     "credits": 3,
     "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00005",
+    "course_name_vi": "Kinh tế đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00006",
+    "course_name_vi": "Tâm lý đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00007",
+    "course_name_vi": "Phương pháp luận sáng tạo",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00015",
+    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
@@ -66,39 +187,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BAA00005",
-    "course_name_vi": "Kinh tế đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00006",
-    "course_name_vi": "Tâm lý đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00007",
-    "course_name_vi": "Phương pháp luận sáng tạo",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
     "course_id": "CHE00001",
     "course_name_vi": "Hóa đại cương 1",
     "credits": 3,
@@ -106,6 +194,39 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 30,
     "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
@@ -177,7 +298,7 @@ export const courses = [
   },
   {
     "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
+    "course_name_vi": "Vật lý đại cương 2 (Điện tử - Quang)",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
@@ -221,7 +342,7 @@ export const courses = [
   },
   {
     "course_id": "SEM00002",
-    "course_name_vi": "Kỹ thuật lập trình Python",
+    "course_name_vi": "Kỹ thuật lập trình",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
@@ -231,124 +352,14 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "GEO00002",
-    "course_name_vi": "Khoa học Trái đất",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
+    "course_id": "PHY10002",
+    "course_name_vi": "Vật lý chất rắn",
     "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng - An ninh",
-    "credits": 4,
-    "theory_hours": 0,
+    "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
+    "category": "FOUNDATION",
     "description": ""
   },
   {
@@ -385,17 +396,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "SEM10001",
-    "course_name_vi": "Vật lý chất rắn và bán dẫn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
     "course_id": "SEM10002",
     "course_name_vi": "Vật lý linh kiện bán dẫn",
     "credits": 3,
@@ -408,7 +408,7 @@ export const courses = [
   },
   {
     "course_id": "SEM10003",
-    "course_name_vi": "Công nghệ chế tạo bán dẫn cơ bản",
+    "course_name_vi": "Công nghệ chế tạo bán dẫn",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
@@ -502,7 +502,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -513,7 +513,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -524,7 +524,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -535,18 +535,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
     "course_id": "SEM10102",
     "course_name_vi": "Phân tích mạch",
-    "credits": 2,
+    "credits": 3,
     "theory_hours": 30,
-    "lab_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -557,7 +557,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -568,7 +568,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -579,7 +579,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -590,7 +590,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -601,7 +601,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -612,7 +612,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -623,7 +623,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -634,7 +634,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -645,7 +645,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -656,7 +656,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -667,7 +667,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -678,7 +678,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -689,7 +689,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -700,7 +700,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -711,7 +711,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -722,7 +722,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -733,7 +733,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -744,7 +744,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -755,7 +755,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -766,7 +766,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -777,18 +777,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
     "course_id": "SEM10124",
-    "course_name_vi": "Ứng dụng công nghệ bức xạ trong vật liệu bán dẫn",
+    "course_name_vi": "Ứng dụng công nghệ nhiễu xạ trong vật liệu bán dẫn",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -799,7 +799,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -810,7 +810,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -821,7 +821,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -832,7 +832,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -843,7 +843,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -854,7 +854,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -865,7 +865,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -876,7 +876,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -887,7 +887,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -898,18 +898,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
     "course_id": "SEM10135",
     "course_name_vi": "Công nghệ quang điện mặt trời",
     "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
+    "theory_hours": 45,
+    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -920,7 +920,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -931,7 +931,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -942,7 +942,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -953,7 +953,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -964,7 +964,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_SEMICONDUCTOR",
     "description": ""
   },
   {
@@ -973,9 +973,20 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
+  },
+  {
+    "course_id": "BAA00016",
+    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "",
+    "description": ""
   }
-];
+]

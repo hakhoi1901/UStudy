@@ -85,7 +85,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 3 học phần tự chọn xã hội"
   },
   {
     "course_id": "BAA00006",
@@ -96,7 +96,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 3 học phần tự chọn xã hội"
   },
   {
     "course_id": "BAA00007",
@@ -107,7 +107,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 3 học phần tự chọn xã hội"
   },
   {
     "course_id": "ENM00001",
@@ -133,14 +133,14 @@ export const courses = [
   },
   {
     "course_id": "BIO00001",
-    "course_name_vi": "Sinh học đại cương 1",
+    "course_name_vi": "Sinh đại cương 1",
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Sinh thái học đại cương"
   },
   {
     "course_id": "ENM00002",
@@ -151,7 +151,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Sinh đại cương 1"
   },
   {
     "course_id": "PHY00001",
@@ -195,7 +195,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Toán ứng dụng trong môi trường"
   },
   {
     "course_id": "ENM00003",
@@ -206,7 +206,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Toán cao cấp C"
   },
   {
     "course_id": "PHY00002",
@@ -272,7 +272,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Thống kê trong môi trường"
   },
   {
     "course_id": "ENV00004",
@@ -283,7 +283,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 với Xác suất thống kê"
   },
   {
     "course_id": "CSC00003",
@@ -294,7 +294,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Không tính vào điểm trung bình; tính vào số tín chỉ tích lũy"
   },
   {
     "course_id": "ADD00031",
@@ -305,7 +305,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
   },
   {
     "course_id": "ADD00032",
@@ -316,7 +316,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
   },
   {
     "course_id": "ADD00033",
@@ -327,7 +327,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
   },
   {
     "course_id": "ADD00034",
@@ -338,7 +338,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Chỉ học nếu chưa đạt chuẩn ngoại ngữ đầu ra"
   },
   {
     "course_id": "BAA00021",
@@ -364,14 +364,14 @@ export const courses = [
   },
   {
     "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
     "credits": 4,
     "theory_hours": 0,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
-    "description": ""
+    "description": "Nguồn CTĐT không tách số tiết ở bảng học phần"
   },
   {
     "course_id": "ENM00005",
@@ -602,7 +602,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 2 trong 5 học phần TC1"
   },
   {
     "course_id": "ENM10015",
@@ -613,7 +613,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 2 trong 5 học phần TC1"
   },
   {
     "course_id": "ENM10016",
@@ -624,7 +624,7 @@ export const courses = [
     "exercise_hours": 15,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 2 trong 5 học phần TC1"
   },
   {
     "course_id": "ENM10017",
@@ -635,7 +635,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 2 trong 5 học phần TC1"
   },
   {
     "course_id": "ENM10018",
@@ -646,7 +646,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 2 trong 5 học phần TC1"
   },
   {
     "course_id": "ENM10019",
@@ -657,7 +657,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 học phần TC2"
   },
   {
     "course_id": "ENM10020",
@@ -668,7 +668,7 @@ export const courses = [
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "FOUNDATION",
-    "description": ""
+    "description": "Chọn 1 trong 2 học phần TC2"
   },
   {
     "course_id": "ENM10114",
@@ -678,7 +678,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -688,8 +688,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -699,8 +699,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -710,8 +710,8 @@ export const courses = [
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -722,117 +722,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10106",
-    "course_name_vi": "Quản lý tài nguyên đất",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10107",
-    "course_name_vi": "Quản lý môi trường nông nghiệp nông thôn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10108",
-    "course_name_vi": "Quản lý và sử dụng hiệu quả tài nguyên năng lượng",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10109",
-    "course_name_vi": "Quản lý tài nguyên sinh vật",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10110",
-    "course_name_vi": "Quản lý tổng hợp tài nguyên nước",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10202",
-    "course_name_vi": "Quản lý chất thải rắn đô thị và công nghiệp",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10203",
-    "course_name_vi": "Quản lý môi trường đô thị và khu công nghiệp",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10111",
-    "course_name_vi": "Kinh tế tuần hoàn",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10112",
-    "course_name_vi": "Phân tích không gian trong quản lý tài nguyên và môi trường",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10113",
-    "course_name_vi": "Tối ưu hóa trong quản lý tài nguyên và môi trường",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -843,7 +733,29 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10202",
+    "course_name_vi": "Quản lý chất thải rắn đô thị và công nghiệp",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "BB",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10203",
+    "course_name_vi": "Quản lý môi trường đô thị và khu công nghiệp",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -854,7 +766,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -865,51 +777,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10206",
-    "course_name_vi": "Công nghệ xanh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10207",
-    "course_name_vi": "Sinh thái công nghiệp",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10208",
-    "course_name_vi": "Đánh giá môi trường chiến lược cho phát triển đô thị",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 15,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "ENM10209",
-    "course_name_vi": "Quản lý cơ sở hạ tầng môi trường đô thị",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -920,7 +788,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -931,7 +799,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -942,7 +810,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -953,18 +821,150 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
     "course_id": "ENM10305",
-    "course_name_vi": "GIS và viễn thám ứng dụng trong tài nguyên môi trường",
+    "course_name_vi": "GIS và viễn thám ứng dụng trong tài nguyên và môi trường",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10106",
+    "course_name_vi": "Quản lý tài nguyên đất",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10107",
+    "course_name_vi": "Quản lý môi trường nông nghiệp nông thôn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10108",
+    "course_name_vi": "Quản lý và sử dụng hiệu quả tài nguyên năng lượng",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10109",
+    "course_name_vi": "Quản lý tài nguyên sinh vật",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10110",
+    "course_name_vi": "Quản lý tổng hợp tài nguyên nước",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10111",
+    "course_name_vi": "Kinh tế tuần hoàn",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10112",
+    "course_name_vi": "Phân tích không gian trong quản lý tài nguyên và môi trường",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10113",
+    "course_name_vi": "Tối ưu hóa trong quản lý tài nguyên và môi trường",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10206",
+    "course_name_vi": "Công nghệ xanh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10207",
+    "course_name_vi": "Sinh thái công nghiệp",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10208",
+    "course_name_vi": "Đánh giá môi trường chiến lược cho phát triển đô thị",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 15,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
+    "description": ""
+  },
+  {
+    "course_id": "ENM10209",
+    "course_name_vi": "Quản lý cơ sở hạ tầng môi trường đô thị",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -975,7 +975,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -986,7 +986,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_RESOURCE_ENVIRONMENT_MANAGEMENT",
     "description": ""
   },
   {
@@ -995,10 +995,10 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
-    "description": ""
+    "description": "Thực hiện đề tài: 300 giờ"
   },
   {
     "course_id": "ENM10190",
@@ -1006,9 +1006,9 @@ export const courses = [
     "credits": 6,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 180,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
-    "description": ""
+    "description": "Thực hiện đề tài: 180 giờ; học thêm 4 tín chỉ tự chọn chuyên ngành"
   }
-];
+]

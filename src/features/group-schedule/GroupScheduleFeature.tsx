@@ -10,6 +10,7 @@ import { GroupScheduleComparison } from './components/GroupScheduleComparison';
 import { SavedSchedulesModal } from './components/SavedSchedulesModal';
 import { CourseClassFilterModal } from '../study-roadmap';
 import { Button } from '../../components/ui/form/button';
+import { AppDialog } from '../../components/ui/overlays/app-dialog';
 import { AppSelect } from '../../components/ui/form';
 import { Input } from '../../components/ui/form/input';
 import { Textarea } from '../../components/ui/form/textarea';
@@ -58,8 +59,13 @@ interface GroupClassOption {
     schedule: string[];
 }
 
+function createMemberId() {
+    return globalThis.crypto?.randomUUID?.() ?? `member-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function makeDraft(): GroupMemberToken {
     return {
+        id: createMemberId(),
         nickname: '',
         sharedCourses: [],
         personalCourses: [],
@@ -224,6 +230,7 @@ export function GroupSchedulePage({
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(savedUIState.isAdvancedOpen);
     const [showMembersPanel, setShowMembersPanel] = useState(savedUIState.showMembersPanel);
     const [filterModalCourse, setFilterModalCourse] = useState<Course | null>(null);
+    const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null);
     const [openClassDetails, setOpenClassDetails] = useState<OpenClassDetailTarget | null>(null);
 
     useEffect(() => {
@@ -260,12 +267,21 @@ export function GroupSchedulePage({
         if (!selectedCourseIds || selectedCourseIds.size === 0) return [];
         return allCourses.filter((course) => selectedCourseIds.has(course.id) || selectedCourseIds.has(course.code));
     }, [allCourses, selectedCourseIds]);
+    const editingMember = editingMemberIndex === null ? null : members[editingMemberIndex] ?? null;
     const draftCourseIds = useMemo(() => {
+        if (editingMember) {
+            return Array.from(new Set([...editingMember.sharedCourses, ...editingMember.personalCourses]));
+        }
         if (basketCourses.length > 0) {
             return Array.from(new Set(basketCourses.map(getCourseCode)));
         }
         return parseCourseInput(manualCourseInput);
-    }, [basketCourses, manualCourseInput]);
+    }, [basketCourses, editingMember, manualCourseInput]);
+    const draftCourses = useMemo(() => {
+        if (!editingMember) return basketCourses;
+        const courseIds = new Set(draftCourseIds);
+        return allCourses.filter((course) => courseIds.has(getCourseCode(course)) || courseIds.has(course.id));
+    }, [allCourses, basketCourses, draftCourseIds, editingMember]);
     const courseNames = useMemo(() => {
         return Object.fromEntries(allCourses.map((c) => [c.code || c.id, c.name]));
     }, [allCourses]);
@@ -315,11 +331,49 @@ export function GroupSchedulePage({
         return next;
     };
 
+    const resetMemberDraft = () => {
+        setDraft(makeDraft());
+        setManualCourseInput('');
+        setPersonalAllowedClasses({});
+        setPersonalClassPreferences({});
+        setEditingMemberIndex(null);
+    };
+
+    const startEditingMember = (member: GroupMemberToken, index: number) => {
+        const preferenceMap = Object.fromEntries(
+            Object.entries(member.preferredClasses ?? {}).map(([courseId, selection]) => [
+                courseId,
+                Array.isArray(selection)
+                    ? { preferred: selection }
+                    : {
+                        excluded: [...(selection.excluded ?? [])],
+                        preferred: [...(selection.preferred ?? [])],
+                        required: [...(selection.required ?? [])],
+                    },
+            ]),
+        ) as Record<string, ClassPreferenceSelection>;
+
+        setEditingMemberIndex(index);
+        setDraft({
+            ...member,
+            id: member.id ?? createMemberId(),
+            sharedCourses: [...member.sharedCourses],
+            personalCourses: [...member.personalCourses],
+            busyMask: [...member.busyMask],
+            preferredClasses: preferenceMap,
+            personalConfig: member.personalConfig ? { ...member.personalConfig, daysOff: [...(member.personalConfig.daysOff ?? [])] } : undefined,
+        });
+        setManualCourseInput([...member.sharedCourses, ...member.personalCourses].join(', '));
+        setPersonalAllowedClasses({});
+        setPersonalClassPreferences(preferenceMap);
+    };
+
     const submitDraft = () => {
+        const retainedSharedCourses = (editingMember?.sharedCourses ?? []).filter((courseId) => draftCourseIds.includes(courseId));
         const nextDraft: GroupMemberToken = {
             ...draft,
-            sharedCourses: [],
-            personalCourses: draftCourseIds,
+            sharedCourses: retainedSharedCourses,
+            personalCourses: draftCourseIds.filter((courseId) => !retainedSharedCourses.includes(courseId)),
             busyMask: draft.busyMask,
             preferredClasses: buildDraftClassPreferences(),
             personalConfig: draft.personalConfig,
@@ -328,30 +382,27 @@ export function GroupSchedulePage({
         const unknownCourses = draftCourseIds.filter((course) => knownCourseIds.size > 0 && !knownCourseIds.has(course));
         setLocalNotice(unknownCourses.length > 0 ? `Các môn chưa có trong dữ liệu lớp học: ${unknownCourses.join(', ')}.` : null);
 
+        if (editingMemberIndex !== null) {
+            replaceMembers(members.map((member, index) => index === editingMemberIndex ? nextDraft : member));
+            resetMemberDraft();
+            return;
+        }
+
         if (addMember(nextDraft)) {
-            setDraft(makeDraft());
-            setManualCourseInput('');
-            setPersonalAllowedClasses({});
-            setPersonalClassPreferences({});
+            resetMemberDraft();
         }
     };
 
     const mergeMembersFromLink = () => {
         try {
             const decoded = decodeGroupURL(extractHash(mergeInput));
-            const existingKeys = new Set(members.map((member) => JSON.stringify({
-                courses: [...member.sharedCourses, ...member.personalCourses].sort(),
-                busyMask: member.busyMask,
-            })));
+            const existingIds = new Set(members.map((member) => member.id).filter((id): id is string => Boolean(id)));
             const merged = [...members];
             decoded.forEach((member) => {
-                const key = JSON.stringify({
-                    courses: [...member.sharedCourses, ...member.personalCourses].sort(),
-                    busyMask: member.busyMask,
-                });
-                if (!existingKeys.has(key)) {
-                    existingKeys.add(key);
-                    merged.push(member);
+                const incoming = member.id ? member : { ...member, id: createMemberId() };
+                if (!existingIds.has(incoming.id)) {
+                    existingIds.add(incoming.id);
+                    merged.push(incoming);
                 }
             });
             replaceMembers(merged);
@@ -551,7 +602,7 @@ export function GroupSchedulePage({
     const renderDraftCourseList = () => (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
             <div className="divide-y divide-slate-100">
-                {basketCourses.map((course) => (
+                {draftCourses.map((course) => (
                     <div key={course.id} className="flex items-center gap-3 px-3 py-3">
                         <div className="min-w-0 flex-1">
                             <div className="flex min-w-0 items-center gap-2">
@@ -661,7 +712,13 @@ export function GroupSchedulePage({
                     ) : (
                         members.map((member, index) => (
                             <div key={`${member.nickname || 'member'}-${index}`}>
-                                <GroupMemberCard member={member} index={index} courseNames={courseNames} onRemove={() => removeMember(index)} />
+                                <GroupMemberCard
+                                    member={member}
+                                    index={index}
+                                    courseNames={courseNames}
+                                    onEdit={() => startEditingMember(member, index)}
+                                    onRemove={() => removeMember(index)}
+                                />
                             </div>
                         ))
                     )}
@@ -683,9 +740,11 @@ export function GroupSchedulePage({
                         <span className="mt-1 h-6 w-[3px] rounded-full bg-[#004A98]" aria-hidden="true" />
                         <div className="min-w-0">
                             <p className="text-xs font-semibold text-slate-400 sm:text-[11px] sm:uppercase sm:tracking-[0.14em]">
-                                Bước thêm thành viên
+                                {editingMember ? 'Đang chỉnh sửa thành viên' : 'Bước thêm thành viên'}
                             </p>
-                            <h2 className="text-base font-semibold text-slate-900 sm:text-lg">Nhóm của bạn</h2>
+                            <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+                                {editingMember ? (editingMember.nickname || `Thành viên ${editingMemberIndex! + 1}`) : 'Nhóm của bạn'}
+                            </h2>
                         </div>
                     </div>
 
@@ -734,7 +793,7 @@ export function GroupSchedulePage({
                         Nickname
                     </label>
 
-                    <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
                         <Input
                             value={draft.nickname || ""}
                             onChange={(event) =>
@@ -754,10 +813,25 @@ export function GroupSchedulePage({
                         >
                             <Plus className="h-4 w-4" />
                             <span className="truncate">
-                                {members.length === 0 ? "Tạo link nhóm" : "Thêm thành viên"}
+                                {editingMember ? 'Lưu thay đổi' : members.length === 0 ? 'Tạo link nhóm' : 'Thêm thành viên'}
                             </span>
                         </Button>
+                        {editingMember && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={resetMemberDraft}
+                                className="w-full border-slate-200 text-slate-600 hover:bg-slate-50 sm:w-auto sm:shrink-0"
+                            >
+                                Hủy
+                            </Button>
+                        )}
                     </div>
+                    {!editingMember && members.length > 0 && (
+                        <p className="text-xs leading-relaxed text-slate-500">
+                            Muốn thêm thành viên nữa? Quay về tab <span className="font-medium text-slate-700">Chọn môn</span> để chọn môn cho người tiếp theo.
+                        </p>
+                    )}
                 </div>
 
                 {/* Courses */}
@@ -769,7 +843,7 @@ export function GroupSchedulePage({
                         </span>
                     </div>
 
-                    {basketCourses.length > 0 ? (
+                    {draftCourses.length > 0 ? (
                         <div>
                             {renderDraftCourseList()}
                             <p className="mt-3 text-xs leading-relaxed text-slate-400">
@@ -1092,8 +1166,39 @@ export function GroupSchedulePage({
                             <div>
                                 <div className="font-mono text-sm font-semibold text-gray-900">{course.courseId}</div>
                                 <div className="mt-0.5 text-sm font-medium text-gray-800">{getGroupCourseName(course.courseId)}</div>
-                                <div className="text-xs text-gray-500">
-                                    Cùng đăng ký: {course.subscribers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}
+                                <div className="mt-1 space-y-1.5 text-xs text-gray-500">
+                                    {(() => {
+                                        const rule = courseSharing[course.courseId];
+                                        const isCustomGrouping = rule?.mode !== 'independent' && rule?.groups !== undefined;
+                                        if (!isCustomGrouping) {
+                                            return <div>Cùng đăng ký: {course.subscribers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</div>;
+                                        }
+
+                                        const groups = rule.groups ?? [];
+                                        const soloMembers = course.subscribers.filter((memberIndex) => !groups.some((group) => group.includes(memberIndex)));
+
+                                        return (
+                                            <>
+                                                {groups.map((group, groupIndex) => {
+                                                    if (!group.length) return null;
+                                                    const prefs = rule.groupClassPreferences?.[`group-${groupIndex}`];
+                                                    return (
+                                                        <div key={groupIndex}>
+                                                            <div className="font-medium text-gray-700">Nhóm {groupIndex + 1}: <span className="font-normal text-gray-500">{group.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</span></div>
+                                                            {prefs?.excluded?.length ? <div className="text-[11px] text-rose-600">+ Cấm: {prefs.excluded.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                            {prefs?.required?.length ? <div className="text-[11px] text-red-600">+ Bắt buộc: {prefs.required.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                            {prefs?.preferred?.length ? <div className="text-[11px] text-[#004A98]">+ Ưu tiên: {prefs.preferred.map(c => c.replace(/_/g, ' ')).join(', ')}</div> : null}
+                                                        </div>
+                                                    );
+                                                })}
+                                                {soloMembers.length > 0 && (
+                                                    <div>
+                                                        <div className="font-medium text-gray-700">Học riêng: <span className="font-normal text-gray-500">{soloMembers.map((memberIndex) => members[memberIndex]?.nickname || `Thành viên ${memberIndex + 1}`).join(', ')}</span></div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -1307,7 +1412,56 @@ export function GroupSchedulePage({
 
             <OpenClassDetailDialog target={openClassDetails} onOpenChange={(open) => { if (!open) setOpenClassDetails(null); }} />
 
-            {showSaveGroupScheduleModal && selectedOption && (
+            {selectedOption && (
+                <AppDialog
+                    open={showSaveGroupScheduleModal}
+                    onOpenChange={setShowSaveGroupScheduleModal}
+                    title="Lưu lịch nhóm"
+                    description="Lưu phương án hiện tại để mở lại trong Lịch đã lưu."
+                    icon={Save}
+                    size="sm"
+                    footer={(
+                        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowSaveGroupScheduleModal(false)}
+                                className="inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                onClick={saveSelectedGroupSchedule}
+                                disabled={!groupScheduleName.trim()}
+                                className="inline-flex h-10 items-center justify-center rounded-lg bg-[#004A98] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#003A78] disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                                Lưu lịch
+                            </button>
+                        </div>
+                    )}
+                >
+                    <div>
+                        <label htmlFor="group-schedule-name" className="block text-sm font-semibold text-slate-800">
+                            Tên gợi nhớ
+                        </label>
+                        <input
+                            id="group-schedule-name"
+                            autoFocus
+                            type="text"
+                            value={groupScheduleName}
+                            onChange={(event) => setGroupScheduleName(event.target.value)}
+                            placeholder={`Ví dụ: Nhóm - PA ${selectedOption.option}`}
+                            className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#004A98] focus:ring-2 focus:ring-[#004A98]/15"
+                            onKeyDown={(event) => event.key === 'Enter' && saveSelectedGroupSchedule()}
+                        />
+                    </div>
+                    <p className="border-l-2 border-[#004A98] bg-blue-50 px-3 py-2 text-xs leading-5 text-slate-600">
+                        Lưu cả nhóm và các lớp của phương án đang xem. Khi mở lại, bạn vẫn có thể đổi thành viên để xem lịch riêng từng người.
+                    </p>
+                </AppDialog>
+            )}
+
+            {false && showSaveGroupScheduleModal && selectedOption && (
                 <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
                     <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
                         <div className="flex items-center justify-between border-b border-gray-100 p-4 md:p-5">

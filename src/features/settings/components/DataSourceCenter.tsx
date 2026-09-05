@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
 import { APP_CONFIG } from '../../../config';
 import { CACHE_POPULATED_EVENT } from '../../../context/CryptoContext';
+import { useDepartmentData } from '../../../context/DepartmentContext';
 import { useCrypto } from '../../../context/CryptoContext';
 import { useAppNotification } from '../../../context/NotificationContext';
 import {
@@ -30,6 +31,7 @@ import {
 } from '../../../helpers/localStorage/save';
 import type { PortalDataSource } from '../../../logic/import-metadata';
 import { restoreImportSources } from '../../../logic/import-rollback';
+import { isNativePortalSyncAvailable, openNativePortalSync } from '../../../mobile/portal-sync';
 
 interface SourceView {
   id: PortalDataSource;
@@ -235,6 +237,7 @@ export function DataSourceCenter() {
   const [stamp, setStamp] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<SourceView | null>(null);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isPartialUndoOpen, setIsPartialUndoOpen] = useState(false);
   const [selectedUndoSources, setSelectedUndoSources] = useState<PortalDataSource[]>([]);
@@ -243,6 +246,7 @@ export function DataSourceCenter() {
   const [renamingEntry, setRenamingEntry] = useState<ImportHistoryEntry | null>(null);
   const [historyNameInput, setHistoryNameInput] = useState('');
   const { cryptoKey } = useCrypto();
+  const { academicYear, semesterNumber } = useDepartmentData();
   const { addNotification } = useAppNotification();
 
   useEffect(() => {
@@ -355,6 +359,29 @@ export function DataSourceCenter() {
     }
   };
 
+  const handleOpenPortal = async () => {
+    if (isNativePortalSyncAvailable()) {
+      setIsOpeningPortal(true);
+      try {
+        await openNativePortalSync(academicYear, semesterNumber);
+      } catch (reason) {
+        const message = reason instanceof Error ? reason.message : String(reason);
+        if (!/cancel|hủy|huy/i.test(message)) {
+          addNotification({
+            title: 'Không thể mở Portal',
+            message: message || 'Vui lòng thử lại.',
+            type: 'error',
+          });
+        }
+      } finally {
+        setIsOpeningPortal(false);
+      }
+      return;
+    }
+
+    window.open(APP_CONFIG.PORTAL_LOGIN_URL, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <button
@@ -459,7 +486,7 @@ export function DataSourceCenter() {
             {selectedSource && restorableSources.includes(selectedSource.id) && (
               <button type="button" onClick={() => openPartialUndo([selectedSource.id])} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"><Undo2 className="h-4 w-4" />Hoàn tác nguồn này</button>
             )}
-            <a href={APP_CONFIG.PORTAL_LOGIN_URL} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#004A98] bg-white px-4 text-sm font-semibold text-[#004A98] transition hover:bg-blue-50"><RefreshCw className="h-4 w-4" />Mở Portal để cập nhật</a>
+            <button type="button" onClick={() => void handleOpenPortal()} disabled={isOpeningPortal} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#004A98] bg-white px-4 text-sm font-semibold text-[#004A98] transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70"><RefreshCw className="h-4 w-4" />{isOpeningPortal ? 'Đang mở Portal...' : 'Mở Portal để cập nhật'}</button>
             <button type="button" onClick={() => setSelectedSource(null)} className="h-9 rounded-lg bg-[#004A98] px-4 text-sm font-semibold text-white transition hover:bg-[#003A78]">Đóng</button>
           </>
         )}
@@ -602,7 +629,7 @@ export function DataSourceCenter() {
         footer={(
           <>
             <button type="button" onClick={() => setIsUndoConfirmOpen(false)} className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50">Hủy</button>
-            <button type="button" onClick={() => { if (restoreLastImportRollback()) window.location.reload(); }} className="h-9 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700">Hoàn tác toàn bộ</button>
+            <button type="button" onClick={() => { void restoreLastImportRollback().then((restored) => { if (restored) window.location.reload(); }); }} className="h-9 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700">Hoàn tác toàn bộ</button>
           </>
         )}
       >

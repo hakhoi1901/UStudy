@@ -209,10 +209,20 @@ async function saveSettings(patch) {
 function isPortalUrl(url) {
   if (typeof url !== 'string') return false;
   try {
-    return new RegExp(CONFIG.portalHostnamePattern, 'i').test(new URL(url).hostname);
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'https:'
+      && new RegExp(CONFIG.portalHostnamePattern, 'i').test(parsedUrl.hostname);
   } catch {
     return false;
   }
+}
+
+function isPortalLoginUrl(url) {
+  return typeof url === 'string' && url.toLowerCase().includes('login');
+}
+
+function isPortalReadyUrl(url) {
+  return isPortalUrl(url) && !isPortalLoginUrl(url);
 }
 
 function isAppUrl(url) {
@@ -310,7 +320,7 @@ async function injectAppBridgeIntoOpenTabs() {
 
 async function openPortalAndRequestSync() {
   await chrome.storage.local.set({ [STORAGE_KEYS.pendingSyncRequest]: true });
-  const portalTab = await findTab(isPortalUrl);
+  const portalTab = await findTab(isPortalReadyUrl);
   if (portalTab) {
     await focusTab(portalTab);
     try {
@@ -318,6 +328,11 @@ async function openPortalAndRequestSync() {
     } catch {
       // The content script will consume pendingSyncRequest after the page is ready.
     }
+    return;
+  }
+  const loginTab = await findTab(isPortalUrl);
+  if (loginTab) {
+    await focusTab(loginTab);
     return;
   }
   await chrome.tabs.create({ url: CONFIG.portalLoginUrl });
@@ -361,6 +376,8 @@ function buildRunnerRuntime(requestId, settings, completedSources = []) {
 async function runPortalSync(sender, requestId, trigger = 'manual', documentInstanceId = '') {
   if (!sender.tab?.id || !isPortalUrl(sender.tab.url)) throw new Error('Chỉ có thể đồng bộ từ HCMUS Portal.');
   const tabId = sender.tab.id;
+  const currentTab = await chrome.tabs.get(tabId);
+  if (!isPortalReadyUrl(currentTab.url)) throw new Error('Bạn cần đăng nhập Portal trước khi đồng bộ.');
   const state = await getStoredState();
   const selectedSources = getSelectedSources(state.settings);
   const documentId = documentInstanceId || sender.documentId || null;
@@ -543,7 +560,7 @@ async function handleMessage(message, sender) {
     case 'SYNC_HEARTBEAT':
       return touchSyncSession(sender, message.requestId);
     case 'SYNC_COMPLETE':
-      if (!isPortalUrl(sender.tab?.url)) throw new Error('Nguồn đồng bộ không hợp lệ.');
+      if (!isPortalReadyUrl(sender.tab?.url)) throw new Error('Nguồn đồng bộ không hợp lệ.');
       return storeSyncResult(message.payload, message.trigger, sender.tab?.id, message.requestId);
     case 'SYNC_FAILED': {
       if (sender.tab?.id) {

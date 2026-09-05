@@ -1,5 +1,6 @@
 import { GPA_CONFIG } from '../../../constants';
 import { AcademicRulesEngine } from './academic-rules-engine';
+import { gradePointToLetter, score10ToFourPoint } from './grade-scale';
 import type { StudentCourseGrade, GPAPullResult, SimulatorCourseGrade, GPAPullSemester, GPAPullCourse } from '../types';
 
 /**
@@ -8,6 +9,35 @@ import type { StudentCourseGrade, GPAPullResult, SimulatorCourseGrade, GPAPullSe
  */
 
 export const GPACalculator = {
+    /** Chuyển điểm hệ 10 sang điểm hệ 4 theo bảng quy đổi hiện hành của UStudy. */
+    score10ToFourPoint,
+
+    /**
+     * Tính GPA hệ 4 có trọng số tín chỉ.
+     * Chỉ dùng các môn mà engine cũng tính vào GPA hệ 10 hiện tại.
+     */
+    calculateFourPointGPA: (
+        courses: Array<{ code: string; credits: number; score10: number; status: StudentCourseGrade['status'] }>,
+    ): number => {
+        let totalPoints = 0;
+        let totalCredits = 0;
+
+        for (const course of courses) {
+            const accumulation = AcademicRulesEngine.calculateAccumulationParams(
+                course.code,
+                course.credits,
+                course.score10,
+                course.status,
+            );
+            if (accumulation.creditsForGPA <= 0) continue;
+
+            totalPoints += GPACalculator.score10ToFourPoint(course.score10) * accumulation.creditsForGPA;
+            totalCredits += accumulation.creditsForGPA;
+        }
+
+        return totalCredits > 0 ? totalPoints / totalCredits : 0;
+    },
+
     /**
      * Tính GPA dự kiến khi kết hợp điểm lịch sử + điểm dự kiến học kỳ tới.
      */
@@ -42,6 +72,38 @@ export const GPACalculator = {
         const totalCredits = currentCredits + projectedCredits;
 
         return totalCredits > 0 ? totalPoints / totalCredits : 0;
+    },
+
+    /** GPA he 4 du kien, quy doi tung mon truoc khi nhan trong so tin chi. */
+    calculateProjectedFourPointGPA: (
+        gradesHistory: StudentCourseGrade[],
+        projectedCourses: { code: string; credits: number; projectedGrade: number }[],
+    ): number => {
+        let currentTotalPoints = 0;
+        let currentCredits = 0;
+        const projectedIds = new Set(projectedCourses.map((course) => course.code));
+
+        for (const course of gradesHistory) {
+            if (course.status === 'ongoing' || projectedIds.has(course.code)) continue;
+
+            const accumulation = AcademicRulesEngine.calculateAccumulationParams(
+                course.code,
+                course.credits,
+                course.grade,
+                course.status,
+            );
+            currentTotalPoints += score10ToFourPoint(course.grade) * accumulation.creditsForGPA;
+            currentCredits += accumulation.creditsForGPA;
+        }
+
+        const projectedPoints = projectedCourses.reduce(
+            (sum, course) => sum + score10ToFourPoint(course.projectedGrade) * course.credits,
+            0,
+        );
+        const projectedCredits = projectedCourses.reduce((sum, course) => sum + course.credits, 0);
+        const totalCredits = currentCredits + projectedCredits;
+
+        return totalCredits > 0 ? (currentTotalPoints + projectedPoints) / totalCredits : 0;
     },
 
     /**
@@ -256,14 +318,5 @@ export const GPACalculator = {
     /**
      * Chuyển đổi điểm số sang chữ cái (Hệ 4 → Letter Grade)
      */
-    gradeToLetter: (gradePoint: number): string => {
-        if (gradePoint >= 4.0) return 'A';
-        if (gradePoint >= 3.5) return 'B+';
-        if (gradePoint >= 3.0) return 'B';
-        if (gradePoint >= 2.5) return 'C+';
-        if (gradePoint >= 2.0) return 'C';
-        if (gradePoint >= 1.5) return 'D+';
-        if (gradePoint >= 1.0) return 'D';
-        return 'F';
-    },
+    gradeToLetter: gradePointToLetter,
 };

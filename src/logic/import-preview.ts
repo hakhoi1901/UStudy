@@ -12,6 +12,11 @@ export interface RawImportChange {
   courseName?: string;
 }
 
+export interface RawImportPreviewContext {
+  incomingMeta?: any;
+  currentMeta?: any;
+}
+
 const COLLECTION_LABELS: Record<ImportCollection, string> = {
   grades: 'Bảng điểm',
   registrations: 'Kết quả đăng ký',
@@ -40,6 +45,23 @@ function registrationBaseKey(value: any): string {
 
 function registrationKey(value: any): string {
   return `${normalizeSemester(value?.semester)}|${registrationBaseKey(value)}`;
+}
+
+function registrationScopeFromMeta(meta: any): string {
+  const registration = meta?.params?.registration;
+  if (!registration || typeof registration !== 'object') return '';
+  const explicitSemester = normalizeSemester(registration.semester);
+  if (explicitSemester) return explicitSemester;
+  if (!registration.year || !registration.sem) return '';
+  return normalizeSemester(`${registration.year}/${registration.sem}`);
+}
+
+function isRegistrationSnapshotComplete(meta: any): boolean {
+  return meta?.params?.registration?.snapshotComplete === true;
+}
+
+function registrationSnapshotChangeId(scope: string): string {
+  return `registrations:snapshot:${encodeURIComponent(scope)}`;
 }
 
 function dedupeRegistrations(values: any[]): any[] {
@@ -88,8 +110,14 @@ function isSameValue(first: unknown, second: unknown): boolean {
   return JSON.stringify(first) === JSON.stringify(second);
 }
 
-export function buildRawImportPreview(incoming: any, current: any): RawImportChange[] {
+export function buildRawImportPreview(
+  incoming: any,
+  current: any,
+  context: RawImportPreviewContext = {},
+): RawImportChange[] {
   const changes: RawImportChange[] = [];
+  const incomingRegistrationScope = registrationScopeFromMeta(context.incomingMeta);
+  const currentRegistrationScope = registrationScopeFromMeta(context.currentMeta);
   for (const collection of COLLECTIONS) {
     const incomingValue = incoming?.[collection];
     if (collection === 'exams' || collection === 'tuition') {
@@ -127,9 +155,23 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
       });
     });
 
-    // Only reconcile deletions from a non-empty snapshot. An empty array can
-    // also mean the Portal parser failed, so it must never erase local data.
-    if (incomingValue.length === 0 || (collection !== 'grades' && collection !== 'registrations' && collection !== 'courses')) continue;
+    const isScopedRegistrationSnapshot = collection === 'registrations'
+      && Boolean(incomingRegistrationScope)
+      && (incomingValue.length > 0 || isRegistrationSnapshotComplete(context.incomingMeta));
+    if (isScopedRegistrationSnapshot && incomingValue.length === 0 && currentValues.length === 0) {
+      changes.push({
+        id: registrationSnapshotChangeId(incomingRegistrationScope),
+        collection,
+        index: -1,
+        label: `Kết quả đăng ký (${incomingRegistrationScope}) - Không có môn`,
+        status: incomingRegistrationScope === currentRegistrationScope ? 'unchanged' : 'update',
+      });
+    }
+
+    // Empty generic arrays remain non-destructive because they may come from a
+    // parser failure. Registration snapshots with a verified period are safe.
+    if ((!isScopedRegistrationSnapshot && incomingValue.length === 0)
+      || (collection !== 'grades' && collection !== 'registrations' && collection !== 'courses')) continue;
 
     const incomingKeys = new Set(incomingValue.map((value: any, index: number) => valueKey(collection, value, index)));
     const incomingRegistrationBases = collection === 'registrations'
@@ -148,6 +190,7 @@ export function buildRawImportPreview(incoming: any, current: any): RawImportCha
           && !semester
           && incomingRegistrationBases?.has(registrationBaseKey(value)));
       const isInReconciledScope = collection !== 'registrations'
+        || isScopedRegistrationSnapshot
         || Boolean(semester && incomingRegistrationSemesters?.has(semester));
       if (existsInIncoming || !isInReconciledScope || queuedRemovalKeys.has(key)) return;
       queuedRemovalKeys.add(key);

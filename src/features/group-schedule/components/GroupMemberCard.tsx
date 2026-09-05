@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 
 import type { GroupMemberToken } from '../types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/navigation/accordion';
@@ -9,10 +9,11 @@ interface GroupMemberCardProps {
   member: GroupMemberToken;
   index: number;
   courseNames?: Record<string, string>;
+  onEdit?: () => void;
   onRemove?: () => void;
 }
 
-export function GroupMemberCard({ member, index, courseNames = {}, onRemove }: GroupMemberCardProps) {
+export function GroupMemberCard({ member, index, courseNames = {}, onEdit, onRemove }: GroupMemberCardProps) {
   const nickname = member.nickname || `Thành viên ${index + 1}`;
   const registeredCourses = Array.from(new Set([...member.sharedCourses, ...member.personalCourses]));
   const daysOff = formatDaysOff(member.personalConfig?.daysOff);
@@ -33,6 +34,19 @@ export function GroupMemberCard({ member, index, courseNames = {}, onRemove }: G
                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
               </div>
             </AccordionTrigger>
+
+            {onEdit && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onEdit}
+                className="h-8 w-8 shrink-0 text-slate-400 hover:bg-blue-50 hover:text-[#004A98]"
+                title="Chỉnh sửa thành viên"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
 
             {onRemove && (
               <Button

@@ -1,121 +1,224 @@
 export const categories = {
-  "GENERAL_EDUCATION": {
-    "name": "Giáo dục đại cương",
-    "total_credits_required": 51,
-    "courses": [
-      "BAA00101",
-      "BAA00102",
-      "BAA00103",
-      "BAA00104",
-      "BAA00003",
-      "BAA00004",
-      "BAA00005",
-      "BAA00006",
-      "BAA00007",
-      "BAA00016",
-      "MTH00003",
-      "MTH00004",
-      "MTH00081",
-      "MTH00030",
-      "MTH00040",
-      "CHE00001",
-      "PHY00001",
-      "PHY00002",
-      "PHY00003",
-      "PHY00004",
-      "PHY00012",
-      "PHY00081",
-      "GEO00002",
-      "ENV00001",
-      "BAA00015",
-      "CSC00003",
-      "ADD00031",
-      "ADD00032",
-      "ADD00033",
-      "ADD00034",
-      "BAA00021",
-      "BAA00022",
-      "BAA00030"
-    ]
-  },
-  "FOUNDATION": {
-    "name": "Kiến thức cơ sở ngành",
-    "total_credits_required": 30,
-    "courses": [
-      "PHY10001",
-      "PHY10002",
-      "PHY10003",
-      "PHY10004",
-      "PHY10005",
-      "PHY10007",
-      "PHY10008",
-      "PHY10009",
-      "PHY10010",
-      "PHY10011",
-      "NTE10001"
-    ]
-  },
-  "MAJOR": {
-    "name": "Kiến thức ngành",
-    "total_credits_required": 41,
-    "breakdown": {
-      "PROGRAM_COURSES": {
-        "name": "Các học phần chuyên ngành",
-        "credits_required": 41,
+    "GENERAL_EDUCATION": {
+        "name": "Giáo dục đại cương",
+        "total_credits_required": 51,
+        "note": "Không kể học phần GDQP-AN, GDTC, Tin học cơ sở và Ngoại ngữ",
+        "breakdown": {
+            "GENERAL_POLITICS": {
+                "name": "Lý luận chính trị - Pháp luật",
+                "credits": 14,
+                "mandatory": true,
+                "courses": [
+                    "BAA00101",
+                    "BAA00102",
+                    "BAA00103",
+                    "BAA00104",
+                    "BAA00003",
+                    "BAA00004"
+                ]
+            },
+            "GENERAL_SOCIAL": {
+                "name": "Khoa học xã hội - Kinh tế - Kỹ năng",
+                "credits": 2,
+                "mandatory": false,
+                "note": "Chọn 1 trong 4 học phần",
+                "courses": [
+                    "BAA00005",
+                    "BAA00006",
+                    "BAA00007",
+                    "BAA00016"
+                ]
+            },
+            "GENERAL_MATH_SCIENCE": {
+                "name": "Toán - Khoa học tự nhiên - Công nghệ - Môi trường",
+                "mandatory": true,
+                "courses": [
+                    "MTH00003",
+                    "MTH00004",
+                    "MTH00081",
+                    "MTH00030",
+                    "MTH00040",
+                    "CHE00001",
+                    "PHY00001",
+                    "PHY00002",
+                    "PHY00003",
+                    "PHY00004",
+                    "PHY00012",
+                    "PHY00081",
+                    "GEO00002",
+                    "ENV00001",
+                    "BAA00015"
+                ]
+            },
+            "GENERAL_IT": {
+                "name": "Tin học",
+                "credits": 3,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "CSC00003"
+                ]
+            },
+            "GENERAL_ENGLISH": {
+                "name": "Ngoại ngữ",
+                "credits": 12,
+                "mandatory": false,
+                "note": "Không tính vào điểm trung bình và tín chỉ tích lũy. Sinh viên đạt chuẩn ngoại ngữ đầu ra theo quy định hiện hành thì không đăng ký các học phần Anh văn.",
+                "courses": [
+                    "ADD00031",
+                    "ADD00032",
+                    "ADD00033",
+                    "ADD00034"
+                ]
+            },
+            "GENERAL_PE": {
+                "name": "Giáo dục thể chất",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "BAA00021",
+                    "BAA00022"
+                ]
+            },
+            "GENERAL_DEFENSE": {
+                "name": "Giáo dục quốc phòng - An ninh",
+                "credits": 4,
+                "mandatory": true,
+                "note": "Không tính vào điểm trung bình, tính vào số tín chỉ tích lũy",
+                "courses": [
+                    "BAA00030"
+                ]
+            }
+        }
+    },
+    "FOUNDATION": {
+        "name": "Kiến thức cơ sở ngành",
+        "mandatory": true,
         "courses": [
-          "NTE10101",
-          "NTE10102",
-          "NTE10103",
-          "NTE10104",
-          "NTE10105",
-          "NTE10108",
-          "NTE10111",
-          "NTE10112",
-          "NTE10113",
-          "NTE10114",
-          "NTE10115",
-          "NTE10116",
-          "NTE10117",
-          "PHY10426",
-          "MPH10109",
-          "NTE10107",
-          "NTE10109",
-          "NTE10110",
-          "NTE10118",
-          "NTE10119",
-          "NTE10120",
-          "NTE10121",
-          "NTE10122",
-          "NTE10123",
-          "NTE10124",
-          "PHY10322",
-          "PHY10801",
-          "MPH10106",
-          "MPH10108",
-          "MPH10120",
-          "NTE10106",
-          "NTE10125",
-          "NTE10127",
-          "NTE10129",
-          "NTE10130",
-          "PHY10531",
-          "NTE10201",
-          "NTE10202",
-          "NTE10203",
-          "NTE10204",
-          "NTE10206",
-          "NTE10126",
-          "NTE10128",
-          "NTE10131"
+            "PHY10001",
+            "PHY10002",
+            "PHY10003",
+            "PHY10004",
+            "PHY10005",
+            "PHY10007",
+            "PHY10008",
+            "PHY10009",
+            "PHY10010",
+            "PHY10011",
+            "NTE10001"
         ]
-      }
+    },
+    "MAJOR_NUCLEAR_ENGINEERING": {
+        "name": "Chuyên ngành Kỹ thuật hạt nhân",
+        "total_credits_required": 41,
+        "breakdown": {
+            "MANDATORY": {
+                "credits": 35,
+                "courses": [
+                    "NTE10101",
+                    "NTE10102",
+                    "NTE10103",
+                    "NTE10104",
+                    "NTE10105",
+                    "NTE10108",
+                    "NTE10111",
+                    "NTE10112",
+                    "NTE10113",
+                    "NTE10114",
+                    "NTE10115",
+                    "NTE10116",
+                    "NTE10117",
+                    "PHY10426"
+                ]
+            },
+            "ELECTIVE": {
+                "credits": 6,
+                "courses": [
+                    "MPH10109",
+                    "NTE10107",
+                    "NTE10109",
+                    "NTE10110",
+                    "NTE10118",
+                    "NTE10119",
+                    "NTE10120",
+                    "NTE10121",
+                    "NTE10122",
+                    "NTE10123",
+                    "NTE10124",
+                    "PHY10322",
+                    "PHY10801",
+                    "MPH10106",
+                    "MPH10108",
+                    "MPH10120",
+                    "NTE10106",
+                    "NTE10125",
+                    "NTE10127",
+                    "NTE10129",
+                    "NTE10130",
+                    "NTE10131",
+                    "PHY10531"
+                ]
+            }
+        }
+    },
+    "MAJOR_NUCLEAR_ENERGY_ELECTRONICS": {
+        "name": "Chuyên ngành Năng lượng và điện hạt nhân",
+        "total_credits_required": 41,
+        "breakdown": {
+            "MANDATORY": {
+                "credits": 35,
+                "courses": [
+                    "NTE10101",
+                    "NTE10102",
+                    "NTE10103",
+                    "NTE10104",
+                    "NTE10105",
+                    "NTE10110",
+                    "NTE10111",
+                    "NTE10112",
+                    "NTE10201",
+                    "NTE10202",
+                    "NTE10203",
+                    "NTE10204",
+                    "NTE10206",
+                    "NTE10125"
+                ]
+            },
+            "ELECTIVE": {
+                "credits": 6,
+                "courses": [
+                    "NTE10107",
+                    "NTE10108",
+                    "NTE10109",
+                    "NTE10116",
+                    "NTE10117",
+                    "NTE10121",
+                    "NTE10122",
+                    "NTE10123",
+                    "NTE10124",
+                    "PHY10322",
+                    "PHY10801",
+                    "MPH10106",
+                    "MPH10108",
+                    "NTE10106",
+                    "NTE10126",
+                    "NTE10127",
+                    "NTE10128",
+                    "NTE10129",
+                    "NTE10130",
+                    "NTE10131",
+                    "PHY10426",
+                    "PHY10531"
+                ]
+            }
+        }
+    },
+    "GRADUATION": {
+        "name": "Kiến thức tốt nghiệp",
+        "total_credits_required": 10,
+        "courses": [
+            "NTE10995"
+        ]
     }
-  },
-  "GRADUATION": {
-    "name": "Kiến thức tốt nghiệp",
-    "total_credits_required": 10,
-    "courses": [
-      "NTE10995"
-    ]
-  }
-};
+}

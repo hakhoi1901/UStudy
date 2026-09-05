@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UStudy Portal Sync (Development)",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Development build for UStudy Portal Sync.",
   "permissions": ["storage", "scripting"],
   "host_permissions": [

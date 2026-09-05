@@ -160,7 +160,11 @@ function AppContent() {
         });
       }
       const currentRaw = readFromStorage<any>('raw_student_db', null);
-      const changes = buildRawImportPreview(payload.raw, currentRaw);
+      const currentMeta = readFromStorage<any>('import_meta', null);
+      const changes = buildRawImportPreview(payload.raw, currentRaw, {
+        incomingMeta: payload.meta,
+        currentMeta,
+      });
       if (suppressIfUnchanged && changes.every((change) => change.status === 'unchanged')) return false;
       setIsImportDetailsOpen(false);
       setImportPreview({
@@ -263,7 +267,9 @@ function AppContent() {
       : importPreview.source === 'mobile-app'
         ? 'UStudy Android'
         : 'Bookmarklet Portal';
-    if (!createImportRollbackSnapshot(importSourceLabel, summary, details)) {
+    if (!await createImportRollbackSnapshot(importSourceLabel, summary, details)) {
+      setImportPreview(null);
+      setIsImportDetailsOpen(false);
       addNotification({ title: 'Không thể nhập dữ liệu', message: 'Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu hiện tại chưa bị thay đổi.', type: 'error' });
       return;
     }

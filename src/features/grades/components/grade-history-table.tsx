@@ -101,15 +101,17 @@ export function GradeHistoryTable({
             </div>
 
             {/* Desktop: Table view */}
-            <div className={`${sortedHistory.length === 0 ? 'hidden ' : ''}overflow-x-auto md:block`}>
+            <div className={sortedHistory.length === 0 ? 'hidden' : 'hidden overflow-x-auto md:block'}>
                 <table className="w-full table-fixed">
                     <colgroup>
-                        <col className="w-[14%]" />
-                        <col className="w-[37%]" />
                         <col className="w-[12%]" />
+                        <col className="w-[31%]" />
                         <col className="w-[11%]" />
+                        <col className="w-[9%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[9%]" />
+                        <col className="w-[7%]" />
                         <col className="w-[11%]" />
-                        <col className="w-[15%]" />
                     </colgroup>
 
                     <thead className="border-b border-gray-200 bg-gray-50">
@@ -159,9 +161,17 @@ export function GradeHistoryTable({
                                 onClick={() => requestSort("grade")}
                             >
                                 <div className="flex items-center justify-center gap-2">
-                                    Điểm
+                                    Hệ 10
                                     {getSortIcon("grade")}
                                 </div>
+                            </th>
+
+                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                Hệ 4
+                            </th>
+
+                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                Chữ
                             </th>
 
                             <th

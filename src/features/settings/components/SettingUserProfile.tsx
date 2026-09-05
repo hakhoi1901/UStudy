@@ -68,7 +68,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
         fileInputRef.current?.click();
     };
 
-    const createJsonImportRollback = (source: string, data: any) => {
+    const createJsonImportRollback = async (source: string, data: any) => {
         const changes = data?.grades || data?.registrations || data?.courses
             ? buildRawImportPreview(data, readFromStorage('raw_student_db', null))
             : Object.keys(data || {}).map((key) => ({ status: localStorage.getItem(key) === null ? 'add' : 'update' }));
@@ -113,7 +113,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
 
                 if (isFullDump) {
                     if (window.confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng dữ liệu từ file. Bạn có chắc chắn muốn tiếp tục?")) {
-                        if (!storageData || !createJsonImportRollback('Tệp JSON sao lưu', storageData)) {
+                        if (!storageData || !await createJsonImportRollback('Tệp JSON sao lưu', storageData)) {
                             throw new Error('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
                         }
                         if (!cryptoKey) {
@@ -169,7 +169,7 @@ export function SettingUserProfile({ onPageChange }: { onPageChange: (page: stri
                 let metaData = data.meta || null;
 
                 if (rawData && typeof rawData === 'object' && (rawData.grades || rawData.courses)) {
-                    if (!createJsonImportRollback('Tệp JSON từ Portal', rawData)) {
+                    if (!await createJsonImportRollback('Tệp JSON từ Portal', rawData)) {
                         throw new Error('Không đủ dung lượng để lưu điểm hoàn tác. Dữ liệu chưa được nhập.');
                     }
                     if (!cryptoKey) {

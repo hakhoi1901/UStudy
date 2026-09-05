@@ -1,6 +1,11 @@
 (async function () {
     console.clear();
 
+    const normalizedPortalPath = window.location.pathname.replace(/^\/+/, '/');
+    if (normalizedPortalPath !== window.location.pathname) {
+        window.history.replaceState(null, '', `${normalizedPortalPath}${window.location.search}${window.location.hash}`);
+    }
+
     // === 1. CẤU HÌNH ===
     const EXTENSION_RUNTIME = window.__USTUDY_PORTAL_SYNC_RUNTIME__ || null;
     if (EXTENSION_RUNTIME) delete window.__USTUDY_PORTAL_SYNC_RUNTIME__;
@@ -11,12 +16,12 @@
         URL_HOCPHI: "/SinhVien.aspx?pid=331",
         URL_LOPMO: "/SinhVien.aspx?pid=327",
         URL_DKHP: "/SinhVien.aspx?pid=212",
-        TARGET_YEAR: "25-26",
-        TARGET_SEM: "2",
-        CLASS_TARGET_YEAR: "25-26",
-        CLASS_TARGET_SEM: "2",
-        REG_TARGET_YEAR: "25-26",
-        REG_TARGET_SEM: "2",
+        TARGET_YEAR: "26-27",
+        TARGET_SEM: "1",
+        CLASS_TARGET_YEAR: "26-27",
+        CLASS_TARGET_SEM: "1",
+        REG_TARGET_YEAR: "26-27",
+        REG_TARGET_SEM: "1",
         CONCURRENCY: "10"
     };
     const IS_EXTENSION = EXTENSION_RUNTIME?.transport === 'extension';
@@ -30,6 +35,13 @@
             requestId: EXTENSION_REQUEST_ID,
             ...detail,
         }, window.location.origin);
+    }
+
+    if (window.location.href.toLowerCase().includes('login')) {
+        const message = 'Bạn cần đăng nhập Portal trước khi đồng bộ dữ liệu.';
+        if (IS_EXTENSION) emitExtensionEvent('USTUDY_PORTAL_SYNC_ERROR', { message });
+        else alert(message);
+        return;
     }
 
     //  Kiểm tra hạn sử dụng 30 ngày
@@ -92,10 +104,10 @@
             // Xóa modal cũ nếu có
             document.getElementById('hcmus-tool-modal')?.remove();
 
-            const classYearDefault = CONFIG.CLASS_TARGET_YEAR || CONFIG.TARGET_YEAR || "25-26";
-            const classSemDefault = String(CONFIG.CLASS_TARGET_SEM || CONFIG.TARGET_SEM || "2");
-            const regYearDefault = CONFIG.REG_TARGET_YEAR || CONFIG.TARGET_YEAR || "25-26";
-            const regSemDefault = String(CONFIG.REG_TARGET_SEM || CONFIG.TARGET_SEM || "2");
+            const classYearDefault = CONFIG.CLASS_TARGET_YEAR || CONFIG.TARGET_YEAR || "26-27";
+            const classSemDefault = String(CONFIG.CLASS_TARGET_SEM || CONFIG.TARGET_SEM || "1");
+            const regYearDefault = CONFIG.REG_TARGET_YEAR || CONFIG.TARGET_YEAR || "26-27";
+            const regSemDefault = String(CONFIG.REG_TARGET_SEM || CONFIG.TARGET_SEM || "1");
 
             const modal = document.createElement('div');
             modal.id = 'hcmus-tool-modal';
@@ -151,7 +163,7 @@
                         Lấy Danh Sách Lớp Mở
                     </label>
                     <div id="grp-class" style="display:flex;gap:10px;padding-left:28px;">
-                        <input type="text" id="class-year" value="${classYearDefault}" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <input type="text" id="class-year" value="${classYearDefault}" placeholder="Năm (vd: 26-27)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
                         <select id="class-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
                             <option value="1" ${classSemDefault === "1" ? "selected" : ""}>Học kỳ 1</option>
                             <option value="2" ${classSemDefault === "2" ? "selected" : ""}>Học kỳ 2</option>
@@ -166,7 +178,7 @@
                         Lấy Kết Quả ĐKHP
                     </label>
                     <div id="grp-reg" style="display:flex;gap:10px;padding-left:28px;">
-                        <input type="text" id="reg-year" value="${regYearDefault}" placeholder="Năm (vd: 25-26)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                        <input type="text" id="reg-year" value="${regYearDefault}" placeholder="Năm (vd: 26-27)" style="width:110px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
                         <select id="reg-sem" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:white;">
                             <option value="1" ${regSemDefault === "1" ? "selected" : ""}>Học kỳ 1</option>
                             <option value="2" ${regSemDefault === "2" ? "selected" : ""}>Học kỳ 2</option>
@@ -825,7 +837,7 @@
                     }
                 });
             }
-            if (yearOptions.length === 0) yearOptions.push("25-26", "24-25", "23-24", "22-23");
+            if (yearOptions.length === 0) yearOptions.push("26-27", "25-26", "24-25", "23-24");
 
             const semOptions = ["1", "2", "3"];
             const allExams = {};
@@ -993,8 +1005,10 @@
                 docDKHP = parseHTML(await res.text());
             }
 
-            registrations = scrapeRegisteredCourses(docDKHP);
-            registrationPeriod = getRegistrationPeriod(docDKHP);
+            registrationPeriod = {
+                ...getRegistrationPeriod(docDKHP),
+                snapshotComplete: Boolean(docDKHP.getElementById('tbSVKQ')),
+            };
             registrations = scrapeRegisteredCourses(docDKHP, registrationPeriod.semester);
 
             // Dev-only override: set window.__USTUDY_TEST_REGISTRATIONS__ in the Portal console

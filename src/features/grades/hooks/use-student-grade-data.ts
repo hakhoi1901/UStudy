@@ -44,7 +44,21 @@ export function useStudentGradeData() {
         if (!studentDb) {
             setHasData(hasImportedData());
             setIsReady(true);
-            return { gradesHistory: [], currentGPA: 0, accumulatedCredits: 0, totalCredits: ACADEMIC_RULES.TOTAL_CREDITS, estimatedTuition: 0, tuitionSource: 'none' as const };
+            return {
+                gradesHistory: [],
+                currentGPA: 0,
+                currentGPA4: 0,
+                accumulatedCredits: 0,
+                totalCredits: ACADEMIC_RULES.TOTAL_CREDITS,
+                estimatedTuition: 0,
+                tuitionSource: 'none' as const,
+                gpaPerSemester: [],
+                majorGPA: 0,
+                foundationGPA: 0,
+                foundationGPA4: 0,
+                majorSpecializedGPA: 0,
+                majorSpecializedGPA4: 0,
+            };
         }
 
         setHasData(true);
@@ -57,11 +71,14 @@ export function useStudentGradeData() {
         const {
             gradesHistory,
             currentGPA,
+            currentGPA4,
             accumulatedCredits,
             gpaPerSemester,
             majorGPA,
             foundationGPA,
-            majorSpecializedGPA
+            foundationGPA4,
+            majorSpecializedGPA,
+            majorSpecializedGPA4,
         } = AcademicRulesEngine.calculateGPASummary(
             grades,
             effectiveGrades,
@@ -93,6 +110,7 @@ export function useStudentGradeData() {
         return {
             gradesHistory,
             currentGPA,
+            currentGPA4,
             accumulatedCredits,
             totalCredits,
             estimatedTuition,
@@ -100,7 +118,9 @@ export function useStudentGradeData() {
             gpaPerSemester,
             majorGPA,
             foundationGPA,
+            foundationGPA4,
             majorSpecializedGPA,
+            majorSpecializedGPA4,
         };
 
     // selectedSemesterKey added so memo re-runs when user changes semester

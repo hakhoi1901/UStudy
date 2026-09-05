@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { DndContext, KeyboardSensor, PointerSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { GripVertical, Plus, Trash2, Users } from 'lucide-react';
 
@@ -40,13 +40,13 @@ function DraggableMember({ id, name, groupValue, groupOptions, onGroupChange }: 
   );
 }
 
-function GroupDropZone({ id, label, children, onRemove }: { id: string; label: string; children: React.ReactNode; onRemove?: () => void }) {
+function GroupDropZone({ id, label, children, onRemove }: { id: string; label: React.ReactNode; children: React.ReactNode; onRemove?: () => void }) {
   const { isOver, setNodeRef } = useDroppable({ id });
   return (
     <div ref={setNodeRef} className={`min-h-20 rounded-lg border p-2 transition-colors ${isOver ? 'border-[#004A98] bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-gray-700">{label}</span>
-        {onRemove ? <button type="button" onClick={onRemove} className="text-gray-400 hover:text-red-600" aria-label={`Xóa ${label}`}><Trash2 className="h-3.5 w-3.5" /></button> : null}
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="text-xs font-semibold text-gray-700">{label}</div>
+        {onRemove ? <button type="button" onClick={onRemove} className="text-gray-400 hover:text-red-600" aria-label="Xóa"><Trash2 className="h-3.5 w-3.5" /></button> : null}
       </div>
       <div className="space-y-1.5">{children}</div>
     </div>
@@ -56,6 +56,8 @@ function GroupDropZone({ id, label, children, onRemove }: { id: string; label: s
 export function CourseSharingEditor({ courseId, subscribers, members, value, onChange }: CourseSharingEditorProps) {
   const rule: CourseSharingRule = value ?? { mode: 'required' };
   const isCustomGrouping = rule.mode !== 'independent' && rule.groups !== undefined;
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const groups = rule.groups ?? [];
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }), useSensor(KeyboardSensor));
   const groupOptions = useMemo(() => [{ id: 'solo', name: 'Học riêng' }, ...groups.map((_, groupIndex) => ({ id: `group-${groupIndex}`, name: `Nhóm ${groupIndex + 1}` }))], [groups]);
@@ -66,11 +68,6 @@ export function CourseSharingEditor({ courseId, subscribers, members, value, onC
     mode,
     groups: mode === 'independent' ? undefined : rule.mode === 'independent' ? undefined : rule.groups,
     ...(mode !== rule.mode ? { groupClassPreferences: {} } : {}),
-  });
-  const setGroupingMode = (custom: boolean) => onChange({
-    ...rule,
-    groups: custom ? [subscribers, []] : undefined,
-    groupClassPreferences: {},
   });
   const setMemberGroup = (memberIndex: number, nextGroupId: string) => {
     const nextGroups = groups.map((group) => group.filter((candidate) => candidate !== memberIndex));
@@ -102,41 +99,59 @@ export function CourseSharingEditor({ courseId, subscribers, members, value, onC
   const soloMembers = subscribers.filter((memberIndex) => !groups.some((group) => group.includes(memberIndex)));
 
   return (
-    <div className="space-y-3 border-t border-gray-100 pt-3">
-      <div>
-        <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-700"><Users className="h-4 w-4 text-[#004A98]" />Ai cần học cùng nhau?</div>
-        <div className="grid gap-1 rounded-lg bg-gray-100 p-1 sm:grid-cols-3">
-          {SHARING_MODES.map((mode) => <button key={mode.id} type="button" onClick={() => setMode(mode.id)} className={`rounded-md px-2.5 py-2 text-xs font-medium transition-colors ${rule.mode === mode.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`} title={mode.description}>{mode.label}</button>)}
+    <div data-guide="group-course-sharing" className="border-t border-gray-100 pt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+          <Users className="h-4 w-4 text-[#004A98]" /> Ai cần học cùng nhau?
         </div>
-        <p className="mt-1.5 text-xs text-gray-500">{SHARING_MODES.find((mode) => mode.id === rule.mode)?.description}</p>
+        <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="text-xs font-medium text-[#004A98] hover:underline">
+          {isExpanded ? 'Thu gọn' : 'Thiết lập nhóm'}
+        </button>
       </div>
 
-      {rule.mode !== 'independent' ? (
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" onClick={() => setGroupingMode(false)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${!isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Tất cả học chung</button>
-            <button type="button" onClick={() => setGroupingMode(true)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Chia nhóm</button>
-            {isCustomGrouping && groups.length < subscribers.length ? <button type="button" onClick={() => updateGroups([...groups, []])} className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-[#004A98]"><Plus className="h-3.5 w-3.5" />Thêm nhóm</button> : null}
+      {!isExpanded && (
+        <p className="mt-1.5 text-xs text-gray-500">
+          {rule.mode === 'independent' ? 'Ai cũng được (Mỗi người tự xếp riêng)' : rule.mode === 'required' ? `Bắt buộc cùng lớp (${isCustomGrouping ? `Đã chia ${groups.length} nhóm` : 'Tất cả học chung'})` : `Ưu tiên cùng lớp (${isCustomGrouping ? `Đã chia ${groups.length} nhóm` : 'Tất cả học chung'})`}
+        </p>
+      )}
+
+      {isExpanded && (
+        <div className="mt-3 space-y-3">
+          <div>
+            <div data-guide="group-course-sharing-modes" className="grid gap-1 rounded-lg bg-gray-100 p-1 sm:grid-cols-3">
+              {SHARING_MODES.map((mode) => <button key={mode.id} type="button" onClick={() => setMode(mode.id)} className={`rounded-md px-2.5 py-2 text-xs font-medium transition-colors ${rule.mode === mode.id ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`} title={mode.description}>{mode.label}</button>)}
+            </div>
+            <p className="mt-1.5 text-xs text-gray-500">{SHARING_MODES.find((mode) => mode.id === rule.mode)?.description}</p>
           </div>
 
-          {isCustomGrouping ? (
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {groups.map((group, groupIndex) => (
-                  <GroupDropZone key={groupIndex} id={`${courseId}:group-${groupIndex}`} label={`Nhóm ${groupIndex + 1}`} onRemove={groups.length > 1 ? () => removeGroup(groupIndex) : undefined}>
-                    {group.filter((memberIndex) => subscribers.includes(memberIndex)).map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue={`group-${groupIndex}`} groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
-                  </GroupDropZone>
-                ))}
-                <GroupDropZone id={`${courseId}:solo`} label="Học riêng">
-                  {soloMembers.map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue="solo" groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
-                </GroupDropZone>
+          {rule.mode !== 'independent' ? (
+            <div className="space-y-2">
+              <div data-guide="group-course-sharing-split" className="flex flex-wrap items-center gap-1.5">
+                <button type="button" onClick={() => setGroupingMode(false)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${!isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Tất cả học chung</button>
+                <button type="button" onClick={() => setGroupingMode(true)} className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${isCustomGrouping ? 'border-[#004A98] bg-blue-50 text-[#004A98]' : 'border-gray-200 bg-white text-gray-600'}`}>Chia nhóm</button>
+                {isCustomGrouping && groups.length < subscribers.length ? <button type="button" onClick={() => updateGroups([...groups, []])} className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-[#004A98]"><Plus className="h-3.5 w-3.5" />Thêm nhóm</button> : null}
               </div>
-            </DndContext>
-          ) : null}
 
-          {isCustomGrouping ? <div className="space-y-1 text-xs text-gray-500">{groups.map((group, groupIndex) => group.length ? <p key={groupIndex}><span className="font-medium text-gray-700">Nhóm {groupIndex + 1}:</span> {group.map((memberIndex) => memberName(members, memberIndex)).join(', ')}</p> : null)}</div> : null}
+              {isCustomGrouping ? (
+                <div data-guide="group-course-sharing-dnd">
+                  <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {groups.map((group, groupIndex) => (
+                        <GroupDropZone key={groupIndex} id={`${courseId}:group-${groupIndex}`} label={`Nhóm ${groupIndex + 1}`} onRemove={groups.length > 1 ? () => removeGroup(groupIndex) : undefined}>
+                          {group.filter((memberIndex) => subscribers.includes(memberIndex)).map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue={`group-${groupIndex}`} groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
+                        </GroupDropZone>
+                      ))}
+                      <GroupDropZone id={`${courseId}:solo`} label="Học riêng">
+                        {soloMembers.map((memberIndex) => <DraggableMember key={memberIndex} id={`${courseId}:member-${memberIndex}`} name={memberName(members, memberIndex)} groupValue="solo" groupOptions={groupOptions} onGroupChange={(next) => setMemberGroup(memberIndex, next)} />)}
+                      </GroupDropZone>
+                    </div>
+                  </DndContext>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

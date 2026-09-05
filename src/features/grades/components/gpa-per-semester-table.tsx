@@ -2,6 +2,7 @@ import { ChartBarBigIcon } from "lucide-react";
 import type { GPAPerSemesterTableProps } from "../types";
 import { GradeUIHelpers } from "../utils/grade-ui-helpers";
 import { ACADEMIC_RULES } from "../../../constants";
+import { GPACalculator } from "../services/gpa-calculator";
 
 export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: GPAPerSemesterTableProps) {
     const hasSemesterData = gpaPerSemester.length > 0;
@@ -35,6 +36,9 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${GradeUIHelpers.getGpaBadgeClass(s.gpa)}`}>
                                             {s.gpa.toFixed(ACADEMIC_RULES.UI.PULL_DECIMALS)}
                                         </span>
+                                        <span className="text-[10px] font-semibold tabular-nums text-gray-600">
+                                            {s.gpa4.toFixed(2)} · {GPACalculator.gradeToLetter(s.gpa4)}
+                                        </span>
                                     </div>
                                 </div>
                             );
@@ -49,6 +53,8 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="px-4 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Học kỳ</th>
                                         <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">GPA kỳ</th>
+                                        <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">Hệ 4</th>
+                                        <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">Chữ</th>
                                         <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">TC tính GPA</th>
                                         <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">Xếp loại</th>
                                         <th className="px-4 py-3 text-center text-xs text-gray-600 uppercase tracking-wider">Xu hướng</th>
@@ -65,6 +71,12 @@ export function GPAPerSemesterTable({ getClassification, gpaPerSemester = [] }: 
                                                     <span className={`font-bold ${GradeUIHelpers.getGpaColorClass(s.gpa)}`}>
                                                         {s.gpa.toFixed(ACADEMIC_RULES.UI.HISTORY_DECIMALS)}
                                                     </span>
+                                                </td>
+                                                <td className="px-3 py-3 text-center text-sm font-semibold tabular-nums text-gray-700">
+                                                    {s.gpa4.toFixed(ACADEMIC_RULES.UI.HISTORY_DECIMALS)}
+                                                </td>
+                                                <td className="px-3 py-3 text-center text-sm font-semibold text-gray-700">
+                                                    {GPACalculator.gradeToLetter(s.gpa4)}
                                                 </td>
                                                 <td className="px-3 py-3 text-sm text-center text-gray-600">{s.credits}</td>
                                                 <td className="px-3 py-3 text-center">

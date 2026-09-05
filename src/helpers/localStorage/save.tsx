@@ -98,6 +98,7 @@ export function getOrCreateSalt(): Uint8Array {
 
 /** Derive AES-GCM key từ PIN + salt bằng PBKDF2 */
 export async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
+    const cryptoSalt = Uint8Array.from(salt);
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
         new TextEncoder().encode(pin),
@@ -106,7 +107,7 @@ export async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKe
         ['deriveKey']
     );
     return crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+        { name: 'PBKDF2', salt: cryptoSalt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
         keyMaterial,
         { name: 'AES-GCM', length: 256 },
         false, // không exportable
@@ -128,7 +129,11 @@ async function decryptWithKey(payload: string, key: CryptoKey): Promise<unknown>
     const decoded = decodePayload(payload);
     if (!decoded) throw new Error('INVALID_PAYLOAD');
     const { iv, ciphertext } = decoded;
-    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    const plaintext = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+        key,
+        Uint8Array.from(ciphertext),
+    );
     return JSON.parse(new TextDecoder().decode(plaintext));
 }
 
@@ -234,7 +239,11 @@ export async function verifyBackupPin(pin: string, saltRaw: string, verifyPayloa
         if (!decoded) return false;
 
         const { iv, ciphertext } = decoded;
-        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+        const plaintext = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+            key,
+            Uint8Array.from(ciphertext),
+        );
         const result = JSON.parse(new TextDecoder().decode(plaintext));
 
         return result?.ok === true;
@@ -272,7 +281,11 @@ export async function importBackupWithCurrentKey(
                 const decoded = decodePayload(v);
                 if (!decoded) continue;
                 const { iv, ciphertext } = decoded;
-                const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, backupKey, ciphertext);
+                const plaintext = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: Uint8Array.from(iv) },
+                    backupKey,
+                    Uint8Array.from(ciphertext),
+                );
                 const parsed = JSON.parse(new TextDecoder().decode(plaintext));
 
                 // Encrypt lại bằng currentKey và lưu vào localStorage
@@ -386,6 +399,10 @@ export const IMPORT_ROLLBACK_STORAGE_KEY = '__ustudy_last_import_rollback__';
 export const IMPORT_ROLLBACK_EVENT = 'ustudy:import-rollback-created';
 export const IMPORT_HISTORY_STORAGE_KEY = '__ustudy_import_history__';
 
+const IMPORT_ROLLBACK_DATABASE = 'ustudy-import-rollback';
+const IMPORT_ROLLBACK_STORE = 'snapshots';
+const LATEST_IMPORT_ROLLBACK_ID = 'latest';
+
 export interface ImportRollbackSummary {
     added: number;
     updated: number;
@@ -398,6 +415,7 @@ export interface ImportRollbackSnapshot {
     source: string;
     summary: ImportRollbackSummary;
     data: Record<string, string>;
+    storage?: 'indexeddb';
     details?: ImportHistoryDetail[];
     restoredSources?: string[];
 }
@@ -444,8 +462,67 @@ function appendImportHistory(source: string, summary: ImportRollbackSummary, det
     localStorage.setItem(IMPORT_HISTORY_STORAGE_KEY, JSON.stringify([entry, ...getImportHistory()].slice(0, 20)));
 }
 
+function openImportRollbackDatabase(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(IMPORT_ROLLBACK_DATABASE, 1);
+        request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains(IMPORT_ROLLBACK_STORE)) {
+                request.result.createObjectStore(IMPORT_ROLLBACK_STORE);
+            }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Không thể mở IndexedDB cho điểm hoàn tác.'));
+    });
+}
+
+async function writeImportRollbackData(data: Record<string, string>): Promise<void> {
+    const database = await openImportRollbackDatabase();
+    try {
+        await new Promise<void>((resolve, reject) => {
+            const transaction = database.transaction(IMPORT_ROLLBACK_STORE, 'readwrite');
+            transaction.objectStore(IMPORT_ROLLBACK_STORE).put(data, LATEST_IMPORT_ROLLBACK_ID);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error || new Error('Không thể lưu điểm hoàn tác.'));
+            transaction.onabort = () => reject(transaction.error || new Error('Đã hủy lưu điểm hoàn tác.'));
+        });
+    } finally {
+        database.close();
+    }
+}
+
+async function readImportRollbackData(snapshot: ImportRollbackSnapshot): Promise<Record<string, string> | null> {
+    if (snapshot.storage !== 'indexeddb') return snapshot.data;
+
+    const database = await openImportRollbackDatabase();
+    try {
+        return await new Promise<Record<string, string> | null>((resolve, reject) => {
+            const request = database.transaction(IMPORT_ROLLBACK_STORE, 'readonly')
+                .objectStore(IMPORT_ROLLBACK_STORE)
+                .get(LATEST_IMPORT_ROLLBACK_ID);
+            request.onsuccess = () => resolve(request.result && typeof request.result === 'object' ? request.result as Record<string, string> : null);
+            request.onerror = () => reject(request.error || new Error('Không thể đọc điểm hoàn tác.'));
+        });
+    } finally {
+        database.close();
+    }
+}
+
+async function deleteImportRollbackData(): Promise<void> {
+    const database = await openImportRollbackDatabase();
+    try {
+        await new Promise<void>((resolve, reject) => {
+            const transaction = database.transaction(IMPORT_ROLLBACK_STORE, 'readwrite');
+            transaction.objectStore(IMPORT_ROLLBACK_STORE).delete(LATEST_IMPORT_ROLLBACK_ID);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error || new Error('Không thể xóa điểm hoàn tác.'));
+        });
+    } finally {
+        database.close();
+    }
+}
+
 /** Lưu đúng trạng thái localStorage trước lần nhập gần nhất để có thể hoàn tác một lần. */
-export function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[] = [], displayName?: string): boolean {
+export async function createImportRollbackSnapshot(source: string, summary: ImportRollbackSummary, details: ImportHistoryDetail[] = [], displayName?: string): Promise<boolean> {
     try {
         const data: Record<string, string> = {};
         for (let index = 0; index < localStorage.length; index += 1) {
@@ -454,7 +531,15 @@ export function createImportRollbackSnapshot(source: string, summary: ImportRoll
                 data[key] = localStorage.getItem(key) || '';
             }
         }
-        const snapshot: ImportRollbackSnapshot = { createdAt: new Date().toISOString(), source, summary, data, details };
+        await writeImportRollbackData(data);
+        const snapshot: ImportRollbackSnapshot = {
+            createdAt: new Date().toISOString(),
+            source,
+            summary,
+            data: {},
+            storage: 'indexeddb',
+            details,
+        };
         localStorage.setItem(IMPORT_ROLLBACK_STORAGE_KEY, JSON.stringify(snapshot));
         appendImportHistory(source, summary, details, displayName);
         window.dispatchEvent(new Event(IMPORT_ROLLBACK_EVENT));
@@ -495,7 +580,10 @@ export function getImportRollbackSnapshot(): ImportRollbackSnapshot | null {
 /** Đọc một giá trị trong snapshot bằng khóa hiện tại mà không ghi dữ liệu thô xuống storage. */
 export async function readImportRollbackValue<T>(key: string, cryptoKey: CryptoKey, fallback: T): Promise<T> {
     const snapshot = getImportRollbackSnapshot();
-    const raw = snapshot?.data[key];
+    if (!snapshot) return fallback;
+
+    const data = await readImportRollbackData(snapshot);
+    const raw = data?.[key];
     if (!raw) return fallback;
     try {
         return await decryptWithKey(raw, cryptoKey) as T;
@@ -525,12 +613,15 @@ export function markImportRollbackSourcesRestored(sources: readonly string[]): v
 }
 
 /** Khôi phục toàn bộ localStorage về trạng thái trước lần nhập gần nhất. */
-export function restoreLastImportRollback(): boolean {
+export async function restoreLastImportRollback(): Promise<boolean> {
     const snapshot = getImportRollbackSnapshot();
     if (!snapshot) return false;
     try {
+        const data = await readImportRollbackData(snapshot);
+        if (!data) return false;
         localStorage.clear();
-        Object.entries(snapshot.data).forEach(([key, value]) => localStorage.setItem(key, value));
+        Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
+        if (snapshot.storage === 'indexeddb') await deleteImportRollbackData();
         return true;
     } catch (error) {
         console.error('[restoreLastImportRollback] Không thể khôi phục snapshot:', error);

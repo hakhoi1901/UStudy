@@ -2,13 +2,15 @@ import { useTuitionCalculator } from './use-tuition-calculator';
 import { useTuitionActions } from './use-tuition-actions';
 import { useTuitionCountdown, calculateDaysUntilDue } from './use-tuition-countdown';
 import { useCourseData } from '../../../hooks/useCourseData';
+import { APP_CONFIG } from '../../../config';
 
 interface UseTuitionManagementProps {
   selectedSemester?: string;
 }
 
 export function useTuitionManagement({ selectedSemester: initialSelectedSemester }: UseTuitionManagementProps = {}) {
-  const selectedSemesterName = initialSelectedSemester || 'Học kỳ 1, 2025-2026';
+  const selectedSemesterName = initialSelectedSemester
+    || `Học kỳ ${APP_CONFIG.DEFAULT_SEMESTER}, ${APP_CONFIG.DEFAULT_ACADEMIC_YEAR}`;
 
   // Data hooks
   const { isReady, hasData } = useCourseData();

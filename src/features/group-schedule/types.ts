@@ -21,6 +21,7 @@ export interface CourseSharingRule {
 export type CourseSharingMap = Record<string, CourseSharingRule>;
 
 export interface GroupMemberToken {
+  id?: string;
   nickname?: string;
   sharedCourses: string[];
   personalCourses: string[];

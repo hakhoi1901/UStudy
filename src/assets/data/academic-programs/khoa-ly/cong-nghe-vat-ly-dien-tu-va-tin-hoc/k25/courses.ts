@@ -1,5 +1,148 @@
 export const courses = [
   {
+    "course_id": "ADD00031",
+    "course_name_vi": "Anh văn 1",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00032",
+    "course_name_vi": "Anh văn 2",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00033",
+    "course_name_vi": "Anh văn 3",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "ADD00034",
+    "course_name_vi": "Anh văn 4",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00003",
+    "course_name_vi": "Tư tưởng Hồ Chí Minh",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00004",
+    "course_name_vi": "Pháp luật đại cương",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00005",
+    "course_name_vi": "Kinh tế đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00006",
+    "course_name_vi": "Tâm lý đại cương",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00007",
+    "course_name_vi": "Phương pháp luận sáng tạo",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00015",
+    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00021",
+    "course_name_vi": "Thể dục 1",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00022",
+    "course_name_vi": "Thể dục 2",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "BAA00030",
+    "course_name_vi": "Giáo dục quốc phòng - An ninh",
+    "credits": 4,
+    "theory_hours": 0,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "BAA00101",
     "course_name_vi": "Triết học Mác - Lênin",
     "credits": 3,
@@ -44,59 +187,48 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "BAA00003",
-    "course_name_vi": "Tư tưởng Hồ Chí Minh",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00004",
-    "course_name_vi": "Pháp luật đại cương",
+    "course_id": "CHE00001",
+    "course_name_vi": "Hóa đại cương 1",
     "credits": 3,
-    "theory_hours": 45,
+    "theory_hours": 30,
     "lab_hours": 0,
+    "exercise_hours": 30,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "CSC00003",
+    "course_name_vi": "Tin học cơ sở",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
     "description": ""
   },
   {
-    "course_id": "BAA00005",
-    "course_name_vi": "Kinh tế đại cương",
+    "course_id": "ENV00001",
+    "course_name_vi": "Môi trường đại cương",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
-    "course_id": "BAA00006",
-    "course_name_vi": "Tâm lý đại cương",
+    "course_id": "GEO00002",
+    "course_name_vi": "Khoa học Trái đất",
     "credits": 2,
     "theory_hours": 30,
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
     "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "BAA00007",
-    "course_name_vi": "Phương pháp luận sáng tạo",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
+    "description": ""
   },
   {
     "course_id": "MTH00003",
@@ -115,17 +247,6 @@ export const courses = [
     "credits": 3,
     "theory_hours": 45,
     "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "MTH00081",
-    "course_name_vi": "Thực hành Vi tích phân 1B",
-    "credits": 1,
-    "theory_hours": 0,
-    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
@@ -154,44 +275,11 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "CHE00001",
-    "course_name_vi": "Hóa học đại cương 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00001",
-    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00002",
-    "course_name_vi": "Vật lý đại cương 2 (Điện từ - Quang)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "PHY00004",
-    "course_name_vi": "Vật lý hiện đại (Lượng tử-Nguyên tử-Hạt nhân)",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
+    "course_id": "MTH00081",
+    "course_name_vi": "Thực hành Vi tích phân 1B",
+    "credits": 1,
+    "theory_hours": 0,
+    "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
@@ -209,132 +297,44 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "PHY00001",
+    "course_name_vi": "Vật lý đại cương 1 (Cơ - Nhiệt)",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "PHY00002",
+    "course_name_vi": "Vật lý đại cương 2 (Điện tử - Quang)",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
+    "course_id": "PHY00004",
+    "course_name_vi": "Vật lý hiện đại (Lượng tử - Nguyên tử - Hạt nhân)",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "GENERAL_EDUCATION",
+    "description": ""
+  },
+  {
     "course_id": "PHY00081",
     "course_name_vi": "Thực hành Vật lý đại cương",
     "credits": 2,
     "theory_hours": 0,
     "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "GEO00002",
-    "course_name_vi": "Khoa học Trái đất",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "ENV00001",
-    "course_name_vi": "Môi trường đại cương",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "BAA00015",
-    "course_name_vi": "Giới thiệu về biến đổi khí hậu và phát triển bền vững",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "Chọn 1 trong 3 học phần"
-  },
-  {
-    "course_id": "CSC00003",
-    "course_name_vi": "Tin học cơ sở",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00031",
-    "course_name_vi": "Anh văn 1",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": "SV đạt chuẩn ngoại ngữ đầu ra..."
-  },
-  {
-    "course_id": "ADD00032",
-    "course_name_vi": "Anh văn 2",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00033",
-    "course_name_vi": "Anh văn 3",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "ADD00034",
-    "course_name_vi": "Anh văn 4",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00021",
-    "course_name_vi": "Thể dục 1",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00022",
-    "course_name_vi": "Thể dục 2",
-    "credits": 2,
-    "theory_hours": 15,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "GENERAL_EDUCATION",
-    "description": ""
-  },
-  {
-    "course_id": "BAA00030",
-    "course_name_vi": "Giáo dục quốc phòng – An ninh",
-    "credits": 4,
-    "theory_hours": 0,
-    "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "BB",
     "category": "GENERAL_EDUCATION",
@@ -385,8 +385,41 @@ export const courses = [
     "description": ""
   },
   {
+    "course_id": "PET10010",
+    "course_name_vi": "Phân tích mạch",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "PET10011",
+    "course_name_vi": "Máy học và ứng dụng",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
+    "course_id": "PET10012",
+    "course_name_vi": "Lập trình Python",
+    "credits": 2,
+    "theory_hours": 30,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "FOUNDATION",
+    "description": ""
+  },
+  {
     "course_id": "PHY10005",
-    "course_name_vi": "Điện từ cơ bản",
+    "course_name_vi": "Điện tử cơ bản",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
@@ -418,39 +451,6 @@ export const courses = [
     "description": ""
   },
   {
-    "course_id": "PET10010",
-    "course_name_vi": "Phân tích mạch",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 30,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PET10011",
-    "course_name_vi": "Máy học và ứng dụng",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
-    "course_id": "PET10012",
-    "course_name_vi": "Lập trình python",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "FOUNDATION",
-    "description": ""
-  },
-  {
     "course_id": "PET10104",
     "course_name_vi": "Công nghệ chế tạo màng mỏng",
     "credits": 4,
@@ -458,7 +458,7 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -469,73 +469,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10109",
-    "course_name_vi": "Công nghệ chế tạo cảm biến SERS",
-    "credits": 3,
-    "theory_hours": 15,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10122",
-    "course_name_vi": "Cơ sở Công nghệ bán dẫn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10123",
-    "course_name_vi": "Từ học - linh kiện spintronic",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10124",
-    "course_name_vi": "Kỹ thuật vi chế tạo",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10614",
-    "course_name_vi": "Thực tập thực tế",
-    "credits": 2,
-    "theory_hours": 0,
-    "lab_hours": 60,
-    "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10801",
-    "course_name_vi": "Phương pháp nghiên cứu khoa học",
-    "credits": 2,
-    "theory_hours": 30,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -546,84 +480,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10205",
-    "course_name_vi": "Tính chất quang vật rắn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10207",
-    "course_name_vi": "Kỹ thuật nuôi tinh thể",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10211",
-    "course_name_vi": "Tính chất cơ nhiệt vật rắn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10112",
-    "course_name_vi": "Vật lý bán dẫn",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10113",
-    "course_name_vi": "Kỹ thuật siêu âm",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10125",
-    "course_name_vi": "Khoa học vật liệu đại cương",
-    "credits": 3,
-    "theory_hours": 45,
-    "lab_hours": 0,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10115",
-    "course_name_vi": "Công nghệ chế tạo vật liệu",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -634,7 +491,18 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10109",
+    "course_name_vi": "Công nghệ chế tạo cảm biến SERS",
+    "credits": 3,
+    "theory_hours": 15,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -645,7 +513,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -656,7 +524,40 @@ export const courses = [
     "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10112",
+    "course_name_vi": "Vật lý bán dẫn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10113",
+    "course_name_vi": "Kỹ thuật siêu âm",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10115",
+    "course_name_vi": "Công nghệ chế tạo vật liệu",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -667,7 +568,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -678,7 +579,51 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10122",
+    "course_name_vi": "Cơ sở Công nghệ bán dẫn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10123",
+    "course_name_vi": "Tin học - Linh kiện Spintronic",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10124",
+    "course_name_vi": "Kỹ thuật vi chế tạo",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 60,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10125",
+    "course_name_vi": "Khoa học vật liệu đại cương",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -689,7 +634,7 @@ export const courses = [
     "lab_hours": 0,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -700,7 +645,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -711,51 +656,62 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
-    "course_id": "PET10106",
-    "course_name_vi": "Vi điều khiển",
+    "course_id": "PHY10205",
+    "course_name_vi": "Tính chất quang vật rắn",
+    "credits": 3,
+    "theory_hours": 45,
+    "lab_hours": 0,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10207",
+    "course_name_vi": "Kỹ thuật nuôi tinh thể",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
-    "course_id": "PHY10613",
-    "course_name_vi": "Thiết kế vi mạch",
+    "course_id": "PHY10211",
+    "course_name_vi": "Tính chất cơ nhiệt vật rắn",
     "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
+    "theory_hours": 45,
+    "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
-    "course_id": "PHY10124",
-    "course_name_vi": "Xử lý tín hiệu số",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
+    "course_id": "PHY10614",
+    "course_name_vi": "Thực tập thực tế",
+    "credits": 2,
+    "theory_hours": 0,
+    "lab_hours": 60,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
-    "course_id": "PET10007",
-    "course_name_vi": "Cấu trúc dữ liệu và giải thuật",
-    "credits": 3,
+    "course_id": "PHY10801",
+    "course_name_vi": "Phương pháp nghiên cứu khoa học",
+    "credits": 2,
     "theory_hours": 30,
-    "lab_hours": 30,
+    "lab_hours": 0,
     "exercise_hours": 0,
-    "course_type": "BB",
-    "category": "MAJOR",
+    "course_type": "TC",
+    "category": "MAJOR_PHYSICS_TECH_MATERIALS",
     "description": ""
   },
   {
@@ -766,7 +722,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -777,73 +733,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "BB",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
-    "course_id": "PHY10625",
-    "course_name_vi": "Phương pháp tính",
+    "course_id": "PET10007",
+    "course_name_vi": "Cấu trúc dữ liệu và giải thuật",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10623",
-    "course_name_vi": "Xử lý ảnh số",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10616",
-    "course_name_vi": "Lập trình trên thiết bị di động",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10610",
-    "course_name_vi": "Lập trình Java",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10120",
-    "course_name_vi": "Lập trình web",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10121",
-    "course_name_vi": "Logic mờ và mạng nơron",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -854,40 +755,18 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
-    "course_id": "PHY10612",
-    "course_name_vi": "Mạng máy tính",
+    "course_id": "PET10106",
+    "course_name_vi": "Vi điều khiển",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PHY10621",
-    "course_name_vi": "Lập trình PLC",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
-    "description": ""
-  },
-  {
-    "course_id": "PET10118",
-    "course_name_vi": "Điện tử y sinh",
-    "credits": 3,
-    "theory_hours": 30,
-    "lab_hours": 30,
-    "exercise_hours": 0,
-    "course_type": "TC",
-    "category": "MAJOR",
+    "course_type": "BB",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -898,18 +777,40 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
-    "course_id": "SEM10136",
-    "course_name_vi": "Kỹ thuật thiết kế mạch in PCB",
+    "course_id": "PET10118",
+    "course_name_vi": "Điện tử y sinh",
     "credits": 3,
     "theory_hours": 30,
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10120",
+    "course_name_vi": "Lập trình web",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PET10121",
+    "course_name_vi": "Logic mờ và mạng nơron",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -920,7 +821,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -931,7 +832,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -942,7 +843,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -953,7 +854,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -964,7 +865,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -975,7 +876,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -986,7 +887,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -997,7 +898,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -1008,7 +909,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -1019,7 +920,7 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -1030,7 +931,95 @@ export const courses = [
     "lab_hours": 30,
     "exercise_hours": 0,
     "course_type": "TC",
-    "category": "MAJOR",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10124",
+    "course_name_vi": "Xử lý tín hiệu số",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10610",
+    "course_name_vi": "Lập trình Java",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10613",
+    "course_name_vi": "Thiết kế vi mạch",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "BB",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10616",
+    "course_name_vi": "Lập trình trên thiết bị di động",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10621",
+    "course_name_vi": "Lập trình PLC",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10623",
+    "course_name_vi": "Xử lý ảnh số",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "PHY10625",
+    "course_name_vi": "Phương pháp tính",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
+    "description": ""
+  },
+  {
+    "course_id": "SEM10136",
+    "course_name_vi": "Kỹ thuật thiết kế mạch in PCB",
+    "credits": 3,
+    "theory_hours": 30,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "MAJOR_ELECTRONICS_ROBOTICS",
     "description": ""
   },
   {
@@ -1039,9 +1028,20 @@ export const courses = [
     "credits": 10,
     "theory_hours": 0,
     "lab_hours": 0,
-    "exercise_hours": 300,
+    "exercise_hours": 0,
     "course_type": "BB",
     "category": "GRADUATION",
     "description": ""
+  },
+  {
+    "course_id": "BAA00016",
+    "course_name_vi": "Đổi mới sáng tạo và khởi nghiệp",
+    "credits": 2,
+    "theory_hours": 15,
+    "lab_hours": 30,
+    "exercise_hours": 0,
+    "course_type": "TC",
+    "category": "",
+    "description": ""
   }
-];
+]

@@ -4,6 +4,7 @@ import { SectionTabs } from '../../components/ui/navigation/section-tabs';
 import { PageHeader } from '../../components/layout/page-header';
 import { PageShell } from '../../components/layout/page-shell';
 import { TranscriptExportMenu } from '../../features/grades';
+import { GPACalculator } from '../../features/grades/services/gpa-calculator';
 import { readFromStorage, saveToStorage } from '../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../config';
 
@@ -26,13 +27,16 @@ export function GradesPage() {
     // Data
     gradesHistory,
     currentGPA,
+    currentGPA4,
     accumulatedCredits,
     totalCredits,
     isReady,
     hasData,
     gpaPerSemester,
     foundationGPA,
+    foundationGPA4,
     majorSpecializedGPA,
+    majorSpecializedGPA4,
     simulatorCourses,
     projectionSemesters,
     selectedProjectionSemester,
@@ -40,6 +44,7 @@ export function GradesPage() {
     setSelectedProjectionSemesterId,
     semesterGPA,
     cumulativeGPA,
+    cumulativeGPA4,
     uniqueSemesters,
     semesterScopedHistory,
     filteredHistory,
@@ -70,10 +75,10 @@ export function GradesPage() {
 
   const studentDb = readFromStorage<any>(STORAGE_KEYS.STUDENT_DB, null);
   const gradeMetrics = [
-    { label: 'GPA hiện tại', value: currentGPA, description: 'Điểm tích lũy hiện tại', textClass: 'text-[#004A98]', barClass: 'bg-[#004A98]' },
-    { label: 'GPA dự kiến', value: cumulativeGPA, description: 'Sau các môn đang học', textClass: 'text-indigo-600', barClass: 'bg-indigo-500' },
-    { label: 'GPA cơ sở ngành', value: foundationGPA ?? 0, description: 'Các môn cơ sở ngành', textClass: 'text-emerald-700', barClass: 'bg-emerald-500' },
-    { label: 'GPA chuyên ngành', value: majorSpecializedGPA ?? 0, description: 'Các môn chuyên ngành', textClass: 'text-orange-600', barClass: 'bg-orange-500' },
+    { label: 'GPA hiện tại', value10: currentGPA, value4: currentGPA4, description: 'Điểm tích lũy hiện tại', textClass: 'text-[#004A98]', barClass: 'bg-[#004A98]' },
+    { label: 'GPA dự kiến', value10: cumulativeGPA, value4: cumulativeGPA4, description: 'Sau các môn đang học', textClass: 'text-indigo-600', barClass: 'bg-indigo-500' },
+    { label: 'GPA cơ sở ngành', value10: foundationGPA ?? 0, value4: foundationGPA4 ?? 0, description: 'Các môn cơ sở ngành', textClass: 'text-emerald-700', barClass: 'bg-emerald-500' },
+    { label: 'GPA chuyên ngành', value10: majorSpecializedGPA ?? 0, value4: majorSpecializedGPA4 ?? 0, description: 'Các môn chuyên ngành', textClass: 'text-orange-600', barClass: 'bg-orange-500' },
   ];
 
   const renderGradeMetrics = (className: string) => (
@@ -84,8 +89,13 @@ export function GradesPage() {
             <span className={`absolute inset-x-0 top-0 h-0.5 ${metric.barClass}`} />
             <p className="text-xs font-medium text-gray-500">{metric.label}</p>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className={`text-2xl font-bold tabular-nums ${metric.textClass}`}>{metric.value.toFixed(2)}</span>
+              <span className={`text-2xl font-bold tabular-nums ${metric.textClass}`}>{metric.value10.toFixed(2)}</span>
               <span className="text-xs font-medium text-gray-400">/ 10</span>
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-gray-500">
+              <span>Hệ 4: <strong className="font-semibold tabular-nums text-gray-700">{metric.value4 > 0 ? metric.value4.toFixed(2) : '--'}</strong></span>
+              <span className="text-gray-300">|</span>
+              <span>Chữ: <strong className="font-semibold text-gray-700">{metric.value4 > 0 ? GPACalculator.gradeToLetter(metric.value4) : '--'}</strong></span>
             </div>
             <p className="mt-1 truncate text-[11px] text-gray-400">{metric.description}</p>
           </div>
@@ -131,7 +141,13 @@ export function GradesPage() {
             cohort={currentCohort?.name || '---'}
             totalCredits={accumulatedCredits}
             gpa10={currentGPA}
-            courses={gradesHistory.map((grade) => ({ code: grade.code, name: grade.nameVi, credits: grade.credits, score10: grade.grade }))}
+            courses={gradesHistory.map((grade) => ({
+              code: grade.code,
+              name: grade.nameVi,
+              credits: grade.credits,
+              score10: grade.grade,
+              status: grade.status,
+            }))}
           />
         )}
       />}

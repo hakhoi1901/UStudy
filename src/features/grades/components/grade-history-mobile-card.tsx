@@ -1,4 +1,5 @@
 import type { StudentCourseGrade } from "../types";
+import { GPACalculator } from "../services/gpa-calculator";
 
 interface GradeHistoryMobileCardProps {
     course: StudentCourseGrade;
@@ -7,6 +8,9 @@ interface GradeHistoryMobileCardProps {
 export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) {
     const hasGrade = course.hasGrade ?? course.grade > 0;
     const isExempted = course.isExempted === true || course.semester === 'Miễn';
+    const fourPointGrade = hasGrade && !isExempted
+        ? GPACalculator.score10ToFourPoint(course.grade)
+        : null;
 
     return (
         <div className={`px-4 py-3 ${course.needsRetake ? 'bg-red-50/40' : ''}`}>
@@ -26,6 +30,16 @@ export function GradeHistoryMobileCard({ course }: GradeHistoryMobileCardProps) 
                         }`}>
                         {hasGrade ? course.grade.toFixed(1) : '-'}
                     </span>
+                    {fourPointGrade !== null && (
+                        <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700">
+                            {fourPointGrade.toFixed(1)}
+                        </span>
+                    )}
+                    {fourPointGrade !== null && (
+                        <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-700">
+                            {GPACalculator.gradeToLetter(fourPointGrade)}
+                        </span>
+                    )}
                     {isExempted ? (
                         <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700">Được miễn</span>
                     ) : hasGrade ? (

@@ -76,7 +76,7 @@ export function NoDataCard() {
     const [isMobile, setIsMobile] = useState(false);
     const [isOpeningPortal, setIsOpeningPortal] = useState(false);
     const [portalError, setPortalError] = useState('');
-    const [desktopSyncMethod, setDesktopSyncMethod] = useState<DesktopSyncMethod>('extension');
+    const [desktopSyncMethod, setDesktopSyncMethod] = useState<DesktopSyncMethod>('bookmarklet');
     const nativePortalSyncAvailable = isNativePortalSyncAvailable();
     const desktopGuide = DESKTOP_SYNC_GUIDES[desktopSyncMethod];
 
@@ -129,11 +129,11 @@ export function NoDataCard() {
                 {!isMobile ? (
                     <div className="mx-auto max-w-2xl">
                         <div className="grid grid-cols-3 gap-2 rounded-xl bg-gray-100 p-1.5" role="tablist" aria-label="Chọn cách đồng bộ dữ liệu">
-                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'extension'} onClick={() => setDesktopSyncMethod('extension')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'extension' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-                                <Puzzle className="h-4 w-4" />Extension
-                            </button>
                             <button type="button" role="tab" aria-selected={desktopSyncMethod === 'bookmarklet'} onClick={() => setDesktopSyncMethod('bookmarklet')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'bookmarklet' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                                 <Bookmark className="h-4 w-4" />Bookmarklet
+                            </button>
+                            <button type="button" role="tab" aria-selected={desktopSyncMethod === 'extension'} onClick={() => setDesktopSyncMethod('extension')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'extension' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                                <Puzzle className="h-4 w-4" />Extension
                             </button>
                             <button type="button" role="tab" aria-selected={desktopSyncMethod === 'json'} onClick={() => setDesktopSyncMethod('json')} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors ${desktopSyncMethod === 'json' ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                                 <FileUp className="h-4 w-4" />File JSON
@@ -203,7 +203,7 @@ export function NoDataCard() {
                             </div>
                             <a
                                 href={ANDROID_APP_DOWNLOAD_URL}
-                                download
+                                download="UStudy-android.apk"
                                 className="flex min-h-11 w-full items-center justify-center gap-2 border-t border-blue-200 bg-[#004A98] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#003A78]"
                             >
                                 <Download className="h-4 w-4" />
