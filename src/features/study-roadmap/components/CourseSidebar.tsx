@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronRight, Lock, Search, X, Circle, CheckCircle2, AlertTriangle, Check, Sparkles, Shuffle, Hash, BookOpen, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, Search, X, Circle, CheckCircle2, AlertTriangle, Check, Sparkles, Shuffle } from 'lucide-react';
 import { readFromStorage } from '../../../helpers/localStorage/save';
 import { STORAGE_KEYS } from '../../../config';
 import type { Course } from '../../../types';
@@ -149,62 +149,10 @@ export function CourseSidebar({
   const getCourseConflicts = (courseCode: string) =>
     conflicts.filter(c => c.involvedCourses.includes(courseCode));
 
-  const totalPeriods = selections.reduce(
-    (sum, s) => sum + s.classSections.reduce((ps, cs) => ps + Math.round(cs.endPeriod - cs.startPeriod + 1), 0),
-    0,
-  );
-  const scheduledDays = new Set(selections.flatMap(s => s.classSections.map(cs => cs.day))).size;
   const lockedCount = selections.filter(s => s.locked).length;
 
   return (
-    <div className="flex h-full flex-col">
-      {/* ── Summary header ── */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white p-3">
-        {/* <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-gray-100">
-            <BookOpen className="h-3.5 w-3.5 text-[#004A98]" />
-            <div>
-              <p className="text-[9px] text-gray-400 font-medium">Môn</p>
-              <p className="text-xs font-bold text-gray-900">{selections.length}/{selectedCourseIds.size}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-gray-100">
-            <Hash className="h-3.5 w-3.5 text-[#004A98]" />
-            <div>
-              <p className="text-[9px] text-gray-400 font-medium">Tín chỉ</p>
-              <p className="text-xs font-bold text-gray-900">{totalCredits}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-gray-100">
-            <Calendar className="h-3.5 w-3.5 text-[#004A98]" />
-            <div>
-              <p className="text-[9px] text-gray-400 font-medium">Ngày học</p>
-              <p className="text-xs font-bold text-gray-900">{scheduledDays}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-gray-100">
-            <Hash className="h-3.5 w-3.5 text-[#004A98]" />
-            <div>
-              <p className="text-[9px] text-gray-400 font-medium">Tiết/tuần</p>
-              <p className="text-xs font-bold text-gray-900">{totalPeriods}</p>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Conflict summary */}
-        {/* {conflicts.length > 0 ? (
-          <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 border border-amber-200">
-            <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600" />
-            <span className="text-[11px] font-medium text-amber-800">{conflicts.length} xung đột</span>
-          </div>
-        ) : selections.length > 0 ? (
-          <div className="mt-2 flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 border border-emerald-200">
-            <Check className="h-3 w-3 shrink-0 text-emerald-600" />
-            <span className="text-[11px] font-medium text-emerald-700">Không có xung đột</span>
-          </div>
-        ) : null} */}
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col">
       {/* ── Search ── */}
       <div className="flex-shrink-0 border-b border-gray-100 px-3 py-2">
         <div className="relative">
@@ -225,7 +173,7 @@ export function CourseSidebar({
       </div>
 
       {/* ── Course list ── */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+      <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
         {registeredCourseGroups.length > 0 && (
           <section className="border-b border-gray-200 bg-blue-50/35 px-3 py-2.5">
             <div className="mb-1.5 flex items-center justify-between px-1">

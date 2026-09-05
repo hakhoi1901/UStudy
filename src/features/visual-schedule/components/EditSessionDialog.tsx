@@ -1,10 +1,9 @@
 // EditSessionDialog.tsx
 import { useEffect, useState } from 'react';
-import { CalendarDays, CalendarOff, MessageSquare, Palette, Pencil, RotateCcw } from 'lucide-react';
-import { Input } from '../../../components/ui/form/input';
-import { Label } from '../../../components/ui/form/label';
-import { AppSelect } from '../../../components/ui/form';
+import { AlertTriangle, CalendarDays, CalendarOff, Check, Clock3, MapPin, MessageSquare, Palette, Pencil, RotateCcw, StickyNote } from 'lucide-react';
+import { AppSelect, Input, Label, Switch, Textarea } from '../../../components/ui/form';
 import { AppDialog } from '../../../components/ui/overlays/app-dialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '../../../components/ui/overlays/hover-card';
 import { type ScheduleSession, type ScheduleOverrides, type SessionOverride, DAYS } from '../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
 import { calculateRowSpan, getDisplayEnd } from '../services/schedule-helpers';
@@ -33,6 +32,7 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
     const [color, setColor] = useState(session.color);
     const [startWeek, setStartWeek] = useState('');
     const [endWeek, setEndWeek] = useState('');
+    const [isCurrentWeekVisible, setIsCurrentWeekVisible] = useState(true);
     const [error, setError] = useState('');
     const basicColorOptions = [
         { id: 'blue', name: 'Xanh UStudy', hex: '#004A98' },
@@ -62,6 +62,7 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
         setColor(values.color);
         setStartWeek(nextScope === 'semester' && globalOverride?.startWeek !== undefined ? String(globalOverride.startWeek) : '');
         setEndWeek(nextScope === 'semester' && globalOverride?.endWeek !== undefined ? String(globalOverride.endWeek) : '');
+        setIsCurrentWeekVisible(!(globalOverride?.hiddenWeeks || []).includes(weekNumber));
         setError('');
     };
 
@@ -105,28 +106,35 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
             room: room.trim(), startPeriod: parsedStart, endPeriod: parsedEnd,
             dayOfWeek: parsedDay as ScheduleSession['dayOfWeek'], note: note.trim() || undefined, color,
         };
+        const hiddenWeeks = isCurrentWeekVisible
+            ? (globalOverride?.hiddenWeeks || []).filter((week) => week !== weekNumber)
+            : Array.from(new Set([...(globalOverride?.hiddenWeeks || []), weekNumber])).sort((a, b) => a - b);
+        const visibilityChanged = isCurrentWeekVisible !== !(globalOverride?.hiddenWeeks || []).includes(weekNumber);
 
         if (scope === 'semester') {
             persist({ ...overrides, sessionOverrides: {
                 ...overrides.sessionOverrides,
-                [session.id]: { ...globalOverride, ...update, startWeek: parsedStartWeek, endWeek: parsedEndWeek },
+                [session.id]: {
+                    ...globalOverride,
+                    ...update,
+                    startWeek: parsedStartWeek,
+                    endWeek: parsedEndWeek,
+                    hiddenWeeks: hiddenWeeks.length ? hiddenWeeks : undefined,
+                },
             } });
             return;
         }
-        persist({ ...overrides, weekOverrides: {
-            ...overrides.weekOverrides,
-            [weekOverrideKey]: { ...weekOverride, ...update },
-        } });
-    };
-
-    const handleToggleWeekVisibility = () => {
-        const hiddenWeeks = (globalOverride?.hiddenWeeks || []).includes(weekNumber)
-            ? (globalOverride?.hiddenWeeks || []).filter((week) => week !== weekNumber)
-            : Array.from(new Set([...(globalOverride?.hiddenWeeks || []), weekNumber])).sort((a, b) => a - b);
-        persist({ ...overrides, sessionOverrides: {
-            ...overrides.sessionOverrides,
-            [session.id]: { ...globalOverride, hiddenWeeks: hiddenWeeks.length ? hiddenWeeks : undefined },
-        } });
+        persist({
+            ...overrides,
+            sessionOverrides: visibilityChanged ? {
+                ...overrides.sessionOverrides,
+                [session.id]: { ...globalOverride, hiddenWeeks: hiddenWeeks.length ? hiddenWeeks : undefined },
+            } : overrides.sessionOverrides,
+            weekOverrides: {
+                ...overrides.weekOverrides,
+                [weekOverrideKey]: { ...weekOverride, ...update },
+            },
+        });
     };
 
     const handleEndFromWeek = () => persist({ ...overrides, sessionOverrides: {
@@ -145,7 +153,6 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
         persist({ ...overrides, sessionOverrides, weekOverrides });
     };
 
-    const isWeekHidden = globalOverride?.hiddenWeeks?.includes(weekNumber) ?? false;
     const hasChanges = scope === 'semester'
         ? Boolean(globalOverride || Object.keys(overrides.weekOverrides).some((key) => key.endsWith(`_${session.id}`)))
         : Boolean(weekOverride);
@@ -157,64 +164,143 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
             title="Tùy chỉnh môn học"
             description={`${session.courseCode} · ${session.courseName}`}
             icon={Pencil}
-            size="md"
-            contentClassName="space-y-4"
+            size="lg"
+            mobileFullScreen
+            contentClassName="space-y-0 !p-0 sm:!p-0"
+            footer={
+                <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        {hasChanges && (
+                            <button
+                                type="button"
+                                onClick={handleRestore}
+                                className="ustudy-button-dialog ustudy-button-dialog-cancel w-full gap-2 sm:w-auto"
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                                Khôi phục mặc định
+                            </button>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:flex">
+                        <button type="button" onClick={() => onOpenChange(false)} className="ustudy-button-dialog ustudy-button-dialog-cancel">
+                            Hủy
+                        </button>
+                        <button type="button" onClick={handleSave} className="ustudy-button-dialog ustudy-button-dialog-confirm">
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+            }
         >
-            <div className="divide-y divide-gray-200">
-                <div className="grid gap-3 py-1 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
-                    <span className="text-sm font-semibold text-gray-700">Áp dụng</span>
-                    <div className="grid grid-cols-2 rounded-lg bg-gray-100 p-1">
+            <div className="divide-y divide-slate-200">
+                <section className="px-4 py-4 sm:px-6 sm:py-5">
+                    <div className="mb-3">
+                        <h3 className="text-sm font-semibold text-gray-900">Phạm vi thay đổi</h3>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">Chọn chỉnh toàn bộ học kỳ hoặc chỉ riêng tuần đang xem.</p>
+                    </div>
+                    <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1" role="group" aria-label="Phạm vi áp dụng">
                         {(['semester', 'week'] as const).map((value) => (
                             <button
                                 key={value}
                                 type="button"
                                 onClick={() => { setScope(value); resetForm(value); }}
-                                className={`h-9 rounded-md text-sm font-semibold transition ${scope === value ? 'bg-white text-[#004A98] shadow-sm' : 'text-gray-600'}`}
+                                aria-pressed={scope === value}
+                                className={`min-h-10 rounded-md px-3 text-sm font-semibold transition-colors ${scope === value ? 'bg-white text-[#004A98] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                             >
                                 {value === 'semester' ? 'Cả học kỳ' : `Tuần ${weekNumber}`}
                             </button>
                         ))}
                     </div>
-                </div>
+                </section>
 
-                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)]">
-                    <span className="pt-2 text-sm font-semibold text-gray-700">Lịch học</span>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <AppSelect value={dayOfWeek} onChange={setDayOfWeek} options={[...DAYS.map((day) => ({ id: day.value, name: day.label })), { id: '8', name: 'Chủ Nhật' }]} ariaLabel="Chọn thứ học" triggerClassName="h-10 px-3 py-0 text-sm" />
-                        <Input aria-label="Phòng học" value={room} onChange={(event) => setRoom(event.target.value)} placeholder="Phòng học" className="h-10" />
-                        <Input aria-label="Tiết bắt đầu" type="number" min="1" max="10.5" step="0.5" value={startPeriod} onChange={(event) => setStartPeriod(event.target.value)} placeholder="Từ tiết" className="h-10" />
-                        <Input aria-label="Tiết kết thúc" type="number" min="1" max="10.5" step="0.5" value={endPeriod} onChange={(event) => setEndPeriod(event.target.value)} placeholder="Đến tiết" className="h-10" />
-                    </div>
-                </div>
-
-                {scope === 'semester' && (
-                    <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
-                        <span className="text-sm font-semibold text-gray-700">Khoảng tuần</span>
-                        <div className="grid grid-cols-2 gap-3">
-                            <Input aria-label="Bắt đầu từ tuần" type="number" min="1" step="1" placeholder="Từ tuần" value={startWeek} onChange={(event) => setStartWeek(event.target.value)} className="h-10" />
-                            <Input aria-label="Kết thúc ở tuần" type="number" min="1" step="1" placeholder="Đến tuần" value={endWeek} onChange={(event) => setEndWeek(event.target.value)} className="h-10" />
+                <section className="px-4 py-5 sm:px-6">
+                    <div className="mb-4 flex items-start gap-3">
+                        <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-[#004A98]" />
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-900">Lịch học</h3>
+                            <p className="mt-0.5 text-xs leading-5 text-slate-500">Điều chỉnh ngày, phòng và tiết học của buổi này.</p>
                         </div>
                     </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <Label className="mb-1.5 block text-sm font-medium text-slate-700">Ngày học</Label>
+                            <AppSelect
+                                value={dayOfWeek}
+                                onChange={setDayOfWeek}
+                                options={[...DAYS.map((day) => ({ id: day.value, name: day.label })), { id: '8', name: 'Chủ Nhật' }]}
+                                ariaLabel="Chọn ngày học"
+                                triggerClassName="h-10 px-3 py-0 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="schedule-room" className="mb-1.5 block text-sm font-medium text-slate-700">Phòng học</Label>
+                            <div className="relative">
+                                <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <Input id="schedule-room" value={room} onChange={(event) => setRoom(event.target.value)} placeholder="Ví dụ: F202" className="h-10 rounded-lg bg-white pl-9" />
+                            </div>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Label className="mb-1.5 block text-sm font-medium text-slate-700">Tiết học</Label>
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                                <div className="relative">
+                                    <Clock3 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Input aria-label="Tiết bắt đầu" type="number" min="1" max="10.5" step="0.5" value={startPeriod} onChange={(event) => setStartPeriod(event.target.value)} placeholder="Bắt đầu" className="h-10 rounded-lg bg-white pl-9" />
+                                </div>
+                                <span className="text-xs font-medium text-slate-400">đến</span>
+                                <Input aria-label="Tiết kết thúc" type="number" min="1" max="10.5" step="0.5" value={endPeriod} onChange={(event) => setEndPeriod(event.target.value)} placeholder="Kết thúc" className="h-10 rounded-lg bg-white" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {scope === 'semester' && (
+                    <section className="px-4 py-5 sm:px-6">
+                        <div className="mb-4">
+                            <h3 className="text-sm font-semibold text-gray-900">Khoảng tuần áp dụng</h3>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Để trống để giữ thời gian mặc định của môn học.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label htmlFor="schedule-start-week" className="mb-1.5 block text-sm font-medium text-slate-700">Từ tuần</Label>
+                                <Input id="schedule-start-week" type="number" min="1" step="1" placeholder="Mặc định" value={startWeek} onChange={(event) => setStartWeek(event.target.value)} className="h-10 rounded-lg bg-white" />
+                            </div>
+                            <div>
+                                <Label htmlFor="schedule-end-week" className="mb-1.5 block text-sm font-medium text-slate-700">Đến tuần</Label>
+                                <Input id="schedule-end-week" type="number" min="1" step="1" placeholder="Mặc định" value={endWeek} onChange={(event) => setEndWeek(event.target.value)} className="h-10 rounded-lg bg-white" />
+                            </div>
+                        </div>
+                    </section>
                 )}
 
-                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)]">
-                    <span className="pt-2 text-sm font-semibold text-gray-700">Màu và ghi chú</span>
-                    <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
+                <section className="px-4 py-5 sm:px-6">
+                    <div className="mb-4 flex items-start gap-3">
+                        <Palette className="mt-0.5 h-5 w-5 shrink-0 text-[#004A98]" />
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-900">Màu và ghi chú</h3>
+                            <p className="mt-0.5 text-xs leading-5 text-slate-500">Màu chỉ dùng để nhận biết môn trên thời khóa biểu.</p>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <Label className="mb-2 block text-sm font-medium text-slate-700">Màu hiển thị</Label>
+                            <div className="flex flex-wrap items-center gap-2">
                             {basicColorOptions.map((option) => (
                                 <button
                                     key={option.id}
                                     type="button"
                                     title={option.name}
                                     aria-label={`Chọn ${option.name}`}
+                                    aria-pressed={color === option.id}
                                     onClick={() => setColor(option.id)}
-                                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition ${color === option.id ? 'border-[#004A98] bg-blue-50 ring-2 ring-[#004A98]/15' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                    className={`relative flex h-10 w-10 items-center justify-center rounded-lg border bg-white transition-colors ${color === option.id ? 'border-[#004A98] ring-2 ring-[#004A98]/15' : 'border-slate-200 hover:border-slate-400'}`}
                                 >
-                                    <span className="h-5 w-5 rounded-md" style={{ backgroundColor: option.hex }} />
+                                    <span className="h-6 w-6 rounded-full" style={{ backgroundColor: option.hex }} />
+                                    {color === option.id && <Check className="absolute h-3.5 w-3.5 text-white" strokeWidth={3} />}
                                 </button>
                             ))}
-                            <label title="Màu tùy chỉnh" className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border transition ${color.startsWith('#') ? 'border-[#004A98] bg-blue-50 ring-2 ring-[#004A98]/15' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                                <Palette className="h-4 w-4 text-gray-600" />
+                            <label title="Màu tùy chỉnh" className={`relative flex h-10 min-w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border bg-white px-2.5 transition-colors ${color.startsWith('#') ? 'border-[#004A98] text-[#004A98] ring-2 ring-[#004A98]/15' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}>
+                                <span className="h-5 w-5 rounded-full border border-black/10" style={{ backgroundColor: color.startsWith('#') ? color : '#FFFFFF' }} />
+                                <span className="hidden text-xs font-semibold sm:inline">Tùy chỉnh</span>
                                 <input
                                     type="color"
                                     value={color.startsWith('#') ? color : '#004A98'}
@@ -223,32 +309,56 @@ function EditSessionDialog({ open, onOpenChange, session, weekNumber, overrides,
                                     aria-label="Chọn màu tùy chỉnh"
                                 />
                             </label>
+                            </div>
                         </div>
-                        <div className="relative">
-                            <MessageSquare className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Input aria-label="Ghi chú" placeholder="Thêm ghi chú" value={note} onChange={(event) => setNote(event.target.value)} className="h-10 pl-9" />
+                        <div>
+                            <Label htmlFor="schedule-note" className="mb-1.5 block text-sm font-medium text-slate-700">Ghi chú</Label>
+                            <div className="relative">
+                                <StickyNote className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                                <Textarea id="schedule-note" rows={3} placeholder="Ví dụ: mang máy tính, kiểm tra giữa kỳ" value={note} onChange={(event) => setNote(event.target.value)} className="min-h-20 rounded-lg bg-white pl-9" />
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div className="grid gap-3 py-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center">
-                    <span className="text-sm font-semibold text-gray-700">Tác vụ</span>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                        <button type="button" onClick={handleToggleWeekVisibility} className="inline-flex items-center gap-1.5 font-semibold text-gray-600 transition-colors hover:text-[#004A98]">
-                            <CalendarOff className="h-4 w-4" />
-                            {isWeekHidden ? `Hiện lại tuần ${weekNumber}` : `Bỏ tuần ${weekNumber}`}
-                        </button>
-                        {scope === 'semester' && <button type="button" onClick={handleEndFromWeek} className="font-semibold text-amber-700 transition-colors hover:text-amber-900">Ngừng từ tuần {weekNumber}</button>}
-                        {hasChanges && <button type="button" onClick={handleRestore} className="inline-flex items-center gap-1.5 font-semibold text-gray-500 transition-colors hover:text-[#004A98]"><RotateCcw className="h-3.5 w-3.5" />Khôi phục</button>}
+                <section className="px-4 py-5 sm:px-6">
+                    <div className="mb-3">
+                        <h3 className="text-sm font-semibold text-gray-900">Ngoại lệ tuần {weekNumber}</h3>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">Các thiết lập dưới đây chỉ ảnh hưởng đến thời gian xuất hiện của môn.</p>
                     </div>
-                </div>
+                    <div className="divide-y divide-slate-200 border-y border-slate-200">
+                        <div className="flex min-h-14 items-center gap-3 py-2.5">
+                            <CalendarDays className="h-4 w-4 shrink-0 text-[#004A98]" />
+                            <label htmlFor="schedule-week-visible" className="min-w-0 flex-1 cursor-pointer">
+                                <span className="block text-sm font-medium text-gray-900">Hiển thị buổi học</span>
+                                <span className="block text-xs text-slate-500">Bật hoặc ẩn riêng buổi học trong tuần {weekNumber}.</span>
+                            </label>
+                            <Switch
+                                id="schedule-week-visible"
+                                checked={isCurrentWeekVisible}
+                                onCheckedChange={setIsCurrentWeekVisible}
+                                className="h-6 w-11 data-[state=checked]:bg-[#004A98] data-[state=unchecked]:bg-slate-300 [&_[data-slot=switch-thumb]]:size-5"
+                            />
+                        </div>
+                        {scope === 'semester' && (
+                            <button
+                                type="button"
+                                onClick={handleEndFromWeek}
+                                className="flex min-h-14 w-full items-center gap-3 py-2.5 text-left transition-colors hover:text-amber-800"
+                            >
+                                <CalendarOff className="h-4 w-4 shrink-0 text-amber-600" />
+                                <span className="min-w-0 flex-1">
+                                    <span className="block text-sm font-medium text-gray-900">Ngừng môn từ tuần {weekNumber}</span>
+                                    <span className="block text-xs text-slate-500">Ẩn toàn bộ các buổi từ tuần này trở đi.</span>
+                                </span>
+                                <span className="text-xs font-semibold text-amber-700">Áp dụng</span>
+                            </button>
+                        )}
+                    </div>
+                </section>
             </div>
 
-            {error && <p role="alert" className="border-l-2 border-red-500 bg-red-50 px-3 py-2.5 text-xs leading-5 text-red-700">{error}</p>}
-            <div className="grid gap-2 border-t border-gray-200 pt-4 sm:grid-cols-2">
-                <button type="button" onClick={() => onOpenChange(false)} className="ustudy-button-outline justify-center">Hủy</button>
-                <button type="button" onClick={handleSave} className="ustudy-button-primary justify-center">Lưu thay đổi</button>
-            </div>
+            {error && <p role="alert" className="mx-4 mb-5 border-l-2 border-red-500 bg-red-50 px-3 py-2.5 text-xs leading-5 text-red-700 sm:mx-6">{error}</p>}
         </AppDialog>
     );
 }
@@ -287,6 +397,11 @@ function CourseCard({
     // Đảm bảo sessions luôn là array
     const sessionArray = Array.isArray(sessions) ? sessions : [sessions];
     const primarySession = sessionArray[0];
+    const sessionsForCard = hasConflict ? [primarySession] : sessionArray;
+    const conflictingCourseCount = new Set(sessionArray.map((session) => session.courseCode)).size;
+    const conflictLabel = conflictingCourseCount > 1
+        ? `Trùng ${conflictingCourseCount} môn`
+        : `Trùng ${sessionArray.length} buổi`;
 
     // Tính toán vị trí và chiều cao dựa trên tiết thực tế (inclusive endPeriod)
     const rowSpan = calculateRowSpan(primarySession);
@@ -314,6 +429,8 @@ function CourseCard({
 
     return (
         <>
+            <HoverCard openDelay={180} closeDelay={100}>
+                <HoverCardTrigger asChild>
             <div
                 className="relative w-full h-full"
                 style={{ minHeight: `calc(var(--schedule-row-height, 36px) * ${rowSpan})` }}
@@ -344,13 +461,13 @@ function CourseCard({
                     {/* Badge trùng lịch */}
                     {hasConflict && (
                         <div className="mb-1 flex items-center gap-1">
-                            <span className="inline-block text-[13px] font-bold text-red-700">⚠️</span>
-                            <span className="text-[11px] font-bold text-red-700">Trùng {sessionArray.length} môn</span>
+                            <AlertTriangle className="h-3 w-3 shrink-0 text-red-700" />
+                            <span className="text-[11px] font-bold text-red-700">{conflictLabel}</span>
                         </div>
                     )}
 
                     {/* Hiển thị các môn học */}
-                    {sessionArray.map((sess, idx) => (
+                    {sessionsForCard.map((sess, idx) => (
                         <div key={sess.id} className={idx > 0 ? 'border-t border-red-200 pt-0.5 mt-0.5' : ''}>
                             <div className={`text-[9px] md:text-[11px] font-bold leading-tight mb-0.5 line-clamp-1 ${hasConflict ? 'text-red-700' : 'text-gray-700'}`}>
                                 {sess.courseName}
@@ -366,12 +483,43 @@ function CourseCard({
                 </div>
 
             </div>
+                </HoverCardTrigger>
+
+                {hasConflict && sessionArray.length > 1 && (
+                    <HoverCardContent
+                        side="top"
+                        align="start"
+                        sideOffset={8}
+                        className="z-[70] w-80 max-w-[calc(100vw-2rem)] rounded-lg border-red-200 bg-white p-0 text-gray-900 shadow-[0_14px_32px_rgba(127,29,29,0.16)]"
+                    >
+                        <div className="flex items-start gap-2 border-b border-red-100 bg-red-50 px-3 py-2.5">
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-red-900">{conflictLabel}</p>
+                                <p className="mt-0.5 text-xs text-red-700">Các buổi học cùng chiếm khung giờ này.</p>
+                            </div>
+                        </div>
+                        <div className="divide-y divide-gray-100 px-3">
+                            {sessionArray.map((sess) => (
+                                <div key={sess.id} className="py-2.5">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="min-w-0 truncate font-mono text-xs font-bold text-[#004A98]">{sess.courseCode}</span>
+                                        <span className="shrink-0 text-xs font-medium text-slate-500">{sess.type} · {sess.classCode || '-'}</span>
+                                    </div>
+                                    <p className="mt-0.5 truncate text-sm font-medium text-gray-900">{sess.courseName}</p>
+                                    <p className="mt-1 truncate text-xs text-slate-500">{sess.startTime} - {sess.endTime} · {sess.room || 'Chưa có phòng'}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </HoverCardContent>
+                )}
+            </HoverCard>
 
             <AppDialog
                 open={showInfo}
                 onOpenChange={setShowInfo}
                 title="Chi tiết lịch học"
-                description={sessionArray.length === 1 ? `${primarySession.courseCode} · ${primarySession.courseName}` : `${sessionArray.length} môn học trùng lịch`}
+                description={sessionArray.length === 1 ? `${primarySession.courseCode} · ${primarySession.courseName}` : conflictLabel}
                 icon={CalendarDays}
                 size="md"
                 contentClassName="space-y-0"

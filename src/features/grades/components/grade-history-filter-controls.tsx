@@ -198,7 +198,12 @@ export function GradeHistoryFilterControls({
                                 )}
                             </button>
                         </PopoverTrigger>
-                        <PopoverContent align="end" sideOffset={8} className="flex max-h-[min(720px,calc(100vh-2rem))] w-[440px] flex-col overflow-hidden rounded-xl border border-gray-200 !bg-white !text-gray-900 p-0 shadow-[0_18px_45px_rgba(15,23,42,0.16)]">
+                        <PopoverContent
+                            align="end"
+                            sideOffset={8}
+                            collisionPadding={16}
+                            className="flex h-[min(36rem,calc(100vh-8rem))] w-[440px] flex-col overflow-hidden rounded-xl border border-gray-200 !bg-white !text-gray-900 p-0 shadow-[0_18px_45px_rgba(15,23,42,0.16)]"
+                        >
                             <div className="shrink-0 border-b border-gray-100 bg-white px-5 py-4">
                                 <h3 className="text-base font-semibold text-gray-900">Bộ lọc lịch sử điểm</h3>
                                 <p className="mt-1 text-xs leading-5 text-gray-500">Lọc trong phạm vi học kỳ đang chọn, rồi áp dụng khi đã xem xong.</p>

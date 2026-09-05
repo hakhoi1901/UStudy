@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { AlertTriangle, Lock, Bot } from 'lucide-react';
 import { weekDays, timePeriods } from '../../../constants';
 import type { ClassSection } from '../../../types';
+import { getConflicts } from '../../../logic/ScheduleValidator';
+import { getScheduleConflictLabel, ScheduleConflictHoverCard } from '../../../components/schedule/schedule-conflict-hover-card';
 import type { DraftSelection, ScheduleConflict } from '../types/schedule-builder-types';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -31,18 +33,12 @@ interface BuilderGridProps {
 export function BuilderGrid({
   allSections,
   selections,
-  conflicts,
   focusedCourseCode,
   onClickSection,
 }: BuilderGridProps) {
-  // Pre-compute conflict set for quick lookup
-  const conflictCourses = useMemo(() => {
-    const set = new Set<string>();
-    for (const c of conflicts) {
-      for (const code of c.involvedCourses) set.add(code);
-    }
-    return set;
-  }, [conflicts]);
+  const conflictsBySectionId = useMemo(() => new Map(
+    allSections.map((section) => [section.id, getConflicts(section, allSections)]),
+  ), [allSections]);
 
   const selectionMap = useMemo(() => {
     const map = new Map<string, DraftSelection>();
@@ -141,7 +137,9 @@ export function BuilderGrid({
             {/* Layer 2: class cards */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: 'none' }}>
               {allSections.map(section => {
-                const hasConflict = conflictCourses.has(section.courseCode);
+                const conflictingSections = conflictsBySectionId.get(section.id) ?? [];
+                const hasConflict = conflictingSections.length > 0;
+                const conflictLabel = getScheduleConflictLabel(section, conflictingSections);
                 const draft = selectionMap.get(section.courseCode);
                 const isFocused = focusedCourseCode === section.courseCode;
                 const isLocked = draft?.locked ?? false;
@@ -165,8 +163,12 @@ export function BuilderGrid({
                 const endTime = timePeriods.find(p => p.period === section.endPeriod)?.time.split(' - ')[1] ?? '';
 
                 return (
-                  <div
+                  <ScheduleConflictHoverCard
                     key={section.id}
+                    section={section}
+                    conflictingSections={conflictingSections}
+                  >
+                    <div
                     role="button"
                     tabIndex={0}
                     onClick={() => onClickSection(section.courseCode)}
@@ -207,7 +209,7 @@ export function BuilderGrid({
                     {hasConflict && !isCompact && (
                       <div className="mb-0.5 flex w-fit items-center gap-1 rounded bg-red-100 px-1.5 py-px">
                         <AlertTriangle style={{ width: 8, height: 8, color: '#DC2626', flexShrink: 0 }} />
-                        <span className="text-[7px] font-bold uppercase tracking-wider text-red-700">Trùng</span>
+                        <span className="text-[8px] font-bold text-red-700">{conflictLabel}</span>
                       </div>
                     )}
 
@@ -278,7 +280,8 @@ export function BuilderGrid({
                         </div>
                       </div>
                     )}
-                  </div>
+                    </div>
+                  </ScheduleConflictHoverCard>
                 );
               })}
             </div>
