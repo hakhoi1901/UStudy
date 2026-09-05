@@ -15,6 +15,12 @@ import { OpenClassDetailDialog, type OpenClassDetailTarget } from '../../../comp
 import { ScheduleModeToggle, ScheduleOptionSelector, type ScheduleMode } from '../../schedule';
 import { ScheduleBuilder } from './ScheduleBuilder';
 import { BuilderToolbar } from './BuilderToolbar';
+import {
+    createCourseCodeSet,
+    excludeRegisteredSections,
+    omitRegisteredCourseEntries,
+    reconcileSelectedCourseIds,
+} from '../../../logic/course-identity';
 
 function getSolidTint(hexColor: string, tint = 0.9) {
     const normalized = hexColor.replace('#', '');
@@ -155,6 +161,10 @@ export function CalendarView({
     const [builderDraftSections, setBuilderDraftSections] = useState<ClassSection[]>([]);
     const [hasBuilderSelections, setHasBuilderSelections] = useState(false);
     const clearBuilderDraftRef = useRef<(() => void) | null>(null);
+    const registeredCourseCodeSet = useMemo(
+        () => createCourseCodeSet(registeredCourses.map((course) => course.courseCode)),
+        [registeredCourses],
+    );
 
     // ── Computed stats ─────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -218,11 +228,25 @@ export function CalendarView({
     const handleLoadSchedule = (saved: SavedSchedule) => {
         const firstGroupMember = saved.groupSchedule?.members[0];
         const selectedMember = firstGroupMember ?? null;
+        const savedSelectedCourses = selectedMember?.selectedCourses ?? saved.selectedCourses;
+        const savedAllowedClassesMap = selectedMember?.allowedClassesMap ?? saved.allowedClassesMap;
+        const savedSessions = selectedMember?.sessions ?? saved.sessions;
+        const personalSelection = saved.groupSchedule
+            ? null
+            : reconcileSelectedCourseIds(savedSelectedCourses, registeredCourseCodeSet, allCurrentCourses);
+        const selectedCourseIds = personalSelection?.selectedCourseIds ?? new Set(savedSelectedCourses);
+        const allowedClassEntries = saved.groupSchedule
+            ? savedAllowedClassesMap
+            : omitRegisteredCourseEntries(savedAllowedClassesMap, registeredCourseCodeSet, allCurrentCourses);
+        const restoredSessions = saved.groupSchedule
+            ? savedSessions
+            : excludeRegisteredSections(savedSessions, registeredCourseCodeSet);
+
         setLoadedGroupSchedule(saved.groupSchedule ?? null);
         setActiveLoadedGroupMemberIndex(selectedMember?.memberIndex ?? null);
-        setSelectedCourses(new Set(selectedMember?.selectedCourses ?? saved.selectedCourses));
-        setAllowedClassesMap(selectedMember?.allowedClassesMap ?? saved.allowedClassesMap);
-        const restoredOption: ScheduleOption = { option: saved.groupSchedule?.option ?? 1, fitness: 1000, classSections: selectedMember?.sessions ?? saved.sessions };
+        setSelectedCourses(selectedCourseIds);
+        setAllowedClassesMap(allowedClassEntries);
+        const restoredOption: ScheduleOption = { option: saved.groupSchedule?.option ?? 1, fitness: 1000, classSections: restoredSessions };
         setOptions([restoredOption]);
         setActiveOption(0);
         setShowListModal(false);
@@ -252,7 +276,7 @@ export function CalendarView({
     // ── Empty state ────────────────────────────────────────────────────────────
     const renderModeSwitch = () => <ScheduleModeToggle mode={scheduleMode} onChange={setScheduleMode} />;
 
-    const hasPersonalScheduleActions = selectedCourses.size > 0 || registeredSections.length > 0 || savedSchedules.length > 0;
+    const hasPersonalScheduleActions = selectedCourses.size > 0 || registeredCourses.length > 0 || savedSchedules.length > 0;
 
     const renderModeToolbar = () => (
         <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:gap-4">
@@ -282,7 +306,7 @@ export function CalendarView({
         setActiveOption(0);
     }, [setOptions, setActiveOption]);
 
-    if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0 && registeredSections.length === 0) {
+    if (scheduleMode === 'personal' && selectedCourses.size === 0 && savedSchedules.length === 0 && registeredCourses.length === 0) {
         return (
             <div className="space-y-4">
                 {renderModeToolbar()}

@@ -7,6 +7,7 @@ import { getTuitionRates } from '../../../assets/data/tuition';
 import { CourseClassFilterModal } from './CourseClassFilterModal';
 import type { ClassPreferenceSelection } from '../../group-schedule/types';
 import type React from 'react';
+import { normalizeCourseCode } from '../../../logic/course-identity';
 
 interface SelectionBasketProps {
     selectedCourses: Course[];
@@ -20,10 +21,6 @@ interface SelectionBasketProps {
     compact?: boolean;
     title?: string;
     description?: string;
-}
-
-function normalizeCourseCode(value: unknown): string {
-    return String(value ?? '').trim().toUpperCase();
 }
 
 function parseCredits(value: unknown): number {

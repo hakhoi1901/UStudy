@@ -35,6 +35,17 @@ describe('RegistrationResolver', () => {
     ]));
   });
 
+  it('normalizes registered course codes before grouping components', () => {
+    const courses = resolveRegistrations([
+      { id: ' csc10009 ', courseType: 'LT', schedule: 'T2(1-3)' },
+      { id: 'CSC10009', courseType: 'TH', schedule: 'T4(4-5)' },
+    ]);
+
+    expect(courses).toHaveLength(1);
+    expect(courses[0].courseCode).toBe('CSC10009');
+    expect(courses[0].components).toHaveLength(2);
+  });
+
   it('combines registered courses into a fixed busy mask for the solver', () => {
     const courses = resolveRegistrations([
       { id: 'CSC10001', courseType: 'LT', schedule: 'T2(1-2)' },

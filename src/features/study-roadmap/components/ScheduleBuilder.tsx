@@ -18,6 +18,7 @@ import { BuilderToolbar } from './BuilderToolbar';
 import { ScheduleOptionSelector } from '../../schedule/components/ScheduleOptionSelector';
 import { MobileBottomSheet } from '../../../components/ui/overlays/mobile-bottom-sheet';
 import type { Tab } from '../types';
+import { createCourseCodeSet, excludeRegisteredSections, normalizeCourseCode } from '../../../logic/course-identity';
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -77,11 +78,25 @@ export function ScheduleBuilder({
   clearDraftRef,
 }: ScheduleBuilderProps) {
   const draft = useScheduleDraft();
-  const displaySections = useMemo(
-    () => [...registeredSections, ...draft.allSections],
-    [registeredSections, draft.allSections],
+  const registeredCourseCodeSet = useMemo(
+    () => createCourseCodeSet(registeredCourses.map((course) => course.courseCode)),
+    [registeredCourses],
   );
-  const { conflicts } = useConflictValidator(draft.selections, displaySections);
+  const activeDraftSelections = useMemo(
+    () => draft.selections.filter(
+      (selection) => !registeredCourseCodeSet.has(normalizeCourseCode(selection.courseCode)),
+    ),
+    [draft.selections, registeredCourseCodeSet],
+  );
+  const activeDraftSections = useMemo(
+    () => excludeRegisteredSections(draft.allSections, registeredCourseCodeSet),
+    [draft.allSections, registeredCourseCodeSet],
+  );
+  const displaySections = useMemo(
+    () => [...registeredSections, ...activeDraftSections],
+    [registeredSections, activeDraftSections],
+  );
+  const { conflicts } = useConflictValidator(activeDraftSelections, displaySections);
   const [focusedCourseCode, setFocusedCourseCode] = useState<string | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -145,7 +160,7 @@ export function ScheduleBuilder({
   ]);
 
   // Notify parent of draft sections for save/export
-  const draftSections = draft.allSections;
+  const draftSections = activeDraftSections;
 
   useEffect(() => {
     onDraftSectionsChange(draftSections);
@@ -162,7 +177,7 @@ export function ScheduleBuilder({
 
     // 2. Soft Constraints (Manual unlocked selections)
     const preferredAllowedMap: Record<string, string> = {};
-    for (const s of draft.selections) {
+    for (const s of activeDraftSelections) {
       if (!s.locked && s.source === 'manual') {
         preferredAllowedMap[s.courseCode] = s.classId;
       }
@@ -173,7 +188,7 @@ export function ScheduleBuilder({
       .filter((c): c is Course => !!c);
 
     solve(coursesToSchedule, hybridAllowedMap, { ...prefs, preferredClassesMap: preferredAllowedMap });
-  }, [draft, selectedCourses, allCurrentCourses, solve, allowedClassesMap, prefs]);
+  }, [activeDraftSelections, draft, selectedCourses, allCurrentCourses, solve, allowedClassesMap, prefs]);
 
   const handleSelectClass = useCallback((courseCode: string, classId: string) => {
     draft.selectClass(courseCode, classId, allCurrentCourses);
@@ -193,11 +208,11 @@ export function ScheduleBuilder({
   }, []);
 
   const totalCredits = useMemo(() => {
-    const scheduledCodes = new Set(draft.selections.map(s => s.courseCode));
+    const scheduledCodes = new Set(activeDraftSelections.map(s => s.courseCode));
     return allCurrentCourses
       .filter(c => scheduledCodes.has(c.id) || scheduledCodes.has(c.code))
       .reduce((sum, c) => sum + (c.credits ?? 0), 0);
-  }, [draft.selections, allCurrentCourses]);
+  }, [activeDraftSelections, allCurrentCourses]);
 
   const unfilledCount =
     draft.getUnfilledCourses(
@@ -211,8 +226,8 @@ export function ScheduleBuilder({
   }, [draft, onClearSolver]);
 
   useEffect(() => {
-    onDraftStateChange?.(draft.hasAnySelection);
-  }, [draft.hasAnySelection, onDraftStateChange]);
+    onDraftStateChange?.(activeDraftSelections.length > 0);
+  }, [activeDraftSelections.length, onDraftStateChange]);
 
   useEffect(() => {
     if (!clearDraftRef) return;
@@ -223,7 +238,7 @@ export function ScheduleBuilder({
   }, [clearDraftRef, handleClear]);
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  if (selectedCourses.size === 0 && registeredSections.length === 0) {
+  if (selectedCourses.size === 0 && registeredCourses.length === 0) {
     return (
       <div className="space-y-4">
         <div className="ustudy-card p-8 text-center md:p-12">
@@ -257,7 +272,7 @@ export function ScheduleBuilder({
       {/* Toolbar */}
       {showToolbar && (
         <BuilderToolbar
-          hasSelections={draft.hasAnySelection}
+          hasSelections={activeDraftSelections.length > 0}
           solving={solving}
           savedSchedulesCount={savedSchedulesCount}
           onFullSolve={handleFullSolve}
@@ -278,7 +293,7 @@ export function ScheduleBuilder({
               allCourses={allCurrentCourses}
               registeredCourses={registeredCourses}
               allowedClassesMap={allowedClassesMap}
-              selections={draft.selections}
+              selections={activeDraftSelections}
               conflicts={conflicts}
               focusedCourseCode={focusedCourseCode}
               onSelectClass={handleSelectClass}
@@ -308,7 +323,7 @@ export function ScheduleBuilder({
           <div className="relative flex-1 min-h-0">
             <BuilderGrid
               allSections={displaySections}
-              selections={draft.selections}
+              selections={activeDraftSelections}
               conflicts={conflicts}
               focusedCourseCode={focusedCourseCode}
               onClickSection={handleClickSection}
@@ -335,7 +350,7 @@ export function ScheduleBuilder({
       {mobileSidebarOpen && (
         <MobileBottomSheet
           title="Chọn lớp học"
-          eyebrow={`${draft.selections.length}/${selectedCourses.size} môn đã xếp`}
+          eyebrow={`${activeDraftSelections.length}/${selectedCourses.size} môn đã xếp`}
           ariaLabel="Danh sách môn học và lớp mở"
           onClose={() => setMobileSidebarOpen(false)}
           sheetId="schedule-builder-courses"
@@ -347,7 +362,7 @@ export function ScheduleBuilder({
             allCourses={allCurrentCourses}
             registeredCourses={registeredCourses}
             allowedClassesMap={allowedClassesMap}
-            selections={draft.selections}
+            selections={activeDraftSelections}
             conflicts={conflicts}
             focusedCourseCode={focusedCourseCode}
             onSelectClass={handleSelectClass}
@@ -367,7 +382,7 @@ export function ScheduleBuilder({
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold text-gray-900">
-              {draft.selections.length}/{selectedCourses.size} môn · {totalCredits} TC
+              {activeDraftSelections.length}/{selectedCourses.size} môn · {totalCredits} TC
             </p>
             {conflicts.length > 0 && (
               <p className="text-[10px] text-amber-600">⚠️ {conflicts.length} xung đột</p>
@@ -382,7 +397,7 @@ export function ScheduleBuilder({
             >
               {solving ? 'Đang tạo...' : 'Hoàn thiện'}
             </button>
-            {draft.hasAnySelection && (
+            {activeDraftSelections.length > 0 && (
               <button
                 type="button"
                 onClick={onOpenSaveModal}

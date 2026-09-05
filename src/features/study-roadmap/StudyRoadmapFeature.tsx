@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Book, ClipboardList, ShoppingCart, X } from 'lucide-react';
 import { useCourseData } from '../../hooks/useCourseData';
@@ -23,6 +23,12 @@ import type { Course } from '../../types';
 import { createPortal } from 'react-dom';
 import { APP_ROUTES, STUDY_ROADMAP_TAB_TO_PATH, getStudyRoadmapTabFromPath } from '../../app/routes';
 import { tabs, type Tab } from './types';
+import {
+    createCourseCodeSet,
+    normalizeCourseCode,
+    omitRegisteredCourseEntries,
+    reconcileSelectedCourseIds,
+} from '../../logic/course-identity';
 
 // Danh sách các tab
 const isStudyRoadmapTab = (value: unknown): value is Tab =>
@@ -84,15 +90,42 @@ export function StudyRoadmapFeature() {
     const { registeredCourses, registeredSections, registeredMask, registeredCourseCodes } = useRegisteredCourses();
     const { solve: solveRaw, solving, options, setOptions, activeOption, setActiveOption, currentSections, error: solverError } = useScheduleSolver();
 
+    const globalAllCourses = useMemo(
+        () => [...all.core, ...all.major, ...all.electives],
+        [all.core, all.electives, all.major],
+    );
+    const normalizedRegisteredCourseCodes = useMemo(
+        () => createCourseCodeSet(registeredCourseCodes),
+        [registeredCourseCodes],
+    );
+    const selectionReconciliation = useMemo(
+        () => reconcileSelectedCourseIds(selectedCourses, normalizedRegisteredCourseCodes, globalAllCourses),
+        [globalAllCourses, normalizedRegisteredCourseCodes, selectedCourses],
+    );
+    const pendingSelectedCourses = selectionReconciliation.selectedCourseIds;
+
+    useEffect(() => {
+        if (selectionReconciliation.removedCourseIds.length === 0) return;
+
+        setSelectedCourses(selectionReconciliation.selectedCourseIds);
+        setAllowedClassesMap((current) => omitRegisteredCourseEntries(
+            current,
+            normalizedRegisteredCourseCodes,
+            globalAllCourses,
+        ));
+        setOptions([]);
+    }, [globalAllCourses, normalizedRegisteredCourseCodes, selectionReconciliation, setOptions]);
+
     // Wrap solve() to automatically include registeredMask
     const solve = (courses: import('../../types').Course[], allowedClassesMap: Record<string, string[]>, prefs?: import('./hooks/use-schedule-solver').SolverPreferences) => {
         solveRaw(courses, allowedClassesMap, prefs, registeredMask);
     };
 
     const currentSource = viewMode === 'recommend' ? recommended : all;
-    const globalAllCourses = [...all.core, ...all.major, ...all.electives];
-
     const handleCourseToggle = (courseId: string) => {
+        const course = globalAllCourses.find((item) => item.id === courseId || item.code === courseId);
+        if (normalizedRegisteredCourseCodes.has(normalizeCourseCode(course?.code || courseId))) return;
+
         setSelectedCourses(prev => {
             const newSet = new Set(prev);
             if (newSet.has(courseId)) {
@@ -159,9 +192,9 @@ export function StudyRoadmapFeature() {
                         <div className="flex items-center gap-2">
                             <ShoppingCart className="w-5 h-5 text-[#004A98]" />
                             <span className="font-semibold text-gray-900">Giỏ môn học</span>
-                            {selectedCourses.size > 0 && (
+                            {pendingSelectedCourses.size > 0 && (
                                 <span className="ustudy-badge-count">
-                                    {selectedCourses.size}
+                                    {pendingSelectedCourses.size}
                                 </span>
                             )}
                         </div>
@@ -177,7 +210,7 @@ export function StudyRoadmapFeature() {
                 {/* Content: SelectionBasket scroll bên trong */}
                 <div className="flex-1 overflow-y-auto p-4">
                     <SelectionBasket
-                        selectedCourses={Array.from(selectedCourses)
+                        selectedCourses={Array.from(pendingSelectedCourses)
                             .map(id => globalAllCourses.find(c => c.id === id)!)
                             .filter(Boolean)}
                         registeredCourseCodes={registeredCourseCodes}
@@ -203,11 +236,11 @@ export function StudyRoadmapFeature() {
                 >
                     <ShoppingCart className="w-5 h-5" />
                     <span className="font-semibold text-sm">Giỏ hàng</span>
-                    {selectedCourses.size > 0 && (
+                    {pendingSelectedCourses.size > 0 && (
                         <span
                             className="bg-white text-[#004A98] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
                         >
-                            {selectedCourses.size}
+                            {pendingSelectedCourses.size}
                         </span>
                     )}
                 </button>
@@ -254,7 +287,7 @@ export function StudyRoadmapFeature() {
                                 // { id: tabs.trainingProgram, label: 'Chương trình đào tạo', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch học tập', description: 'Tiến độ và lộ trình theo học kỳ', icon: Book },
                                 { id: 'selection', label: 'Chọn môn & Học phí', description: 'Chọn học phần và xem chi phí dự kiến', icon: ShoppingCart },
-                                { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', description: 'Tạo phương án lịch cá nhân hoặc nhóm', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: 'calendar', label: 'Xếp lịch & Lịch dự kiến', description: 'Tạo phương án lịch cá nhân hoặc nhóm', icon: Calendar, showBadge: true, badgeCount: pendingSelectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -268,7 +301,7 @@ export function StudyRoadmapFeature() {
                                 // { id: tabs.trainingProgram, label: 'Lộ trình', icon: Book },
                                 { id: tabs.studyPlan, label: 'Kế hoạch', description: 'Tiến độ theo học kỳ', icon: ClipboardList },
                                 { id: 'selection', label: 'Chọn môn', description: 'Học phần và học phí', icon: ShoppingCart },
-                                { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: selectedCourses.size },
+                                { id: 'calendar', label: 'Xếp lịch', description: 'Lịch dự kiến', icon: Calendar, showBadge: true, badgeCount: pendingSelectedCourses.size },
                             ]}
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -307,7 +340,7 @@ export function StudyRoadmapFeature() {
                                             recommended={recommended}
                                             all={all}
                                             filteredCourses={filteredCourses}
-                                            selectedCourses={selectedCourses}
+                                            selectedCourses={pendingSelectedCourses}
                                             handleCourseToggle={handleCourseToggle}
                                             handleShowFlowchart={handleShowFlowchart}
                                             registeredCourseCodes={registeredCourseCodes}
@@ -323,7 +356,7 @@ export function StudyRoadmapFeature() {
                                             recommended={recommended}
                                             all={all}
                                             filteredCourses={filteredCourses}
-                                            selectedCourses={selectedCourses}
+                                            selectedCourses={pendingSelectedCourses}
                                             handleCourseToggle={handleCourseToggle}
                                             handleShowFlowchart={handleShowFlowchart}
                                             registeredCourseCodes={registeredCourseCodes}
@@ -337,7 +370,7 @@ export function StudyRoadmapFeature() {
                                     style={{ height: 'calc(100vh - 11rem)' }}
                                 >
                                     <SelectionBasket
-                                        selectedCourses={Array.from(selectedCourses)
+                                        selectedCourses={Array.from(pendingSelectedCourses)
                                             .map(id => globalAllCourses.find(c => c.id === id)!)
                                             .filter(Boolean)}
                                         registeredCourseCodes={registeredCourseCodes}
@@ -353,7 +386,7 @@ export function StudyRoadmapFeature() {
                         {/* Tab 3: Lịch trực quan */}
                         {activeTab === 'calendar' && (
                             <CalendarView
-                                selectedCourses={selectedCourses}
+                                selectedCourses={pendingSelectedCourses}
                                 setActiveTab={setActiveTab}
                                 currentSections={currentSections}
                                 registeredCourses={registeredCourses}
@@ -373,7 +406,7 @@ export function StudyRoadmapFeature() {
                                 groupScheduleContent={(
                                     <GroupSchedulePage
                                         embedded
-                                        selectedCourseIds={selectedCourses}
+                                        selectedCourseIds={pendingSelectedCourses}
                                         allCourses={globalAllCourses as Course[]}
                                         allowedClassesMap={allowedClassesMap}
                                         setAllowedClassesMap={setAllowedClassesMap}

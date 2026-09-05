@@ -8,6 +8,7 @@
  */
 
 import { encodeScheduleToMask } from '../Utils';
+import { normalizeCourseCode } from '../course-identity';
 import { Bitset } from './Bitset';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -184,7 +185,7 @@ export function resolveRegistrations(
     }>();
 
     for (const reg of filtered) {
-        const code = String(reg.id || '').trim();
+        const code = normalizeCourseCode(reg.id);
         if (!code) continue;
 
         const { schedule, room } = parseScheduleAndRoom(reg.schedule || '');

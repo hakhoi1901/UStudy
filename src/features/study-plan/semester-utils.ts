@@ -1,4 +1,5 @@
 import { AcademicRulesEngine } from '../grades';
+import { normalizeCourseCode } from '../../logic/course-identity';
 import type { CourseMeta, StudyPlanStorage, GradeRecord, ParsedSemester, StudyPlanSemester } from './types';
 
 export const DEFAULT_SEMESTER_COUNT = 12;
@@ -163,22 +164,23 @@ export function buildHistoricalStudyPlan(
     }
 
     const anchor = getAnchorSemester(rawGrades, rawRegistrations);
-    const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(rawGrades) as GradeRecord[];
+    const effectiveGrades = AcademicRulesEngine.resolveEffectiveGrades(rawGrades || []) as GradeRecord[];
     const semesterToCourseIds = new Map<string, string[]>();
     const registrationSemesterLabels = new Set<string>();
 
     const addCourseToSemester = (courseId: string, rawSemesterLabel: string, isRegistration = false) => {
+        const normalizedCourseId = normalizeCourseCode(courseId);
         const parsedSemester = parseSemesterLabel(rawSemesterLabel);
         const semesterLabel = parsedSemester ? formatSemesterLabel(parsedSemester, anchor) : rawSemesterLabel;
-        if (!courseId || !semesterLabel || !courseById.has(courseId)) return;
+        if (!normalizedCourseId || !semesterLabel || !courseById.has(normalizedCourseId)) return;
 
         if (!semesterToCourseIds.has(semesterLabel)) {
             semesterToCourseIds.set(semesterLabel, []);
         }
 
         const coursesInSemester = semesterToCourseIds.get(semesterLabel)!;
-        if (!coursesInSemester.includes(courseId)) {
-            coursesInSemester.push(courseId);
+        if (!coursesInSemester.includes(normalizedCourseId)) {
+            coursesInSemester.push(normalizedCourseId);
         }
 
         if (isRegistration) registrationSemesterLabels.add(semesterLabel);
@@ -187,7 +189,7 @@ export function buildHistoricalStudyPlan(
     effectiveGrades.forEach((grade) => {
         const courseId = String(grade.id || '').trim();
         const rawSemesterLabel = String(grade.semester || '').trim();
-        const status = AcademicRulesEngine.getCourseStatus(courseId, rawGrades, hasBLMExemption);
+        const status = AcademicRulesEngine.getCourseStatus(courseId, rawGrades || [], hasBLMExemption);
         if (status === 'none') return;
         addCourseToSemester(courseId, rawSemesterLabel);
     });
@@ -238,7 +240,9 @@ function getGenericSemesterIndex(semester: StudyPlanSemester): number | null {
 }
 
 export function mergeHistoricalStudyPlan(previous: StudyPlanStorage, scaffold: StudyPlanSemester[], historical: StudyPlanStorage): StudyPlanStorage {
-    const historicalCourseIds = new Set(Object.values(historical.plan).flat());
+    const historicalCourseIds = new Set(
+        Object.values(historical.plan).flat().map(normalizeCourseCode).filter(Boolean),
+    );
     const scaffoldById = new Map(scaffold.map((semester) => [semester.id, semester]));
     const scaffoldByLabel = new Map(scaffold.map((semester) => [semester.label, semester]));
     const editableSemesters = scaffold.filter((semester) => !semester.isHistorical);
@@ -269,9 +273,10 @@ export function mergeHistoricalStudyPlan(previous: StudyPlanStorage, scaffold: S
         mergedPlan[mergedSemester.id] = [];
 
         (previous.plan[semester.id] || []).forEach((courseId) => {
-            if (historicalCourseIds.has(courseId)) return;
-            if (!mergedPlan[mergedSemester.id].includes(courseId)) {
-                mergedPlan[mergedSemester.id].push(courseId);
+            const normalizedCourseId = normalizeCourseCode(courseId);
+            if (!normalizedCourseId || historicalCourseIds.has(normalizedCourseId)) return;
+            if (!mergedPlan[mergedSemester.id].includes(normalizedCourseId)) {
+                mergedPlan[mergedSemester.id].push(normalizedCourseId);
             }
         });
     });
