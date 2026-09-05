@@ -38,6 +38,21 @@ export function hasOverlappingSession(
     return getAllSessionsForCell(day, period, sessions).length > 1;
 }
 
+/** Returns every other session that occupies at least one period of the source session. */
+export function getOverlappingSessions(
+    session: ScheduleSession,
+    sessions: ScheduleSession[],
+): ScheduleSession[] {
+    const sessionEnd = getDisplayEnd(session);
+
+    return sessions.filter((candidate) => {
+        if (candidate.id === session.id || candidate.dayOfWeek !== session.dayOfWeek) return false;
+
+        const candidateEnd = getDisplayEnd(candidate);
+        return session.startPeriod < candidateEnd && candidate.startPeriod < sessionEnd;
+    });
+}
+
 export function shouldRenderCell(session: ScheduleSession, period: number): boolean {
     return Math.floor(session.startPeriod) === period;
 }

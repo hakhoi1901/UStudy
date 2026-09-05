@@ -10,6 +10,7 @@ interface MobileBottomSheetProps {
     children: ReactNode;
     footer?: ReactNode;
     className?: string;
+    sheetClassName?: string;
     contentClassName?: string;
     sheetId?: string;
 }
@@ -22,6 +23,7 @@ export function MobileBottomSheet({
     children,
     footer,
     className = 'lg:hidden',
+    sheetClassName = '',
     contentClassName = '',
     sheetId,
 }: MobileBottomSheetProps) {
@@ -95,7 +97,7 @@ export function MobileBottomSheet({
                 aria-modal="true"
                 aria-label={ariaLabel || title}
                 data-mobile-sheet={sheetId}
-                className="absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl"
+                className={`absolute inset-x-0 bottom-0 flex max-h-[82vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl ${sheetClassName}`}
                 style={{
                     transform: `translateY(${dragOffset}px)`,
                     transition: isDragging ? 'none' : 'transform 180ms ease-out',

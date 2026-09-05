@@ -14,6 +14,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { captureElementAsDataURL, slugify, downloadImage } from '../../../utils/export';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../../components/ui/overlays/dropdown-menu';
+import { getScheduleConflictLabel, ScheduleConflictHoverCard } from '../../../components/schedule/schedule-conflict-hover-card';
 
 interface GroupScheduleCalendarPreviewProps {
   options: GroupScheduleOption[];
@@ -353,6 +354,7 @@ export function GroupScheduleCalendarPreview({
                 {sections.map((section) => {
                   const conflicts = getConflicts(section, sections);
                   const hasConflict = conflicts.length > 0;
+                  const conflictLabel = getScheduleConflictLabel(section, conflicts);
                   const rowHeight = 56;
                   const lunchBreakOffset = section.startPeriod >= 6 ? 34 : 0;
                   const top = (section.startPeriod - 1) * rowHeight + lunchBreakOffset;
@@ -373,8 +375,12 @@ export function GroupScheduleCalendarPreview({
                   const isTall = height >= 150;
 
                   return (
-                    <div
+                    <ScheduleConflictHoverCard
                       key={section.id}
+                      section={section}
+                      conflictingSections={conflicts}
+                    >
+                      <div
                       role="button"
                       tabIndex={0}
                       aria-label={`Xem lớp mở ${section.sectionNumber} của môn ${section.courseCode}`}
@@ -428,7 +434,7 @@ export function GroupScheduleCalendarPreview({
                           width: 'fit-content',
                         }}>
                           <AlertTriangle style={{ width: 9, height: 9, color: '#DC2626', flexShrink: 0 }} />
-                          <span style={{ fontSize: 8, fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Trùng lịch</span>
+                          <span style={{ fontSize: 8, fontWeight: 700, color: '#B91C1C' }}>{conflictLabel}</span>
                         </div>
                       )}
 
@@ -529,7 +535,8 @@ export function GroupScheduleCalendarPreview({
                           )}
                         </div>
                       )}
-                    </div>
+                      </div>
+                    </ScheduleConflictHoverCard>
                   );
                 })}
               </div>

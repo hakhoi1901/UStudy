@@ -3,8 +3,7 @@ import { type WeeklySchedule, type ScheduleOverrides, DAYS } from '../types';
 import type { OpenClassDetailTarget } from '../../../components/course';
 import {
     getSessionsForCell,
-    hasOverlappingSession,
-    getAllSessionsForCell,
+    getOverlappingSessions,
     calculateRowSpan,
     shouldRenderCell,
 } from '../services/schedule-helpers';
@@ -40,12 +39,11 @@ export function PeriodRow({
                 const session = getSessionsForCell(day.value, period, schedule.sessions);
                 const isTodayCell = isToday(day.value);
                 const isCurrentPeriod = isTodayCell && currentPeriod === period;
-                const hasOverlap = hasOverlappingSession(day.value, period, schedule.sessions);
 
                 if (session && shouldRenderCell(session, period)) {
-                    const sessionsToDisplay = hasOverlap
-                        ? getAllSessionsForCell(day.value, period, schedule.sessions)
-                        : session;
+                    const conflictingSessions = getOverlappingSessions(session, schedule.sessions);
+                    const sessionsToDisplay = [session, ...conflictingSessions];
+                    const hasOverlap = conflictingSessions.length > 0;
 
                     return (
                         <td key={day.value} rowSpan={calculateRowSpan(session)} className={`p-0.5 md:p-1 border border-gray-200 align-middle ${isTodayCell ? 'bg-green-50/50' : ''
